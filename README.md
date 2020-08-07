@@ -1,0 +1,1 @@
+# everytrade-plugin-api
