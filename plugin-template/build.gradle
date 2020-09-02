@@ -1,0 +1,36 @@
+plugins {
+    id 'java-library'
+}
+
+group 'com.example'
+version '1.0.0'
+
+dependencies {
+    annotationProcessor "org.pf4j:pf4j:$pf4jVersion"
+
+    compileOnly project(':plugin-api')
+    compileOnly 'org.slf4j:slf4j-api:1.7.30'
+}
+
+configurations.runtimeClasspath {
+    exclude group: "org.slf4j"
+}
+
+compileJava {
+    options.compilerArgs.addAll('-Apf4j.storageClassName=org.pf4j.processor.ServiceProviderExtensionStorage')
+}
+
+jar {
+    manifest {
+        attributes('Plugin-Id': 'plugin-template')
+        attributes('Plugin-Version': '1.0.0')
+        attributes('Plugin-Requires': '20200902') //required Everytrade version
+        attributes('Plugin-Description': 'some plugin description')
+        attributes('Plugin-Provider': 'Example Ltd.')
+        attributes('Plugin-License': 'Apache License 2.0')
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}

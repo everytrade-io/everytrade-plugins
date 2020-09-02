@@ -1,0 +1,21 @@
+plugins {
+    id 'java'
+}
+
+dependencies {
+    implementation project(":plugin-api")
+    implementation project(":plugin-support")
+    implementation 'org.slf4j:slf4j-api:1.7.30'
+    runtimeOnly 'org.slf4j:slf4j-simple:1.7.30'
+}
+
+task gatherPlugins(type: Sync) {
+    from(project(':plugin-base').tasks.jar)
+    destinationDir = file("$buildDir/testedPlugins")
+}
+
+task run(type: JavaExec) {
+    dependsOn gatherPlugins
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'io.everytrade.server.plugin.Tester'
+}

@@ -1,0 +1,45 @@
+plugins {
+    id 'java-library'
+}
+
+group 'io.everytrade'
+version '1.0.0'
+
+dependencies {
+    annotationProcessor "org.pf4j:pf4j:$pf4jVersion"
+
+    compileOnly project(':plugin-api')
+    compileOnly 'org.slf4j:slf4j-api:1.7.30'
+
+    implementation 'com.univocity:univocity-parsers:2.8.3'
+    implementation 'org.knowm.xchange:xchange-core:5.0.1'
+    implementation "com.github.GENERALBYTESCOM.XChange:xchange-kraken:$xchangeVersion"
+    implementation "com.github.GENERALBYTESCOM.XChange:xchange-binance:$xchangeVersion"
+    implementation "com.github.GENERALBYTESCOM.XChange:xchange-bittrex:$xchangeVersion"
+    implementation "com.github.GENERALBYTESCOM.XChange:xchange-bitstamp:$xchangeVersion"
+    implementation "com.github.GENERALBYTESCOM.XChange:xchange-coinmate:$xchangeVersion"
+}
+
+configurations.runtimeClasspath {
+    exclude group: "org.slf4j"
+}
+
+compileJava {
+    options.compilerArgs.addAll('-Apf4j.storageClassName=org.pf4j.processor.ServiceProviderExtensionStorage')
+}
+
+jar {
+    manifest {
+        attributes('Plugin-Id': 'everytrade-base')
+        attributes('Plugin-Version': '1.0.0')
+        attributes('Plugin-Requires': '20200807') //required Everytrade version
+        attributes('Plugin-Description': 'basic integrations plugin')
+        attributes('Plugin-Provider': 'Everytrade.io')
+        attributes('Plugin-License': 'GNU GPL 2 with Classpath Exception')
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    //TODO: remove license.txt, etc.
+}

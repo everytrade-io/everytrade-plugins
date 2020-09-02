@@ -1,0 +1,19 @@
+import java.nio.charset.StandardCharsets
+
+plugins {
+    id 'java-library'
+}
+
+group 'io.everytrade'
+version '1.0.0'
+
+tasks.withType(JavaCompile) {
+    project.sourceCompatibility = JavaVersion.VERSION_11
+    project.targetCompatibility = JavaVersion.VERSION_11
+    options.encoding = StandardCharsets.UTF_8
+    options.incremental = true
+}
+
+dependencies {
+    api "org.pf4j:pf4j:$pf4jVersion"
+}

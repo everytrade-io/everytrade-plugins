@@ -1,0 +1,1 @@
+# Everytrade.io Base Plugin Pack
