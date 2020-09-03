@@ -18,6 +18,7 @@ dependencies {
     implementation "com.github.GENERALBYTESCOM.XChange:xchange-bittrex:$xchangeVersion"
     implementation "com.github.GENERALBYTESCOM.XChange:xchange-bitstamp:$xchangeVersion"
     implementation "com.github.GENERALBYTESCOM.XChange:xchange-coinmate:$xchangeVersion"
+    implementation 'org.knowm.xchange:xchange-bitfinex:5.0.1'
 }
 
 configurations.runtimeClasspath {
