@@ -12,13 +12,13 @@ dependencies {
     compileOnly 'org.slf4j:slf4j-api:1.7.30'
 
     implementation 'com.univocity:univocity-parsers:2.8.3'
-    implementation 'org.knowm.xchange:xchange-core:5.0.1'
+    implementation "com.github.GENERALBYTESCOM.XChange:xchange-core:$xchangeVersion"
     implementation "com.github.GENERALBYTESCOM.XChange:xchange-kraken:$xchangeVersion"
     implementation "com.github.GENERALBYTESCOM.XChange:xchange-binance:$xchangeVersion"
     implementation "com.github.GENERALBYTESCOM.XChange:xchange-bittrex:$xchangeVersion"
     implementation "com.github.GENERALBYTESCOM.XChange:xchange-bitstamp:$xchangeVersion"
     implementation "com.github.GENERALBYTESCOM.XChange:xchange-coinmate:$xchangeVersion"
-    implementation 'org.knowm.xchange:xchange-bitfinex:5.0.1'
+    implementation "com.github.GENERALBYTESCOM.XChange:xchange-bitfinex:$xchangeVersion"
 }
 
 configurations.runtimeClasspath {
