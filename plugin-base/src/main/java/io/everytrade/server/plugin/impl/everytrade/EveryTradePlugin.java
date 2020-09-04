@@ -20,7 +20,8 @@ public class EveryTradePlugin implements IPlugin {
         BitstampConnector.DESCRIPTOR,
         CoinmateConnector.DESCRIPTOR,
         BitfinexConnector.DESCRIPTOR,
-        BinanceConnector.DESCRIPTOR
+        BinanceConnector.DESCRIPTOR,
+        BittrexConnector.DESCRIPTOR
     ).stream().collect(Collectors.toMap(ConnectorDescriptor::getId, it -> it));
 
     @Override
@@ -57,6 +58,9 @@ public class EveryTradePlugin implements IPlugin {
         }
         if (connectorId.equals(BinanceConnector.DESCRIPTOR.getId())) {
             return new BinanceConnector(parameters);
+        }
+        if (connectorId.equals(BittrexConnector.DESCRIPTOR.getId())) {
+            return new BittrexConnector(parameters);
         }
         return null;
     }
