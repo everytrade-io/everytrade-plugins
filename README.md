@@ -36,7 +36,11 @@
        add libraries as you progress with the plugin implementation, but you shouldn't remove any of the initial
        dependencies.
 1. Customize the skeleton code (as described before).
-             
+
+## Using libraries
+To declare your plugin dependencies via Gradle, use only `compileOnly`, `pluginCompile` or `pluginRuntime` dependency
+configurations depending on whether you need the library during compilation only, compilation and runtime or only
+runtime, respectively.
 
 ## Building custom plugin
 1. Run `./gradlew :<your-plugin>:build` (with *<your-plugin>* substituted with the actual Gradle module name you chose)

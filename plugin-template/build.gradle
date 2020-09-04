@@ -5,15 +5,27 @@ plugins {
 group 'com.example'
 version '1.0.0'
 
+configurations {
+    pluginCompile
+    pluginRuntime
+    fatJar {
+        extendsFrom pluginCompile
+        extendsFrom pluginRuntime
+        exclude group: "org.slf4j"
+    }
+    compileClasspath {
+        extendsFrom pluginCompile
+    }
+}
+
 dependencies {
     annotationProcessor "org.pf4j:pf4j:$pf4jVersion"
 
     compileOnly project(':plugin-api')
-    compileOnly 'org.slf4j:slf4j-api:1.7.30'
-}
+    compileOnly 'org.slf4j:slf4j-api:1.7.30' //example of plugin compile-only dependency (won't be part of fat-jar)
 
-configurations.runtimeClasspath {
-    exclude group: "org.slf4j"
+    //pluginCompile 'commons-io:commons-io:2.7' //example of compile dependency
+    //pluginRuntime 'io.jsonwebtoken:jjwt-impl:0.11.2' //example of runtime dependency
 }
 
 compileJava {
@@ -30,7 +42,7 @@ jar {
         attributes('Plugin-License': 'Apache License 2.0')
     }
     from {
-        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+        configurations.fatJar.collect { it.isDirectory() ? it : zipTree(it) }
     }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
