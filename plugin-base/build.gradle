@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'io.everytrade'
-version '1.0.0'
+version projectVersion
 
 dependencies {
     annotationProcessor "org.pf4j:pf4j:$pf4jVersion"
@@ -11,14 +11,14 @@ dependencies {
     compileOnly project(':plugin-api')
     compileOnly 'org.slf4j:slf4j-api:1.7.30'
 
-    implementation 'com.univocity:univocity-parsers:2.8.3'
-    implementation "com.github.GENERALBYTESCOM.XChange:xchange-core:$xchangeVersion"
-    implementation "com.github.GENERALBYTESCOM.XChange:xchange-kraken:$xchangeVersion"
-    implementation "com.github.GENERALBYTESCOM.XChange:xchange-binance:$xchangeVersion"
-    implementation "com.github.GENERALBYTESCOM.XChange:xchange-bittrex:$xchangeVersion"
-    implementation "com.github.GENERALBYTESCOM.XChange:xchange-bitstamp:$xchangeVersion"
-    implementation "com.github.GENERALBYTESCOM.XChange:xchange-coinmate:$xchangeVersion"
-    implementation "com.github.GENERALBYTESCOM.XChange:xchange-bitfinex:$xchangeVersion"
+    compileOnly 'com.univocity:univocity-parsers:2.8.3'
+    compileOnly "com.github.GENERALBYTESCOM.XChange:xchange-core:$xchangeVersion"
+    compileOnly "com.github.GENERALBYTESCOM.XChange:xchange-kraken:$xchangeVersion"
+    compileOnly "com.github.GENERALBYTESCOM.XChange:xchange-binance:$xchangeVersion"
+    compileOnly "com.github.GENERALBYTESCOM.XChange:xchange-bittrex:$xchangeVersion"
+    compileOnly "com.github.GENERALBYTESCOM.XChange:xchange-bitstamp:$xchangeVersion"
+    compileOnly "com.github.GENERALBYTESCOM.XChange:xchange-coinmate:$xchangeVersion"
+    compileOnly "com.github.GENERALBYTESCOM.XChange:xchange-bitfinex:$xchangeVersion"
 }
 
 configurations.runtimeClasspath {
@@ -32,8 +32,8 @@ compileJava {
 jar {
     manifest {
         attributes('Plugin-Id': 'everytrade-base')
-        attributes('Plugin-Version': '1.0.0')
-        attributes('Plugin-Requires': '20200807') //required Everytrade version
+        attributes('Plugin-Version': projectVersion)
+        attributes('Plugin-Requires': '20200902') //required Everytrade version
         attributes('Plugin-Description': 'basic integrations plugin')
         attributes('Plugin-Provider': 'Everytrade.io')
         attributes('Plugin-License': 'GNU GPL 2 with Classpath Exception')

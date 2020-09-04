@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'io.everytrade'
-version '1.0.0'
+version projectVersion
 
 tasks.withType(JavaCompile) {
     project.sourceCompatibility = JavaVersion.VERSION_11
