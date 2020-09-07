@@ -158,3 +158,4 @@ gradle-app.setting
 
 # SDKMAN RC
 .sdkmanrc
+/plugin-tester/private/

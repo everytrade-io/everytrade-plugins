@@ -31,7 +31,7 @@ public class Tester {
         this.workDir = workDir;
         final Properties properties = loadProperties("tester.properties").orElse(new Properties());
         pluginDir = Paths.get(
-            properties.getProperty("tester.pluginDir", "build/testedPlugins")
+            properties.getProperty("tester.pluginDir", "plugin-tester/build/testedPlugins")
         );
     }
 
@@ -103,9 +103,8 @@ public class Tester {
     }
 
     private Optional<Map<String, String>> loadParams(String id) {
-        final Optional<Properties> properties = loadProperties(id + ".properties");
+        final Optional<Properties> properties = loadProperties("plugin-tester/private/" + id +".properties");
         return properties.map(this::toMap);
-
     }
 
     private Map<String, String> toMap(Properties properties) {

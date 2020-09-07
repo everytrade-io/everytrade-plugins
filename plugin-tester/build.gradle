@@ -22,5 +22,6 @@ task gatherPlugins(type: Sync) {
 task run(type: JavaExec) {
     dependsOn gatherPlugins
     classpath = sourceSets.main.runtimeClasspath
+    workingDir = project.rootDir
     mainClass = 'io.everytrade.server.plugin.Tester'
 }
