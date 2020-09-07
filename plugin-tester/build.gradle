@@ -2,15 +2,20 @@ plugins {
     id 'java'
 }
 
+configurations {
+    testedPlugins
+}
+
 dependencies {
     implementation project(":plugin-api")
     implementation project(":plugin-support")
     implementation 'org.slf4j:slf4j-api:1.7.30'
     runtimeOnly 'org.slf4j:slf4j-simple:1.7.30'
+    testedPlugins project(":plugin-base")
 }
 
 task gatherPlugins(type: Sync) {
-    from(project(':plugin-base').tasks.jar)
+    from(configurations.testedPlugins)
     destinationDir = file("$buildDir/testedPlugins")
 }
 

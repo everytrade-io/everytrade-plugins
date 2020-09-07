@@ -5,24 +5,32 @@ plugins {
 group 'io.everytrade'
 version projectVersion
 
+configurations {
+    pluginCompile
+    pluginRuntime
+    fatJar {
+        extendsFrom pluginCompile
+        extendsFrom pluginRuntime
+        exclude group: "org.slf4j"
+    }
+    compileClasspath {
+        extendsFrom pluginCompile
+    }
+}
+
 dependencies {
     annotationProcessor "org.pf4j:pf4j:$pf4jVersion"
 
     compileOnly project(':plugin-api')
     compileOnly 'org.slf4j:slf4j-api:1.7.30'
 
-    compileOnly 'com.univocity:univocity-parsers:2.8.3'
-    compileOnly "com.github.GENERALBYTESCOM.XChange:xchange-core:$xchangeVersion"
-    compileOnly "com.github.GENERALBYTESCOM.XChange:xchange-kraken:$xchangeVersion"
-    compileOnly "com.github.GENERALBYTESCOM.XChange:xchange-binance:$xchangeVersion"
-    compileOnly "com.github.GENERALBYTESCOM.XChange:xchange-bittrex:$xchangeVersion"
-    compileOnly "com.github.GENERALBYTESCOM.XChange:xchange-bitstamp:$xchangeVersion"
-    compileOnly "com.github.GENERALBYTESCOM.XChange:xchange-coinmate:$xchangeVersion"
-    compileOnly "com.github.GENERALBYTESCOM.XChange:xchange-bitfinex:$xchangeVersion"
-}
-
-configurations.runtimeClasspath {
-    exclude group: "org.slf4j"
+    pluginCompile 'com.univocity:univocity-parsers:2.8.3'
+    pluginCompile "com.github.GENERALBYTESCOM.XChange:xchange-core:$xchangeVersion"
+    pluginCompile "com.github.GENERALBYTESCOM.XChange:xchange-kraken:$xchangeVersion"
+    pluginCompile "com.github.GENERALBYTESCOM.XChange:xchange-binance:$xchangeVersion"
+    pluginCompile "com.github.GENERALBYTESCOM.XChange:xchange-bittrex:$xchangeVersion"
+    pluginCompile "com.github.GENERALBYTESCOM.XChange:xchange-bitstamp:$xchangeVersion"
+    pluginCompile "com.github.GENERALBYTESCOM.XChange:xchange-coinmate:$xchangeVersion"
 }
 
 compileJava {
@@ -39,8 +47,7 @@ jar {
         attributes('Plugin-License': 'GNU GPL 2 with Classpath Exception')
     }
     from {
-        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+        configurations.fatJar.collect { it.isDirectory() ? it : zipTree(it) }
     }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    //TODO: remove license.txt, etc.
 }
