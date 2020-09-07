@@ -1,4 +1,4 @@
-# everytrade-plugin-api
+# everytrade-plugins
 
 ## Enhance an existing module with new components
 1. Fork this repository.
