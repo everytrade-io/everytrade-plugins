@@ -5,7 +5,6 @@ import io.everytrade.server.plugin.api.connector.ConnectorDescriptor;
 import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.connector.IConnector;
 import io.everytrade.server.plugin.api.parser.ConversionStatistic;
-import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParseResult;
 import io.everytrade.server.plugin.support.EverytradePluginManager;
 import org.slf4j.Logger;
