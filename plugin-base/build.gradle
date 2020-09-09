@@ -32,6 +32,7 @@ dependencies {
     pluginCompile "com.github.GENERALBYTESCOM.XChange:xchange-bitstamp:$xchangeVersion"
     pluginCompile "com.github.GENERALBYTESCOM.XChange:xchange-coinmate:$xchangeVersion"
     pluginCompile "com.github.GENERALBYTESCOM.XChange:xchange-bitfinex:$xchangeVersion"
+    pluginCompile "com.github.GENERALBYTESCOM.XChange:xchange-coinbasepro:$xchangeVersion"
 }
 
 compileJava {
