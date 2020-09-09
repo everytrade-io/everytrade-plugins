@@ -28,7 +28,7 @@ dependencies {
     pluginCompile "com.github.GENERALBYTESCOM.XChange:xchange-core:$xchangeVersion"
     pluginCompile "com.github.GENERALBYTESCOM.XChange:xchange-kraken:$xchangeVersion"
     pluginCompile "com.github.GENERALBYTESCOM.XChange:xchange-binance:$xchangeVersion"
-    pluginCompile "com.github.GENERALBYTESCOM.XChange:xchange-bittrex:$xchangeVersion"
+    pluginCompile 'org.knowm.xchange:xchange-bittrexV3:5.0.2'
     pluginCompile "com.github.GENERALBYTESCOM.XChange:xchange-bitstamp:$xchangeVersion"
     pluginCompile "com.github.GENERALBYTESCOM.XChange:xchange-coinmate:$xchangeVersion"
     pluginCompile "com.github.GENERALBYTESCOM.XChange:xchange-bitfinex:$xchangeVersion"
