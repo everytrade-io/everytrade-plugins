@@ -125,7 +125,7 @@ public class Tester {
     }
 
     private Optional<Map<String, String>> loadParams(String id) {
-        final Optional<Properties> properties = loadProperties("plugin-tester/private/" + id + ".properties");
+        final Optional<Properties> properties = loadProperties("private/" + id + ".properties");
         return properties.map(this::toMap);
     }
 
