@@ -77,5 +77,40 @@ How to create a new plugin and make it part of the Base Plugin Pack:
 
 ## Deploying to on-premise instance
 1. Build you plugin module's JAR
-1. Copy the JAR into your `~/everytrade/plugins/` directory.
-1. Restarte the Everytrade webapp container. 
+1. Determine you docker volume mountpoint:
+   ```
+    $ docker volume inspect everytrade_webapp-data | grep Mountpoint
+   ```
+   Most probably the output should match the following:
+   ```
+              "Mountpoint": "/var/lib/docker/volumes/everytrade_webapp-data/_data",
+   ```
+1. Copy the JAR into the `plugins` subdirectory located underneath the mountpoint (i.e. for the mountpoint 
+`/var/lib/docker/volumes/everytrade_webapp-data/_data` copy the JAR into 
+`/var/lib/docker/volumes/everytrade_webapp-data/_data/plugins` directory)
+1. Restart the Everytrade webapp container:
+   ```
+   $ docker container restart everytrade_webapp_1
+   ``` 
+1. Check the container logs whether your plugin has been loaded:
+   ```
+   $ docker logs everytrade_webapp_1
+   ```
+   and look for something like the following in the output:
+   ```
+   [...]
+   2020-09-11 14:44:39,660 INFO  [ejb.PluginRegistry] (ServerService Thread Pool -- 88) Reloading plugins...
+   2020-09-11 14:44:39,734 INFO  [pf4j.AbstractPluginManager] (ServerService Thread Pool -- 88) Plugin 'everytrade-base@1.0.3' resolved
+   2020-09-11 14:44:39,735 INFO  [pf4j.AbstractPluginManager] (ServerService Thread Pool -- 88) Start plugin 'everytrade-base@1.0.3'
+   2020-09-11 14:44:39,810 INFO  [ejb.PluginRegistry] (ServerService Thread Pool -- 88) Loading plugin 'generalbytes'...
+   2020-09-11 14:44:39,814 INFO  [ejb.PluginRegistry] (ServerService Thread Pool -- 88) Found connector 'generalbytes.GBConnector'.
+   2020-09-11 14:44:39,818 INFO  [ejb.PluginRegistry] (ServerService Thread Pool -- 88) Finished loading plugin 'generalbytes'.
+   2020-09-11 14:44:39,820 INFO  [ejb.PluginRegistry] (ServerService Thread Pool -- 88) Loading plugin 'everytrade'...
+   2020-09-11 14:44:39,820 INFO  [ejb.PluginRegistry] (ServerService Thread Pool -- 88) Found connector 'everytrade.krkApiConnector'.
+   2020-09-11 14:44:39,820 INFO  [ejb.PluginRegistry] (ServerService Thread Pool -- 88) Found connector 'everytrade.bitstampApiConnector'.
+   2020-09-11 14:44:39,820 INFO  [ejb.PluginRegistry] (ServerService Thread Pool -- 88) Found connector 'everytrade.etApiConnector'.
+   2020-09-11 14:44:39,821 INFO  [ejb.PluginRegistry] (ServerService Thread Pool -- 88) Found connector 'everytrade.coinmateApiConnector'.
+   2020-09-11 14:44:39,821 INFO  [ejb.PluginRegistry] (ServerService Thread Pool -- 88) Finished loading plugin 'everytrade'.
+   [...]
+   ```
+   You should see your components being loaded. 
