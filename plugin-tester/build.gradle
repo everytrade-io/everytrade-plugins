@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'checkstyle'
 }
 
 configurations {
@@ -24,4 +25,8 @@ task run(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
     workingDir = project.rootDir
     mainClass = 'io.everytrade.server.plugin.Tester'
+}
+
+checkstyle {
+    toolVersion checkstyleVersion
 }
