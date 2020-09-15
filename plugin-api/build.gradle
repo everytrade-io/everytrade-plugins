@@ -2,7 +2,6 @@ import java.nio.charset.StandardCharsets
 
 plugins {
     id 'java-library'
-    id 'checkstyle'
 }
 
 group 'io.everytrade'
@@ -17,8 +16,4 @@ tasks.withType(JavaCompile) {
 
 dependencies {
     api "org.pf4j:pf4j:$pf4jVersion"
-}
-
-checkstyle {
-    toolVersion checkstyleVersion
 }
