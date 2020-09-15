@@ -26,14 +26,15 @@ dependencies {
     compileOnly 'org.slf4j:slf4j-api:1.7.30'
 
     pluginCompile 'com.univocity:univocity-parsers:2.8.3'
-    pluginCompile "com.github.GENERALBYTESCOM.XChange:xchange-core:$xchangeVersion"
-    pluginCompile "com.github.GENERALBYTESCOM.XChange:xchange-kraken:$xchangeVersion"
-    pluginCompile "com.github.GENERALBYTESCOM.XChange:xchange-binance:$xchangeVersion"
-    pluginCompile 'org.knowm.xchange:xchange-bittrexV3:5.0.2'
-    pluginCompile "com.github.GENERALBYTESCOM.XChange:xchange-bitstamp:$xchangeVersion"
-    pluginCompile "com.github.GENERALBYTESCOM.XChange:xchange-coinmate:$xchangeVersion"
-    pluginCompile "com.github.GENERALBYTESCOM.XChange:xchange-bitfinex:$xchangeVersion"
-    pluginCompile "com.github.GENERALBYTESCOM.XChange:xchange-coinbasepro:$xchangeVersion"
+    //TODO Change it to GENERALBYTESCOM once PR (charvam-->GENERALBYTESCOM) will by done.
+    pluginCompile "com.github.charvam.XChange:xchange-core:268ec0acaa"
+    pluginCompile "com.github.charvam.XChange:xchange-kraken:268ec0acaa"
+    pluginCompile "com.github.charvam.XChange:xchange-binance:268ec0acaa"
+    pluginCompile "com.github.charvam.XChange:xchange-bittrexV3:268ec0acaa"
+    pluginCompile "com.github.charvam.XChange:xchange-bitstamp:268ec0acaa"
+    pluginCompile "com.github.charvam.XChange:xchange-coinmate:268ec0acaa"
+    pluginCompile "com.github.charvam.XChange:xchange-bitfinex:268ec0acaa"
+    pluginCompile "com.github.charvam.XChange:xchange-coinbasepro:268ec0acaa"
 }
 
 compileJava {
