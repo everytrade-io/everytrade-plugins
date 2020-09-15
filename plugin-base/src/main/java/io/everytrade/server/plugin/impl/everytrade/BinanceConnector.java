@@ -28,9 +28,6 @@ import java.util.stream.Collectors;
 public class BinanceConnector implements IConnector {
 
     private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "binanceApiConnector";
-    //org.knowm.xchange.binance.BinanceResilience - 1200 request / 1 minute --> 10 user in 1 minute will be enough
-    private static final int MAX_REQUEST_COUNT = 120;
-    private static final int TX_PER_REQUEST = 1000;
 
     private static final ConnectorParameterDescriptor PARAMETER_API_SECRET =
         new ConnectorParameterDescriptor(
@@ -52,7 +49,7 @@ public class BinanceConnector implements IConnector {
         new ConnectorParameterDescriptor(
             "currencyPairs",
             ConnectorParameterType.STRING,
-            "Trade currency pairs (e.g.: BTC/USDT,LTC/ETH)",
+            "Trade currency pairs (e.g. BTC/USDT,LTC/ETH)",
             ""
         );
 
@@ -85,87 +82,17 @@ public class BinanceConnector implements IConnector {
         exSpec.setSecretKey(apiSecret);
         final Exchange exchange = ExchangeFactory.INSTANCE.createExchange(exSpec);
         final TradeService tradeService = exchange.getTradeService();
-        final BinanceDownloadState downloadState = BinanceDownloadState.parseFrom(lastTransactionId);
+        final BinanceDownloader binanceDownloader = new BinanceDownloader(tradeService, lastTransactionId);
 
-        List<UserTrade> userTrades = download(tradeService, downloadState);
+        List<UserTrade> userTrades = binanceDownloader.download(currencyPairs);
         final ParseResult parseResult = XChangeConnectorParser.getParseResult(userTrades, SupportedExchange.BINANCE);
 
-        return new DownloadResult(parseResult, downloadState.toLastTransactionId());
-    }
-
-    private List<UserTrade> download(
-        TradeService tradeService,
-        BinanceDownloadState downloadState
-    ) {
-
-        final BinanceTradeHistoryParams tradeHistoryParams
-            = (BinanceTradeHistoryParams) tradeService.createTradeHistoryParams();
-        tradeHistoryParams.setLimit(TX_PER_REQUEST);
-
-        final List<CurrencyPair> currencyPairs = symbolsToPairs(this.currencyPairs);
-        final List<UserTrade> userTrades = new ArrayList<>();
-        int counter = 0;
-
-        for (CurrencyPair currencyPair : currencyPairs) {
-            tradeHistoryParams.setCurrencyPair(currencyPair);
-            String lastDownloadedTx = downloadState.getLastTransactionId(currencyPair.toString());
-            tradeHistoryParams.setStartId(lastDownloadedTx);
-
-            while (counter++ < MAX_REQUEST_COUNT) {
-                final List<UserTrade> userTradesBlock;
-                try {
-                    userTradesBlock = tradeService.getTradeHistory(tradeHistoryParams).getUserTrades();
-                } catch (Exception e) {
-                    throw new IllegalStateException("User trade history download failed. ", e);
-                }
-                if (
-                    lastDownloadedTx != null
-                        && !userTradesBlock.isEmpty()
-                        && userTradesBlock.get(0).getId().equals(lastDownloadedTx)
-                ) {
-                    userTradesBlock.remove(0);
-                }
-                if (userTradesBlock.isEmpty()) {
-                    break;
-                }
-                userTrades.addAll(userTradesBlock);
-                lastDownloadedTx = userTradesBlock.get(userTradesBlock.size() - 1).getId();
-                tradeHistoryParams.setStartId(lastDownloadedTx);
-            }
-            downloadState.updateLastTransactionId(currencyPair.toString(), lastDownloadedTx);
-        }
-
-        return userTrades;
-
+        return new DownloadResult(parseResult, binanceDownloader.getLastTransactionId());
     }
 
     @Override
     public void close() {
         //AutoCloseable
-    }
-
-    private List<CurrencyPair> symbolsToPairs(String symbols) {
-        return Arrays.stream(symbols.split(","))
-            .map(String::strip)
-            .map(this::createPair)
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
-    }
-
-    private CurrencyPair createPair(String symbol) {
-        if (symbol == null) {
-            return null;
-        }
-        final String[] split = symbol.split("/");
-        if (split.length != 2) {
-            return null;
-        }
-        final Currency base = Currency.getInstanceNoCreate(split[0]);
-        final Currency quote = Currency.getInstanceNoCreate(split[1]);
-        if (base == null || quote == null) {
-            return null;
-        }
-        return new CurrencyPair(base, quote);
     }
 
 }
