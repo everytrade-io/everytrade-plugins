@@ -60,10 +60,11 @@ public final class CurrencyPair implements Comparable<CurrencyPair>{
                 }
             }
         }
+        currencyPairs.addAll(getSupportedFiatPairs());
         return currencyPairs;
     }
 
-    public static List<CurrencyPair> getSupportedFiatPairs() {
+    private static List<CurrencyPair> getSupportedFiatPairs() {
         List<CurrencyPair> currencyPairs = new ArrayList<>();
         currencyPairs.add(new CurrencyPair(Currency.USD, Currency.CAD));
         currencyPairs.add(new CurrencyPair(Currency.USD, Currency.CZK));
