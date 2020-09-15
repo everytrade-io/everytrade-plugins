@@ -50,19 +50,19 @@ public class CoinbaseProConnector implements IConnector {
                     ""
             );
 
-    private static final ConnectorParameterDescriptor PARAMETER_API_PASS_PHRASE =
+    private static final ConnectorParameterDescriptor PARAMETER_PASS_PHRASE =
             new ConnectorParameterDescriptor(
-                    "apiPassPhrase",
+                    "passPhrase",
                     ConnectorParameterType.SECRET,
-                    "API PassPhrase",
+                    "passphrase",
                     ""
             );
 
-    private static final ConnectorParameterDescriptor PARAMETER_API_SYMBOLS =
+    private static final ConnectorParameterDescriptor PARAMETER_CURRENCY_PAIRS =
             new ConnectorParameterDescriptor(
-                    "apiSymbols",
+                    "currencyPairs",
                     ConnectorParameterType.STRING,
-                    "Trade pairs (e.g.: LTC/EUR,LTC/BTC)",
+                    "Trade currency pairs (e.g. LTC/EUR,LTC/BTC)",
                     ""
             );
 
@@ -70,19 +70,19 @@ public class CoinbaseProConnector implements IConnector {
             ID,
             "Coinbase Pro Connector",
             SUPPORTED_EXCHANGE.getInternalId(),
-            List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET, PARAMETER_API_SYMBOLS, PARAMETER_API_PASS_PHRASE)
+            List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET, PARAMETER_CURRENCY_PAIRS, PARAMETER_PASS_PHRASE)
     );
 
     private final String apiKey;
     private final String apiSecret;
-    private final String apiSymbols;
-    private final String apiPassPhrase;
+    private final String currencyPairs;
+    private final String passPhrase;
 
     public CoinbaseProConnector(Map<String, String> parameters) {
         Objects.requireNonNull(this.apiKey = parameters.get(PARAMETER_API_KEY.getId()));
         Objects.requireNonNull(this.apiSecret = parameters.get(PARAMETER_API_SECRET.getId()));
-        Objects.requireNonNull(this.apiSymbols = parameters.get(PARAMETER_API_SYMBOLS.getId()));
-        Objects.requireNonNull(this.apiPassPhrase = parameters.get(PARAMETER_API_PASS_PHRASE.getId()));
+        Objects.requireNonNull(this.currencyPairs = parameters.get(PARAMETER_CURRENCY_PAIRS.getId()));
+        Objects.requireNonNull(this.passPhrase = parameters.get(PARAMETER_PASS_PHRASE.getId()));
     }
 
 
@@ -96,7 +96,7 @@ public class CoinbaseProConnector implements IConnector {
         final ExchangeSpecification exSpec = new CoinbaseProExchange().getDefaultExchangeSpecification();
         exSpec.setApiKey(apiKey);
         exSpec.setSecretKey(apiSecret);
-        exSpec.setExchangeSpecificParametersItem("passphrase", apiPassPhrase);
+        exSpec.setExchangeSpecificParametersItem("passphrase", passPhrase);
         final Exchange exchange = ExchangeFactory.INSTANCE.createExchange(exSpec);
         final TradeService tradeService = exchange.getTradeService();
         final CoinbaseProDownloadState downloadState = CoinbaseProDownloadState.parseFrom(lastTransactionId);
@@ -112,7 +112,7 @@ public class CoinbaseProConnector implements IConnector {
                 = (CoinbaseProTradeHistoryParams) tradeService.createTradeHistoryParams();
         tradeHistoryParams.setLimit(TX_PER_REQUEST);
 
-        final List<CurrencyPair> currencyPairs = symbolsToPairs(apiSymbols);
+        final List<CurrencyPair> currencyPairs = symbolsToPairs(this.currencyPairs);
         final List<UserTrade> userTrades = new ArrayList<>();
         int counter = 0;
 

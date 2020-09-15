@@ -48,11 +48,11 @@ public class BinanceConnector implements IConnector {
             ""
         );
 
-    private static final ConnectorParameterDescriptor PARAMETER_API_SYMBOLS =
+    private static final ConnectorParameterDescriptor PARAMETER_CURRENCY_PAIRS =
         new ConnectorParameterDescriptor(
-            "apiSymbols",
+            "currencyPairs",
             ConnectorParameterType.STRING,
-            "Trade pairs (e.g.: BTC/USDT,LTC/ETH)",
+            "Trade currency pairs (e.g.: BTC/USDT,LTC/ETH)",
             ""
         );
 
@@ -60,17 +60,17 @@ public class BinanceConnector implements IConnector {
         ID,
         "Binance Connector",
         SupportedExchange.BINANCE.getInternalId(),
-        List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET, PARAMETER_API_SYMBOLS)
+        List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET, PARAMETER_CURRENCY_PAIRS)
     );
 
     private final String apiKey;
     private final String apiSecret;
-    private final String apiSymbols;
+    private final String currencyPairs;
 
     public BinanceConnector(Map<String, String> parameters) {
         Objects.requireNonNull(this.apiKey = parameters.get(PARAMETER_API_KEY.getId()));
         Objects.requireNonNull(this.apiSecret = parameters.get(PARAMETER_API_SECRET.getId()));
-        Objects.requireNonNull(this.apiSymbols = parameters.get(PARAMETER_API_SYMBOLS.getId()));
+        Objects.requireNonNull(this.currencyPairs = parameters.get(PARAMETER_CURRENCY_PAIRS.getId()));
     }
 
     @Override
@@ -102,7 +102,7 @@ public class BinanceConnector implements IConnector {
             = (BinanceTradeHistoryParams) tradeService.createTradeHistoryParams();
         tradeHistoryParams.setLimit(TX_PER_REQUEST);
 
-        final List<CurrencyPair> currencyPairs = symbolsToPairs(apiSymbols);
+        final List<CurrencyPair> currencyPairs = symbolsToPairs(this.currencyPairs);
         final List<UserTrade> userTrades = new ArrayList<>();
         int counter = 0;
 
