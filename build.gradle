@@ -1,5 +1,16 @@
 import java.nio.charset.StandardCharsets
 
+plugins {
+    id 'checkstyle'
+    id "org.owasp.dependencycheck" version "$owaspDependencyCheckGradlePluginVersion"
+    id "org.sonatype.gradle.plugins.scan" version "$sonatypeScanGradlePluginVersion"
+    id "com.github.spotbugs" version "$spotbugsGradlePluginVersion"
+}
+
+dependencies {
+    spotbugsPlugins "com.h3xstream.findsecbugs:findsecbugs-plugin:$findsecbugsVersion"
+}
+
 allprojects {
     repositories {
         jcenter()
@@ -17,3 +28,19 @@ wrapper {
     distributionType = Wrapper.DistributionType.ALL
     gradleVersion = "6.6.1"
 }
+
+checkstyle {
+    toolVersion checkstyleVersion
+}
+
+final File privatePropertyFile = new File(project.rootDir, 'private/gradle.properties')
+if (privatePropertyFile.exists()) {
+    final Properties privateProperties = new Properties()
+    privatePropertyFile.withReader { BufferedReader reader ->
+        privateProperties.load(reader)
+        privateProperties.stringPropertyNames().each {
+            project.ext[it] = privateProperties[it]
+        }
+    }
+}
+

@@ -1,6 +1,5 @@
 plugins {
     id 'java'
-    id 'checkstyle'
 }
 
 configurations {
@@ -26,8 +25,4 @@ task run(type: JavaExec) {
     // unified with default IDE working directory
     workingDir = project.rootDir
     mainClass = 'io.everytrade.server.plugin.Tester'
-}
-
-checkstyle {
-    toolVersion checkstyleVersion
 }

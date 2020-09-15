@@ -42,7 +42,9 @@ public final class CurrencyPair implements Comparable<CurrencyPair>{
     }
 
     public Instant getIntroduction() {
-        return base.getIntroduction().compareTo(quote.getIntroduction()) >= 0 ? base.getIntroduction() : quote.getIntroduction();
+        return base.getIntroduction().compareTo(quote.getIntroduction()) >= 0
+            ? base.getIntroduction()
+            : quote.getIntroduction();
     }
 
     public static List<CurrencyPair> getTradeablePairs() {
