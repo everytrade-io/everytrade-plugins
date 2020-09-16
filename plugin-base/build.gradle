@@ -1,7 +1,5 @@
 plugins {
     id 'java-library'
-    id 'checkstyle'
-    id "org.owasp.dependencycheck"
 }
 
 group 'io.everytrade'
@@ -36,6 +34,9 @@ dependencies {
     pluginCompile "com.github.charvam.XChange:xchange-coinmate:268ec0acaa"
     pluginCompile "com.github.charvam.XChange:xchange-bitfinex:268ec0acaa"
     pluginCompile "com.github.charvam.XChange:xchange-coinbasepro:268ec0acaa"
+    //TODO Remove it once ResCU releases a newer version with updated dependency - due to security bugs in the older
+    // version that will attract ResCU
+    pluginCompile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.10.1'
 }
 
 compileJava {
@@ -55,8 +56,4 @@ jar {
         configurations.fatJar.collect { it.isDirectory() ? it : zipTree(it) }
     }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-}
-
-checkstyle {
-    toolVersion checkstyleVersion
 }

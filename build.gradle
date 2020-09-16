@@ -1,16 +1,14 @@
 import java.nio.charset.StandardCharsets
 
 plugins {
-    id "org.owasp.dependencycheck" version "$owaspDependencyCheckGradlePluginVersion"
-    id "org.sonatype.gradle.plugins.scan" version "$sonatypeScanGradlePluginVersion"
-    id "com.github.spotbugs" version "$spotbugsGradlePluginVersion"
+    id 'org.owasp.dependencycheck' version "$owaspDependencyCheckGradlePluginVersion" apply false
+    id 'org.sonatype.gradle.plugins.scan' version "$sonatypeScanGradlePluginVersion" apply false
+    id 'com.github.spotbugs' version "$spotbugsGradlePluginVersion" apply false
 }
 
-dependencies {
-    spotbugsPlugins "com.h3xstream.findsecbugs:findsecbugs-plugin:$findsecbugsVersion"
-}
+boolean spotbugsEnabled = false
 
-allprojects {
+subprojects {
     repositories {
         jcenter()
         maven { url 'https://jitpack.io' }
@@ -20,6 +18,42 @@ allprojects {
         project.targetCompatibility = JavaVersion.VERSION_11
         options.encoding = StandardCharsets.UTF_8
         options.incremental = true
+    }
+
+    apply plugin: 'checkstyle'
+    apply plugin: 'org.owasp.dependencycheck'
+    apply plugin: 'org.sonatype.gradle.plugins.scan'
+
+    if (spotbugsEnabled) {
+        apply plugin: 'com.github.spotbugs'
+
+        dependencies {
+            spotbugsPlugins "com.h3xstream.findsecbugs:findsecbugs-plugin:$findsecbugsVersion"
+        }
+        spotbugs {
+            toolVersion = spotbugsVersion
+        }
+
+        afterEvaluate {
+            [spotbugsMain, spotbugsTest].each {
+                it.reports {
+                    html {
+                        enabled = true
+                        stylesheet = 'fancy-hist.xsl'
+                    }
+                }
+            }
+        }
+    }
+
+    checkstyle {
+        toolVersion checkstyleVersion
+    }
+
+    afterEvaluate {
+        tasks.named('check') {
+            dependsOn 'ossIndexAudit'
+        }
     }
 }
 
@@ -38,4 +72,3 @@ if (privatePropertyFile.exists()) {
         }
     }
 }
-

@@ -1,7 +1,5 @@
 plugins {
     id 'java-library'
-    id 'checkstyle'
-    id "org.owasp.dependencycheck"
 }
 
 group 'com.example'
@@ -47,8 +45,4 @@ jar {
         configurations.fatJar.collect { it.isDirectory() ? it : zipTree(it) }
     }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-}
-
-checkstyle {
-    toolVersion checkstyleVersion
 }
