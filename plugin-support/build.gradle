@@ -3,6 +3,7 @@ import java.nio.charset.StandardCharsets
 plugins {
     id 'java-library'
     id 'checkstyle'
+    id "org.owasp.dependencycheck"
 }
 
 group 'io.everytrade'
