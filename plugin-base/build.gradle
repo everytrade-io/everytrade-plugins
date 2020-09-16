@@ -25,7 +25,7 @@ dependencies {
     compileOnly 'org.slf4j:slf4j-api:1.7.30'
 
     pluginCompile 'com.univocity:univocity-parsers:2.8.3'
-    //TODO Change it to GENERALBYTESCOM once PR (charvam-->GENERALBYTESCOM) will by done.
+    //TODO Change it to GENERALBYTESCOM once PR (charvam-->GENERALBYTESCOM) will be done.
     pluginCompile "com.github.charvam.XChange:xchange-core:268ec0acaa"
     pluginCompile "com.github.charvam.XChange:xchange-kraken:268ec0acaa"
     pluginCompile "com.github.charvam.XChange:xchange-binance:268ec0acaa"
@@ -35,7 +35,7 @@ dependencies {
     pluginCompile "com.github.charvam.XChange:xchange-bitfinex:268ec0acaa"
     pluginCompile "com.github.charvam.XChange:xchange-coinbasepro:268ec0acaa"
     //TODO Remove it once ResCU releases a newer version with updated dependency - due to security bugs in the older
-    // version that will attract ResCU
+    // version used by ResCU
     pluginCompile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.10.1'
 }
 

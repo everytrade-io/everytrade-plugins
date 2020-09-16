@@ -34,8 +34,8 @@ subprojects {
             toolVersion = spotbugsVersion
         }
 
-        afterEvaluate {
-            [spotbugsMain, spotbugsTest].each {
+        ['spotbugsMain', 'spotbugsTest'].each { String spotbugsTaksName ->
+            tasks.named(spotbugsTaksName) {
                 it.reports {
                     html {
                         enabled = true
