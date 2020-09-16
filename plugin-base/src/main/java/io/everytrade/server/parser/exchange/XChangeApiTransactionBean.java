@@ -99,7 +99,9 @@ public class XChangeApiTransactionBean /*extends ExchangeBean*/ {
             case BID:
                 return TransactionType.BUY;
             default:
-                throw new DataValidationException("ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE ".concat(orderType.name()));
+                throw new DataValidationException(
+                    "ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE ".concat(orderType.name())
+                );
         }
     }
 }
