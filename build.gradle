@@ -1,7 +1,6 @@
 import java.nio.charset.StandardCharsets
 
 plugins {
-    id 'checkstyle'
     id "org.owasp.dependencycheck" version "$owaspDependencyCheckGradlePluginVersion"
     id "org.sonatype.gradle.plugins.scan" version "$sonatypeScanGradlePluginVersion"
     id "com.github.spotbugs" version "$spotbugsGradlePluginVersion"
@@ -27,10 +26,6 @@ allprojects {
 wrapper {
     distributionType = Wrapper.DistributionType.ALL
     gradleVersion = "6.6.1"
-}
-
-checkstyle {
-    toolVersion checkstyleVersion
 }
 
 final File privatePropertyFile = new File(project.rootDir, 'private/gradle.properties')

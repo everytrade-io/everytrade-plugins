@@ -1,5 +1,6 @@
 plugins {
     id 'java-library'
+    id 'checkstyle'
 }
 
 group 'io.everytrade'
@@ -53,4 +54,8 @@ jar {
         configurations.fatJar.collect { it.isDirectory() ? it : zipTree(it) }
     }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+checkstyle {
+    toolVersion checkstyleVersion
 }
