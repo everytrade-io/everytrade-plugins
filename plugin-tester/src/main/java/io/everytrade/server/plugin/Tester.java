@@ -30,7 +30,7 @@ public class Tester {
         this.workDir = workDir;
         final Properties properties = loadProperties("tester.properties").orElse(new Properties());
         pluginDir = Paths.get(
-                properties.getProperty("tester.pluginDir", "plugin-tester/build/testedPlugins")
+            properties.getProperty("tester.pluginDir", "plugin-tester/build/testedPlugins")
         );
     }
 
@@ -48,15 +48,15 @@ public class Tester {
 
     public static void main(String[] args) {
         new Tester(
-                Paths.get(
-                        args.length == 1 ? args[0] : ""
-                )
+            Paths.get(
+                args.length == 1 ? args[0] : ""
+            )
         ).test();
     }
 
     private void test() {
         final EverytradePluginManager pluginManager =
-                new EverytradePluginManager(pluginDir);
+            new EverytradePluginManager(pluginDir);
 
         pluginManager.loadPlugins();
         pluginManager.startPlugins();
@@ -94,26 +94,26 @@ public class Tester {
         final String columnSeparator = ",";
         final String lineSeparator = "\n";
         stringBuilder
-                .append("uid").append(columnSeparator)
-                .append("executed").append(columnSeparator)
-                .append("base").append(columnSeparator)
-                .append("quote").append(columnSeparator)
-                .append("action").append(columnSeparator)
-                .append("baseQuantity").append(columnSeparator)
-                .append("unitPrice").append(columnSeparator)
-                .append("transactionPrice").append(columnSeparator)
-                .append("feeQuote").append(lineSeparator);
+            .append("uid").append(columnSeparator)
+            .append("executed").append(columnSeparator)
+            .append("base").append(columnSeparator)
+            .append("quote").append(columnSeparator)
+            .append("action").append(columnSeparator)
+            .append("baseQuantity").append(columnSeparator)
+            .append("unitPrice").append(columnSeparator)
+            .append("transactionPrice").append(columnSeparator)
+            .append("feeQuote").append(lineSeparator);
 
         parseResult.getImportedTransactionBeans().forEach(b -> stringBuilder
-                .append(b.getUid()).append(columnSeparator)
-                .append(b.getExecuted()).append(columnSeparator)
-                .append(b.getBase()).append(columnSeparator)
-                .append(b.getQuote()).append(columnSeparator)
-                .append(b.getAction()).append(columnSeparator)
-                .append(b.getBaseQuantity()).append(columnSeparator)
-                .append(b.getUnitPrice()).append(columnSeparator)
-                .append(b.getTransactionPrice()).append(columnSeparator)
-                .append(b.getFeeQuote()).append(lineSeparator)
+            .append(b.getUid()).append(columnSeparator)
+            .append(b.getExecuted()).append(columnSeparator)
+            .append(b.getBase()).append(columnSeparator)
+            .append(b.getQuote()).append(columnSeparator)
+            .append(b.getAction()).append(columnSeparator)
+            .append(b.getBaseQuantity()).append(columnSeparator)
+            .append(b.getUnitPrice()).append(columnSeparator)
+            .append(b.getTransactionPrice()).append(columnSeparator)
+            .append(b.getFeeQuote()).append(lineSeparator)
         );
         log.info("importedTransactionBeans = \n" + stringBuilder.toString());
 
