@@ -19,6 +19,7 @@ public class CoinbaseProDownloader {
     private static final int TX_PER_REQUEST = 100;
     private static final int MAX_REQUEST_COUNT = 3000;
     private static final int SLEEP_BETWEEN_REQUESTS_MS = 200;
+    public static final int FIRST_XCHANGE_TX_ID = 1;
     private final Map<String, Integer> currencyPairLastIds;
     private final TradeService tradeService;
     private final CoinbaseProTradeHistoryParams tradeHistoryParams;
@@ -47,7 +48,7 @@ public class CoinbaseProDownloader {
         for (CurrencyPair pair : pairs) {
             tradeHistoryParams.setCurrencyPair(pair);
             final Integer lastDownloadedTxFound = currencyPairLastIds.get(pair.toString());
-            int lastDownloadedTx = lastDownloadedTxFound == null ? 1 : lastDownloadedTxFound;
+            int lastDownloadedTx = lastDownloadedTxFound == null ? FIRST_XCHANGE_TX_ID : lastDownloadedTxFound;
 
             while (sentRequests < MAX_REQUEST_COUNT) {
                 tradeHistoryParams.setBeforeTradeId(lastDownloadedTx);
