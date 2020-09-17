@@ -19,6 +19,8 @@ task gatherPlugins(type: Sync) {
     destinationDir = file("$buildDir/testedPlugins")
 }
 
+classes.dependsOn gatherPlugins
+
 task run(type: JavaExec) {
     dependsOn gatherPlugins
     classpath = sourceSets.main.runtimeClasspath
