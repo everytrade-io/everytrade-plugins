@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static io.everytrade.server.plugin.impl.everytrade.ConnectorUtils.findDuplicate;
+
 public class BittrexConnector implements IConnector {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "bittrexApiConnector";
@@ -101,10 +103,10 @@ public class BittrexConnector implements IConnector {
         }
 
         final List<UserTrade> userTradesToAdd;
-        final int duplicityTxIndex = findDuplicity(lastTransactionId, userTradesBlock);
-        if (duplicityTxIndex > -1) {
-            if (duplicityTxIndex < userTradesBlock.size() - 1) {
-                userTradesToAdd = userTradesBlock.subList(duplicityTxIndex + 1, userTradesBlock.size());
+        final int duplicateTxIndex = findDuplicate(lastTransactionId, userTradesBlock);
+        if (duplicateTxIndex > -1) {
+            if (duplicateTxIndex < userTradesBlock.size() - 1) {
+                userTradesToAdd = userTradesBlock.subList(duplicateTxIndex + 1, userTradesBlock.size());
             } else {
                 userTradesToAdd = List.of();
             }
@@ -133,16 +135,6 @@ public class BittrexConnector implements IConnector {
             importedTransactionBeans,
             new ConversionStatistic(errorRows, 0)
         );
-    }
-
-    private int findDuplicity(String transactionId, List<UserTrade> userTradesBlock) {
-        for (int i = 0; i < userTradesBlock.size(); i++) {
-            final UserTrade userTrade = userTradesBlock.get(i);
-            if (userTrade.getId().equals(transactionId)) {
-                return i;
-            }
-        }
-        return -1;
     }
 
     @Override

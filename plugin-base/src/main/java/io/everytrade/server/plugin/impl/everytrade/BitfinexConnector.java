@@ -27,6 +27,9 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static io.everytrade.server.plugin.impl.everytrade.ConnectorUtils.findDuplicate;
+import static io.everytrade.server.plugin.impl.everytrade.ConnectorUtils.occurrenceCount;
+
 public class BitfinexConnector implements IConnector {
 
     private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "bitfinexApiConnector";
@@ -37,26 +40,26 @@ public class BitfinexConnector implements IConnector {
     private static final Pattern SPLIT_PATTERN = Pattern.compile(String.format("(.*)\\%s(.*)", TX_SPLITER));
 
     private static final ConnectorParameterDescriptor PARAMETER_API_SECRET =
-            new ConnectorParameterDescriptor(
-                    "apiSecret",
-                    ConnectorParameterType.SECRET,
-                    "API Secret",
-                    ""
-            );
+        new ConnectorParameterDescriptor(
+            "apiSecret",
+            ConnectorParameterType.SECRET,
+            "API Secret",
+            ""
+        );
 
     private static final ConnectorParameterDescriptor PARAMETER_API_KEY =
-            new ConnectorParameterDescriptor(
-                    "apiKey",
-                    ConnectorParameterType.STRING,
-                    "API Key",
-                    ""
-            );
+        new ConnectorParameterDescriptor(
+            "apiKey",
+            ConnectorParameterType.STRING,
+            "API Key",
+            ""
+        );
 
     public static final ConnectorDescriptor DESCRIPTOR = new ConnectorDescriptor(
-            ID,
-            "Bitfinex Connector",
-            SupportedExchange.BITFINEX.getInternalId(),
-            List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET)
+        ID,
+        "Bitfinex Connector",
+        SupportedExchange.BITFINEX.getInternalId(),
+        List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET)
     );
 
     private final String apiKey;
@@ -96,19 +99,24 @@ public class BitfinexConnector implements IConnector {
         return new DownloadResult(parseResult, actualLastTransactionId);
     }
 
+    @Override
+    public void close() {
+        //AutoCloseable
+    }
+
     private List<UserTrade> download(
-            TradeService tradeService,
-            String lastTransactionUid
+        TradeService tradeService,
+        String lastTransactionUid
     ) {
         final BitfinexTradeService.BitfinexTradeHistoryParams tradeHistoryParams
-                = (BitfinexTradeService.BitfinexTradeHistoryParams) tradeService.createTradeHistoryParams();
+            = (BitfinexTradeService.BitfinexTradeHistoryParams) tradeService.createTradeHistoryParams();
         tradeHistoryParams.setLimit(TX_PER_REQUEST);
         tradeHistoryParams.setOrder(TradeHistoryParamsSorted.Order.asc);
         final List<UserTrade> userTrades = new ArrayList<>();
         TransactionIdentifier lastBlockDownloadedTx = parseFrom(lastTransactionUid);
 
-        int counter = 0;
-        while (counter++ < MAX_REQUEST_COUNT) {
+        int sentRequests = 0;
+        while (sentRequests < MAX_REQUEST_COUNT) {
             tradeHistoryParams.setStartTime(lastBlockDownloadedTx.date);
             final List<UserTrade> userTradesBlock;
             try {
@@ -117,10 +125,10 @@ public class BitfinexConnector implements IConnector {
                 throw new IllegalStateException("User trade history download failed. ", e);
             }
             final List<UserTrade> userTradesToAdd;
-            final int duplicityTxIndex = findDuplicity(lastBlockDownloadedTx, userTradesBlock);
-            if (duplicityTxIndex > -1) {
-                if (duplicityTxIndex < userTradesBlock.size() - 1) {
-                    userTradesToAdd = userTradesBlock.subList(duplicityTxIndex + 1, userTradesBlock.size());
+            final int duplicateTxIndex = findDuplicate(lastBlockDownloadedTx.id, userTradesBlock);
+            if (duplicateTxIndex > -1) {
+                if (duplicateTxIndex < userTradesBlock.size() - 1) {
+                    userTradesToAdd = userTradesBlock.subList(duplicateTxIndex + 1, userTradesBlock.size());
                 } else {
                     userTradesToAdd = List.of();
                 }
@@ -136,6 +144,7 @@ public class BitfinexConnector implements IConnector {
             lastBlockDownloadedTx = new TransactionIdentifier(userTradeLast.getTimestamp(), userTradeLast.getId());
 
             userTrades.addAll(userTradesToAdd);
+            ++sentRequests;
         }
 
         return userTrades;
@@ -148,42 +157,25 @@ public class BitfinexConnector implements IConnector {
         Matcher matcher = SPLIT_PATTERN.matcher(lastTransactionUid);
         if (occurrenceCount(lastTransactionUid, TX_SPLITER) != 1 || !matcher.find()) {
             throw new IllegalArgumentException(
-                    String.format("Illegal value of lastTransactionUid '%s'.", lastTransactionUid)
+                String.format("Illegal value of lastTransactionUid '%s'.", lastTransactionUid)
             );
         }
         final String date = matcher.group(1);
         try {
             return new TransactionIdentifier(
-                    Date.from(Instant.parse(date)),
-                    matcher.group(2)
+                Date.from(Instant.parse(date)),
+                matcher.group(2)
             );
         } catch (Exception e) {
             throw new IllegalArgumentException(
-                    String.format(
-                            "Illegal value of date part '%s' of lastTransactionUid '%s'.",
-                            date,
-                            lastTransactionUid
-                    ),
-                    e
+                String.format(
+                    "Illegal value of date part '%s' of lastTransactionUid '%s'.",
+                    date,
+                    lastTransactionUid
+                ),
+                e
             );
         }
-    }
-
-    private int findDuplicity(TransactionIdentifier transactionIdentifier, List<UserTrade> userTradesBlock) {
-        for (int i = 0; i < userTradesBlock.size(); i++) {
-            final UserTrade userTrade = userTradesBlock.get(i);
-            if (userTrade.getTimestamp().equals(transactionIdentifier.date)
-                    && userTrade.getId().equals(transactionIdentifier.id)
-            ) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    @Override
-    public void close() {
-        //AutoCloseable
     }
 
     private static class TransactionIdentifier {
@@ -194,19 +186,5 @@ public class BitfinexConnector implements IConnector {
             this.date = date;
             this.id = id;
         }
-    }
-
-    public  int occurrenceCount(String input, String search) {
-        int startIndex = 0;
-        int index = 0;
-        int counter = 0;
-        while (index > -1 && startIndex < input.length()) {
-            index = input.indexOf(search, startIndex);
-            if (index > -1) {
-                counter++;
-            }
-            startIndex = index + 1;
-        }
-        return counter;
     }
 }

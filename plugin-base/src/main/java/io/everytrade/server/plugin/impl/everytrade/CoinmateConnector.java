@@ -103,8 +103,8 @@ public class CoinmateConnector implements IConnector {
         tradeHistoryParams.setLimit(TX_PER_REQUEST);
 
         final List<UserTrade> userTrades = new ArrayList<>();
-        int counter = 0;
-        while (counter++ < MAX_REQUEST_COUNT) {
+        int sentRequests = 0;
+        while (sentRequests < MAX_REQUEST_COUNT) {
             final List<UserTrade> userTradesBlock;
             try {
                 userTradesBlock = tradeService.getTradeHistory(tradeHistoryParams).getUserTrades();
@@ -117,6 +117,7 @@ public class CoinmateConnector implements IConnector {
             userTrades.addAll(userTradesBlock);
             final String lastDownloadedTx = userTradesBlock.get(userTradesBlock.size() - 1).getId();
             tradeHistoryParams.setStartId(lastDownloadedTx);
+            ++sentRequests;
         }
         return userTrades;
     }

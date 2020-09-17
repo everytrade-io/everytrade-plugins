@@ -26,4 +26,3 @@ task run(type: JavaExec) {
     workingDir = project.rootDir
     mainClass = 'io.everytrade.server.plugin.Tester'
 }
-

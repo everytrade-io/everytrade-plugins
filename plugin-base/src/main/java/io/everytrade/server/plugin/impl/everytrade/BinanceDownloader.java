@@ -1,8 +1,6 @@
 package io.everytrade.server.plugin.impl.everytrade;
 
 import org.knowm.xchange.binance.service.BinanceTradeHistoryParams;
-import org.knowm.xchange.coinbasepro.dto.trade.CoinbaseProTradeHistoryParams;
-import org.knowm.xchange.currency.Currency;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.trade.UserTrade;
 import org.knowm.xchange.service.trade.TradeService;

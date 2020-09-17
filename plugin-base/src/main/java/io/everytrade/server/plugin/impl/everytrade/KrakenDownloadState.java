@@ -3,13 +3,14 @@ package io.everytrade.server.plugin.impl.everytrade;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static io.everytrade.server.plugin.impl.everytrade.ConnectorUtils.occurrenceCount;
+
 public class KrakenDownloadState {
     public static final int MAX_LENGTH_DOWNLOADED_TXUID = 255;
     private String lastContinuousTxUid;
     private String firstTxUidAfterGap;
     private String lastTxUidAfterGap;
 
-    public static final int TX_UID_PART_COUNT = 3;
     private static final String TX_ID_SEPARATOR = ":";
     private static final Pattern SPLIT_PATTERN = Pattern.compile(
         String.format("(.*)%s(.*)%s(.*)",
@@ -88,23 +89,8 @@ public class KrakenDownloadState {
         );
     }
 
-    private static int occurrenceCount(String input, String search) {
-        int startIndex = 0;
-        int index = 0;
-        int counter = 0;
-        while (index > -1 && startIndex < input.length()) {
-            index = input.indexOf(search, startIndex);
-            if (index > -1) {
-                counter++;
-            }
-            startIndex = index + 1;
-        }
-        return counter;
-    }
-
     private static String getGroupValueOrNull(Matcher matcher, int group) {
         final String part = matcher.group(group);
         return part.isEmpty() ? null : part;
     }
-
 }
