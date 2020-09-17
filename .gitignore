@@ -158,3 +158,6 @@ gradle-app.setting
 
 # SDKMAN RC
 .sdkmanrc
+
+# Private user dir (for plugins credentials, etc)
+private/

@@ -85,14 +85,14 @@ public class KrakenConnector implements IConnector {
         final boolean firstDownload = downloadState.getLastContinuousTxUid() == null;
 
         final List<UserTrade> userTrades = new ArrayList<>();
-        int counter = 0;
-        while (counter < MAX_REQUESTS_COUNT) {
+        int sentRequests = 0;
+        while (sentRequests < MAX_REQUESTS_COUNT) {
             final List<UserTrade> downloadResult = download(tradeService, firstDownload, downloadState);
             if (downloadResult.isEmpty()) {
                 break;
             }
             userTrades.addAll(downloadResult);
-            counter++;
+            ++sentRequests;
         }
 
         return new DownloadResult(XChangeConnectorParser.getParseResult(userTrades, SupportedExchange.KRAKEN),

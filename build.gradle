@@ -1,6 +1,14 @@
 import java.nio.charset.StandardCharsets
 
-allprojects {
+plugins {
+    id 'org.owasp.dependencycheck' version "$owaspDependencyCheckGradlePluginVersion" apply false
+    id 'org.sonatype.gradle.plugins.scan' version "$sonatypeScanGradlePluginVersion" apply false
+    id 'com.github.spotbugs' version "$spotbugsGradlePluginVersion" apply false
+}
+
+boolean spotbugsEnabled = false
+
+subprojects {
     repositories {
         jcenter()
         maven { url 'https://jitpack.io' }
@@ -11,9 +19,56 @@ allprojects {
         options.encoding = StandardCharsets.UTF_8
         options.incremental = true
     }
+
+    apply plugin: 'checkstyle'
+    apply plugin: 'org.owasp.dependencycheck'
+    apply plugin: 'org.sonatype.gradle.plugins.scan'
+
+    if (spotbugsEnabled) {
+        apply plugin: 'com.github.spotbugs'
+
+        dependencies {
+            spotbugsPlugins "com.h3xstream.findsecbugs:findsecbugs-plugin:$findsecbugsVersion"
+        }
+        spotbugs {
+            toolVersion = spotbugsVersion
+        }
+
+        ['spotbugsMain', 'spotbugsTest'].each { String spotbugsTaksName ->
+            tasks.named(spotbugsTaksName) {
+                it.reports {
+                    html {
+                        enabled = true
+                        stylesheet = 'fancy-hist.xsl'
+                    }
+                }
+            }
+        }
+    }
+
+    checkstyle {
+        toolVersion checkstyleVersion
+    }
+
+    afterEvaluate {
+        tasks.named('check') {
+            dependsOn 'ossIndexAudit'
+        }
+    }
 }
 
 wrapper {
     distributionType = Wrapper.DistributionType.ALL
     gradleVersion = "6.6.1"
+}
+
+final File privatePropertyFile = new File(project.rootDir, 'private/gradle.properties')
+if (privatePropertyFile.exists()) {
+    final Properties privateProperties = new Properties()
+    privatePropertyFile.withReader { BufferedReader reader ->
+        privateProperties.load(reader)
+        privateProperties.stringPropertyNames().each {
+            project.ext[it] = privateProperties[it]
+        }
+    }
 }

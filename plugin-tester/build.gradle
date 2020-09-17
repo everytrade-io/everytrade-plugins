@@ -24,5 +24,7 @@ classes.dependsOn gatherPlugins
 task run(type: JavaExec) {
     dependsOn gatherPlugins
     classpath = sourceSets.main.runtimeClasspath
+    // unified with default IDE working directory
+    workingDir = project.rootDir
     mainClass = 'io.everytrade.server.plugin.Tester'
 }

@@ -18,5 +18,6 @@ public interface IConnector extends AutoCloseable {
     /**
      * {@inheritDoc}
      */
-    default void close() {};
+    default void close() {
+    }
 }

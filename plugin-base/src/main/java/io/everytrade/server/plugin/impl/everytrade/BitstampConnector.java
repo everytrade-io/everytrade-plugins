@@ -96,37 +96,38 @@ public class BitstampConnector implements IConnector {
     }
 
     private List<UserTrade> download(String lastTransactionId, TradeService tradeService) {
-            final BitstampTradeHistoryParams bitstampTradeHistoryParams =
-                (BitstampTradeHistoryParams) tradeService.createTradeHistoryParams();
-            bitstampTradeHistoryParams.setStartId(lastTransactionId);
-            bitstampTradeHistoryParams.setPageLength(TXS_PER_REQUEST);
-            String lastDownloadedTx = lastTransactionId;
-            final List<UserTrade> userTrades = new ArrayList<>();
-            int counter = 0;
-            while (counter++ < MAX_REQUEST_COUNT) {
+        final BitstampTradeHistoryParams bitstampTradeHistoryParams =
+            (BitstampTradeHistoryParams) tradeService.createTradeHistoryParams();
+        bitstampTradeHistoryParams.setStartId(lastTransactionId);
+        bitstampTradeHistoryParams.setPageLength(TXS_PER_REQUEST);
+        String lastDownloadedTx = lastTransactionId;
+        final List<UserTrade> userTrades = new ArrayList<>();
+        int sentRequests = 0;
 
-                final List<UserTrade> userTradesBlock;
-                try {
-                    userTradesBlock = tradeService.getTradeHistory(bitstampTradeHistoryParams).getUserTrades();
-                } catch (IOException e) {
-                    throw new IllegalStateException("Download user trade history failed.", e);
-                }
+        while (sentRequests < MAX_REQUEST_COUNT) {
+            final List<UserTrade> userTradesBlock;
+            try {
+                userTradesBlock = tradeService.getTradeHistory(bitstampTradeHistoryParams).getUserTrades();
+            } catch (IOException e) {
+                throw new IllegalStateException("Download user trade history failed.", e);
+            }
 
-                if (
-                    !userTradesBlock.isEmpty()
+            if (
+                !userTradesBlock.isEmpty()
                     && lastDownloadedTx != null
                     && lastDownloadedTx.equals(userTradesBlock.get(0).getId())
-                ) {
-                    userTradesBlock.remove(0);
-                }
-                if (userTradesBlock.isEmpty()) {
-                    break;
-                }
-                userTrades.addAll(userTradesBlock);
-                lastDownloadedTx = userTradesBlock.get(userTradesBlock.size() - 1).getId();
-                bitstampTradeHistoryParams.setStartId(lastDownloadedTx);
+            ) {
+                userTradesBlock.remove(0);
             }
-            return userTrades;
+            if (userTradesBlock.isEmpty()) {
+                break;
+            }
+            userTrades.addAll(userTradesBlock);
+            lastDownloadedTx = userTradesBlock.get(userTradesBlock.size() - 1).getId();
+            bitstampTradeHistoryParams.setStartId(lastDownloadedTx);
+            ++sentRequests;
+        }
+        return userTrades;
     }
 
     @Override

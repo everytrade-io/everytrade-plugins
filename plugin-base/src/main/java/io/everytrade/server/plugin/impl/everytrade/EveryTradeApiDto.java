@@ -12,11 +12,11 @@ public class EveryTradeApiDto {
     }
 
     public String[] getHeader() {
-        return header;
+        return header == null ? null : header.clone();
     }
 
     public void setHeader(String[] header) {
-        this.header = header;
+        this.header = header == null ? null : header.clone();
     }
 
     public List<EveryTradeApiTransactionBean> getTransactions() {

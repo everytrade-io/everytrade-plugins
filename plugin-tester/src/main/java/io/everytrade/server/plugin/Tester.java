@@ -31,7 +31,7 @@ public class Tester {
         this.workDir = workDir;
         final Properties properties = loadProperties("tester.properties").orElse(new Properties());
         pluginDir = Paths.get(
-            properties.getProperty("tester.pluginDir", "build/testedPlugins")
+            properties.getProperty("tester.pluginDir", "plugin-tester/build/testedPlugins")
         );
     }
 
@@ -91,9 +91,33 @@ public class Tester {
     private void printResult(DownloadResult downloadResult) {
         final ParseResult parseResult = downloadResult.getParseResult();
 
-        for (ImportedTransactionBean importedTransactionBean : parseResult.getImportedTransactionBeans()) {
-            log.info("importedTransactionBean = " + importedTransactionBean);
+        StringBuilder stringBuilder = new StringBuilder();
+        final String columnSeparator = ",";
+        final String lineSeparator = "\n";
+        stringBuilder
+            .append("uid").append(columnSeparator)
+            .append("executed").append(columnSeparator)
+            .append("base").append(columnSeparator)
+            .append("quote").append(columnSeparator)
+            .append("action").append(columnSeparator)
+            .append("baseQuantity").append(columnSeparator)
+            .append("unitPrice").append(columnSeparator)
+            .append("transactionPrice").append(columnSeparator)
+            .append("feeQuote").append(lineSeparator);
+
+        for (ImportedTransactionBean b : parseResult.getImportedTransactionBeans()) {
+            stringBuilder
+                .append(b.getUid()).append(columnSeparator)
+                .append(b.getExecuted()).append(columnSeparator)
+                .append(b.getBase()).append(columnSeparator)
+                .append(b.getQuote()).append(columnSeparator)
+                .append(b.getAction()).append(columnSeparator)
+                .append(b.getBaseQuantity()).append(columnSeparator)
+                .append(b.getUnitPrice()).append(columnSeparator)
+                .append(b.getTransactionPrice()).append(columnSeparator)
+                .append(b.getFeeQuote()).append(lineSeparator);
         }
+        log.info("importedTransactionBeans = \n" + stringBuilder.toString());
 
         final ConversionStatistic conversionStatistic = parseResult.getConversionStatistic();
         log.info("conversionStatistic = " + conversionStatistic);
@@ -103,9 +127,8 @@ public class Tester {
     }
 
     private Optional<Map<String, String>> loadParams(String id) {
-        final Optional<Properties> properties = loadProperties(id + ".properties");
+        final Optional<Properties> properties = loadProperties("private/" + id + ".properties");
         return properties.map(this::toMap);
-
     }
 
     private Map<String, String> toMap(Properties properties) {
