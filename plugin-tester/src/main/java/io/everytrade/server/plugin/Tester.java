@@ -105,17 +105,18 @@ public class Tester {
             .append("transactionPrice").append(columnSeparator)
             .append("feeQuote").append(lineSeparator);
 
-        parseResult.getImportedTransactionBeans().forEach((ImportedTransactionBean b) -> stringBuilder
-            .append(b.getUid()).append(columnSeparator)
-            .append(b.getExecuted()).append(columnSeparator)
-            .append(b.getBase()).append(columnSeparator)
-            .append(b.getQuote()).append(columnSeparator)
-            .append(b.getAction()).append(columnSeparator)
-            .append(b.getBaseQuantity()).append(columnSeparator)
-            .append(b.getUnitPrice()).append(columnSeparator)
-            .append(b.getTransactionPrice()).append(columnSeparator)
-            .append(b.getFeeQuote()).append(lineSeparator)
-        );
+        for (ImportedTransactionBean b : parseResult.getImportedTransactionBeans()) {
+            stringBuilder
+                .append(b.getUid()).append(columnSeparator)
+                .append(b.getExecuted()).append(columnSeparator)
+                .append(b.getBase()).append(columnSeparator)
+                .append(b.getQuote()).append(columnSeparator)
+                .append(b.getAction()).append(columnSeparator)
+                .append(b.getBaseQuantity()).append(columnSeparator)
+                .append(b.getUnitPrice()).append(columnSeparator)
+                .append(b.getTransactionPrice()).append(columnSeparator)
+                .append(b.getFeeQuote()).append(lineSeparator);
+        }
         log.info("importedTransactionBeans = \n" + stringBuilder.toString());
 
         final ConversionStatistic conversionStatistic = parseResult.getConversionStatistic();
