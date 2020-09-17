@@ -1,7 +1,6 @@
 package io.everytrade.server.plugin.impl.everytrade;
 
 import org.knowm.xchange.coinbasepro.dto.trade.CoinbaseProTradeHistoryParams;
-import org.knowm.xchange.currency.Currency;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.trade.UserTrade;
 import org.knowm.xchange.service.trade.TradeService;
@@ -19,7 +18,7 @@ public class CoinbaseProDownloader {
     private static final int TX_PER_REQUEST = 100;
     private static final int MAX_REQUEST_COUNT = 3000;
     private static final int SLEEP_BETWEEN_REQUESTS_MS = 200;
-    public static final int FIRST_XCHANGE_TX_ID = 1;
+    public static final int FIRST_COINBASE_TX_ID = 1;
     private final Map<String, Integer> currencyPairLastIds;
     private final TradeService tradeService;
     private final CoinbaseProTradeHistoryParams tradeHistoryParams;
@@ -48,7 +47,7 @@ public class CoinbaseProDownloader {
         for (CurrencyPair pair : pairs) {
             tradeHistoryParams.setCurrencyPair(pair);
             final Integer lastDownloadedTxFound = currencyPairLastIds.get(pair.toString());
-            int lastDownloadedTx = lastDownloadedTxFound == null ? FIRST_XCHANGE_TX_ID : lastDownloadedTxFound;
+            int lastDownloadedTx = lastDownloadedTxFound == null ? FIRST_COINBASE_TX_ID : lastDownloadedTxFound;
 
             while (sentRequests < MAX_REQUEST_COUNT) {
                 tradeHistoryParams.setBeforeTradeId(lastDownloadedTx);
