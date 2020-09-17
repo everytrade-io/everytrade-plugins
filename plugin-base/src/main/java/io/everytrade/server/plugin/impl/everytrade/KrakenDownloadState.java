@@ -13,7 +13,10 @@ public class KrakenDownloadState {
 
     private static final String TX_ID_SEPARATOR = ":";
     private static final Pattern SPLIT_PATTERN = Pattern.compile(
-        String.format("(.*)%s(.*)%s(.*)",
+        String.format("^([^%s]*)%s([^%s]*)%s([^%s]*)$",
+            TX_ID_SEPARATOR,
+            TX_ID_SEPARATOR,
+            TX_ID_SEPARATOR,
             TX_ID_SEPARATOR,
             TX_ID_SEPARATOR
         )
@@ -76,7 +79,7 @@ public class KrakenDownloadState {
         }
 
         Matcher matcher = SPLIT_PATTERN.matcher(lastTransactionUid);
-        if (occurrenceCount(lastTransactionUid, TX_ID_SEPARATOR) != 2 || !matcher.find()) {
+        if (!matcher.find()) {
             throw new IllegalArgumentException(
                 String.format("Illegal value of lastTransactionUid '%s'.", lastTransactionUid)
             );
