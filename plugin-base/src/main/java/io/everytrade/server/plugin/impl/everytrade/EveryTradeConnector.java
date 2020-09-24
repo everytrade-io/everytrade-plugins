@@ -104,10 +104,14 @@ public class EveryTradeConnector implements IConnector {
             try {
                 importedTransactions.add(transaction.toImportedTransactionBean());
             } catch (Exception e) {
-                log.error("Error converting to ImportedTransactionBean.", e);
                 errorRows.add(new RowError(transaction.toString(), e.getMessage(), RowErrorType.FAILED));
             }
         }
+        log.info("{} transaction(s) parsed successfully.", importedTransactions.size());
+        if (!errorRows.isEmpty()) {
+            log.warn("{} row(s) not parsed.", errorRows.size());
+        }
+
         final String lastDownloadedTxUid;
         if (importedTransactions.isEmpty()) {
             lastDownloadedTxUid = lastTransactionId;
