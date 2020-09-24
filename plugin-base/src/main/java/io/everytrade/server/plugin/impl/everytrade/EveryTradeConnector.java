@@ -104,7 +104,6 @@ public class EveryTradeConnector implements IConnector {
             try {
                 importedTransactions.add(transaction.toImportedTransactionBean());
             } catch (Exception e) {
-                log.error("Error converting to ImportedTransactionBean.", e);
                 errorRows.add(new RowError(transaction.toString(), e.getMessage(), RowErrorType.FAILED));
             }
         }
