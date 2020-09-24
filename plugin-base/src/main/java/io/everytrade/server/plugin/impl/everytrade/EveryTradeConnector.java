@@ -107,6 +107,11 @@ public class EveryTradeConnector implements IConnector {
                 errorRows.add(new RowError(transaction.toString(), e.getMessage(), RowErrorType.FAILED));
             }
         }
+        log.info("{} transaction(s) parsed successfully.", importedTransactions.size());
+        if (!errorRows.isEmpty()) {
+            log.warn("{} row(s) not parsed.", errorRows.size());
+        }
+
         final String lastDownloadedTxUid;
         if (importedTransactions.isEmpty()) {
             lastDownloadedTxUid = lastTransactionId;
