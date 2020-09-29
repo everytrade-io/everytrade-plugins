@@ -62,6 +62,7 @@ public final class CurrencyPair implements Comparable<CurrencyPair>{
                 }
             }
         }
+        currencyPairs.addAll(getSupportedFiatPairs());
         return currencyPairs;
     }
 
