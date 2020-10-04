@@ -34,6 +34,7 @@ dependencies {
     pluginCompile "com.github.charvam.XChange:xchange-coinmate:268ec0acaa"
     pluginCompile "com.github.charvam.XChange:xchange-bitfinex:268ec0acaa"
     pluginCompile "com.github.charvam.XChange:xchange-coinbasepro:268ec0acaa"
+    pluginCompile "com.github.charvam.XChange:xchange-bitmex:268ec0acaa"
     //TODO Remove it once ResCU releases a newer version with updated dependency - due to security bugs in the older
     // version used by ResCU
     pluginCompile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.10.1'
