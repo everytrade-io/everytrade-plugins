@@ -18,7 +18,8 @@ public enum SupportedExchange {
     COINSQUARE("Coinsquare", "coinsquare"),
     BINANCE("Binance", "binance"),
     COINBASE("Coinbase Pro", "coinbase"),
-    BITMEX("BitMEX", "bitmex");
+    BITMEX("BitMEX", "bitmex"),
+    BITFLYER("bitFlyer", "bitflyer");
 
 
     private final String displayName;
