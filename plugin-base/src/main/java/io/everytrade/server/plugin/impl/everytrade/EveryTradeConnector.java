@@ -96,7 +96,8 @@ public class EveryTradeConnector implements IConnector {
         final EveryTradeApiDto data =
             api.getTransactions(apiKey, signer, lastTransactionId, MAX_FETCH_SIZE);
 
-        final List<EveryTradeApiTransactionBean> transactions = data.getTransactions();
+        final List<EveryTradeApiTransactionBean> transactions
+            = Objects.requireNonNullElse(data.getTransactions(), new ArrayList<>());
 
         final List<ImportedTransactionBean> importedTransactions = new ArrayList<>();
         final List<RowError> errorRows = new ArrayList<>();

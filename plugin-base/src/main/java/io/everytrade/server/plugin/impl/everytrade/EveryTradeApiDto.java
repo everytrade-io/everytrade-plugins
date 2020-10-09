@@ -2,11 +2,12 @@ package io.everytrade.server.plugin.impl.everytrade;
 
 import io.everytrade.server.parser.exchange.EveryTradeApiTransactionBean;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class EveryTradeApiDto {
     private String[] header; //TODO: remove header?
-    private List<EveryTradeApiTransactionBean> transactions;
+    private List<EveryTradeApiTransactionBean> transactions = new ArrayList<>();
 
     public EveryTradeApiDto() {
     }
