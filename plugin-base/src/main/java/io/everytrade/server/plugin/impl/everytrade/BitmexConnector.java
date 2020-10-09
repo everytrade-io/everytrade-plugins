@@ -30,14 +30,8 @@ import static io.everytrade.server.plugin.impl.everytrade.ConnectorUtils.findDup
 public class BitmexConnector implements IConnector {
     private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "bitmexApiConnector";
     //https://www.bitmex.com/app/restAPI#Limits - max 60 requests per minute
-    private static final int MAX_REQUESTS_PER_MINUTE = 60;
-    //assumption that usually less then 20.000  new transactions
-    private static final int FAST_REQUESTS = 40;
-    private static final int SLOW_REQUESTS = MAX_REQUESTS_PER_MINUTE - FAST_REQUESTS;
-    private static final Duration SLEEP_BETWEEN_SLOW_REQUESTS
-        = Duration.ofSeconds(MAX_REQUESTS_PER_MINUTE/SLOW_REQUESTS);
-    private static final Duration SLEEP_BETWEEN_REQUESTS = Duration.ofSeconds(1);
-    private static final int MAX_REQUESTS = 600;
+    //30 --> 50% of user budget for one API connector instance
+    private static final int MAX_REQUESTS = 30;
     private static final int MAX_TXS_PER_REQUEST = 500;
     private static final String LAST_TX_ID_FORMAT = "%s:%s";
     private static final Pattern LAST_TX_ID_SPLITTER = Pattern.compile("^([^:]*):([^:]*)$");
@@ -114,7 +108,6 @@ public class BitmexConnector implements IConnector {
         int sentRequests = 0;
 
         while (sentRequests < MAX_REQUESTS) {
-            sleep(sentRequests);
             tradeHistoryParams.setOffset(lastDownloadedTx.offset);
             final List<UserTrade> userTradesBlock;
             try {
@@ -147,23 +140,6 @@ public class BitmexConnector implements IConnector {
         }
 
         return userTrades;
-    }
-
-    private void sleep(int sentRequests) {
-        final Duration sleep;
-        if (sentRequests < FAST_REQUESTS) {
-            return;
-        } else if (sentRequests < FAST_REQUESTS + SLOW_REQUESTS) {
-            sleep = SLEEP_BETWEEN_SLOW_REQUESTS;
-        } else {
-            sleep = SLEEP_BETWEEN_REQUESTS;
-        }
-
-        try {
-            Thread.sleep(sleep.toMillis());
-        } catch (InterruptedException e) {
-            throw new IllegalStateException("User trade history download sleep interrupted.", e);
-        }
     }
 
     private TransactionIdentifier parseFrom(String lastTransactionUid) {
