@@ -17,7 +17,9 @@ public enum SupportedExchange {
     BITFINEX("Bitfinex", "bitfinex"),
     COINSQUARE("Coinsquare", "coinsquare"),
     BINANCE("Binance", "binance"),
-    COINBASE("Coinbase Pro", "coinbase");
+    COINBASE("Coinbase Pro", "coinbase"),
+    BITMEX("BitMEX", "bitmex"),
+    BITFLYER("bitFlyer", "bitflyer");
 
 
     private final String displayName;
