@@ -10,14 +10,10 @@ import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 //import io.everytrade.server.parser.postparse.ConversionParams;
 import org.knowm.xchange.dto.Order;
 import org.knowm.xchange.dto.trade.UserTrade;
-import org.knowm.xchange.instrument.Instrument;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
 
 public class XChangeApiTransactionBean /*extends ExchangeBean*/ {
     private final String id;
@@ -29,30 +25,19 @@ public class XChangeApiTransactionBean /*extends ExchangeBean*/ {
     private final BigDecimal originalAmount;
     private final BigDecimal price;
     private final BigDecimal feeAmount;
-    private static final Map<String, Currency> xChangeToEveryTrade = new HashMap<>();
-
-    static {
-        xChangeToEveryTrade.put("XBT", Currency.BTC);
-    }
 
     public XChangeApiTransactionBean(UserTrade userTrade, SupportedExchange supportedExchange) {
 //        super(supportedExchange);
         id = userTrade.getId();
         timestamp = userTrade.getTimestamp().toInstant();
         type = getTransactionType(userTrade.getType());
-        final Instrument instrument = userTrade.getInstrument();
-        if (!(instrument instanceof org.knowm.xchange.currency.CurrencyPair)) {
-            throw new DataValidationException("Derivatives are not supported yet.");
-        }
-        org.knowm.xchange.currency.CurrencyPair currencyPair = (org.knowm.xchange.currency.CurrencyPair) instrument;
-        base = convert(currencyPair.base);
-        quote = convert(currencyPair.counter);
+        base = Currency.valueOf(userTrade.getCurrencyPair().base.getCurrencyCode());
+        quote = Currency.valueOf(userTrade.getCurrencyPair().counter.getCurrencyCode());
         originalAmount = userTrade.getOriginalAmount();
         price = userTrade.getPrice();
         feeAmount = userTrade.getFeeAmount();
-        feeCurrency = convert(userTrade.getFeeCurrency());
+        feeCurrency = Currency.valueOf(userTrade.getFeeCurrency().getCurrencyCode());
     }
-
 
 //    @Override
 //    public ImportedTransactionBean toImportedTransactionBean(ConversionParams conversionParams) {
@@ -70,6 +55,7 @@ public class XChangeApiTransactionBean /*extends ExchangeBean*/ {
 //            feeAmount                        //fee quote
 //        );
 //    }
+
     public ImportedTransactionBean toImportedTransactionBean() {
         try {
             new CurrencyPair(base, quote);
@@ -117,11 +103,5 @@ public class XChangeApiTransactionBean /*extends ExchangeBean*/ {
                     "ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE ".concat(orderType.name())
                 );
         }
-    }
-
-    private Currency convert(org.knowm.xchange.currency.Currency currency) {
-        Objects.requireNonNull(currency);
-        final Currency converted = xChangeToEveryTrade.get(currency.getCurrencyCode());
-        return Objects.requireNonNullElseGet(converted, () -> Currency.valueOf(currency.getCurrencyCode()));
     }
 }
