@@ -10,6 +10,7 @@ import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 //import io.everytrade.server.parser.postparse.ConversionParams;
 import org.knowm.xchange.dto.Order;
 import org.knowm.xchange.dto.trade.UserTrade;
+import org.knowm.xchange.instrument.Instrument;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -31,12 +32,19 @@ public class XChangeApiTransactionBean /*extends ExchangeBean*/ {
         id = userTrade.getId();
         timestamp = userTrade.getTimestamp().toInstant();
         type = getTransactionType(userTrade.getType());
-        base = Currency.valueOf(userTrade.getCurrencyPair().base.getCurrencyCode());
-        quote = Currency.valueOf(userTrade.getCurrencyPair().counter.getCurrencyCode());
+
+        final Instrument instrument = userTrade.getInstrument();
+        if (!(instrument instanceof org.knowm.xchange.currency.CurrencyPair)) {
+            throw new DataValidationException("Derivatives are not supported yet.");
+        }
+        org.knowm.xchange.currency.CurrencyPair currencyPair = (org.knowm.xchange.currency.CurrencyPair) instrument;
+        base = convert(currencyPair.base);
+        quote = convert(currencyPair.counter);
         originalAmount = userTrade.getOriginalAmount();
         price = userTrade.getPrice();
         feeAmount = userTrade.getFeeAmount();
-        feeCurrency = Currency.valueOf(userTrade.getFeeCurrency().getCurrencyCode());
+        feeCurrency = convert(userTrade.getFeeCurrency());
+
     }
 
 //    @Override
@@ -55,7 +63,6 @@ public class XChangeApiTransactionBean /*extends ExchangeBean*/ {
 //            feeAmount                        //fee quote
 //        );
 //    }
-
     public ImportedTransactionBean toImportedTransactionBean() {
         try {
             new CurrencyPair(base, quote);
@@ -102,6 +109,16 @@ public class XChangeApiTransactionBean /*extends ExchangeBean*/ {
                 throw new DataValidationException(
                     "ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE ".concat(orderType.name())
                 );
+        }
+    }
+
+    private Currency convert(org.knowm.xchange.currency.Currency currency) {
+        try {
+            return Currency.valueOf(currency.getCurrencyCode());
+        } catch (IllegalArgumentException e) {
+            final org.knowm.xchange.currency.Currency currencyConverted =
+                org.knowm.xchange.currency.Currency.getInstance(currency.getCurrencyCode()).getCommonlyUsedCurrency();
+            return Currency.valueOf(currencyConverted.getCurrencyCode());
         }
     }
 }
