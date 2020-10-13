@@ -2,8 +2,8 @@ package io.everytrade.server.plugin.support;
 
 import org.pf4j.DefaultPluginManager;
 import org.pf4j.ExtensionFinder;
+import org.pf4j.LegacyExtensionFinder;
 import org.pf4j.PluginManager;
-import org.pf4j.ServiceProviderExtensionFinder;
 
 import java.nio.file.Path;
 import java.util.Collections;
@@ -17,7 +17,7 @@ public class EverytradePluginManager extends DefaultPluginManager implements Plu
 
     @Override
     protected ExtensionFinder createExtensionFinder() {
-        return new ServiceProviderExtensionFinder(this) {
+        return new LegacyExtensionFinder(this) {
             @Override
             public Map<String, Set<String>> readClasspathStorages() {
                 return Collections.emptyMap();

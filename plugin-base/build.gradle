@@ -42,10 +42,6 @@ dependencies {
     pluginCompile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.10.1'
 }
 
-compileJava {
-    options.compilerArgs.addAll('-Apf4j.storageClassName=org.pf4j.processor.ServiceProviderExtensionStorage')
-}
-
 jar {
     manifest {
         attributes('Plugin-Id': 'everytrade-base')
