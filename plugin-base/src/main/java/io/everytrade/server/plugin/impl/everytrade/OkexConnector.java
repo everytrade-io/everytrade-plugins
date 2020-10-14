@@ -55,7 +55,7 @@ public class OkexConnector implements IConnector {
         ID,
         "OKEX Connector",
         SupportedExchange.OKEX.getInternalId(),
-        List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET, PARAMETER_CURRENCY_PAIRS)
+        List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET, PARAMETER_PASS_PHRASE, PARAMETER_CURRENCY_PAIRS)
     );
     private static final String OKEX_URL = "https://www.okex.com/";
     private final String apiKey;
