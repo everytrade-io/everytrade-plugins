@@ -2,6 +2,7 @@ package io.everytrade.server.plugin;
 
 import io.everytrade.server.plugin.api.IPlugin;
 import io.everytrade.server.plugin.api.connector.ConnectorDescriptor;
+import io.everytrade.server.plugin.api.connector.ConnectorParameterDescriptor;
 import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.connector.IConnector;
 import io.everytrade.server.plugin.api.parser.ConversionStatistic;
@@ -13,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -23,6 +25,8 @@ import java.util.Optional;
 import java.util.Properties;
 
 public class Tester {
+    public static final String TEMPLATE_FILE_SUFFIX = ".template";
+    private static final String EMULATED_EVERYTRADE_VERSION = "20201014";
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     private final Path workDir;
     private final Path pluginDir;
@@ -59,6 +63,7 @@ public class Tester {
         final EverytradePluginManager pluginManager =
             new EverytradePluginManager(pluginDir);
 
+        pluginManager.setSystemVersion(String.format("%s.0.0", EMULATED_EVERYTRADE_VERSION));
         pluginManager.loadPlugins();
         pluginManager.startPlugins();
         final List<IPlugin> plugins = pluginManager.getExtensions(IPlugin.class);
@@ -73,6 +78,7 @@ public class Tester {
         final List<ConnectorDescriptor> connectorDescriptors = plugin.allConnectorDescriptors();
         for (ConnectorDescriptor connectorDescriptor : connectorDescriptors) {
             log.info("connectorDescriptor = " + connectorDescriptor);
+            writeParamsTemplate(connectorDescriptor);
             final Optional<Map<String, String>> parameters = loadParams(connectorDescriptor.getId());
             if (parameters.isEmpty()) {
                 continue;
@@ -85,6 +91,25 @@ public class Tester {
 
             //follow-up connection
             printResult(connector.getTransactions(downloadResult.getLastDownloadedTransactionId()));
+        }
+    }
+
+    private void writeParamsTemplate(ConnectorDescriptor descriptor) {
+        final Properties parameters = new Properties();
+        for (ConnectorParameterDescriptor parameter : descriptor.getParameters()) {
+            parameters.setProperty(parameter.getId(), parameter.getDescription());
+        }
+        final String fileName = String.format("%s%s", getParamsFileName(descriptor.getId()), TEMPLATE_FILE_SUFFIX);
+        try (final FileWriter writer = new FileWriter(fileName)) {
+            parameters.store(
+                writer,
+                String.format(
+                    "Fill in proper values and remove the '%s' file name suffix to test the corresponding connector.",
+                    TEMPLATE_FILE_SUFFIX
+                )
+            );
+        } catch (IOException e) {
+            log.error("Error writing parameter template file for connector '{}'.", descriptor.getId(), e);
         }
     }
 
@@ -127,8 +152,12 @@ public class Tester {
     }
 
     private Optional<Map<String, String>> loadParams(String id) {
-        final Optional<Properties> properties = loadProperties("private/" + id + ".properties");
+        final Optional<Properties> properties = loadProperties(getParamsFileName(id));
         return properties.map(this::toMap);
+    }
+
+    private String getParamsFileName(String id) {
+        return String.format("private/%s.properties", id);
     }
 
     private Map<String, String> toMap(Properties properties) {

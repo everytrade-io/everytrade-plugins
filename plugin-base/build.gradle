@@ -45,7 +45,7 @@ jar {
     manifest {
         attributes('Plugin-Id': 'everytrade-base')
         attributes('Plugin-Version': projectVersion)
-        attributes('Plugin-Requires': '20200902') //required Everytrade version
+         attributes('Plugin-Requires': requiredEverytradeVersion) //required Everytrade version
         attributes('Plugin-Description': 'basic integrations plugin')
         attributes('Plugin-Provider': 'Everytrade.io')
         attributes('Plugin-License': 'GNU GPL 2 with Classpath Exception')

@@ -32,7 +32,7 @@ jar {
     manifest {
         attributes('Plugin-Id': 'plugin-template')
         attributes('Plugin-Version': '1.0.0')
-        attributes('Plugin-Requires': '20200902') //required Everytrade version
+        attributes('Plugin-Requires': requiredEverytradeVersion) //required Everytrade version
         attributes('Plugin-Description': 'some plugin description')
         attributes('Plugin-Provider': 'Example Ltd.')
         attributes('Plugin-License': 'Apache License 2.0')
