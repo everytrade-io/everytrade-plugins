@@ -126,7 +126,7 @@ How to create a new plugin and make it part of the Base Plugin Pack:
    |Binance|everytrade|everytrade.binanceApiConnector|
    |Bittrex|everytrade|everytrade.bittrexApiConnector|
    |Coinbase PRO|everytrade|everytrade.coinbaseProApiConnector|
-   |Bitmex|everytrade|everytrade.bitmexProApiConnector|
+   |Bitmex|everytrade|everytrade.bitmexApiConnector|
    |OKEX|everytrade|everytrade.okexApiConnector|
    
    
