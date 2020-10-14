@@ -119,7 +119,7 @@ How to create a new plugin and make it part of the Base Plugin Pack:
    |--|------|--------|
    |General Bytes|generalbytes|generalbytes.GBConnector|
    |EveryTrade|everytrade|everytrade.etApiConnector|
-   |Kraken|everytrade|everytrade.krakenApiConnector|
+   |Kraken|everytrade|everytrade.krkApiConnector|
    |Bitstamp|everytrade|everytrade.bitstampApiConnector|
    |CoinMate|everytrade|everytrade.coinmateApiConnector|
    |Bitfinex|everytrade|everytrade.bitfinexApiConnector|
