@@ -114,3 +114,21 @@ How to create a new plugin and make it part of the Base Plugin Pack:
    [...]
    ```
    You should see your components being loaded. 
+   ## Implemented exchange API connectors
+   |Exchange|Plugin|ID|
+   |--|------|--------|
+   |General Bytes|generalbytes|generalbytes.GBConnector|
+   |EveryTrade|everytrade|everytrade.etApiConnector|
+   |Kraken|everytrade|everytrade.krakenApiConnector|
+   |Bitstamp|everytrade|everytrade.bitstampApiConnector|
+   |CoinMate|everytrade|everytrade.coinmateApiConnector|
+   |Bitfinex|everytrade|everytrade.coinmateApiConnector|
+   |Binance|everytrade|everytrade.binanceApiConnector|
+   |Bittrex|everytrade|everytrade.bittrexApiConnector|
+   |Coinbase PRO|everytrade|everytrade.coinbaseProApiConnector|
+   |Bitmex|everytrade|everytrade.bitmexProApiConnector|
+   |OKEX|everytrade|everytrade.okexApiConnector|
+   
+   
+  
+   
