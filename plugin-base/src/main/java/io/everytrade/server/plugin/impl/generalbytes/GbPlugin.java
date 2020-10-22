@@ -11,11 +11,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Extension
-public class GBPlugin implements IPlugin {
+public class GbPlugin implements IPlugin {
     public static final String ID = "generalbytes";
 
     private static final Map<String, ConnectorDescriptor> CONNECTORS_BY_ID =
-        Set.of(GBConnector.DESCRIPTOR)
+        Set.of(GbConnector.DESCRIPTOR)
             .stream()
             .collect(Collectors.toMap( ConnectorDescriptor::getId, it -> it ));
 
@@ -36,8 +36,8 @@ public class GBPlugin implements IPlugin {
 
     @Override
     public IConnector createConnectorInstance(String connectorId, Map<String, String> parameters) {
-        if (connectorId.equals(GBConnector.DESCRIPTOR.getId())) {
-            return new GBConnector(parameters);
+        if (connectorId.equals(GbConnector.DESCRIPTOR.getId())) {
+            return new GbConnector(parameters);
         }
         return null;
     }
