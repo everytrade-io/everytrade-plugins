@@ -64,7 +64,7 @@ public class ImportedTransactionBean {
         Objects.requireNonNull(this.action = action);
         Objects.requireNonNull(this.baseQuantity = baseQuantity);
         Objects.requireNonNull(this.unitPrice = unitPrice);
-        this.feeQuote = feeQuote;
+        Objects.requireNonNull(this.feeQuote = feeQuote);
         Objects.requireNonNull(this.importDetail = importDetail);
     }
 
