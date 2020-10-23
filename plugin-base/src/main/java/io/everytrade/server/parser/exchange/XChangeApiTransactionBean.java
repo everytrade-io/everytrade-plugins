@@ -13,7 +13,6 @@ import org.knowm.xchange.dto.trade.UserTrade;
 import org.knowm.xchange.instrument.Instrument;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.Instant;
 
 public class XChangeApiTransactionBean /*extends ExchangeBean*/ {
@@ -79,7 +78,6 @@ public class XChangeApiTransactionBean /*extends ExchangeBean*/ {
             type,                           //action
             originalAmount,                  //base quantity
             price,                           //unit price
-            price.divide(originalAmount, 10, RoundingMode.HALF_UP), //transaction price
             feeAmount                        //fee quote
         );
     }

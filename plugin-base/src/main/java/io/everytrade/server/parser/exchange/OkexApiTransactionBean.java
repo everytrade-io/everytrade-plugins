@@ -82,7 +82,6 @@ public class OkexApiTransactionBean {
             side,                //action
             filledSize,          //base quantity
             priceAvg,           //unit price
-            filledSize.multiply(priceAvg).setScale(DECIMAL_SCALE,RoundingMode.HALF_UP),      //transaction price
             convertedFee   //fee quote
         );
     }

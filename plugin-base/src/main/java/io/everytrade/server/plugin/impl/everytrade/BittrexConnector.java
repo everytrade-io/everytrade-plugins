@@ -1,18 +1,13 @@
 package io.everytrade.server.plugin.impl.everytrade;
 
 import io.everytrade.server.model.SupportedExchange;
-import io.everytrade.server.parser.exchange.XChangeApiTransactionBean;
 import io.everytrade.server.plugin.api.IPlugin;
 import io.everytrade.server.plugin.api.connector.ConnectorDescriptor;
 import io.everytrade.server.plugin.api.connector.ConnectorParameterDescriptor;
 import io.everytrade.server.plugin.api.connector.ConnectorParameterType;
 import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.connector.IConnector;
-import io.everytrade.server.plugin.api.parser.ConversionStatistic;
-import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParseResult;
-import io.everytrade.server.plugin.api.parser.RowError;
-import io.everytrade.server.plugin.api.parser.RowErrorType;
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.ExchangeFactory;
 import org.knowm.xchange.ExchangeSpecification;
@@ -20,10 +15,7 @@ import org.knowm.xchange.bittrex.BittrexExchange;
 import org.knowm.xchange.dto.trade.UserTrade;
 import org.knowm.xchange.service.trade.TradeService;
 import org.knowm.xchange.service.trade.params.TradeHistoryParams;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -31,7 +23,6 @@ import java.util.Objects;
 import static io.everytrade.server.plugin.impl.everytrade.ConnectorUtils.findDuplicate;
 
 public class BittrexConnector implements IConnector {
-    private final Logger log = LoggerFactory.getLogger(this.getClass());
     private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "bittrexApiConnector";
 
     private static final ConnectorParameterDescriptor PARAMETER_API_SECRET =
@@ -84,7 +75,7 @@ public class BittrexConnector implements IConnector {
             ? lastTransactionId
             : userTrades.get(userTrades.size() - 1).getId();
 
-        final ParseResult parseResult = getParseResult(userTrades);
+        final ParseResult parseResult = XChangeConnectorParser.getParseResult(userTrades, SupportedExchange.BITTREX);
 
         return new DownloadResult(parseResult, actualLastTransactionId);
     }
@@ -115,26 +106,6 @@ public class BittrexConnector implements IConnector {
         }
 
         return userTradesToAdd;
-    }
-
-    private ParseResult getParseResult(List<UserTrade> userTrades) {
-        final List<ImportedTransactionBean> importedTransactionBeans = new ArrayList<>();
-        final List<RowError> errorRows = new ArrayList<>();
-        for (UserTrade userTrade : userTrades) {
-            try {
-                XChangeApiTransactionBean xChangeApiTransactionBean
-                    = new XChangeApiTransactionBean(userTrade, SupportedExchange.BITTREX);
-                importedTransactionBeans.add(xChangeApiTransactionBean.toImportedTransactionBean());
-            } catch (Exception e) {
-                log.error("Error converting to ImportedTransactionBean.", e);
-                errorRows.add(new RowError(userTrade.toString(), e.getMessage(), RowErrorType.FAILED));
-            }
-        }
-
-        return new ParseResult(
-            importedTransactionBeans,
-            new ConversionStatistic(errorRows, 0)
-        );
     }
 
     @Override
