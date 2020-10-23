@@ -102,7 +102,6 @@ public class Tester {
             .append("action").append(columnSeparator)
             .append("baseQuantity").append(columnSeparator)
             .append("unitPrice").append(columnSeparator)
-            .append("transactionPrice").append(columnSeparator)
             .append("feeQuote").append(lineSeparator);
 
         for (ImportedTransactionBean b : parseResult.getImportedTransactionBeans()) {
@@ -114,7 +113,6 @@ public class Tester {
                 .append(b.getAction()).append(columnSeparator)
                 .append(b.getBaseQuantity()).append(columnSeparator)
                 .append(b.getUnitPrice()).append(columnSeparator)
-                .append(b.getTransactionPrice()).append(columnSeparator)
                 .append(b.getFeeQuote()).append(lineSeparator);
         }
         log.info("importedTransactionBeans = \n" + stringBuilder.toString());

@@ -19,7 +19,6 @@ public class ImportedTransactionBean {
     private final TransactionType action;
     private final BigDecimal baseQuantity;
     private final BigDecimal unitPrice;
-    private final BigDecimal transactionPrice;
     private final BigDecimal feeQuote;
     private final Instant imported = Instant.now();
     private final ImportDetail importDetail;
@@ -32,7 +31,6 @@ public class ImportedTransactionBean {
         TransactionType action,
         BigDecimal baseQuantity,
         BigDecimal unitPrice,
-        BigDecimal transactionPrice,
         BigDecimal feeQuote
     ) {
         this(
@@ -43,7 +41,6 @@ public class ImportedTransactionBean {
             action,
             baseQuantity,
             unitPrice,
-            transactionPrice,
             feeQuote,
             ImportDetail.noError()
         );
@@ -57,7 +54,6 @@ public class ImportedTransactionBean {
         TransactionType action,
         BigDecimal baseQuantity,
         BigDecimal unitPrice,
-        BigDecimal transactionPrice,
         BigDecimal feeQuote,
         ImportDetail importDetail
     ) {
@@ -67,11 +63,7 @@ public class ImportedTransactionBean {
         Objects.requireNonNull(this.quote = quote);
         Objects.requireNonNull(this.action = action);
         Objects.requireNonNull(this.baseQuantity = baseQuantity);
-        this.unitPrice = unitPrice;
-        this.transactionPrice = transactionPrice;
-        if (this.unitPrice == null || this.transactionPrice == null) {
-            throw new IllegalArgumentException("Unit price and transaction price can't both be null.");
-        }
+        Objects.requireNonNull(this.unitPrice = unitPrice);
         this.feeQuote = feeQuote;
         Objects.requireNonNull(this.importDetail = importDetail);
     }
@@ -112,10 +104,6 @@ public class ImportedTransactionBean {
         return unitPrice;
     }
 
-    public BigDecimal getTransactionPrice() {
-        return transactionPrice;
-    }
-
     public BigDecimal getFeeQuote() {
         return feeQuote;
     }
@@ -134,7 +122,6 @@ public class ImportedTransactionBean {
             ", action=" + action +
             ", baseQuantity=" + baseQuantity +
             ", unitPrice=" + unitPrice +
-            ", transactionPrice=" + transactionPrice +
             ", feeQuote=" + feeQuote +
             '}';
     }
