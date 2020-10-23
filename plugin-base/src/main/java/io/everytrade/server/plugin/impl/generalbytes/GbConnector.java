@@ -116,6 +116,8 @@ public class GbConnector implements IConnector {
                     importedTransactions.add(transaction.toImportedTransactionBean());
                 }
             } catch (Exception e) {
+                log.error("Error converting to ImportedTransactionBean: {}", e.getMessage());
+                log.debug("Exception by converting to ImportedTransactionBean.", e);
                 errorRows.add(new RowError(transaction.toString(), e.getMessage(), RowErrorType.FAILED));
             }
         }

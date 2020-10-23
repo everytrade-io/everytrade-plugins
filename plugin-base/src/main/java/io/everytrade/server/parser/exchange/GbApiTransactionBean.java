@@ -98,7 +98,6 @@ public class GbApiTransactionBean {
             TransactionType.valueOf(action), //action
             quantity,                        //base quantity
             volume.divide(quantity, 10, RoundingMode.HALF_UP), //unit price
-            volume,                          //transaction price
             fee                              //fee quote
         );
     }

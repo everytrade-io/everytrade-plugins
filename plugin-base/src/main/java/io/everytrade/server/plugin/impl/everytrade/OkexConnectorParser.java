@@ -27,9 +27,8 @@ public class OkexConnectorParser {
                 OkexApiTransactionBean okexApiTransactionBean = new OkexApiTransactionBean(orderInfo);
                 importedTransactionBeans.add(okexApiTransactionBean.toImportedTransactionBean());
             } catch (Exception e) {
-                LOG.error("Error converting to ImportedTransactionBean.", e);
-                LOG.error("Error converting to ImportedTransactionBean:{}", e.getMessage());
-                LOG.debug("Exception by", e);
+                LOG.error("Error converting to ImportedTransactionBean: {}", e.getMessage());
+                LOG.debug("Exception by converting to ImportedTransactionBean.", e);
                 errorRows.add(new RowError(orderInfo.toString(), e.getMessage(), RowErrorType.FAILED));
             }
         }
