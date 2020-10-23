@@ -28,6 +28,8 @@ public class OkexConnectorParser {
                 importedTransactionBeans.add(okexApiTransactionBean.toImportedTransactionBean());
             } catch (Exception e) {
                 LOG.error("Error converting to ImportedTransactionBean.", e);
+                LOG.error("Error converting to ImportedTransactionBean:{}", e.getMessage());
+                LOG.debug("Exception by", e);
                 errorRows.add(new RowError(orderInfo.toString(), e.getMessage(), RowErrorType.FAILED));
             }
         }
