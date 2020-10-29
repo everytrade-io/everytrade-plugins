@@ -16,6 +16,9 @@ configurations {
     compileClasspath {
         extendsFrom pluginCompile
     }
+    testImplementation {
+        extendsFrom pluginCompile
+    }
 }
 
 dependencies {
@@ -41,9 +44,9 @@ dependencies {
     // version used by ResCU
     pluginCompile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.10.1'
 
-    implementation 'org.junit.jupiter:junit-jupiter:5.4.2'
-    testCompile "com.github.knowm.XChange:xchange-core:$xchangeVersion"
-    testCompile "com.github.knowm.XChange:xchange-huobi:$xchangeVersion"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
+
 }
 
 jar {
