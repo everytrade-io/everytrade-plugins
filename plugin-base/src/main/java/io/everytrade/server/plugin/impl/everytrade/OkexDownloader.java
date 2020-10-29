@@ -6,10 +6,8 @@ import org.knowm.xchange.currency.CurrencyPair;
 
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class OkexDownloader {
     //https://www.okex.com/docs/en/#spot-account_information - limit 20 requests per second
@@ -26,10 +24,7 @@ public class OkexDownloader {
     }
 
     public List<OrderInfo> download(String currencyPairs) {
-        final List<CurrencyPair> pairs = Arrays.stream(currencyPairs.split(","))
-            .map(String::strip)
-            .map(ConnectorUtils::createPair)
-            .collect(Collectors.toList());
+        final List<CurrencyPair> pairs = ConnectorUtils.toCurrencyPairs(currencyPairs);
         final List<OrderInfo> orders = new ArrayList<>();
         int sentRequests = 0;
         for (CurrencyPair pair : pairs) {
