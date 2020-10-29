@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public enum TransactionType {
-    BUY(2), SELL(3);
+    UNKNOWN(0), BUY(2), SELL(3);
 
     private final int code;
     private static final Map<Integer, TransactionType> BY_CODE;
