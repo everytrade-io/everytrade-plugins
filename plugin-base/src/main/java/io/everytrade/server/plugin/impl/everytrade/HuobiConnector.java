@@ -50,6 +50,7 @@ public class HuobiConnector implements IConnector {
     public static final ConnectorDescriptor DESCRIPTOR = new ConnectorDescriptor(
         ID,
         "Huobi Connector",
+        "Only order-limit is supported.",
         SupportedExchange.HUOBI.getInternalId(),
         List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET, PARAMETER_CURRENCY_PAIRS)
     );

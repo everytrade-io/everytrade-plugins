@@ -54,6 +54,7 @@ public class OkexConnector implements IConnector {
     public static final ConnectorDescriptor DESCRIPTOR = new ConnectorDescriptor(
         ID,
         "OKEX Connector",
+        "",
         SupportedExchange.OKEX.getInternalId(),
         List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET, PARAMETER_PASS_PHRASE, PARAMETER_CURRENCY_PAIRS)
     );

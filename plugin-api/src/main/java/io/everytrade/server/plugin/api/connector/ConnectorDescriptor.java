@@ -6,17 +6,20 @@ import java.util.Objects;
 public class ConnectorDescriptor {
     private final String id;
     private final String name;
+    private final String note;
     private final String exchangeId;
     private final List<ConnectorParameterDescriptor> parameters;
 
     public ConnectorDescriptor(
         String id,
         String name,
+        String note,
         String exchangeId,
         List<ConnectorParameterDescriptor> parameters
     ) {
         Objects.requireNonNull(this.id = id);
         Objects.requireNonNull(this.name = name);
+        Objects.requireNonNull(this.note = note);
         Objects.requireNonNull(this.exchangeId = exchangeId);
         this.parameters = List.copyOf(Objects.requireNonNull(parameters));
     }
@@ -27,6 +30,10 @@ public class ConnectorDescriptor {
 
     public String getName() {
         return name;
+    }
+
+    public String getNote() {
+        return note;
     }
 
     public String getExchangeId() {
@@ -42,6 +49,7 @@ public class ConnectorDescriptor {
         return "ConnectorDescriptor{" +
             "id='" + id + '\'' +
             ", name='" + name + '\'' +
+            ", note='" + note + '\'' +
             ", exchangeId='" + exchangeId + '\'' +
             ", parameters=" + parameters +
             '}';

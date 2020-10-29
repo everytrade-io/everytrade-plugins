@@ -69,6 +69,7 @@ public class GbConnector implements IConnector {
     public static final ConnectorDescriptor DESCRIPTOR = new ConnectorDescriptor(
         ID,
         "GENERAL BYTES CAS Connector",
+        "",
         SupportedExchange.GENERAL_BYTES.getInternalId(),
         List.of(PARAMETER_URL, PARAMETER_API_KEY, PARAMETER_API_SECRET)
     );

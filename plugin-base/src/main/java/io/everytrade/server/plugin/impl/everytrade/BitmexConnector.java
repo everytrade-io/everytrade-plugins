@@ -55,6 +55,7 @@ public class BitmexConnector implements IConnector {
     public static final ConnectorDescriptor DESCRIPTOR = new ConnectorDescriptor(
         ID,
         "BitMEX Connector",
+        "",
         SupportedExchange.BITMEX.getInternalId(),
         List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET)
     );
