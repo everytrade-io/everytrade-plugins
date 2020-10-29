@@ -1,14 +1,14 @@
 package io.everytrade.server.plugin.impl.everytrade;
 
+import java.time.Duration;
 import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
+import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class HuobiDownloadState {
-    public static final int DAYS_AGO = 179;
+    public static final Duration MAX_TRANSACTION_HISTORY_PERIOD = Duration.ofDays(179);
     private LocalDate windowStart;
     private String lastContinuousTxId;
     private String firstTxIdAfterGap;
@@ -24,7 +24,7 @@ public class HuobiDownloadState {
         String firstTxIdAfterGap,
         String lastTxIdAfterGap
     ) {
-        if (windowStart.compareTo(LocalDate.now()) > 0) {
+        if (windowStart.compareTo(LocalDate.now(ZoneOffset.UTC)) > 0) {
             throw new IllegalArgumentException("Window start can't be in future.");
         }
         this.windowStart = windowStart;
@@ -44,7 +44,7 @@ public class HuobiDownloadState {
 
     public void moveToNextWindow() {
         final boolean isTodayOrYesterday
-            = windowStart.compareTo(LocalDate.now().minusDays(1)) > -1;
+            = windowStart.compareTo(LocalDate.now(ZoneOffset.UTC).minusDays(1)) > -1;
         if (isTodayOrYesterday) {
             isEnd = true;
         } else {
@@ -106,7 +106,7 @@ public class HuobiDownloadState {
     public static HuobiDownloadState parseFrom(String lastTransactionId) {
         if (lastTransactionId == null) {
             return new HuobiDownloadState(
-                LocalDate.now().minus(DAYS_AGO, ChronoUnit.DAYS),
+                LocalDate.now(ZoneOffset.UTC).minusDays(MAX_TRANSACTION_HISTORY_PERIOD.toDays()),
                 null,
                 null,
                 null
@@ -122,7 +122,7 @@ public class HuobiDownloadState {
         final String startDate = getGroupValueOrNull(matcher, 1);
         return new HuobiDownloadState(
             startDate == null
-                ? LocalDate.now().minus(DAYS_AGO, ChronoUnit.DAYS)
+                ? LocalDate.now(ZoneOffset.UTC).minusDays(MAX_TRANSACTION_HISTORY_PERIOD.toDays())
                 : LocalDate.parse(startDate),
             getGroupValueOrNull(matcher, 2),
             getGroupValueOrNull(matcher, 3),
@@ -137,7 +137,7 @@ public class HuobiDownloadState {
 
     private Date convert(LocalDate dateToConvert) {
         return java.util.Date.from(dateToConvert.atStartOfDay()
-            .atZone(ZoneId.systemDefault())
+            .atZone(ZoneOffset.UTC)
             .toInstant());
     }
 }
