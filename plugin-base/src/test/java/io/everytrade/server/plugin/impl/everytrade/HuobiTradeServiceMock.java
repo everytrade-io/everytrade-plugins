@@ -42,7 +42,7 @@ public class HuobiTradeServiceMock implements TradeService {
         final LocalDate convertUserTrade = convert(userTrade);
         final LocalDate convertParamsFrom = convert(paramsFrom);
         final LocalDate convertParamsTo = convert(paramsTo);
-        return convertUserTrade.compareTo(convertParamsFrom) > -1 && convertUserTrade.compareTo(convertParamsTo) < 1;
+        return convertUserTrade.compareTo(convertParamsFrom) >= 0 && convertUserTrade.compareTo(convertParamsTo) <= 0;
     }
 
     private LocalDate convert(Date date) {

@@ -13,7 +13,7 @@ public class HuobiDownloadState {
     private String lastContinuousTxId;
     private String firstTxIdAfterGap;
     private String lastTxIdAfterGap;
-    private boolean isEnd;
+    private boolean end;
     private static final Pattern SPLIT_PATTERN = Pattern.compile(
         "^([^:]*):([^:]*):([^:]*):([^:]*)$"
     );
@@ -31,7 +31,7 @@ public class HuobiDownloadState {
         this.lastContinuousTxId = lastContinuousTxId;
         this.firstTxIdAfterGap = firstTxIdAfterGap;
         this.lastTxIdAfterGap = lastTxIdAfterGap;
-        this.isEnd = false;
+        this.end = false;
     }
 
     public Date getWindowStart() {
@@ -44,9 +44,9 @@ public class HuobiDownloadState {
 
     public void moveToNextWindow() {
         final boolean isTodayOrYesterday
-            = windowStart.compareTo(LocalDate.now(ZoneOffset.UTC).minusDays(1)) > -1;
+            = windowStart.compareTo(LocalDate.now(ZoneOffset.UTC).minusDays(1)) >= 0;
         if (isTodayOrYesterday) {
-            isEnd = true;
+            end = true;
         } else {
             windowStart = windowStart.plusDays(2);
             lastContinuousTxId = null;
@@ -76,7 +76,7 @@ public class HuobiDownloadState {
     }
 
     public boolean isEnd() {
-        return isEnd;
+        return end;
     }
 
     public void closeGap() {
