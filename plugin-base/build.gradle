@@ -23,23 +23,27 @@ dependencies {
 
     compileOnly project(':plugin-api')
     compileOnly 'org.slf4j:slf4j-api:1.7.30'
-   //TODO Change it to knowm/XChange once PR Huobi (charvam-->GENERALBYTESCOM-->XChange) will be done.
     pluginCompile 'com.univocity:univocity-parsers:2.8.3'
-    pluginCompile "com.github.charvam.XChange:xchange-kraken:268ec0acaa"
-    pluginCompile "com.github.charvam.XChange:xchange-binance:268ec0acaa"
-    pluginCompile "com.github.charvam.XChange:xchange-bittrexV3:268ec0acaa"
-    pluginCompile "com.github.charvam.XChange:xchange-bitstamp:268ec0acaa"
-    pluginCompile "com.github.charvam.XChange:xchange-coinmate:268ec0acaa"
-    pluginCompile "com.github.charvam.XChange:xchange-bitfinex:268ec0acaa"
-    pluginCompile "com.github.charvam.XChange:xchange-coinbasepro:268ec0acaa"
-    pluginCompile "com.github.charvam.XChange:xchange-bitmex:268ec0acaa"
-    pluginCompile "com.github.charvam.XChange:xchange-bitflyer:268ec0acaa"
-    pluginCompile "com.github.charvam.XChange:xchange-core:268ec0acaa"
-    pluginCompile "com.github.charvam.XChange:xchange-huobi:c6c1263cfd7f67c0905738eaf9b41c2174d06e56"
+    //TODO Change it to org.knowm.xchange new version once will be released.
+    pluginCompile "com.github.knowm.XChange:xchange-kraken:$xchangeVersion"
+    pluginCompile "com.github.knowm.XChange:xchange-binance:$xchangeVersion"
+    pluginCompile "com.github.knowm.XChange:xchange-bittrex:$xchangeVersion"
+    pluginCompile "com.github.knowm.XChange:xchange-bitstamp:$xchangeVersion"
+    pluginCompile "com.github.knowm.XChange:xchange-coinmate:$xchangeVersion"
+    pluginCompile "com.github.knowm.XChange:xchange-bitfinex:$xchangeVersion"
+    pluginCompile "com.github.knowm.XChange:xchange-coinbasepro:$xchangeVersion"
+    pluginCompile "com.github.knowm.XChange:xchange-bitmex:$xchangeVersion"
+    pluginCompile "com.github.knowm.XChange:xchange-bitflyer:$xchangeVersion"
+    pluginCompile "com.github.knowm.XChange:xchange-core:$xchangeVersion"
+    pluginCompile "com.github.knowm.XChange:xchange-huobi:$xchangeVersion"
     pluginCompile "com.github.charvam:V3-Open-API-SDK:b50b7f4ae522160a4d718523e719b48134d0c31c"
     //TODO Remove it once ResCU releases a newer version with updated dependency - due to security bugs in the older
     // version used by ResCU
     pluginCompile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.10.1'
+
+    implementation 'org.junit.jupiter:junit-jupiter:5.4.2'
+    testCompile "com.github.knowm.XChange:xchange-core:$xchangeVersion"
+    testCompile "com.github.knowm.XChange:xchange-huobi:$xchangeVersion"
 }
 
 jar {
@@ -55,4 +59,8 @@ jar {
         configurations.fatJar.collect { it.isDirectory() ? it : zipTree(it) }
     }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+test {
+    useJUnitPlatform()
 }
