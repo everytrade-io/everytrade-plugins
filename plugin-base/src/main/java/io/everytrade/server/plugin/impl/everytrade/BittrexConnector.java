@@ -44,6 +44,7 @@ public class BittrexConnector implements IConnector {
     public static final ConnectorDescriptor DESCRIPTOR = new ConnectorDescriptor(
         ID,
         "Bittrex Connector",
+        "",
         SupportedExchange.BITTREX.getInternalId(),
         List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET)
     );

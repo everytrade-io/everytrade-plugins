@@ -50,6 +50,7 @@ public class BinanceConnector implements IConnector {
     public static final ConnectorDescriptor DESCRIPTOR = new ConnectorDescriptor(
         ID,
         "Binance Connector",
+        "",
         SupportedExchange.BINANCE.getInternalId(),
         List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET, PARAMETER_CURRENCY_PAIRS)
     );

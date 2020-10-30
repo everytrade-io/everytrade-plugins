@@ -58,6 +58,7 @@ public class CoinbaseProConnector implements IConnector {
     public static final ConnectorDescriptor DESCRIPTOR = new ConnectorDescriptor(
         ID,
         "Coinbase Pro Connector",
+        "",
         SUPPORTED_EXCHANGE.getInternalId(),
         List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET, PARAMETER_CURRENCY_PAIRS, PARAMETER_PASS_PHRASE)
     );

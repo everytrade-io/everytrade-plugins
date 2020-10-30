@@ -57,6 +57,7 @@ public class CoinmateConnector implements IConnector {
     public static final ConnectorDescriptor DESCRIPTOR = new ConnectorDescriptor(
         ID,
         "Coinmate Connector",
+        "",
         SupportedExchange.COINMATE.getInternalId(),
         List.of(PARAMETER_API_USERNAME, PARAMETER_API_KEY, PARAMETER_API_SECRET)
     );

@@ -58,6 +58,7 @@ public class BitfinexConnector implements IConnector {
     public static final ConnectorDescriptor DESCRIPTOR = new ConnectorDescriptor(
         ID,
         "Bitfinex Connector",
+        "",
         SupportedExchange.BITFINEX.getInternalId(),
         List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET)
     );

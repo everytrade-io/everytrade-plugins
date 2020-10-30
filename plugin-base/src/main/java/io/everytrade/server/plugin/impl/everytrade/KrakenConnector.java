@@ -49,6 +49,7 @@ public class KrakenConnector implements IConnector {
     public static final ConnectorDescriptor DESCRIPTOR = new ConnectorDescriptor(
         ID,
         "Kraken Connector",
+        "",
         SupportedExchange.KRAKEN.getInternalId(),
         List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET)
     );

@@ -37,10 +37,7 @@ public class CoinbaseProDownloader {
     }
 
     public List<UserTrade> download(String currencyPairs) {
-        final List<CurrencyPair> pairs = Arrays.stream(currencyPairs.split(","))
-            .map(String::strip)
-            .map(ConnectorUtils::createPair)
-            .collect(Collectors.toList());
+        final List<CurrencyPair> pairs = ConnectorUtils.toCurrencyPairs(currencyPairs);
         final List<UserTrade> userTrades = new ArrayList<>();
         int sentRequests = 0;
 

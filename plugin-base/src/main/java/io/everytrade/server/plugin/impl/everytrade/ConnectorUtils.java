@@ -4,11 +4,20 @@ import org.knowm.xchange.currency.Currency;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.trade.UserTrade;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ConnectorUtils {
 
     private ConnectorUtils() {
+    }
+
+    public static List<CurrencyPair> toCurrencyPairs(String currencyPairs) {
+        return Arrays.stream(currencyPairs.split(","))
+            .map(String::strip)
+            .map(ConnectorUtils::createPair)
+            .collect(Collectors.toList());
     }
 
     public static CurrencyPair createPair(String pair) {

@@ -24,7 +24,8 @@ public class EveryTradePlugin implements IPlugin {
         BittrexConnector.DESCRIPTOR,
         CoinbaseProConnector.DESCRIPTOR,
         BitmexConnector.DESCRIPTOR,
-        OkexConnector.DESCRIPTOR
+        OkexConnector.DESCRIPTOR,
+        HuobiConnector.DESCRIPTOR
     ).stream().collect(Collectors.toMap(ConnectorDescriptor::getId, it -> it));
 
     @Override
@@ -73,6 +74,9 @@ public class EveryTradePlugin implements IPlugin {
         }
         if (connectorId.equals(OkexConnector.DESCRIPTOR.getId())) {
             return new OkexConnector(parameters);
+        }
+        if (connectorId.equals(HuobiConnector.DESCRIPTOR.getId())) {
+            return new HuobiConnector(parameters);
         }
         return null;
     }
