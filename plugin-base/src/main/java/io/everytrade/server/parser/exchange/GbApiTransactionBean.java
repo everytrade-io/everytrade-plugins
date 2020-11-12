@@ -14,7 +14,20 @@ import java.time.Instant;
 import java.util.Date;
 
 @JsonFormat(shape = JsonFormat.Shape.ARRAY)
-@JsonPropertyOrder({"uid", "timestamp", "base", "quote", "action", "quantity", "volume", "fee", "status"})
+@JsonPropertyOrder(
+    {
+        "uid",
+        "timestamp",
+        "base",
+        "quote",
+        "action",
+        "quantity",
+        "volume",
+        "expense",
+        "expenseCurrency",
+        "status"
+    }
+)
 //@Headers(
 //    sequence = {"UID", "TIMESTAMP", "BASE", "QUOTE", "ACTION", "QUANTITY", "VOLUME", "FEE", "STATUS"},
 //    extract = true
@@ -27,7 +40,8 @@ public class GbApiTransactionBean {
     private String action;
     private BigDecimal quantity;
     private BigDecimal volume;
-    private BigDecimal fee;
+    private BigDecimal expense;
+    private String expenseCurrency;
     private String status;
 
 //    public GbApiTransactionBean() {
@@ -71,13 +85,17 @@ public class GbApiTransactionBean {
     }
 
 //    @Parsed(field = "FEE", defaultNullRead = "0")
-    public void setFee(BigDecimal fee) {
-        this.fee = fee;
+    public void setExpense(BigDecimal expense) {
+        this.expense = expense;
     }
 
 //    @Parsed(field = "STATUS")
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public void setExpenseCurrency(String expenseCurrency) {
+        this.expenseCurrency = expenseCurrency;
     }
 
     public ImportedTransactionBean toImportedTransactionBean() {
@@ -98,7 +116,7 @@ public class GbApiTransactionBean {
             TransactionType.valueOf(action), //action
             quantity,                        //base quantity
             volume.divide(quantity, 10, RoundingMode.HALF_UP), //unit price
-            fee                              //fee quote
+            BigDecimal.ZERO                  //fee quote
         );
     }
 
@@ -122,7 +140,8 @@ public class GbApiTransactionBean {
             ", action='" + action + '\'' +
             ", quantity=" + quantity +
             ", volume=" + volume +
-            ", fee=" + fee +
+            ", expense=" + expense +
+            ", expenseCurrency=" + expenseCurrency +
             ", status=" + status +
             '}';
     }
