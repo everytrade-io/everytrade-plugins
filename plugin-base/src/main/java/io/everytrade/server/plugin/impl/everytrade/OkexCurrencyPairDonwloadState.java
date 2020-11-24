@@ -18,7 +18,7 @@ public class OkexCurrencyPairDonwloadState {
     private static final Pattern SPLIT_PATTERN = Pattern.compile(REGEX);
 
     public OkexCurrencyPairDonwloadState(String lastTransactionId) {
-        if (lastTransactionId == null) {
+        if (lastTransactionId == null || lastTransactionId.equals("")) {
             currencyPairDownloadStates = new HashMap<>();
         } else {
             currencyPairDownloadStates = Arrays.stream(lastTransactionId.split("\\|"))
