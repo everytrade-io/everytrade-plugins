@@ -16,4 +16,5 @@ tasks.withType(JavaCompile) {
 
 dependencies {
     api "org.pf4j:pf4j:$pf4jVersion"
+    api 'com.univocity:univocity-parsers:2.8.4'
 }

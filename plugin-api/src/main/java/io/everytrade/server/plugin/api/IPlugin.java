@@ -2,6 +2,9 @@ package io.everytrade.server.plugin.api;
 
 import io.everytrade.server.plugin.api.connector.ConnectorDescriptor;
 import io.everytrade.server.plugin.api.connector.IConnector;
+import io.everytrade.server.plugin.api.parser.ExchangeBean;
+import io.everytrade.server.plugin.api.parser.postparse.IPostProcessor;
+import io.everytrade.server.plugin.api.parser.preparse.IExchangeParser;
 import org.pf4j.ExtensionPoint;
 
 import java.util.List;
@@ -36,4 +39,10 @@ public interface IPlugin extends ExtensionPoint {
      * @return a new connector instance
      */
     IConnector createConnectorInstance(String connectorId, Map<String, String> parameters);
+
+    Map<String, Class<? extends ExchangeBean>> allBeanSignatures();
+
+    Map<Class<? extends ExchangeBean>, Class<? extends IPostProcessor>> allPostProcessors();
+
+    Map<Class<? extends ExchangeBean>, Class<? extends IExchangeParser>> allParsers();
 }
