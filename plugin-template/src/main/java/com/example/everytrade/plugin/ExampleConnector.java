@@ -14,6 +14,7 @@ public class ExampleConnector implements IConnector {
     public static final ConnectorDescriptor DESCRIPTOR = new ConnectorDescriptor(
         ID,
         "Connector Example",
+        "",
         SupportedExchange.EVERYTRADE.getInternalId(),
         List.of()
     );

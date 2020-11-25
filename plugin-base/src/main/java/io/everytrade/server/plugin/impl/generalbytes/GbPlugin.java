@@ -3,6 +3,9 @@ package io.everytrade.server.plugin.impl.generalbytes;
 import io.everytrade.server.plugin.api.IPlugin;
 import io.everytrade.server.plugin.api.connector.ConnectorDescriptor;
 import io.everytrade.server.plugin.api.connector.IConnector;
+import io.everytrade.server.plugin.api.parser.ExchangeBean;
+import io.everytrade.server.plugin.api.parser.postparse.IPostProcessor;
+import io.everytrade.server.plugin.api.parser.preparse.IExchangeParser;
 import org.pf4j.Extension;
 
 import java.util.List;
@@ -40,5 +43,20 @@ public class GbPlugin implements IPlugin {
             return new GbConnector(parameters);
         }
         return null;
+    }
+
+    @Override
+    public Map<String, Class<? extends ExchangeBean>> allBeanSignatures() {
+        return Map.of();
+    }
+
+    @Override
+    public Map<Class<? extends ExchangeBean>, Class<? extends IPostProcessor>> allPostProcessors() {
+        return Map.of();
+    }
+
+    @Override
+    public Map<Class<? extends ExchangeBean>, Class<? extends IExchangeParser>> allParsers() {
+        return Map.of();
     }
 }
