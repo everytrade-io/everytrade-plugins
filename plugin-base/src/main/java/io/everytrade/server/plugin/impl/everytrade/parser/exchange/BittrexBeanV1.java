@@ -7,10 +7,9 @@ import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.SupportedExchange;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.ExchangeBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.exception.DataIgnoredException;
-import io.everytrade.server.plugin.api.parser.postparse.ConversionParams;
+import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
+import io.everytrade.server.plugin.impl.everytrade.parser.postprocessor.ConversionParams;
 
 import java.math.BigDecimal;
 import java.time.Instant;
