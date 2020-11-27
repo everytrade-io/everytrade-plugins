@@ -18,6 +18,7 @@ configurations {
     }
     testImplementation {
         extendsFrom pluginCompile
+        extendsFrom compileOnly
     }
 }
 

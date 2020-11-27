@@ -39,18 +39,18 @@ import java.util.Map;
 public class EverytradeCsvParser implements ICsvParser {
     private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "everytradeParser";
 
-    private static final Map<String, Class<? extends ExchangeBean>> exchangeSignatures = new HashMap<>();
+    private static final Map<String, Class<? extends ExchangeBean>> exchangeBeans = new HashMap<>();
 
     static {
-        exchangeSignatures.put(
-            "BTX-001:|OrderUuid|Exchange|Type|Quantity|CommissionPaid|Price|Closed|",
+        exchangeBeans.put(
+            "OrderUuid|Exchange|Type|Quantity|Limit|CommissionPaid|Price|Opened|Closed",
             BittrexBeanV1.class
         );
     }
 
     public static final ParserDescriptor DESCRIPTOR = new ParserDescriptor(
         ID,
-        new ArrayList<>(exchangeSignatures.keySet())
+        new ArrayList<>(exchangeBeans.keySet())
     );
 
     private static final String[] EXPLICIT_DELIMITERS = new String[]{";", ","};
@@ -63,10 +63,13 @@ public class EverytradeCsvParser implements ICsvParser {
     }
 
     @Override
-    public ParseResult parse(File file, String signature) {
-        final Class<? extends ExchangeBean> exchangeBean = exchangeSignatures.get(signature);
+    public ParseResult parse(File file, String header) {
+        final Class<? extends ExchangeBean> exchangeBean = exchangeBeans.get(header);
+        if (exchangeBean == null) {
+            throw new UnknownHeaderException(String.format("Unknown header: '%s'", header));
+        }
         List<RowError> rowErrors = new ArrayList<>();
-        final CsvFormat csvFormat = analyze(file, signature);
+        final CsvFormat csvFormat = analyze(file, header);
         final IExchangeParser exchangeParser = new ExchangeParserFinder().find(exchangeBean);
 
         List<? extends ExchangeBean> listBeans = exchangeParser.parse(file, csvFormat, rowErrors);
@@ -113,7 +116,7 @@ public class EverytradeCsvParser implements ICsvParser {
         throw new UnknownHeaderException();
     }
 
-    private CsvFormat analyzeFile(File file, CsvFormat format, String signature) {
+    private CsvFormat analyzeFile(File file, CsvFormat format, String header) {
         try (Reader reader = new FileReader(file, StandardCharsets.UTF_8)) {
             CsvParserSettings parserSettings = new CsvParserSettings();
             if (format != null) {
@@ -126,8 +129,7 @@ public class EverytradeCsvParser implements ICsvParser {
             parser.beginParsing(reader);
             Record record = parser.parseNextRecord();
             List<String> csvHeader = Arrays.asList(record.getValues());
-            final SignatureValidator signatureValidator = new SignatureValidator();
-            if (signatureValidator.validate(csvHeader, signature)) {
+            if (validateHeader(csvHeader, header)) {
                 if (format != null) {
                     return format;
                 } else {
@@ -139,5 +141,10 @@ public class EverytradeCsvParser implements ICsvParser {
         } catch (IOException e) {
             throw new ParsingProcessException(e);
         }
+    }
+
+    private boolean validateHeader(List<String> csvHeader, String originHeader) {
+        final String joinHeader = String.join("|", csvHeader);
+        return originHeader.equals(joinHeader);
     }
 }
