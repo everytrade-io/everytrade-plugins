@@ -49,9 +49,9 @@ public class ParserTestUtils {
         assertEquals(0, transA.getFeeQuote().compareTo(transB.getFeeQuote()));
     }
 
-    public static ImportedTransactionBean getTransactionBean(String rows, String headerOrigin) {
+    public static ImportedTransactionBean getTransactionBean(String rows) {
         try {
-            ParseResult result = CSV_PARSER.parse(ParserTestUtils.createTestFile(rows), headerOrigin);
+            ParseResult result = CSV_PARSER.parse(ParserTestUtils.createTestFile(rows));
             if (!result.getConversionStatistic().isErrorRowsEmpty()) {
                 StringBuilder stringBuilder = new StringBuilder();
                 result.getConversionStatistic().getErrorRows().forEach(p->stringBuilder.append(p).append("\n"));
@@ -64,18 +64,18 @@ public class ParserTestUtils {
             }
             return list.get(0);
         } catch (ParsingProcessException e) {
-            LOG.error("getRawTransaction(): {}" ,e);
+            LOG.error("getRawTransaction(): ", e);
             return null;
         }
     }
 
-    public static void testParsing(String rows, String headerOrigin)  {
-        CSV_PARSER.parse(ParserTestUtils.createTestFile(rows), headerOrigin);
+    public static void testParsing(String rows)  {
+        CSV_PARSER.parse(ParserTestUtils.createTestFile(rows));
     }
 
-    public static RowError getRowError(String rows, String headerOrigin) {
+    public static RowError getRowError(String rows) {
         try {
-            ParseResult result = CSV_PARSER.parse(ParserTestUtils.createTestFile(rows), headerOrigin);
+            ParseResult result = CSV_PARSER.parse(ParserTestUtils.createTestFile(rows));
             List<RowError> list = result.getConversionStatistic().getErrorRows();
             if (list.size() < 1) {
                 return null;
@@ -87,9 +87,9 @@ public class ParserTestUtils {
         }
     }
 
-    public static ConversionStatistic getConversionStatistic(String rows, String headerOrigin) {
+    public static ConversionStatistic getConversionStatistic(String rows) {
         try {
-            ParseResult result = CSV_PARSER.parse(ParserTestUtils.createTestFile(rows), headerOrigin);
+            ParseResult result = CSV_PARSER.parse(ParserTestUtils.createTestFile(rows));
             return result.getConversionStatistic();
         } catch (ParsingProcessException e) {
             fail(e.getMessage());

@@ -19,7 +19,7 @@ public class ExchangeParserFinder {
     public IExchangeParser find(Class<? extends ExchangeBean> exchangeBean) {
         final Class<? extends IExchangeParser> exchange = parsers.get(exchangeBean);
         if (exchange == null) {
-            return new DefaultExchangeParser(exchangeBean);
+            return new BasicExchangeParser(exchangeBean);
         }
         try {
             Constructor<? extends IExchangeParser> cons = exchange.getConstructor();

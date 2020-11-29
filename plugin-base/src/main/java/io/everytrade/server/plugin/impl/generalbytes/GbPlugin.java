@@ -46,7 +46,7 @@ public class GbPlugin implements IPlugin {
 
     @Override
     public List<ParserDescriptor> allParserDescriptors() {
-        return null;
+        return List.of();
     }
 
     @Override
