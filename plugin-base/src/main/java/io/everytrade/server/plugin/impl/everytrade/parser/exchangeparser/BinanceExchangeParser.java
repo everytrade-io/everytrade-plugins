@@ -5,7 +5,6 @@ import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import io.everytrade.server.plugin.api.parser.RowError;
 import io.everytrade.server.plugin.api.parser.RowErrorType;
-import io.everytrade.server.plugin.impl.everytrade.parser.MarkableFileInputStream;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
@@ -18,7 +17,6 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchangeparser.binance
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -43,71 +41,74 @@ public class BinanceExchangeParser implements IExchangeParser {
 
     @Override
     public List<? extends ExchangeBean> parse(
-        MarkableFileInputStream fileInputStream,
+        File inputFile,
         List<RowError> rowErrors
     ) {
         final List<BinanceBeanV2> binanceBeans = new ArrayList<>();
-        final Reader reader = new InputStreamReader(fileInputStream);
-        final CsvParserSettings csvParserSettings = new CsvParserSettings();
-        final String delimiter = ParserUtils.getDelimiter(BinanceBeanV2.class);
-        csvParserSettings.getFormat().setDelimiter(delimiter);
-        csvParserSettings.setHeaderExtractionEnabled(false);
-        CsvParser parser = new CsvParser(csvParserSettings);
-        List<Record> allRecords = parser.parseAllRecords(reader);
-        Map<Level2Header, Integer> level2HeaderIndexes = null;
-        Map<Level1Header, Integer> level1HeaderIndexes = null;
-        String columnValuePair = null;
-        String columnValueType = null;
-        String columnValueStatus = null;
-        RowType rowType = RowType.HEADER;
+        try (Reader reader = new FileReader(inputFile, StandardCharsets.UTF_8)) {
+            final CsvParserSettings csvParserSettings = new CsvParserSettings();
+            final String delimiter = ParserUtils.getDelimiter(BinanceBeanV2.class);
+            csvParserSettings.getFormat().setDelimiter(delimiter);
+            csvParserSettings.setHeaderExtractionEnabled(false);
+            CsvParser parser = new CsvParser(csvParserSettings);
+            List<Record> allRecords = parser.parseAllRecords(reader);
+            Map<Level2Header, Integer> level2HeaderIndexes = null;
+            Map<Level1Header, Integer> level1HeaderIndexes = null;
+            String columnValuePair = null;
+            String columnValueType = null;
+            String columnValueStatus = null;
+            RowType rowType = RowType.HEADER;
 
-        for (int i = 0; i < allRecords.size(); i++) {
-            final Record record = allRecords.get(i);
-            final String[] columnValues = record.getValues();
-            if (i == 0) {
-                level1HeaderIndexes = createIndexesLevel1(columnValues);
-                continue;
+            for (int i = 0; i < allRecords.size(); i++) {
+                final Record record = allRecords.get(i);
+                final String[] columnValues = record.getValues();
+                if (i == 0) {
+                    level1HeaderIndexes = createIndexesLevel1(columnValues);
+                    continue;
+                }
+
+                final String columnValueDate = columnValues[level1HeaderIndexes.get(Level1Header.DATE)];
+                rowType = evalRowType(rowType, columnValueDate);
+
+                switch (rowType) {
+                    case GROUP:
+                        columnValuePair = columnValues[level1HeaderIndexes.get(Level1Header.PAIR)];
+                        columnValueType = columnValues[level1HeaderIndexes.get(Level1Header.TYPE)];
+                        columnValueStatus = columnValues[level1HeaderIndexes.get(Level1Header.STATUS)];
+                        break;
+
+                    case GROUP_HEADER:
+                        checkLevel2Header(columnValues);
+                        level2HeaderIndexes = createIndexesLevel2(columnValues);
+                        break;
+
+                    case GROUP_ROW:
+                        if (level2HeaderIndexes == null) {
+                            throw new ParsingProcessException("Unknown file structure. Unexpected row type " + rowType);
+                        }
+                        final String columnValueDateL2 = columnValues[level2HeaderIndexes.get(Level2Header.DATE)];
+                        final String columnValueFilled = columnValues[level2HeaderIndexes.get(Level2Header.FILLED)];
+                        final String columnValueTotal = columnValues[level2HeaderIndexes.get(Level2Header.TOTAL)];
+                        final String columnValueFee = columnValues[level2HeaderIndexes.get(Level2Header.FEE)];
+                        createExchangeBean(
+                            rowErrors,
+                            binanceBeans,
+                            columnValueDateL2,
+                            columnValuePair,
+                            columnValueType,
+                            columnValueFilled,
+                            columnValueTotal,
+                            columnValueFee,
+                            columnValueStatus
+                        );
+                        break;
+
+                    default:
+                        throw new ParsingProcessException("Unknown file structure - unexpected row type " + rowType);
+                }
             }
-
-            final String columnValueDate = columnValues[level1HeaderIndexes.get(Level1Header.DATE)];
-            rowType = evalRowType(rowType, columnValueDate);
-
-            switch (rowType) {
-                case GROUP:
-                    columnValuePair = columnValues[level1HeaderIndexes.get(Level1Header.PAIR)];
-                    columnValueType = columnValues[level1HeaderIndexes.get(Level1Header.TYPE)];
-                    columnValueStatus = columnValues[level1HeaderIndexes.get(Level1Header.STATUS)];
-                    break;
-
-                case GROUP_HEADER:
-                    checkLevel2Header(columnValues);
-                    level2HeaderIndexes = createIndexesLevel2(columnValues);
-                    break;
-
-                case GROUP_ROW:
-                    if (level2HeaderIndexes == null) {
-                        throw new ParsingProcessException("Unknown file structure. Unexpected row type " + rowType);
-                    }
-                    final String columnValueDateL2 = columnValues[level2HeaderIndexes.get(Level2Header.DATE)];
-                    final String columnValueFilled = columnValues[level2HeaderIndexes.get(Level2Header.FILLED)];
-                    final String columnValueTotal = columnValues[level2HeaderIndexes.get(Level2Header.TOTAL)];
-                    final String columnValueFee = columnValues[level2HeaderIndexes.get(Level2Header.FEE)];
-                    createExchangeBean(
-                        rowErrors,
-                        binanceBeans,
-                        columnValueDateL2,
-                        columnValuePair,
-                        columnValueType,
-                        columnValueFilled,
-                        columnValueTotal,
-                        columnValueFee,
-                        columnValueStatus
-                    );
-                    break;
-
-                default:
-                    throw new ParsingProcessException("Unknown file structure - unexpected row type " + rowType);
-            }
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
         }
         return binanceBeans;
     }
