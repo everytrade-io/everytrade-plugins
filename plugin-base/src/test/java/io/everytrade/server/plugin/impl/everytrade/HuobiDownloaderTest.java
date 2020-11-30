@@ -16,7 +16,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class HuobiDownloaderTest {
 
-    private static UserTrade userTrade0, userTrade1, userTrade2, userTrade3, userTradeOldest;
+    private static UserTrade userTrade0;
+    private static UserTrade userTrade1;
+    private static UserTrade userTrade2;
+    private static UserTrade userTrade3;
+    private static UserTrade userTradeOldest;
 
     @BeforeAll
     static void prepareUserTrades() {

@@ -1,6 +1,7 @@
 package io.everytrade.server.plugin.impl.everytrade.parser;
 
 import com.univocity.parsers.common.DataValidationException;
+import io.everytrade.server.model.SupportedExchange;
 import io.everytrade.server.plugin.api.IPlugin;
 import io.everytrade.server.plugin.api.parser.ConversionStatistic;
 import io.everytrade.server.plugin.api.parser.ICsvParser;
@@ -104,6 +105,16 @@ public class EverytradeCsvParser implements ICsvParser {
         }
 
         return new ParseResult(importedTransactionBeans, new ConversionStatistic(rowErrors, ignoredFeeCount));
+    }
+
+    @Override
+    public SupportedExchange detectExchange(File file) {
+        final String header = readFirstRow(file);
+        final Class<? extends ExchangeBean> exchangeBean = exchangeBeans.get(header);
+        if (exchangeBean == null) {
+            throw new UnknownHeaderException();
+        }
+        return ParserUtils.getExchange(exchangeBean);
     }
 
     private String readFirstRow(File file) {
