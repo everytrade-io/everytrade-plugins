@@ -1,5 +1,6 @@
 package io.everytrade.server.plugin;
 
+import io.everytrade.server.model.SupportedExchange;
 import io.everytrade.server.plugin.api.IPlugin;
 import io.everytrade.server.plugin.api.connector.ConnectorDescriptor;
 import io.everytrade.server.plugin.api.connector.ConnectorParameterDescriptor;
@@ -110,6 +111,9 @@ public class Tester {
                 log.info("More than one parsers found: '{}'.", parsers.size());
             } else {
                 try {
+                    final ICsvParser csvParser = parsers.get(0);
+                    final SupportedExchange supportedExchange = csvParser.detectExchange(fileEntry);
+                    log.info("Detected exchange: {}", supportedExchange.getDisplayName());
                     final ParseResult parseResult = parsers.get(0).parse(fileEntry);
                     printResult(parseResult);
                 } catch (Exception e) {
