@@ -51,7 +51,7 @@ public class ParserTestUtils {
 
     public static ImportedTransactionBean getTransactionBean(String rows) {
         try {
-            ParseResult result = CSV_PARSER.parse(ParserTestUtils.createTestFile(rows));
+            final ParseResult result = CSV_PARSER.parse(ParserTestUtils.createTestFile(rows), getHeader(rows));
             if (!result.getConversionStatistic().isErrorRowsEmpty()) {
                 StringBuilder stringBuilder = new StringBuilder();
                 result.getConversionStatistic().getErrorRows().forEach(p->stringBuilder.append(p).append("\n"));
@@ -70,12 +70,12 @@ public class ParserTestUtils {
     }
 
     public static void testParsing(String rows)  {
-        CSV_PARSER.parse(ParserTestUtils.createTestFile(rows));
+        CSV_PARSER.parse(ParserTestUtils.createTestFile(rows), getHeader(rows));
     }
 
     public static RowError getRowError(String rows) {
         try {
-            ParseResult result = CSV_PARSER.parse(ParserTestUtils.createTestFile(rows));
+           final  ParseResult result = CSV_PARSER.parse(ParserTestUtils.createTestFile(rows), getHeader(rows));
             List<RowError> list = result.getConversionStatistic().getErrorRows();
             if (list.size() < 1) {
                 return null;
@@ -89,11 +89,19 @@ public class ParserTestUtils {
 
     public static ConversionStatistic getConversionStatistic(String rows) {
         try {
-            ParseResult result = CSV_PARSER.parse(ParserTestUtils.createTestFile(rows));
+            final ParseResult result = CSV_PARSER.parse(ParserTestUtils.createTestFile(rows), getHeader(rows));
             return result.getConversionStatistic();
         } catch (ParsingProcessException e) {
             fail(e.getMessage());
             return null;
         }
+    }
+
+    private static String getHeader(String rows) {
+        final int lineSeparator = rows.indexOf("\n");
+        if (lineSeparator < 0) {
+            return null;
+        }
+        return rows.substring(0, lineSeparator);
     }
 }

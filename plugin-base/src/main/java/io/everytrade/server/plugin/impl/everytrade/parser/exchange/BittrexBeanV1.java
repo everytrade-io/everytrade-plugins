@@ -28,10 +28,6 @@ public class BittrexBeanV1 extends ExchangeBean {
     private BigDecimal price;
     private Instant closed;
 
-    public BittrexBeanV1() {
-        super(SupportedExchange.BITTREX);
-    }
-
     @Parsed(field = "OrderUuid")
     public void setOrderUuid(String orderUuid) {
         this.orderUuid = orderUuid;

@@ -44,10 +44,6 @@ public class BinanceBeanV2 extends ExchangeBean {
         );
     }
 
-    public BinanceBeanV2() {
-        super(SupportedExchange.BINANCE);
-    }
-
     public BinanceBeanV2(
         String date,
         String pair,
@@ -57,7 +53,6 @@ public class BinanceBeanV2 extends ExchangeBean {
         String fee,
         String status
     ) {
-        super(SupportedExchange.BINANCE);
         if (!(STATUS_FILLED.equals(status) || STATUS_PARTIAL_FILL.equals(status))) {
             throw new DataIgnoredException(UNSUPPORTED_STATUS_TYPE.concat(status));
         }
@@ -78,11 +73,6 @@ public class BinanceBeanV2 extends ExchangeBean {
         } else {
             this.fee = BigDecimal.ZERO;
         }
-    }
-
-    @Override
-    public String getDelimiter() {
-        return DELIMITER;
     }
 
     @Override

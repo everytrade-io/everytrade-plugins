@@ -6,5 +6,5 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import java.io.File;
 import java.util.List;
 public interface IExchangeParser {
-    List<? extends ExchangeBean> parse(File inputFile, List<RowError> rowErrors);
+    List<? extends ExchangeBean> parse(File inputFile, String delimiter, List<RowError> rowErrors);
 }

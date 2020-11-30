@@ -3,7 +3,6 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.CurrencyPair;
-import io.everytrade.server.model.SupportedExchange;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.impl.everytrade.parser.IImportedTransactionBeanable;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
@@ -20,18 +19,8 @@ public abstract class ExchangeBean implements IImportedTransactionBeanable {
     public static final String UNSUPPORTED_TRANSACTION_TYPE = "Unsupported transaction type ";
     public static final String UNSUPPORTED_STATUS_TYPE = "Unsupported status type ";
     public static final String IGNORED_CHARS_IN_NUMBER = "[,\\s\\$]";
-    private static final String DEFAULT_DELIMITER = ",";
-    private final SupportedExchange exchange;
     private List<String> rowValues;
     private long rowNumber;
-
-    protected ExchangeBean(SupportedExchange exchange) {
-        this.exchange = exchange;
-    }
-
-    public SupportedExchange getExchange() {
-        return exchange;
-    }
 
     public void setRowValues(String[] row) {
         rowValues = Arrays.asList(row);
@@ -39,10 +28,6 @@ public abstract class ExchangeBean implements IImportedTransactionBeanable {
 
     public void setRowNumber(long rowNumber) {
         this.rowNumber = rowNumber;
-    }
-
-    public  String getDelimiter() {
-        return DEFAULT_DELIMITER;
     }
 
     public String rowToString() {

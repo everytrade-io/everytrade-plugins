@@ -29,10 +29,6 @@ public class BitfinexBeanV1 extends ExchangeBean {
     private Currency feeCurrency;
     private String date;
 
-    public BitfinexBeanV1() {
-        super(SupportedExchange.BITFINEX);
-    }
-
     @Parsed(field = "#")
     public void setUid(String value) {
         uid = value;

@@ -5,7 +5,6 @@ import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import io.everytrade.server.plugin.api.parser.RowError;
 import io.everytrade.server.plugin.api.parser.RowErrorType;
-import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.UnknownHeaderException;
@@ -42,12 +41,12 @@ public class BinanceExchangeParser implements IExchangeParser {
     @Override
     public List<? extends ExchangeBean> parse(
         File inputFile,
+        String delimiter,
         List<RowError> rowErrors
     ) {
         final List<BinanceBeanV2> binanceBeans = new ArrayList<>();
         try (Reader reader = new FileReader(inputFile, StandardCharsets.UTF_8)) {
             final CsvParserSettings csvParserSettings = new CsvParserSettings();
-            final String delimiter = ParserUtils.getDelimiter(BinanceBeanV2.class);
             csvParserSettings.getFormat().setDelimiter(delimiter);
             csvParserSettings.setHeaderExtractionEnabled(false);
             CsvParser parser = new CsvParser(csvParserSettings);
