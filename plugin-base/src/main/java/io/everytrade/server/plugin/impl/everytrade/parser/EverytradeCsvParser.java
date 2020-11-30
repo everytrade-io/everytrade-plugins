@@ -11,7 +11,6 @@ import io.everytrade.server.plugin.api.parser.ParserDescriptor;
 import io.everytrade.server.plugin.api.parser.RowError;
 import io.everytrade.server.plugin.api.parser.RowErrorType;
 import io.everytrade.server.plugin.impl.everytrade.EveryTradePlugin;
-import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.UnknownHeaderException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BinanceBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BinanceBeanV2;
@@ -26,43 +25,65 @@ import io.everytrade.server.plugin.impl.everytrade.parser.postprocessor.PostProc
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class EverytradeCsvParser implements ICsvParser {
     private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "everytradeParser";
-
-    private static final Map<String, Class<? extends ExchangeBean>> exchangeBeans = new HashMap<>();
+    private static final Map<String, ExchangeDescriptor> exchangeDescriptors = new HashMap<>();
+    private static final String DELIMITER_COMMA = ",";
+    private static final String DELIMITER_SEMICOLON = ";";
 
     static {
-        exchangeBeans.put(
+        exchangeDescriptors.put(
             "OrderUuid,Exchange,Type,Quantity,Limit,CommissionPaid,Price,Opened,Closed",
-            BittrexBeanV1.class
+            new ExchangeDescriptor(
+                BittrexBeanV1.class,
+                SupportedExchange.BITTREX,
+                DELIMITER_COMMA
+            )
         );
-        exchangeBeans.put(
+        exchangeDescriptors.put(
             "Uuid,Exchange,TimeStamp,OrderType,Limit,Quantity,QuantityRemaining,Commission,Price,PricePerUnit,"
-              +  "IsConditional,Condition,ConditionTarget,ImmediateOrCancel,Closed",
-            BittrexBeanV2.class
+                + "IsConditional,Condition,ConditionTarget,ImmediateOrCancel,Closed",
+            new ExchangeDescriptor(
+                BittrexBeanV2.class,
+                SupportedExchange.BITTREX,
+                DELIMITER_COMMA
+            )
         );
-        exchangeBeans.put(
+        exchangeDescriptors.put(
             "Date(UTC);Market;Type;Price;Amount;Total;Fee;Fee Coin",
-            BinanceBeanV1.class
+            new ExchangeDescriptor(
+                BinanceBeanV1.class,
+                SupportedExchange.BINANCE,
+                DELIMITER_SEMICOLON
+            )
         );
-        exchangeBeans.put(
+        exchangeDescriptors.put(
             "Date(UTC);Pair;Type;Order Price;Order Amount;AvgTrading Price;Filled;Total;status",
-            BinanceBeanV2.class
+            new ExchangeDescriptor(
+                BinanceBeanV2.class,
+                SupportedExchange.BINANCE,
+                DELIMITER_SEMICOLON
+            )
         );
     }
 
     public static final ParserDescriptor DESCRIPTOR = new ParserDescriptor(
         ID,
-        new ArrayList<>(exchangeBeans.keySet())
+        exchangeDescriptors.entrySet()
+            .stream()
+            .collect(
+                Collectors.toMap(
+                    Map.Entry::getKey,
+                    v -> v.getValue().getSupportedExchange()
+                )
+            )
     );
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -73,15 +94,19 @@ public class EverytradeCsvParser implements ICsvParser {
     }
 
     @Override
-    public ParseResult parse(File file) {
-        final String header = readFirstRow(file);
-        final Class<? extends ExchangeBean> exchangeBean = exchangeBeans.get(header);
-        if (exchangeBean == null) {
+    public ParseResult parse(File file, String header) {
+        final ExchangeDescriptor exchangeDescriptor = exchangeDescriptors.get(header);
+        if (exchangeDescriptor == null) {
             throw new UnknownHeaderException(String.format("Unknown header: '%s'", header));
         }
-        List<RowError> rowErrors = new ArrayList<>();
+        final Class<? extends ExchangeBean> exchangeBean = exchangeDescriptor.getExchangeBean();
+        final List<RowError> rowErrors = new ArrayList<>();
         final IExchangeParser exchangeParser = new ExchangeParserFinder().find(exchangeBean);
-        List<? extends ExchangeBean> listBeans = exchangeParser.parse(file, rowErrors);
+        List<? extends ExchangeBean> listBeans = exchangeParser.parse(
+            file,
+            exchangeDescriptor.getDelimiter(),
+            rowErrors
+        );
         final IPostProcessor postProcessor = new PostProcessorFinder().find(exchangeBean);
         final ConversionParams conversionParams = postProcessor.evalConversionParams(listBeans);
 
@@ -105,25 +130,5 @@ public class EverytradeCsvParser implements ICsvParser {
         }
 
         return new ParseResult(importedTransactionBeans, new ConversionStatistic(rowErrors, ignoredFeeCount));
-    }
-
-    @Override
-    public SupportedExchange detectExchange(File file) {
-        final String header = readFirstRow(file);
-        final Class<? extends ExchangeBean> exchangeBean = exchangeBeans.get(header);
-        if (exchangeBean == null) {
-            throw new UnknownHeaderException();
-        }
-        return ParserUtils.getExchange(exchangeBean);
-    }
-
-    private String readFirstRow(File file) {
-        final String header;
-        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {
-            header = bufferedReader.readLine();
-        } catch (IOException e) {
-            throw new ParsingProcessException(e);
-        }
-        return header;
     }
 }

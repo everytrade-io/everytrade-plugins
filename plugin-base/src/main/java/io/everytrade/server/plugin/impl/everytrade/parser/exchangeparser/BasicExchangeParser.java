@@ -5,7 +5,6 @@ import com.univocity.parsers.common.processor.BeanListProcessor;
 import com.univocity.parsers.csv.CsvParserSettings;
 import io.everytrade.server.plugin.api.parser.RowError;
 import io.everytrade.server.plugin.api.parser.RowErrorType;
-import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
@@ -25,8 +24,8 @@ public class BasicExchangeParser implements IExchangeParser{
     }
 
     @Override
-    public List<? extends ExchangeBean> parse(File inputFile, List<RowError> rowErrors) {
-        final CsvParserSettings parserSettings = createParserSettings(rowErrors, exchangeBean);
+    public List<? extends ExchangeBean> parse(File inputFile, String delimiter, List<RowError> rowErrors) {
+        final CsvParserSettings parserSettings = createParserSettings(rowErrors, delimiter);
         return parse(inputFile, parserSettings, exchangeBean);
     }
 
@@ -55,7 +54,7 @@ public class BasicExchangeParser implements IExchangeParser{
 
     private CsvParserSettings createParserSettings(
         List<RowError> rowErrors,
-        Class<? extends ExchangeBean> exchangeBean
+        String delimiter
     ) {
         CsvParserSettings parserSettings = new CsvParserSettings();
         parserSettings.setHeaderExtractionEnabled(true);
@@ -65,7 +64,6 @@ public class BasicExchangeParser implements IExchangeParser{
             RowError rowError = new RowError(Arrays.toString(inputRow), error.getMessage(), rowErrorType);
             rowErrors.add(rowError);
         });
-        final String delimiter = ParserUtils.getDelimiter(exchangeBean);
         parserSettings.getFormat().setDelimiter(delimiter);
 
         return parserSettings;

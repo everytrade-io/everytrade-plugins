@@ -1,6 +1,5 @@
 package io.everytrade.server.plugin;
 
-import io.everytrade.server.model.SupportedExchange;
 import io.everytrade.server.plugin.api.IPlugin;
 import io.everytrade.server.plugin.api.connector.ConnectorDescriptor;
 import io.everytrade.server.plugin.api.connector.ConnectorParameterDescriptor;
@@ -104,38 +103,40 @@ public class Tester {
         final File folder = new File("parser-files");
         for (final File fileEntry : folder.listFiles()) {
             log.info("Try to parse file '{}'...", fileEntry.getName());
-            final List<ICsvParser> parsers = findParser(fileEntry, plugin);
-            if (parsers.isEmpty()) {
-                log.info("No parsers found.");
-            } else if (parsers.size() > 1) {
-                log.info("More than one parsers found: '{}'.", parsers.size());
-            } else {
-                try {
-                    final ICsvParser csvParser = parsers.get(0);
-                    final SupportedExchange supportedExchange = csvParser.detectExchange(fileEntry);
-                    log.info("Detected exchange: {}", supportedExchange.getDisplayName());
-                    final ParseResult parseResult = parsers.get(0).parse(fileEntry);
-                    printResult(parseResult);
-                } catch (Exception e) {
-                    log.error("File parsing error '{}'.", e.getMessage());
-                }
+            final String header = readFirstRow(fileEntry);
+            final ParserDescriptor descriptor = findDescriptor(header, plugin);
+            if (descriptor == null) {
+                continue;
+            }
+            log.info("Supported exchange: {}", descriptor.getSupportedExchange(header).getDisplayName());
+            final ICsvParser parserInstance = plugin.createParserInstance(descriptor.getId());
+            final ParseResult parseResult;
+            try {
+                parseResult = parserInstance.parse(fileEntry, header);
+                printResult(parseResult);
+            } catch (Exception e) {
+                log.info("File parse error: {}", e.getMessage());
             }
         }
     }
 
-    private List<ICsvParser> findParser(File file, IPlugin plugin) {
-        final String header = readFirstRow(file);
-
+    private ParserDescriptor findDescriptor(String header, IPlugin plugin) {
         final List<ParserDescriptor> parserDescriptors = plugin.allParserDescriptors();
-        final List<ICsvParser> parsers = new ArrayList<>();
+        final List<ParserDescriptor> matchDescriptors = new ArrayList<>();
         for (ParserDescriptor parserDescriptor : parserDescriptors) {
             if (parserDescriptor.getExchangeHeaders().contains(header)) {
                 log.info("Found parser id: '{}'", parserDescriptor.getId());
-                final ICsvParser parserInstance = plugin.createParserInstance(parserDescriptor.getId());
-                parsers.add(parserInstance);
+                matchDescriptors.add(parserDescriptor);
             }
         }
-        return parsers;
+        if (matchDescriptors.isEmpty()) {
+            log.info("No parsers found.");
+        } else if (matchDescriptors.size() > 1) {
+            log.info("More than one parsers found: '{}'.", matchDescriptors.size());
+        } else {
+            return matchDescriptors.get(0);
+        }
+        return null;
     }
 
     private String readFirstRow(File file) {
@@ -143,7 +144,7 @@ public class Tester {
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {
             header = bufferedReader.readLine();
         } catch (IOException e) {
-            log.error("Parser test file read error. {}", e);
+            log.error("Parser test file read error. {}", e.getMessage());
             return null;
         }
         return header;

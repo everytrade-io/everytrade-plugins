@@ -7,7 +7,6 @@ import com.univocity.parsers.annotations.Replace;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.CurrencyPair;
-import io.everytrade.server.model.SupportedExchange;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.ImportDetail;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
@@ -27,7 +26,6 @@ import static io.everytrade.server.model.CurrencyPair.getTradeablePairs;
 //FULL> BIN-001:|^Date\(.*\)$|Market|Type|Price|Amount|Total|Fee|Fee Coin|
 @Headers(sequence = {"Market", "Type", "Amount", "Total", "Fee", "Fee Coin"}, extract = true)
 public class BinanceBeanV1 extends ExchangeBean {
-    private static final String DELIMITER = ";";
     private static Map<String, CurrencyPair> fastCurrencyPair = new HashMap<>();
     private Instant date;
     private Currency marketBase;
@@ -40,15 +38,6 @@ public class BinanceBeanV1 extends ExchangeBean {
 
     static {
         getTradeablePairs().forEach(t -> fastCurrencyPair.put(t.toString().replace("/", ""), t));
-    }
-
-    public BinanceBeanV1() {
-        super(SupportedExchange.BINANCE);
-    }
-
-    @Override
-    public String getDelimiter() {
-        return DELIMITER;
     }
 
     //Date
