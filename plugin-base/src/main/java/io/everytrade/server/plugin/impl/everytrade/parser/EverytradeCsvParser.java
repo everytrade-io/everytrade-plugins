@@ -28,8 +28,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -74,14 +76,25 @@ public class EverytradeCsvParser implements ICsvParser {
 
     @Override
     public ParseResult parse(File file) {
-        final String header = readFirstRow(file);
-        final Class<? extends ExchangeBean> exchangeBean = exchangeBeans.get(header);
-        if (exchangeBean == null) {
-            throw new UnknownHeaderException(String.format("Unknown header: '%s'", header));
+        final List<RowError> rowErrors = new ArrayList<>();
+        final List<? extends ExchangeBean> listBeans;
+        final Class<? extends ExchangeBean> exchangeBean;
+        try (FileInputStream fileInputStream = new FileInputStream(file)) {
+            final MarkableFileInputStream markableFileInputStream = new MarkableFileInputStream(fileInputStream);
+            markableFileInputStream.mark(0);
+            final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(markableFileInputStream));
+            final String header = bufferedReader.readLine();
+            markableFileInputStream.reset();
+            exchangeBean = exchangeBeans.get(header);
+            if (exchangeBean == null) {
+                throw new UnknownHeaderException(String.format("Unknown header: '%s'", header));
+            }
+            final IExchangeParser exchangeParser = new ExchangeParserFinder().find(exchangeBean);
+            listBeans = exchangeParser.parse(markableFileInputStream, rowErrors);
+        } catch (IOException e) {
+            throw new ParsingProcessException(e);
         }
-        List<RowError> rowErrors = new ArrayList<>();
-        final IExchangeParser exchangeParser = new ExchangeParserFinder().find(exchangeBean);
-        List<? extends ExchangeBean> listBeans = exchangeParser.parse(file, rowErrors);
+
         final IPostProcessor postProcessor = new PostProcessorFinder().find(exchangeBean);
         final ConversionParams conversionParams = postProcessor.evalConversionParams(listBeans);
 
