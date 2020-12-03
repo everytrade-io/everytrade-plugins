@@ -32,12 +32,12 @@ import java.util.stream.Collectors;
 
 public class EverytradeCsvMultiParser implements ICsvParser {
     private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "everytradeParser";
-    private static final Map<String, ExchangeParseDetail> exchangeDescriptors = new HashMap<>();
+    private static final Map<String, ExchangeParseDetail> EXCHANGE_PARSE_DETAILS = new HashMap<>();
     private static final String DELIMITER_COMMA = ",";
     private static final String DELIMITER_SEMICOLON = ";";
 
     static {
-        exchangeDescriptors.put(
+        EXCHANGE_PARSE_DETAILS.put(
             "OrderUuid,Exchange,Type,Quantity,Limit,CommissionPaid,Price,Opened,Closed",
             new ExchangeParseDetail(
                 new DefaultUnivocityExchangeSpecificParser(BittrexBeanV1.class),
@@ -45,7 +45,7 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 DELIMITER_COMMA
             )
         );
-        exchangeDescriptors.put(
+        EXCHANGE_PARSE_DETAILS.put(
             "Uuid,Exchange,TimeStamp,OrderType,Limit,Quantity,QuantityRemaining,Commission,Price,PricePerUnit,"
                 + "IsConditional,Condition,ConditionTarget,ImmediateOrCancel,Closed",
             new ExchangeParseDetail(
@@ -54,7 +54,7 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 DELIMITER_COMMA
             )
         );
-        exchangeDescriptors.put(
+        EXCHANGE_PARSE_DETAILS.put(
             "Date(UTC);Market;Type;Price;Amount;Total;Fee;Fee Coin",
             new ExchangeParseDetail(
                 new DefaultUnivocityExchangeSpecificParser(BinanceBeanV1.class),
@@ -62,7 +62,7 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 DELIMITER_SEMICOLON
             )
         );
-        exchangeDescriptors.put(
+        EXCHANGE_PARSE_DETAILS.put(
             "Date(UTC);Pair;Type;Order Price;Order Amount;AvgTrading Price;Filled;Total;status",
             new ExchangeParseDetail(
                 new BinanceExchangeSpecificParser(),
@@ -70,7 +70,7 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 DELIMITER_SEMICOLON
             )
         );
-        exchangeDescriptors.put(
+        EXCHANGE_PARSE_DETAILS.put(
             "#,PAIR,AMOUNT,PRICE,FEE,FEE CURRENCY,DATE,ORDER ID",
             new ExchangeParseDetail(
                 new BitfinexExchangeSpecificParser(),
@@ -82,7 +82,7 @@ public class EverytradeCsvMultiParser implements ICsvParser {
 
     public static final ParserDescriptor DESCRIPTOR = new ParserDescriptor(
         ID,
-        exchangeDescriptors.entrySet()
+        EXCHANGE_PARSE_DETAILS.entrySet()
             .stream()
             .collect(
                 Collectors.toMap(
@@ -101,7 +101,7 @@ public class EverytradeCsvMultiParser implements ICsvParser {
 
     @Override
     public ParseResult parse(File file, String header) {
-        final ExchangeParseDetail exchangeParseDetail = exchangeDescriptors.get(header);
+        final ExchangeParseDetail exchangeParseDetail = EXCHANGE_PARSE_DETAILS.get(header);
         if (exchangeParseDetail == null) {
             throw new UnknownHeaderException(String.format("Unknown header: '%s'", header));
         }
