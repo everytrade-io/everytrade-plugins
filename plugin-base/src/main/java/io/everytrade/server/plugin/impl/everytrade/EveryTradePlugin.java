@@ -3,6 +3,9 @@ package io.everytrade.server.plugin.impl.everytrade;
 import io.everytrade.server.plugin.api.IPlugin;
 import io.everytrade.server.plugin.api.connector.ConnectorDescriptor;
 import io.everytrade.server.plugin.api.connector.IConnector;
+import io.everytrade.server.plugin.api.parser.ICsvParser;
+import io.everytrade.server.plugin.api.parser.ParserDescriptor;
+import io.everytrade.server.plugin.impl.everytrade.parser.EverytradeCsvMultiParser;
 import org.pf4j.Extension;
 
 import java.util.List;
@@ -27,6 +30,10 @@ public class EveryTradePlugin implements IPlugin {
         OkexConnector.DESCRIPTOR,
         HuobiConnector.DESCRIPTOR
     ).stream().collect(Collectors.toMap(ConnectorDescriptor::getId, it -> it));
+
+    private static final List<ParserDescriptor> PARSER_DESCRIPTORS = List.of(
+        EverytradeCsvMultiParser.DESCRIPTOR
+    );
 
     @Override
     public String getId() {
@@ -77,6 +84,19 @@ public class EveryTradePlugin implements IPlugin {
         }
         if (connectorId.equals(HuobiConnector.DESCRIPTOR.getId())) {
             return new HuobiConnector(parameters);
+        }
+        return null;
+    }
+
+    @Override
+    public List<ParserDescriptor> allParserDescriptors() {
+        return List.copyOf(PARSER_DESCRIPTORS);
+    }
+
+    @Override
+    public ICsvParser createParserInstance(String parserId) {
+        if (parserId.equals(EverytradeCsvMultiParser.DESCRIPTOR.getId())) {
+            return new EverytradeCsvMultiParser();
         }
         return null;
     }

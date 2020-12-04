@@ -1,0 +1,3 @@
+type,fiat_currency,amount_fiat,amount_btc,rate,fee_fiat,fee_btc,market_rate_usd,payment_method,partner,status,completed_at,trade_hash,offer_hash
+BUY,CAD,500.00,0.05944893,8410.58,-,-,5863.99,"Interac e-Transfer",none,successful,2020-03-19T11:01:52-04:00,wj1
+SELL,CAD,300.00,0.03544758,8463.20,3,0.00035447,5413.23,"Interac e-Transfer",none,successful,2020-03-17T16:31:07-04:00,D92

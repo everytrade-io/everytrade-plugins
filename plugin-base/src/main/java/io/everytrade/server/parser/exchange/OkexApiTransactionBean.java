@@ -26,11 +26,11 @@ public class OkexApiTransactionBean {
     private final BigDecimal priceAvg;
     private final Currency feeCurrency;
     private final BigDecimal fee;
-    private static final Map<String, CurrencyPair> fastCurrencyPairs;
+    private static final Map<String, CurrencyPair> FAST_CURRENCY_PAIRS;
     static {
-        fastCurrencyPairs = new HashMap<>();
+        FAST_CURRENCY_PAIRS = new HashMap<>();
         for (CurrencyPair currencyPair : CurrencyPair.getTradeablePairs()) {
-            fastCurrencyPairs.put(
+            FAST_CURRENCY_PAIRS.put(
                 String.format("%s-%s", currencyPair.getBase().name(), currencyPair.getQuote().name()), currencyPair
             );
         }
@@ -87,7 +87,7 @@ public class OkexApiTransactionBean {
     }
 
     private CurrencyPair toCurrencyPair(String instrumentId) {
-        final CurrencyPair currencyPair = fastCurrencyPairs.get(instrumentId);
+        final CurrencyPair currencyPair = FAST_CURRENCY_PAIRS.get(instrumentId);
         if (currencyPair == null) {
             throw new DataValidationException(String.format("Unsupported currency pair '%s'.", instrumentId));
         }

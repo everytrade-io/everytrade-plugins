@@ -2,6 +2,8 @@ package io.everytrade.server.plugin.api;
 
 import io.everytrade.server.plugin.api.connector.ConnectorDescriptor;
 import io.everytrade.server.plugin.api.connector.IConnector;
+import io.everytrade.server.plugin.api.parser.ICsvParser;
+import io.everytrade.server.plugin.api.parser.ParserDescriptor;
 import org.pf4j.ExtensionPoint;
 
 import java.util.List;
@@ -36,4 +38,8 @@ public interface IPlugin extends ExtensionPoint {
      * @return a new connector instance
      */
     IConnector createConnectorInstance(String connectorId, Map<String, String> parameters);
+
+    List<ParserDescriptor> allParserDescriptors();
+
+    ICsvParser createParserInstance(String parserId);
 }

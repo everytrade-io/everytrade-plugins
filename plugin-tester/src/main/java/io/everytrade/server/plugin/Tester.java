@@ -6,18 +6,24 @@ import io.everytrade.server.plugin.api.connector.ConnectorParameterDescriptor;
 import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.connector.IConnector;
 import io.everytrade.server.plugin.api.parser.ConversionStatistic;
+import io.everytrade.server.plugin.api.parser.ICsvParser;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParseResult;
+import io.everytrade.server.plugin.api.parser.ParserDescriptor;
 import io.everytrade.server.plugin.support.EverytradePluginManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,6 +81,34 @@ public class Tester {
 
     private void testPlugin(IPlugin plugin) {
         log.info("plugin = " + plugin.getId());
+        testConnectors(plugin);
+
+        testParsers(plugin);
+    }
+
+    private void testParsers(IPlugin plugin) {
+        //load and try to parse all files in folder
+        final File folder = new File("parser-files");
+        for (final File fileEntry : folder.listFiles()) {
+            log.info("Try to parse file '{}'...", fileEntry.getName());
+            final String header = readHeader(fileEntry);
+            final ParserDescriptor descriptor = findDescriptor(header, plugin);
+            if (descriptor == null) {
+                continue;
+            }
+            log.info("Supported exchange: {}", descriptor.getSupportedExchange(header).getDisplayName());
+            final ICsvParser parserInstance = plugin.createParserInstance(descriptor.getId());
+            final ParseResult parseResult;
+            try {
+                parseResult = parserInstance.parse(fileEntry, header);
+                printResult(parseResult);
+            } catch (Exception e) {
+                log.info("File parse error: {}", e.getMessage());
+            }
+        }
+    }
+
+    private void testConnectors(IPlugin plugin) {
         final List<ConnectorDescriptor> connectorDescriptors = plugin.allConnectorDescriptors();
         for (ConnectorDescriptor connectorDescriptor : connectorDescriptors) {
             log.info("connectorDescriptor = " + connectorDescriptor);
@@ -93,6 +127,38 @@ public class Tester {
             printResult(connector.getTransactions(downloadResult.getLastDownloadedTransactionId()));
         }
     }
+
+    private ParserDescriptor findDescriptor(String header, IPlugin plugin) {
+        final List<ParserDescriptor> parserDescriptors = plugin.allParserDescriptors();
+        final List<ParserDescriptor> matchDescriptors = new ArrayList<>();
+        for (ParserDescriptor parserDescriptor : parserDescriptors) {
+            if (parserDescriptor.getExchangeHeaders().contains(header)) {
+                log.info("Found parser id: '{}'", parserDescriptor.getId());
+                matchDescriptors.add(parserDescriptor);
+            }
+        }
+        if (matchDescriptors.isEmpty()) {
+            log.warn("No parsers found.");
+        } else if (matchDescriptors.size() > 1) {
+            log.warn("More than one parsers found: '{}'.", matchDescriptors.size());
+        } else {
+            return matchDescriptors.get(0);
+        }
+        return null;
+    }
+
+
+    private String readHeader(File file) {
+        final String header;
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {
+            header = bufferedReader.readLine();
+        } catch (IOException e) {
+            log.error("Parser test file read error. {}", e.getMessage());
+            return null;
+        }
+        return header;
+    }
+
 
     private void writeParamsTemplate(ConnectorDescriptor descriptor) {
         final Properties parameters = new Properties();
@@ -115,7 +181,12 @@ public class Tester {
 
     private void printResult(DownloadResult downloadResult) {
         final ParseResult parseResult = downloadResult.getParseResult();
+        printResult(parseResult);
+        final String lastDownloadedTransactionId = downloadResult.getLastDownloadedTransactionId();
+        log.info("lastDownloadedTransactionId = " + lastDownloadedTransactionId);
+    }
 
+    private void printResult(ParseResult parseResult) {
         StringBuilder stringBuilder = new StringBuilder();
         final String columnSeparator = ",";
         final String lineSeparator = "\n";
@@ -143,10 +214,8 @@ public class Tester {
         log.info("importedTransactionBeans = \n" + stringBuilder.toString());
 
         final ConversionStatistic conversionStatistic = parseResult.getConversionStatistic();
-        log.info("conversionStatistic = " + conversionStatistic);
+        log.info("conversionStatistic = {}\n", conversionStatistic);
 
-        final String lastDownloadedTransactionId = downloadResult.getLastDownloadedTransactionId();
-        log.info("lastDownloadedTransactionId = " + lastDownloadedTransactionId);
     }
 
     private Optional<Map<String, String>> loadParams(String id) {

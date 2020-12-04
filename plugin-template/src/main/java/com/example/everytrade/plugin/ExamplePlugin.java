@@ -3,6 +3,8 @@ package com.example.everytrade.plugin;
 import io.everytrade.server.plugin.api.IPlugin;
 import io.everytrade.server.plugin.api.connector.ConnectorDescriptor;
 import io.everytrade.server.plugin.api.connector.IConnector;
+import io.everytrade.server.plugin.api.parser.ICsvParser;
+import io.everytrade.server.plugin.api.parser.ParserDescriptor;
 import org.pf4j.Extension;
 
 import java.util.List;
@@ -17,6 +19,10 @@ public class ExamplePlugin implements IPlugin {
     private static final Map<String, ConnectorDescriptor> CONNECTORS_BY_ID = Set.of(
         ExampleConnector.DESCRIPTOR
     ).stream().collect(Collectors.toMap(ConnectorDescriptor::getId, it -> it));
+
+    private static final Map<String, ParserDescriptor> PARSERS_BY_ID = Set.of(
+        ExampleParser.DESCRIPTOR
+    ).stream().collect(Collectors.toMap(ParserDescriptor::getId, it -> it));
 
     @Override
     public String getId() {
@@ -37,6 +43,19 @@ public class ExamplePlugin implements IPlugin {
     public IConnector createConnectorInstance(String connectorId, Map<String, String> parameters) {
         if (connectorId.equals(ExampleConnector.DESCRIPTOR.getId())) {
             return new ExampleConnector(parameters);
+        }
+        return null;
+    }
+
+    @Override
+    public List<ParserDescriptor> allParserDescriptors() {
+        return List.copyOf(PARSERS_BY_ID.values());
+    }
+
+    @Override
+    public ICsvParser createParserInstance(String parserId) {
+        if (parserId.equals(ExampleConnector.DESCRIPTOR.getId())) {
+            return new ExampleParser();
         }
         return null;
     }

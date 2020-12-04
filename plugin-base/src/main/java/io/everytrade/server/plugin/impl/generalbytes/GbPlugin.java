@@ -3,6 +3,8 @@ package io.everytrade.server.plugin.impl.generalbytes;
 import io.everytrade.server.plugin.api.IPlugin;
 import io.everytrade.server.plugin.api.connector.ConnectorDescriptor;
 import io.everytrade.server.plugin.api.connector.IConnector;
+import io.everytrade.server.plugin.api.parser.ICsvParser;
+import io.everytrade.server.plugin.api.parser.ParserDescriptor;
 import org.pf4j.Extension;
 
 import java.util.List;
@@ -39,6 +41,16 @@ public class GbPlugin implements IPlugin {
         if (connectorId.equals(GbConnector.DESCRIPTOR.getId())) {
             return new GbConnector(parameters);
         }
+        return null;
+    }
+
+    @Override
+    public List<ParserDescriptor> allParserDescriptors() {
+        return List.of();
+    }
+
+    @Override
+    public ICsvParser createParserInstance(String parserId) {
         return null;
     }
 }
