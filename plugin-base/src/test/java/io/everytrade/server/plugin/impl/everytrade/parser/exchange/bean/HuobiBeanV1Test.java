@@ -13,18 +13,21 @@ import java.math.BigDecimal;
 import java.time.Instant;
 
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.UNSUPPORTED_CURRENCY_PAIR;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.HuobiBeanV1.UNSUPPORTED_TYPE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-class BinanceBeanV1Test {
-    public static final String HEADER_CORRECT = "Date(UTC);Market;Type;Price;Amount;Total;Fee;Fee Coin\n";
+class HuobiBeanV1Test {
+    public static final String HEADER_CORRECT
+        = "\uFEFF\"Time\",\"Type\",\"Pair\",\"Side\",\"Price\",\"Amount\",\"Total\",\"Fee\"\n";
 
 
     @Test
     void testWrongHeader() {
-        String headerWrong = "Date(UTC);Market;Price;Amount;Total;Fee;Fee Coin\n";
+        final String headerWrong = "\"Time\",\"Type\",\"Pair\",\"Price\",\"Amount\",\"Total\",\"Fee\"\n";
         try {
             ParserTestUtils.testParsing(headerWrong);
             fail("No expected exception has been thrown.");
@@ -34,67 +37,68 @@ class BinanceBeanV1Test {
 
     @Test
     void testCorrectParsingRawTransactionBuy() {
-        final String row = "2020-02-04 16:19:07;LTCBTC;BUY;0.007393;1.61;0.01190273;0.00161;LTC\n";
+        final String row = "2020-03-31 21:31:43,Exchange,LTC/BTC,Buy,0.006040,0.8940,0.0053,0.00178800LTC,\n";
         final ImportedTransactionBean txBeanParsed = ParserTestUtils.getTransactionBean(HEADER_CORRECT + row);
         final ImportedTransactionBean txBeanCorrect = new ImportedTransactionBean(
             null,
-            Instant.parse("2020-02-04T16:19:07Z"),
+            Instant.parse("2020-03-31T21:31:43Z"),
             Currency.LTC,
             Currency.BTC,
             TransactionType.BUY,
-            new BigDecimal("1.60839"),
-            new BigDecimal("0.0074004004"),
+            new BigDecimal("0.89221200"),
+            new BigDecimal("0.0059402922"),
             new BigDecimal("0")
         );
         ParserTestUtils.checkEqual(txBeanParsed, txBeanCorrect);
     }
 
     @Test
-    void testCorrectParsingRawTransactionBuyDiffFeeCurrency() {
-        final String row = "2020-02-04 16:19:07;LTCBTC;BUY;0.007393;1.61;0.01190273;0.00161;BTC\n";
+    void testCorrectParsingRawTransactionBuyDiffFee() {
+        final String row = "2020-03-31 21:31:43,Exchange,LTC/BTC,Buy,0.006040,0.8940,0.0053,0.00178800BTC,\n";
         final ImportedTransactionBean txBeanParsed = ParserTestUtils.getTransactionBean(HEADER_CORRECT + row);
         final ImportedTransactionBean txBeanCorrect = new ImportedTransactionBean(
             null,
-            Instant.parse("2020-02-04T16:19:07Z"),
+            Instant.parse("2020-03-31T21:31:43Z"),
             Currency.LTC,
             Currency.BTC,
             TransactionType.BUY,
-            new BigDecimal("1.61"),
-            new BigDecimal("0.008393"),
+            new BigDecimal("0.894"),
+            new BigDecimal("0.0079284116"),
             new BigDecimal("0")
         );
         ParserTestUtils.checkEqual(txBeanParsed, txBeanCorrect);
     }
+
 
     @Test
     void testCorrectParsingRawTransactionSell() {
-        final String row = "2020-02-03 11:09:51;LTCBTC;SELL;0.007497;1.72;0.01289484;0.00001289;BTC\n";
+        final String row = "2020-03-31 21:31:24,Exchange,LTC/BTC,Sell,0.006036,0.7362,0.0044,0.00000888BTC,\n";
         final ImportedTransactionBean txBeanParsed = ParserTestUtils.getTransactionBean(HEADER_CORRECT + row);
         final ImportedTransactionBean txBeanCorrect = new ImportedTransactionBean(
             null,
-            Instant.parse("2020-02-03T11:09:51Z"),
+            Instant.parse("2020-03-31T21:31:24Z"),
             Currency.LTC,
             Currency.BTC,
             TransactionType.SELL,
-            new BigDecimal("1.72"),
-            new BigDecimal("0.0074895058"),
+            new BigDecimal("0.73620000"),
+            new BigDecimal("0.0059645748"),
             new BigDecimal("0")
         );
         ParserTestUtils.checkEqual(txBeanParsed, txBeanCorrect);
     }
 
     @Test
-    void testCorrectParsingRawTransactionSellDiffFeeCurrency() {
-        final String row = "2020-02-03 11:09:51;LTCBTC;SELL;0.007497;1.72;0.01289484;0.00001289;LTC\n";
+    void testCorrectParsingRawTransactionSellDiffFee() {
+        final String row = "2020-03-31 21:31:24,Exchange,LTC/BTC,Sell,0.006036,0.7362,0.0044,0.00000888LTC,\n";
         final ImportedTransactionBean txBeanParsed = ParserTestUtils.getTransactionBean(HEADER_CORRECT + row);
         final ImportedTransactionBean txBeanCorrect = new ImportedTransactionBean(
             null,
-            Instant.parse("2020-02-03T11:09:51Z"),
+            Instant.parse("2020-03-31T21:31:24Z"),
             Currency.LTC,
             Currency.BTC,
             TransactionType.SELL,
-            new BigDecimal("1.72001289"),
-            new BigDecimal("0.0074969438"),
+            new BigDecimal("0.73620888"),
+            new BigDecimal("0.0059765647"),
             new BigDecimal("0")
         );
         ParserTestUtils.checkEqual(txBeanParsed, txBeanCorrect);
@@ -102,43 +106,63 @@ class BinanceBeanV1Test {
 
 
     @Test
-    void testUnknownPair() {
-        final String row = "2020-02-03 11:09:51;BTCLTC;SELL;0.007497;1.72;0.01289484;0.00001289;LTC\n";
+    void testUnknownType() {
+        final String row = "2020-03-31 21:31:24,YYY,LTC/BTC,Sell,0.006036,0.7362,0.0044,0.00000888LTC,\n";
         final RowError rowError = ParserTestUtils.getRowError(HEADER_CORRECT + row);
         assertNotNull(rowError);
         final String error = rowError.getMessage();
-        assertTrue(error.contains(UNSUPPORTED_CURRENCY_PAIR.concat("BTCLTC")));
+        assertTrue(error.contains(UNSUPPORTED_TYPE.concat("YYY")));
     }
 
     @Test
-    void testCorrectParsingRawTransactionBuyFeeSkipped() {
-        final String row = "2020-02-04 16:19:07;LTCBTC;BUY;0.007393;1.61;0.01190273;0.00161;BNB\n";
+    void testUnknownTransactionType() {
+        final String row = "2020-03-31 21:31:24,Exchange,LTC/BTC,Deposit,0.006036,0.7362,0.0044,0.00000888LTC,\n";
+        final RowError rowError = ParserTestUtils.getRowError(HEADER_CORRECT + row);
+        assertNotNull(rowError);
+        final String error = rowError.getMessage();
+        assertTrue(error.contains(UNSUPPORTED_TRANSACTION_TYPE.concat("Deposit")));
+    }
+
+    @Test
+    void testWrongFeeCurrency() {
+        final String row = "2020-03-31 21:31:43,Exchange,LTC/BTC,Buy,0.006040,0.8940,0.0053,0.00178800ETH,\n";
         final ImportedTransactionBean txBeanParsed = ParserTestUtils.getTransactionBean(HEADER_CORRECT + row);
         final ImportedTransactionBean txBeanCorrect = new ImportedTransactionBean(
             null,
-            Instant.parse("2020-02-04T16:19:07Z"),
+            Instant.parse("2020-03-31T21:31:43Z"),
             Currency.LTC,
             Currency.BTC,
             TransactionType.BUY,
-            new BigDecimal("1.61"),
-            new BigDecimal("0.007393"),
+            new BigDecimal("0.89400000"),
+            new BigDecimal("0.0059284116"),
             new BigDecimal("0")
         );
         ParserTestUtils.checkEqual(txBeanParsed, txBeanCorrect);
+    }
+
+    @Test
+    void testNotAllowedPair() {
+        final String row = "2020-03-31 21:31:24,Exchange,BTC/LTC,Sell,0.006036,0.7362,0.0044,0.00000888BTC,\n";
+        final RowError rowError = ParserTestUtils.getRowError(HEADER_CORRECT + row);
+        assertNotNull(rowError);
+        final String error = rowError.getMessage();
+        assertTrue(error.contains(UNSUPPORTED_CURRENCY_PAIR.concat("BTC/LTC")));
     }
 
     @Test
     void testIgnoredFee() {
-        final String row = "2020-02-04 16:19:07;LTCBTC;BUY;0.007393;1.61;0.01190273;0.00161;BNB\n";
-        final ConversionStatistic conversionStatistic = ParserTestUtils.getConversionStatistic(HEADER_CORRECT + row);
+        final String row = "2020-03-31 21:31:24,Exchange,LTC/BTC,Sell,0.006036,0.7362,0.0044,0.00000888XXX,\n";
+        final ConversionStatistic conversionStatistic =
+            ParserTestUtils.getConversionStatistic(HEADER_CORRECT + row);
         assertNotNull(conversionStatistic);
         assertEquals(1, conversionStatistic.getIgnoredFeeTransactionCount());
     }
 
     @Test
     void testIgnoredTransactionType() {
-        final String row = "2020-02-04 16:19:07;LTCBTC;DEPOSIT;0.007393;1.61;0.01190273;0.00161;LTC\n";
-        final ConversionStatistic conversionStatistic = ParserTestUtils.getConversionStatistic(HEADER_CORRECT + row);
+        final String row = "2020-03-31 21:31:43,Exchange,LTC/BTC,Bought,0.006040,0.8940,0.0053,0.00178800LTC,\n";
+        final ConversionStatistic conversionStatistic
+            = ParserTestUtils.getConversionStatistic(HEADER_CORRECT + row);
         assertNotNull(conversionStatistic);
         assertEquals(1, conversionStatistic.getIgnoredRowsCount());
         assertTrue(
@@ -146,7 +170,7 @@ class BinanceBeanV1Test {
                 .getErrorRows()
                 .get(0)
                 .getMessage()
-                .contains(ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE.concat("DEPOSIT"))
+                .contains(ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE.concat("Bought"))
         );
     }
 }

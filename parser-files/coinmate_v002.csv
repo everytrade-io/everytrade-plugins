@@ -1,0 +1,3 @@
+?Transaction id;Date;Email;Name;Type;Type detail;Currency amount;Amount;Currency price;Price;Currency fee;Fee;Currency total;Total;Description;Status;Currency first balance after;First balance after;Currency second balance after;Second balance after
+0;2020-02-10 17:03:48;info@bitcoinmat.sk;N;Trade;BUY;BTC;0.02579386;EUR;9010.2;EUR;0.46481567;EUR;-232.87265304;;OK;BTC;2.07004432;EUR;82435.503831
+1;2020-02-10 14:36:44;info@bitcoinmat.sk;N;Quick trade;QUICK_SELL;BTC;-0.076053;EUR;9009.75439496;EUR;1.37043769;EUR;683.84841331;;OK;BTC;1.96825146;EUR;84739.82890398

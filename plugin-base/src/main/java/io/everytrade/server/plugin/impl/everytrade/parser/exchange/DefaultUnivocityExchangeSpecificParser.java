@@ -27,6 +27,10 @@ public class DefaultUnivocityExchangeSpecificParser implements IExchangeSpecific
         return parse(inputFile, parserSettings, exchangeBean);
     }
 
+    public List<? extends ExchangeBean> parse(File inputFile, CsvParserSettings parserSettings) {
+        return parse(inputFile, parserSettings, exchangeBean);
+    }
+
     private <T extends ExchangeBean> List<T> parse(File file, CsvParserSettings parserSettings, Class<T> exchangeBean) {
         try (Reader reader = new FileReader(file, StandardCharsets.UTF_8)) {
             BeanListProcessor<T> rowProcessor = new BeanListProcessor<>(exchangeBean) {
@@ -50,7 +54,7 @@ public class DefaultUnivocityExchangeSpecificParser implements IExchangeSpecific
         }
     }
 
-    private CsvParserSettings createParserSettings(
+    public CsvParserSettings createParserSettings(
         List<RowError> rowErrors,
         String delimiter
     ) {

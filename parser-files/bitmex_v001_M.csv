@@ -1,0 +1,3 @@
+﻿"transactTime","symbol","execType","side","lastQty","lastPx","execCost","commission","execComm","ordType","orderQty","leavesQty","price","text","orderID"
+"1/26/2020, 6:32:04 PM","XBTUSD","Trade","Sell","127","8564.5","1482852","0.00075","1112","Market","127","0","8564.5","Position Close from www.bitmex.com","d3b"
+"1/26/2020, 6:31:07 PM","XBTUSD","Trade","Buy","127","8556.5","-1484249","0.00075","1113","Market","127","0","8556.5","Submission from www.bitmex.com","6fa"

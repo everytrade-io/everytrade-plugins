@@ -18,14 +18,14 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-public class BinanceBeanV2Test {
+class BinanceBeanV2Test {
     public static final String HEADER_CORRECT
         = "Date(UTC);Pair;Type;Order Price;Order Amount;AvgTrading Price;Filled;Total;status\n";
 
 
     @Test
-    public void testWrongHeader() {
-        String headerWrong = "Date(UTC);Pair;Type;OrdeX Price;Order Amount;AvgTrading Price;Filled;Total;status\n";
+    void testWrongHeader() {
+        final String headerWrong = "Date(UTC);Pair;Type;OrdeX Price;Order Amount;AvgTrading Price;Filled;Total;status\n";
         try {
             ParserTestUtils.testParsing(headerWrong);
             fail("No expected exception has been thrown.");
@@ -34,10 +34,10 @@ public class BinanceBeanV2Test {
     }
 
     @Test
-    public void testCorrectParsingRawTransactionBuy() {
-        String row0 = "2020-03-19 17:02:52;BTCUSDT;BUY;0.0;0.041600;6236.39;0.041600;259.44;Filled\n";
-        String row1 = ";Date(UTC);Trading Price;Filled;Total;Fee;;;\n";
-        String row2 = ";2020-03-19 17:02:52;6236.39;0.041600;259.43382400;0.01612653BNB;;;\n";
+    void testCorrectParsingRawTransactionBuy() {
+        final String row0 = "2020-03-19 17:02:52;BTCUSDT;BUY;0.0;0.041600;6236.39;0.041600;259.44;Filled\n";
+        final String row1 = ";Date(UTC);Trading Price;Filled;Total;Fee;;;\n";
+        final String row2 = ";2020-03-19 17:02:52;6236.39;0.041600;259.43382400;0.01612653BNB;;;\n";
 
         final ImportedTransactionBean txBeanParsed
             = ParserTestUtils.getTransactionBean(HEADER_CORRECT + row0 + row1 + row2);
@@ -55,10 +55,10 @@ public class BinanceBeanV2Test {
     }
 
     @Test
-    public void testCorrectParsingRawTransactionBuyBaseFee() {
-        String row0 = "2020-03-19 17:02:52;BTCUSDT;BUY;0.0;0.041600;6236.39;0.041600;259.44;Filled\n";
-        String row1 = ";Date(UTC);Trading Price;Filled;Total;Fee;;;\n";
-        String row2 = ";2020-03-19 17:02:52;6236.39;0.041600;259.43382400;0.0001612653BTC;;;\n";
+    void testCorrectParsingRawTransactionBuyBaseFee() {
+        final String row0 = "2020-03-19 17:02:52;BTCUSDT;BUY;0.0;0.041600;6236.39;0.041600;259.44;Filled\n";
+        final String row1 = ";Date(UTC);Trading Price;Filled;Total;Fee;;;\n";
+        final String row2 = ";2020-03-19 17:02:52;6236.39;0.041600;259.43382400;0.0001612653BTC;;;\n";
 
         final ImportedTransactionBean txBeanParsed
             = ParserTestUtils.getTransactionBean(HEADER_CORRECT + row0 + row1 + row2);
@@ -76,10 +76,10 @@ public class BinanceBeanV2Test {
     }
 
     @Test
-    public void testCorrectParsingRawTransactionBuyQuoteFee() {
-        String row0 = "2020-03-19 17:02:52;BTCUSDT;BUY;0.0;0.041600;6236.39;0.041600;259.44;Filled\n";
-        String row1 = ";Date(UTC);Trading Price;Filled;Total;Fee;;;\n";
-        String row2 = ";2020-03-19 17:02:52;6236.39;0.041600;259.43382400;0.1612653USDT;;;\n";
+    void testCorrectParsingRawTransactionBuyQuoteFee() {
+        final String row0 = "2020-03-19 17:02:52;BTCUSDT;BUY;0.0;0.041600;6236.39;0.041600;259.44;Filled\n";
+        final String row1 = ";Date(UTC);Trading Price;Filled;Total;Fee;;;\n";
+        final String row2 = ";2020-03-19 17:02:52;6236.39;0.041600;259.43382400;0.1612653USDT;;;\n";
 
         final ImportedTransactionBean txBeanParsed
             = ParserTestUtils.getTransactionBean(HEADER_CORRECT + row0 + row1 + row2);
@@ -97,10 +97,10 @@ public class BinanceBeanV2Test {
     }
 
     @Test
-    public void testCorrectParsingRawTransactionSell() {
-        String row0 = "2020-03-19 17:02:52;BTCUSDT;SELL;0.0;0.041600;6236.39;0.041600;259.44;Filled\n";
-        String row1 = ";Date(UTC);Trading Price;Filled;Total;Fee;;;\n";
-        String row2 = ";2020-03-19 17:02:52;6236.39;0.041600;259.43382400;0.01612653BNB;;;\n";
+    void testCorrectParsingRawTransactionSell() {
+        final String row0 = "2020-03-19 17:02:52;BTCUSDT;SELL;0.0;0.041600;6236.39;0.041600;259.44;Filled\n";
+        final String row1 = ";Date(UTC);Trading Price;Filled;Total;Fee;;;\n";
+        final String row2 = ";2020-03-19 17:02:52;6236.39;0.041600;259.43382400;0.01612653BNB;;;\n";
 
         final ImportedTransactionBean txBeanParsed
             = ParserTestUtils.getTransactionBean(HEADER_CORRECT + row0 + row1 + row2);
@@ -118,10 +118,10 @@ public class BinanceBeanV2Test {
     }
 
     @Test
-    public void testCorrectParsingRawTransactionSellBaseFee() {
-        String row0 = "2020-03-19 17:02:52;BTCUSDT;SELL;0.0;0.041600;6236.39;0.041600;259.44;Filled\n";
-        String row1 = ";Date(UTC);Trading Price;Filled;Total;Fee;;;\n";
-        String row2 = ";2020-03-19 17:02:52;6236.39;0.041600;259.43382400;0.001612653BTC;;;\n";
+    void testCorrectParsingRawTransactionSellBaseFee() {
+        final String row0 = "2020-03-19 17:02:52;BTCUSDT;SELL;0.0;0.041600;6236.39;0.041600;259.44;Filled\n";
+        final String row1 = ";Date(UTC);Trading Price;Filled;Total;Fee;;;\n";
+        final String row2 = ";2020-03-19 17:02:52;6236.39;0.041600;259.43382400;0.001612653BTC;;;\n";
 
         final ImportedTransactionBean txBeanParsed
             = ParserTestUtils.getTransactionBean(HEADER_CORRECT + row0 + row1 + row2);
@@ -139,10 +139,10 @@ public class BinanceBeanV2Test {
     }
 
     @Test
-    public void testCorrectParsingRawTransactionSellQuoteFee() {
-        String row0 = "2020-03-19 17:02:52;BTCUSDT;SELL;0.0;0.041600;6236.39;0.041600;259.44;Filled\n";
-        String row1 = ";Date(UTC);Trading Price;Filled;Total;Fee;;;\n";
-        String row2 = ";2020-03-19 17:02:52;6236.39;0.041600;259.43382400;0.1612653USDT;;;\n";
+    void testCorrectParsingRawTransactionSellQuoteFee() {
+        final String row0 = "2020-03-19 17:02:52;BTCUSDT;SELL;0.0;0.041600;6236.39;0.041600;259.44;Filled\n";
+        final String row1 = ";Date(UTC);Trading Price;Filled;Total;Fee;;;\n";
+        final String row2 = ";2020-03-19 17:02:52;6236.39;0.041600;259.43382400;0.1612653USDT;;;\n";
 
         final ImportedTransactionBean txBeanParsed
             = ParserTestUtils.getTransactionBean(HEADER_CORRECT + row0 + row1 + row2);
@@ -161,22 +161,22 @@ public class BinanceBeanV2Test {
 
 
     @Test
-    public void testUnknownPair() {
-        String row0 = "2020-03-19 17:02:52;USDTBTC;SELL;0.0;0.041600;6236.39;0.041600;259.44;Filled\n";
-        String row1 = ";Date(UTC);Trading Price;Filled;Total;Fee;;;\n";
-        String row2 = ";2020-03-19 17:02:52;6236.39;0.041600;259.43382400;0.1612653USDT;;;\n";
+    void testUnknownPair() {
+        final String row0 = "2020-03-19 17:02:52;USDTBTC;SELL;0.0;0.041600;6236.39;0.041600;259.44;Filled\n";
+        final String row1 = ";Date(UTC);Trading Price;Filled;Total;Fee;;;\n";
+        final String row2 = ";2020-03-19 17:02:52;6236.39;0.041600;259.43382400;0.1612653USDT;;;\n";
 
-        RowError rowError = ParserTestUtils.getRowError(HEADER_CORRECT + row0 + row1 + row2);
+        final RowError rowError = ParserTestUtils.getRowError(HEADER_CORRECT + row0 + row1 + row2);
         assertNotNull(rowError);
-        String error = rowError.getMessage();
+        final String error = rowError.getMessage();
         assertTrue(error.contains(UNSUPPORTED_CURRENCY_PAIR.concat("USDTBTC")));
     }
 
     @Test
-    public void testIgnoredFee() {
-        String row0 = "2020-03-19 17:02:52;BTCUSDT;BUY;0.0;0.041600;6236.39;0.041600;259.44;Filled\n";
-        String row1 = ";Date(UTC);Trading Price;Filled;Total;Fee;;;\n";
-        String row2 = ";2020-03-19 17:02:52;6236.39;0.041600;259.43382400;0.1612653BNB;;;\n";
+    void testIgnoredFee() {
+        final String row0 = "2020-03-19 17:02:52;BTCUSDT;BUY;0.0;0.041600;6236.39;0.041600;259.44;Filled\n";
+        final String row1 = ";Date(UTC);Trading Price;Filled;Total;Fee;;;\n";
+        final String row2 = ";2020-03-19 17:02:52;6236.39;0.041600;259.43382400;0.1612653BNB;;;\n";
 
         final ConversionStatistic conversionStatistic =
             ParserTestUtils.getConversionStatistic(HEADER_CORRECT + row0 + row1 + row2);
@@ -185,10 +185,10 @@ public class BinanceBeanV2Test {
     }
 
     @Test
-    public void testIgnoredTransactionType() {
-        String row0 = "2020-03-19 17:02:52;BTCUSDT;SOLD;0.0;0.041600;6236.39;0.041600;259.44;Filled\n";
-        String row1 = ";Date(UTC);Trading Price;Filled;Total;Fee;;;\n";
-        String row2 = ";2020-03-19 17:02:52;6236.39;0.041600;259.43382400;0.01612653BNB;;;\n";
+    void testIgnoredTransactionType() {
+        final String row0 = "2020-03-19 17:02:52;BTCUSDT;SOLD;0.0;0.041600;6236.39;0.041600;259.44;Filled\n";
+        final String row1 = ";Date(UTC);Trading Price;Filled;Total;Fee;;;\n";
+        final String row2 = ";2020-03-19 17:02:52;6236.39;0.041600;259.43382400;0.01612653BNB;;;\n";
 
         final ConversionStatistic conversionStatistic =
             ParserTestUtils.getConversionStatistic(HEADER_CORRECT + row0 + row1 + row2);
@@ -204,10 +204,10 @@ public class BinanceBeanV2Test {
     }
 
     @Test
-    public void testIgnoredStatusType() {
-        String row0 = "2020-03-19 17:02:52;BTCUSDT;SOLD;0.0;0.041600;6236.39;0.041600;259.44;Cancel\n";
-        String row1 = ";Date(UTC);Trading Price;Filled;Total;Fee;;;\n";
-        String row2 = ";2020-03-19 17:02:52;6236.39;0.041600;259.43382400;0.01612653BNB;;;\n";
+    void testIgnoredStatusType() {
+        final String row0 = "2020-03-19 17:02:52;BTCUSDT;SOLD;0.0;0.041600;6236.39;0.041600;259.44;Cancel\n";
+        final String row1 = ";Date(UTC);Trading Price;Filled;Total;Fee;;;\n";
+        final String row2 = ";2020-03-19 17:02:52;6236.39;0.041600;259.43382400;0.01612653BNB;;;\n";
 
         final ConversionStatistic conversionStatistic =
             ParserTestUtils.getConversionStatistic(HEADER_CORRECT + row0 + row1 + row2);

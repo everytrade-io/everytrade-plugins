@@ -18,13 +18,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-public class BitfinexBeanV1Test {
+class BitfinexBeanV1Test {
     public static final String HEADER_CORRECT = "#,PAIR,AMOUNT,PRICE,FEE,FEE CURRENCY,DATE,ORDER ID\n";
 
 
     @Test
-    public void testWrongHeader() {
-        String headerWrong = "#,PAIR,AMOUNT,PRICE,X,FEE CURRENCY,DATE,ORDER ID\n";
+    void testWrongHeader() {
+        final  String headerWrong = "#,PAIR,AMOUNT,PRICE,X,FEE CURRENCY,DATE,ORDER ID\n";
         try {
             ParserTestUtils.testParsing(headerWrong);
             fail("No expected exception has been thrown.");
@@ -33,10 +33,10 @@ public class BitfinexBeanV1Test {
     }
 
     @Test
-    public void testCorrectParsingRawTransactionBuy() {
-        String row = "414007857,BTC/USD,0.01048537,9212.82428,-0.00002097,BTC,04-02-20 16:52:06,38828965095\n";
+    void testCorrectParsingRawTransactionBuy() {
+        final   String row = "414007857,BTC/USD,0.01048537,9212.82428,-0.00002097,BTC,04-02-20 16:52:06,38828965095\n";
         final ImportedTransactionBean txBeanParsed = ParserTestUtils.getTransactionBean(HEADER_CORRECT + row);
-        ImportedTransactionBean txBeanCorrect = new ImportedTransactionBean(
+        final ImportedTransactionBean txBeanCorrect = new ImportedTransactionBean(
             "414007857",
             Instant.parse("2020-02-04T16:52:06Z"),
             Currency.BTC,
@@ -50,10 +50,10 @@ public class BitfinexBeanV1Test {
     }
 
     @Test
-    public void testCorrectParsingRawTransactionBuyWithIgnoredChars() {
-        String row = "414007857,BTC/USD,0.01048537$,9 212.82428$,-0.00002097,BTC,04-02-20 16:52:06,38828965095\n";
+    void testCorrectParsingRawTransactionBuyWithIgnoredChars() {
+        final String row = "414007857,BTC/USD,0.01048537$,9 212.82428$,-0.00002097,BTC,04-02-20 16:52:06,38828965095\n";
         final ImportedTransactionBean txBeanParsed = ParserTestUtils.getTransactionBean(HEADER_CORRECT + row);
-        ImportedTransactionBean txBeanCorrect = new ImportedTransactionBean(
+        final ImportedTransactionBean txBeanCorrect = new ImportedTransactionBean(
             "414007857",
             Instant.parse("2020-02-04T16:52:06Z"),
             Currency.BTC,
@@ -67,10 +67,10 @@ public class BitfinexBeanV1Test {
     }
 
     @Test
-    public void testCorrectParsingRawTransactionBuyDiffFee() {
-        String row = "414007857,BTC/USD,0.01048537,9212.82428,-0.00002097,USD,04-02-20 16:52:06,38828965095\n";
+    void testCorrectParsingRawTransactionBuyDiffFee() {
+        final String row = "414007857,BTC/USD,0.01048537,9212.82428,-0.00002097,USD,04-02-20 16:52:06,38828965095\n";
         final ImportedTransactionBean txBeanParsed = ParserTestUtils.getTransactionBean(HEADER_CORRECT + row);
-        ImportedTransactionBean txBeanCorrect = new ImportedTransactionBean(
+        final ImportedTransactionBean txBeanCorrect = new ImportedTransactionBean(
             "414007857",
             Instant.parse("2020-02-04T16:52:06Z"),
             Currency.BTC,
@@ -85,10 +85,10 @@ public class BitfinexBeanV1Test {
 
 
     @Test
-    public void testCorrectParsingRawTransactionSell() {
-        String row = "414007820,BTC/USD,-0.0095,9214.7,-0.1750793,USD,04-02-20 16:49:55,38828965094\n";
+    void testCorrectParsingRawTransactionSell() {
+        final String row = "414007820,BTC/USD,-0.0095,9214.7,-0.1750793,USD,04-02-20 16:49:55,38828965094\n";
         final ImportedTransactionBean txBeanParsed = ParserTestUtils.getTransactionBean(HEADER_CORRECT + row);
-        ImportedTransactionBean txBeanCorrect = new ImportedTransactionBean(
+        final ImportedTransactionBean txBeanCorrect = new ImportedTransactionBean(
             "414007820",
             Instant.parse("2020-02-04T16:49:55Z"),
             Currency.BTC,
@@ -102,10 +102,10 @@ public class BitfinexBeanV1Test {
     }
 
     @Test
-    public void testCorrectParsingRawTransactionSellDiffFee() {
-        String row = "414007820,BTC/USD,-0.0095,9214.7,-0.000000123,BTC,04-02-20 16:49:55,38828965094\n";
+    void testCorrectParsingRawTransactionSellDiffFee() {
+        final String row = "414007820,BTC/USD,-0.0095,9214.7,-0.000000123,BTC,04-02-20 16:49:55,38828965094\n";
         final ImportedTransactionBean txBeanParsed = ParserTestUtils.getTransactionBean(HEADER_CORRECT + row);
-        ImportedTransactionBean txBeanCorrect = new ImportedTransactionBean(
+        final ImportedTransactionBean txBeanCorrect = new ImportedTransactionBean(
             "414007820",
             Instant.parse("2020-02-04T16:49:55Z"),
             Currency.BTC,
@@ -120,19 +120,19 @@ public class BitfinexBeanV1Test {
 
 
     @Test
-    public void testZerroAmount() {
-        String row = "414007857,BTC/USD,0.0,9212.82428,-0.00002097,BTC,04-02-20 16:52:06,38828965095\n";
-        RowError rowError = ParserTestUtils.getRowError(HEADER_CORRECT + row);
+    void testZerroAmount() {
+        final String row = "414007857,BTC/USD,0.0,9212.82428,-0.00002097,BTC,04-02-20 16:52:06,38828965095\n";
+        final RowError rowError = ParserTestUtils.getRowError(HEADER_CORRECT + row);
         assertNotNull(rowError);
-        String error = rowError.getMessage();
+        final String error = rowError.getMessage();
         assertTrue(error.contains(ILLEGAL_ZERO_VALUE_OF_AMOUNT));
     }
 
     @Test
-    public void testFeeSkipped() {
-        String row = "414007857,BTC/USD,0.01048537,9212.82428,-0.00002097,XXX,04-02-20 16:52:06,38828965095\n";
+    void testFeeSkipped() {
+        final String row = "414007857,BTC/USD,0.01048537,9212.82428,-0.00002097,XXX,04-02-20 16:52:06,38828965095\n";
         final ImportedTransactionBean txBeanParsed = ParserTestUtils.getTransactionBean(HEADER_CORRECT + row);
-        ImportedTransactionBean txBeanCorrect = new ImportedTransactionBean(
+        final ImportedTransactionBean txBeanCorrect = new ImportedTransactionBean(
             "414007857",
             Instant.parse("2020-02-04T16:52:06Z"),
             Currency.BTC,
@@ -147,21 +147,21 @@ public class BitfinexBeanV1Test {
 
 
     @Test
-    public void testNotAllowedPair() {
-        String row = "414007857,CAD/USD,0.01048537,9212.82428,-0.00002097,USD,04-02-20 16:52:06,38828965095\n";
-        RowError rowError = ParserTestUtils.getRowError(HEADER_CORRECT + row);
+    void testNotAllowedPair() {
+        final String row = "414007857,CAD/USD,0.01048537,9212.82428,-0.00002097,USD,04-02-20 16:52:06,38828965095\n";
+        final RowError rowError = ParserTestUtils.getRowError(HEADER_CORRECT + row);
         assertNotNull(rowError);
-        String error = rowError.getMessage();
+        final String error = rowError.getMessage();
         assertTrue(error.contains(UNSUPPORTED_CURRENCY_PAIR.concat("CAD/USD")));
     }
 
     @Test
-    public void testCorrectParsingMoreDateFormats() {
-        String row = "414007857,BTC/USD,0.01048537,9212.82428,-0.00002097,BTC,12-02-20 16:52:06,38828965095\n";
-        String row2 = "414007857,BTC/USD,0.01048537,9212.82428,-0.00002097,BTC,12-20-20 16:52:06,38828965095\n";
+    void testCorrectParsingMoreDateFormats() {
+        final String row = "414007857,BTC/USD,0.01048537,9212.82428,-0.00002097,BTC,12-02-20 16:52:06,38828965095\n";
+        final String row2 = "414007857,BTC/USD,0.01048537,9212.82428,-0.00002097,BTC,12-20-20 16:52:06,38828965095\n";
         final ImportedTransactionBean txBeanParsed
             = ParserTestUtils.getTransactionBean(HEADER_CORRECT + row + row2);
-        ImportedTransactionBean txBeanCorrect = new ImportedTransactionBean(
+        final ImportedTransactionBean txBeanCorrect = new ImportedTransactionBean(
             "414007857",
             Instant.parse("2020-12-02T16:52:06Z"),
             Currency.BTC,
@@ -175,12 +175,12 @@ public class BitfinexBeanV1Test {
     }
 
     @Test
-    public void testCorrectParsingMoreDateFormatsMilliseconds() {
-        String row = "414007857,BTC/USD,0.01048537,9212.82428,-0.00002097,BTC,12-02-20 16:52:06.123,38828965095\n";
-        String row2 = "414007857,BTC/USD,0.01048537,9212.82428,-0.00002097,BTC,12-20-20 16:52:06.123,38828965095\n";
+    void testCorrectParsingMoreDateFormatsMilliseconds() {
+        final String row = "414007857,BTC/USD,0.01048537,9212.82428,-0.00002097,BTC,12-02-20 16:52:06.123,38828965095\n";
+        final String row2 = "414007857,BTC/USD,0.01048537,9212.82428,-0.00002097,BTC,12-20-20 16:52:06.123,38828965095\n";
         final ImportedTransactionBean txBeanParsed
             = ParserTestUtils.getTransactionBean(HEADER_CORRECT + row + row2);
-        ImportedTransactionBean txBeanCorrect = new ImportedTransactionBean(
+        final ImportedTransactionBean txBeanCorrect = new ImportedTransactionBean(
             "414007857",
             Instant.parse("2020-12-02T16:52:06.123Z"),
             Currency.BTC,
@@ -194,8 +194,8 @@ public class BitfinexBeanV1Test {
     }
 
     @Test
-    public void testIgnoredFee() {
-        String row = "414007857,BTC/USD,0.01048537,9212.82428,-0.00002097,XXX,04-02-20 16:52:06,38828965095\n";
+    void testIgnoredFee() {
+        final String row = "414007857,BTC/USD,0.01048537,9212.82428,-0.00002097,XXX,04-02-20 16:52:06,38828965095\n";
         final ConversionStatistic conversionStatistic =
             ParserTestUtils.getConversionStatistic(HEADER_CORRECT + row);
         assertNotNull(conversionStatistic);

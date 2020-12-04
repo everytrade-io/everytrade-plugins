@@ -1,0 +1,4 @@
+Transaction Type,Date,Amount Debited,Debit Currency,Amount Credited,Credit Currency,Exchange Rate,Credit/Debit,Spot Rate
+fiat funding,2020-03-11T19:59:15+00,,,"1,000",CAD,,credit,
+exchange,2020-03-11T19:59:23+00,"1,000",CAD,0.09172307,BTC,10902.3826,,
+crypto withdrawal,2020-03-11T19:59:42+00,0.09172307,BTC,,,,debit,10767.9537

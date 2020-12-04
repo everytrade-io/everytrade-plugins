@@ -4,7 +4,6 @@ import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.ConversionStatistic;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.RowError;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import org.junit.jupiter.api.Test;
@@ -17,53 +16,55 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-
-class BittrexBeanV1Test {
-    private static final String HEADER_CORRECT
-        = "OrderUuid,Exchange,Type,Quantity,Limit,CommissionPaid,Price,Opened,Closed\n";
+class HitBtcBeanV1Test {
+    private static final String HEADER_CORRECT = "\"Date (+01)\",\"Instrument\",\"Trade ID\",\"Order ID\"," +
+        "\"Side\"," +
+        "\"Quantity\",\"Price\",\"Volume\",\"Fee\",\"Rebate\",\"Total\"\n";
 
     @Test
-    void testWrongHeader() {
-        final String headerWrong = "OrderUuid,Exchange,Type,Quantity,Limit,CommissionPaid,Price,Opened,ClXsed\n";
+    void testCorrectHeader() {
         try {
-            ParserTestUtils.testParsing(headerWrong);
-            fail("No expected exception has been thrown.");
+            ParserTestUtils.testParsing(HEADER_CORRECT);
         } catch (ParsingProcessException e) {
+            fail("Unexpected exception has been thrown." + e.getMessage());
         }
     }
 
     @Test
-    void testCorrectParsingRawTransaction()  {
-        final String row = "90d3c9f7-6ddf-4e5a-86ca-2132658ea436,EUR-ETH,LIMIT_BUY,0.03280507,0.03380240,0.00000277," +
-            "0.00110889,2/14/19 15:01,2/14/19 15:01\n";
+    void testWrongHeader() {
+        try {
+            final String header = "\"Date +01)\",\"Instrument\",\"Trade ID\",\"Order ID\",\"Side\",\"Quantity\",\"Pri" +
+                "ce\",\"Volume\",\"Fee\",\"Rebate\",\"Total\"\n";
+            ParserTestUtils.testParsing(header);
+            fail("Expected exception has not been thrown.");
+        } catch (ParsingProcessException e) {
+
+        }
+    }
+
+    @Test
+    void testCorrectParsingRawTransaction() {
+        final String row
+            = "\"2018-10-29 12:41:32\",\"ETH/USD\",\"388286158\",\"67856774287\",\"sell\",\"0.2700\",\"194.01\"," +
+            "\"52.38270000\",\"0.00000000\",\"0.00523827\",\"52.38793827\"";
         final ImportedTransactionBean txBeanParsed = ParserTestUtils.getTransactionBean(HEADER_CORRECT + row);
         final ImportedTransactionBean txBeanCorrect = new ImportedTransactionBean(
-            "90d3c9f7-6ddf-4e5a-86ca-2132658ea436",
-            Instant.parse("2019-02-14T15:01:00Z"),
+            "388286158",
+            Instant.parse("2018-10-29T12:41:32Z"),
             Currency.ETH,
-            Currency.EUR,
-            TransactionType.BUY,
-            new BigDecimal("0.03280507"),
-            new BigDecimal("0.0338023970"),
-            new BigDecimal("0.00000277")
+            Currency.USD,
+            TransactionType.SELL,
+            new BigDecimal("0.27"),
+            new BigDecimal("194.01"),
+            new BigDecimal("-0.00523827")
         );
         ParserTestUtils.checkEqual(txBeanParsed, txBeanCorrect);
     }
 
     @Test
-     void testUnknonwExchange() {
-        final String row = "90d3c9f7-6ddf-4e5a-86ca-2132658ea436,ETH-BTK,LIMIT_BUY,0.03280507,0.03380240," +
-            "0.00000277,0.00110889,2/14/19 15:01,2/14/19 15:01\n";
-        final RowError rowError = ParserTestUtils.getRowError(HEADER_CORRECT + row);
-        assertNotNull(rowError);
-        final String error = rowError.getMessage();
-        assertTrue(error.contains("ETH-BTK"));
-    }
-
-    @Test
     void testIgnoredTransactionType() {
-        final String row = "90d3c9f7-6ddf-4e5a-86ca-2132658ea436,EUR-ETH,BUY,0.03280507,0.03380240,0.00000277," +
-            "0.00110889,2/14/19 15:01,2/14/19 15:01\n";
+        final String row = "\"2018-10-29 12:41:32\",\"ETH/USD\",\"388286158\",\"67856774287\",\"sold\",\"0.2700\"" +
+            ",\"194.01\",\"52.38270000\",\"0.00000000\",\"0.00523827\",\"52.38793827\"";
         final ConversionStatistic conversionStatistic
             = ParserTestUtils.getConversionStatistic(HEADER_CORRECT + row);
         assertNotNull(conversionStatistic);
@@ -73,7 +74,7 @@ class BittrexBeanV1Test {
                 .getErrorRows()
                 .get(0)
                 .getMessage()
-                .contains(ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE.concat("BUY"))
+                .contains(ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE.concat("sold"))
         );
     }
 }

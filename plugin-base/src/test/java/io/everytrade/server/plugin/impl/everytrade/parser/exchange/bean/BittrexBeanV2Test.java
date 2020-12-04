@@ -23,7 +23,7 @@ class BittrexBeanV2Test {
         "PricePerUnit,IsConditional,Condition,ConditionTarget,ImmediateOrCancel,Closed\n";
 
     @Test
-    public void testWrongHeader() {
+    void testWrongHeader() {
         String headerWrong = "Uuid,Exchang_,TimeStamp,OrderType,Limit,Quantity,QuantityRemaining,Commission,Price," +
             "PricePerUnit,IsConditional,Condition,ConditionTarget,ImmediateOrCancel,Closed\n";
         try {
@@ -34,8 +34,9 @@ class BittrexBeanV2Test {
     }
 
     @Test
-    public void testCorrectParsingRawTransaction() {
-        String row = "d509431f-8ccd-4d4e-b64c-ee618634e53d,USD-BTC,7/28/2019 1:35:53 PM,LIMIT_SELL,9471.45900000," +
+    void testCorrectParsingRawTransaction() {
+        final String row = "d509431f-8ccd-4d4e-b64c-ee618634e53d,USD-BTC,7/28/2019 1:35:53 PM,LIMIT_SELL,9471" +
+            ".45900000," +
             "0.00321000,0.00000000,0.07600851,30.40340586,9471.46600000,False,,0.00000000,False,7/28/2019 1:35:53 PM\n";
         final ImportedTransactionBean txBeanParsed  = ParserTestUtils.getTransactionBean(HEADER_CORRECT + row);
         final ImportedTransactionBean txBeanCorrect = new ImportedTransactionBean(
@@ -52,19 +53,18 @@ class BittrexBeanV2Test {
     }
 
     @Test
-    public void testUnknonwExchange() {
-        String row = "d509431f-8ccd-4d4e-b64c-ee618634e53d,BTC-UUU,7/28/2019 1:35:53 PM,LIMIT_SELL,9471.45900000," +
+    void testUnknonwExchange() {
+        final String row = "d509431f-8ccd-4d4e-b64c-ee618634e53d,BTC-UUU,7/28/2019 1:35:53 PM,LIMIT_SELL,9471.45900000," +
             "0.00321000,0.00000000,0.07600851,30.40340586,9471.46600000,False,,0.00000000,False,7/28/2019 1:35:53 PM\n";
-        RowError rowError = ParserTestUtils.getRowError(HEADER_CORRECT + row);
+        final RowError rowError = ParserTestUtils.getRowError(HEADER_CORRECT + row);
         assertNotNull(rowError);
-        String error = rowError.getMessage();
-        System.out.println(error);
+        final String error = rowError.getMessage();
         assertTrue(error.contains("BTC-UUU"));
     }
 
     @Test
-    public void testIgnoredTransactionType() {
-        String row = "d509431f-8ccd-4d4e-b64c-ee618634e53d,USD-BTC,7/28/2019 1:35:53 PM,BUY,9471.45900000," +
+    void testIgnoredTransactionType() {
+        final String row = "d509431f-8ccd-4d4e-b64c-ee618634e53d,USD-BTC,7/28/2019 1:35:53 PM,BUY,9471.45900000," +
             "0.00321000,0.00000000,0.07600851,30.40340586,9471.46600000,False,,0.00000000,False,7/28/2019 1:35:53 PM\n";
         final ConversionStatistic conversionStatistic
             = ParserTestUtils.getConversionStatistic(HEADER_CORRECT + row);
