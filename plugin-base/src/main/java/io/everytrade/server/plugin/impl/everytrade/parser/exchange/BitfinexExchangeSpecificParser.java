@@ -2,10 +2,12 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange;
 
 import io.everytrade.server.plugin.api.parser.RowError;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
+import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BitfinexBeanV1;
 
 import java.io.File;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -19,10 +21,19 @@ public class BitfinexExchangeSpecificParser implements IExchangeSpecificParser {
     public List<? extends ExchangeBean> parse(File inputFile) {
         final DefaultUnivocityExchangeSpecificParser parser
             = new DefaultUnivocityExchangeSpecificParser(BitfinexBeanV1.class, DELIMITER);
-        final List<BitfinexBeanV1> beans = (List<BitfinexBeanV1>) parser.parse(inputFile);
+        final List<? extends ExchangeBean> exchangeBeans = parser.parse(inputFile);
+        final List<BitfinexBeanV1> bitfinexBeans = new ArrayList<>();
+        for (ExchangeBean exchangeBean : exchangeBeans) {
+            if (!(exchangeBean instanceof BitfinexBeanV1)){
+                throw new ParsingProcessException(String.format(
+                    "Unexpected parsed bean class: %s", exchangeBean.getClass()
+                ));
+            }
+            bitfinexBeans.add((BitfinexBeanV1) exchangeBean);
+        }
         rowErrors = parser.getRowErrors();
-        final String datePattern = evalDatePattern(beans);
-        return updateDate(beans, datePattern);
+        final String datePattern = evalDatePattern(bitfinexBeans);
+        return updateDate(bitfinexBeans, datePattern);
     }
 
     @Override
