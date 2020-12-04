@@ -1,0 +1,4 @@
+Trade Date;Product;Trade Type;Traded Price;Currency 1;Amount (Currency 1);Fee;USD Rate (Currency);Currency 2;Amount (Currency 2);Order ID;Details
+2020/09/29 17:55:30;LTC/USD;Buy;46.43;LTC;0.9;0;46.43;USD;-41.79;BF1;
+2020/09/29 17:53:28;LTC/USD;Sell;44.16;LTC;-1;0;44.16;USD;44.16;BF2;
+2020/09/29 15:41:16;LTC;Deposit;0;LTC;2.25744726;0;45.482;;0;CDP1;

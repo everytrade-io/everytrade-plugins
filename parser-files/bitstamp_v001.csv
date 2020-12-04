@@ -1,0 +1,3 @@
+Type,Datetime,Account,Amount,Value,Rate,Fee,Sub Type
+Market,"Feb. 14, 2019, 03:32 PM",Main Account,0.00111167 BTC,3.96238096 USD,3564.35 USD,0.00990595 USD,Buy
+Market,"Feb. 14, 2019, 03:32 PM",Main Account,0.03280507 ETH,0.00110889 BTC,0.03380241 BTC,0.00000277 BTC,Sell

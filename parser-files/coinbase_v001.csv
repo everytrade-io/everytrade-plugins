@@ -1,0 +1,3 @@
+portfolio,trade id,product,side,created at,size,size unit,price,fee,total,price/fee/total unit
+default,0,LTC-EUR,SELL,2020-05-18T20:08:14.253Z,2.86035000,LTC,41.43,0.5925215025,117.9117789975,EUR
+default,1,LTC-EUR,BUY,2020-05-18T20:08:39.184Z,2.96875093,LTC,41.45,0.6152736302425,-123.6699996787425,EUR
