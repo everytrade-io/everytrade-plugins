@@ -26,21 +26,21 @@ public class KrakenBeanV1 extends ExchangeBean {
     private BigDecimal cost;
     private BigDecimal fee;
     private BigDecimal vol;
-    private static final Map<String, Currency> currencies = new HashMap<>() {};
+    private static final Map<String, Currency> CURRENCIES = new HashMap<>() {};
     static {
-        currencies.put("XXBT", Currency.BTC);
-        currencies.put("XETH", Currency.ETH);
-        currencies.put("XLTC", Currency.LTC);
-        currencies.put("BCH", Currency.BCH);
-        currencies.put("XXRP", Currency.XRP);
-        currencies.put("XXMR", Currency.XMR);
-        currencies.put("DASH", Currency.DASH);
-        currencies.put("DAI", Currency.DAI);
+        CURRENCIES.put("XXBT", Currency.BTC);
+        CURRENCIES.put("XETH", Currency.ETH);
+        CURRENCIES.put("XLTC", Currency.LTC);
+        CURRENCIES.put("BCH", Currency.BCH);
+        CURRENCIES.put("XXRP", Currency.XRP);
+        CURRENCIES.put("XXMR", Currency.XMR);
+        CURRENCIES.put("DASH", Currency.DASH);
+        CURRENCIES.put("DAI", Currency.DAI);
 
-        currencies.put("ZCZK", Currency.CZK);
-        currencies.put("ZUSD", Currency.USD);
-        currencies.put("ZEUR", Currency.EUR);
-        currencies.put("ZCAD", Currency.CAD);
+        CURRENCIES.put("ZCZK", Currency.CZK);
+        CURRENCIES.put("ZUSD", Currency.USD);
+        CURRENCIES.put("ZEUR", Currency.EUR);
+        CURRENCIES.put("ZCAD", Currency.CAD);
     }
 
     @Parsed(field = "txid")
@@ -55,11 +55,11 @@ public class KrakenBeanV1 extends ExchangeBean {
         if (!pair.equals(mBase.concat(mQuote))) {
             throw new DataValidationException(String.format("Can not parse pair %s.", pair));
         }
-        if (!currencies.containsKey(mBase) || !currencies.containsKey(mQuote)) {
+        if (!CURRENCIES.containsKey(mBase) || !CURRENCIES.containsKey(mQuote)) {
             throw new DataValidationException(String.format("Unknown pair base(%s) or pair quote(%s).", mBase, mQuote));
         }
-        this.pairBase = currencies.get(mBase);
-        this.pairQuote = currencies.get(mQuote);
+        this.pairBase = CURRENCIES.get(mBase);
+        this.pairQuote = CURRENCIES.get(mQuote);
     }
 
     @Parsed(field = "time")
@@ -108,7 +108,7 @@ public class KrakenBeanV1 extends ExchangeBean {
     }
 
     private String findStarts(String value) {
-        List<String> matchedCurrencies = currencies
+        List<String> matchedCurrencies = CURRENCIES
             .keySet()
             .stream()
             .filter(value::startsWith)
@@ -126,7 +126,7 @@ public class KrakenBeanV1 extends ExchangeBean {
     }
 
     private String findEnds(String value) {
-        List<String> matchedCurrencies = currencies
+        List<String> matchedCurrencies = CURRENCIES
             .keySet()
             .stream()
             .filter(value::endsWith)

@@ -10,11 +10,11 @@ public enum Level1Header {
     STATUS("status");
 
     private final String value;
-    private static final Map<String, Level1Header> lookup = new HashMap<>();
+    private static final Map<String, Level1Header> LOOKUP = new HashMap<>();
 
     static {
         for (Level1Header header : Level1Header.values()) {
-            lookup.put(header.getValue(), header);
+            LOOKUP.put(header.getValue(), header);
         }
     }
 
@@ -25,7 +25,7 @@ public enum Level1Header {
         if (BinanceExchangeSpecificParser.DATE_PATTERN.matcher(abbreviation).find()) {
             return DATE;
         } else {
-            return lookup.get(abbreviation);
+            return LOOKUP.get(abbreviation);
         }
     }
 

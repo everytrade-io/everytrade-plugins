@@ -36,12 +36,12 @@ public class BitmexBeanV1 extends ExchangeBean {
 
 
     private static final BigDecimal SATOSHIS_BY_BTC = BigDecimal.valueOf(100_000_000L);
-    private static final Map<String, Currency> currencies = new HashMap<>() {};
-    private static final Map<String, CurrencyPair> tradableCurrencyPairs = new HashMap<>();
+    private static final Map<String, Currency> CURRENCIES = new HashMap<>() {};
+    private static final Map<String, CurrencyPair> TRADABLE_CURRENCY_PAIRS = new HashMap<>();
 
     static {
-        currencies.put("XBT", Currency.BTC);
-        getTradeablePairs().forEach(t -> tradableCurrencyPairs.put(t.toString().replace("/", ""), t));
+        CURRENCIES.put("XBT", Currency.BTC);
+        getTradeablePairs().forEach(t -> TRADABLE_CURRENCY_PAIRS.put(t.toString().replace("/", ""), t));
     }
 
     @Parsed(field = "transactTime")
@@ -55,11 +55,11 @@ public class BitmexBeanV1 extends ExchangeBean {
         String mappedPair;
         String replaceBase = findStarts(value);
         if (replaceBase != null) {
-            mappedPair = value.replaceFirst(replaceBase, currencies.get(replaceBase).name());
+            mappedPair = value.replaceFirst(replaceBase, CURRENCIES.get(replaceBase).name());
         } else {
             mappedPair = value;
         }
-        final CurrencyPair tradablePair = tradableCurrencyPairs.get(mappedPair);
+        final CurrencyPair tradablePair = TRADABLE_CURRENCY_PAIRS.get(mappedPair);
         if (tradablePair == null) {
             throw new DataValidationException(String.format("Can not parse pair symbol %s.", value));
         }
@@ -121,7 +121,7 @@ public class BitmexBeanV1 extends ExchangeBean {
     }
 
     private String findStarts(String value) {
-        List<String> matchedCurrencies = currencies
+        List<String> matchedCurrencies = CURRENCIES
             .keySet()
             .stream()
             .filter(value::startsWith)

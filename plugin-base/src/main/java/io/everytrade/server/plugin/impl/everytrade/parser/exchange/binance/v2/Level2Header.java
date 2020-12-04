@@ -12,10 +12,10 @@ public enum Level2Header {
     FEE("Fee");
 
     private final String value;
-    private static final Map<String, Level2Header> lookup = new HashMap<>();
+    private static final Map<String, Level2Header> LOOKUP = new HashMap<>();
     static {
         for (Level2Header header : Level2Header.values()) {
-            lookup.put(header.getValue(), header);
+            LOOKUP.put(header.getValue(), header);
         }
     }
 
@@ -26,7 +26,7 @@ public enum Level2Header {
         if (BinanceExchangeSpecificParser.DATE_PATTERN.matcher(abbreviation).find()) {
             return DATE;
         } else {
-            return lookup.get(abbreviation);
+            return LOOKUP.get(abbreviation);
         }
     }
 
