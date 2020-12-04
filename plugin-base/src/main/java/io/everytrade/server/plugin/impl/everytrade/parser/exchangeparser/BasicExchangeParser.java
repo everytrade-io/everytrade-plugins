@@ -2,10 +2,10 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchangeparser;
 
 import com.univocity.parsers.common.Context;
 import com.univocity.parsers.common.processor.BeanListProcessor;
-import com.univocity.parsers.csv.CsvFormat;
 import com.univocity.parsers.csv.CsvParserSettings;
 import io.everytrade.server.plugin.api.parser.RowError;
 import io.everytrade.server.plugin.api.parser.RowErrorType;
+import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
@@ -13,22 +13,20 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import java.io.File;
 import java.io.FileReader;
 import java.io.Reader;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
-public class DefaultExchangeParser implements IExchangeParser{
+public class BasicExchangeParser implements IExchangeParser{
     private final Class<? extends ExchangeBean> exchangeBean;
 
-    public DefaultExchangeParser(Class<? extends ExchangeBean> exchangeBean) {
+    public BasicExchangeParser(Class<? extends ExchangeBean> exchangeBean) {
         this.exchangeBean = exchangeBean;
     }
 
     @Override
-    public List<? extends ExchangeBean> parse(File inputFile, CsvFormat csvFormat, List<RowError> rowErrors) {
-        final CsvParserSettings parserSettings = createParserSettings(csvFormat, rowErrors, exchangeBean);
+    public List<? extends ExchangeBean> parse(File inputFile, List<RowError> rowErrors) {
+        final CsvParserSettings parserSettings = createParserSettings(rowErrors, exchangeBean);
         return parse(inputFile, parserSettings, exchangeBean);
     }
 
@@ -56,32 +54,20 @@ public class DefaultExchangeParser implements IExchangeParser{
     }
 
     private CsvParserSettings createParserSettings(
-        CsvFormat csvFormat,
         List<RowError> rowErrors,
         Class<? extends ExchangeBean> exchangeBean
     ) {
         CsvParserSettings parserSettings = new CsvParserSettings();
-        parserSettings.setFormat(csvFormat);
         parserSettings.setHeaderExtractionEnabled(true);
-
         parserSettings.setProcessorErrorHandler((error, inputRow, context) -> {
             RowErrorType rowErrorType = error instanceof DataIgnoredException
                 ? RowErrorType.IGNORED : RowErrorType.FAILED;
             RowError rowError = new RowError(Arrays.toString(inputRow), error.getMessage(), rowErrorType);
             rowErrors.add(rowError);
         });
-
-        try {
-            Constructor<?> constructor = exchangeBean.getConstructor();
-            ExchangeBean bean = (ExchangeBean) constructor.newInstance();
-            bean.updateParserSettings(parserSettings);
-        } catch (
-            NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e
-        ) {
-            throw new ParsingProcessException(e);
-        }
+        final String delimiter = ParserUtils.getDelimiter(exchangeBean);
+        parserSettings.getFormat().setDelimiter(delimiter);
 
         return parserSettings;
     }
-
 }

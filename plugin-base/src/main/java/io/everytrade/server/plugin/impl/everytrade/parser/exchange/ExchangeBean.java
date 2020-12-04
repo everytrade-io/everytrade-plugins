@@ -1,7 +1,6 @@
 package io.everytrade.server.plugin.impl.everytrade.parser.exchange;
 
 import com.univocity.parsers.common.DataValidationException;
-import com.univocity.parsers.csv.CsvParserSettings;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.model.SupportedExchange;
@@ -21,6 +20,7 @@ public abstract class ExchangeBean implements IImportedTransactionBeanable {
     public static final String UNSUPPORTED_TRANSACTION_TYPE = "Unsupported transaction type ";
     public static final String UNSUPPORTED_STATUS_TYPE = "Unsupported status type ";
     public static final String IGNORED_CHARS_IN_NUMBER = "[,\\s\\$]";
+    private static final String DEFAULT_DELIMITER = ",";
     private final SupportedExchange exchange;
     private List<String> rowValues;
     private long rowNumber;
@@ -41,7 +41,8 @@ public abstract class ExchangeBean implements IImportedTransactionBeanable {
         this.rowNumber = rowNumber;
     }
 
-    public void updateParserSettings(CsvParserSettings csvParserSettings) {
+    public  String getDelimiter() {
+        return DEFAULT_DELIMITER;
     }
 
     public String rowToString() {
