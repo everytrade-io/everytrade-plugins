@@ -1,4 +1,4 @@
-package io.everytrade.server.plugin.impl.everytrade.parser.exchangeparser.binance.v2;
+package io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v2;
 
 public class BinanceRow {
     private String date;

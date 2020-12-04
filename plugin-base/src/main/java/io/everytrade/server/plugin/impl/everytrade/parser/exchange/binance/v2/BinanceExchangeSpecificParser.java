@@ -1,4 +1,4 @@
-package io.everytrade.server.plugin.impl.everytrade.parser.exchangeparser;
+package io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v2;
 
 import com.univocity.parsers.common.record.Record;
 import com.univocity.parsers.csv.CsvParser;
@@ -8,10 +8,8 @@ import io.everytrade.server.plugin.api.parser.RowErrorType;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.UnknownHeaderException;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BinanceBeanV2;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.IExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchangeparser.binance.v2.Level1Header;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchangeparser.binance.v2.Level2Header;
 
 import java.io.File;
 import java.io.FileReader;
@@ -26,7 +24,7 @@ import java.util.TreeMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class BinanceExchangeParser implements IExchangeParser {
+public class BinanceExchangeSpecificParser implements IExchangeSpecificParser {
 
     public static final Pattern DATE_PATTERN;
 

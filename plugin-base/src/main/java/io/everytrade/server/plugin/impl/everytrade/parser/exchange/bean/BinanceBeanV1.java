@@ -1,4 +1,4 @@
-package io.everytrade.server.plugin.impl.everytrade.parser.exchange;
+package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
 import com.univocity.parsers.annotations.Format;
 import com.univocity.parsers.annotations.Headers;
@@ -11,7 +11,7 @@ import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.ImportDetail;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
-import io.everytrade.server.plugin.impl.everytrade.parser.postprocessor.ConversionParams;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -90,7 +90,7 @@ public class BinanceBeanV1 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean(ConversionParams conversionParams) {
+    public ImportedTransactionBean toImportedTransactionBean() {
         validateCurrencyPair(marketBase, marketQuote);
 
         final boolean isIncorrectFeeCoin

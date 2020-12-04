@@ -1,4 +1,4 @@
-package io.everytrade.server.plugin.impl.everytrade.parser.exchange;
+package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
@@ -6,6 +6,7 @@ import io.everytrade.server.plugin.api.parser.ConversionStatistic;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.RowError;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;

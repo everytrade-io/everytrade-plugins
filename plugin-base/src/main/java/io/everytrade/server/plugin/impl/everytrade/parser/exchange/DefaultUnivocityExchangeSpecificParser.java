@@ -1,4 +1,4 @@
-package io.everytrade.server.plugin.impl.everytrade.parser.exchangeparser;
+package io.everytrade.server.plugin.impl.everytrade.parser.exchange;
 
 import com.univocity.parsers.common.Context;
 import com.univocity.parsers.common.processor.BeanListProcessor;
@@ -7,7 +7,6 @@ import io.everytrade.server.plugin.api.parser.RowError;
 import io.everytrade.server.plugin.api.parser.RowErrorType;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.io.File;
 import java.io.FileReader;
@@ -15,11 +14,10 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
-
-public class BasicExchangeParser implements IExchangeParser{
+public class DefaultUnivocityExchangeSpecificParser implements IExchangeSpecificParser {
     private final Class<? extends ExchangeBean> exchangeBean;
 
-    public BasicExchangeParser(Class<? extends ExchangeBean> exchangeBean) {
+    public DefaultUnivocityExchangeSpecificParser(Class<? extends ExchangeBean> exchangeBean) {
         this.exchangeBean = exchangeBean;
     }
 
@@ -65,6 +63,7 @@ public class BasicExchangeParser implements IExchangeParser{
             rowErrors.add(rowError);
         });
         parserSettings.getFormat().setDelimiter(delimiter);
+        parserSettings.getFormat().setComment('\0'); // No symbol for comments
 
         return parserSettings;
     }
