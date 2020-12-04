@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -21,6 +22,7 @@ public class DefaultUnivocityExchangeSpecificParser implements IExchangeSpecific
     private final Class<? extends ExchangeBean> exchangeBean;
     private final String delimiter;
     private final String lineSeparator;
+    private List<RowError> rowErrors = List.of();
 
     public DefaultUnivocityExchangeSpecificParser(Class<? extends ExchangeBean> exchangeBean) {
         this(exchangeBean, DEFAUL_DELIMITER, null);
@@ -44,9 +46,15 @@ public class DefaultUnivocityExchangeSpecificParser implements IExchangeSpecific
     }
 
     @Override
-    public List<? extends ExchangeBean> parse(File inputFile, List<RowError> rowErrors) {
+    public List<? extends ExchangeBean> parse(File inputFile) {
+        rowErrors = new ArrayList<>();
         final CsvParserSettings parserSettings = createParserSettings(rowErrors);
         return parse(inputFile, parserSettings, exchangeBean);
+    }
+
+    @Override
+    public List<RowError> getRowErrors() {
+        return rowErrors;
     }
 
     private <T extends ExchangeBean> List<T> parse(File file, CsvParserSettings parserSettings, Class<T> exchangeBean) {
@@ -72,7 +80,7 @@ public class DefaultUnivocityExchangeSpecificParser implements IExchangeSpecific
         }
     }
 
-    public CsvParserSettings createParserSettings(
+    private CsvParserSettings createParserSettings(
         List<RowError> rowErrors
     ) {
         CsvParserSettings parserSettings = new CsvParserSettings();

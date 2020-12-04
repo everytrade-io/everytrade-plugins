@@ -275,12 +275,9 @@ public class EverytradeCsvMultiParser implements ICsvParser {
         if (exchangeParseDetail == null) {
             throw new UnknownHeaderException(String.format("Unknown header: '%s'", header));
         }
-        final List<RowError> rowErrors = new ArrayList<>();
         final IExchangeSpecificParser exchangeParser = exchangeParseDetail.getExchangeSpecificParser();
-        List<? extends ExchangeBean> listBeans = exchangeParser.parse(
-            file,
-            rowErrors
-        );
+        List<? extends ExchangeBean> listBeans = exchangeParser.parse(file);
+        final List<RowError> rowErrors = new ArrayList<>(exchangeParser.getRowErrors());
 
         int ignoredFeeCount = 0;
         List<ImportedTransactionBean> importedTransactionBeans = new ArrayList<>();
