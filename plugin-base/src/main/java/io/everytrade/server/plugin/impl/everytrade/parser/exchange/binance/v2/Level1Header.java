@@ -1,6 +1,4 @@
-package io.everytrade.server.plugin.impl.everytrade.parser.exchangeparser.binance.v2;
-
-import io.everytrade.server.plugin.impl.everytrade.parser.exchangeparser.BinanceExchangeParser;
+package io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v2;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +22,7 @@ public enum Level1Header {
         if (abbreviation == null) {
             return null;
         }
-        if (BinanceExchangeParser.DATE_PATTERN.matcher(abbreviation).find()) {
+        if (BinanceExchangeSpecificParser.DATE_PATTERN.matcher(abbreviation).find()) {
             return DATE;
         } else {
             return lookup.get(abbreviation);

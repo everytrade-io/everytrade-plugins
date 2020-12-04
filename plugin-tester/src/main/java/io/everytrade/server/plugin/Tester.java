@@ -81,6 +81,34 @@ public class Tester {
 
     private void testPlugin(IPlugin plugin) {
         log.info("plugin = " + plugin.getId());
+        testConnectors(plugin);
+
+        testParsers(plugin);
+    }
+
+    private void testParsers(IPlugin plugin) {
+        //load and try to parse all files in folder
+        final File folder = new File("parser-files");
+        for (final File fileEntry : folder.listFiles()) {
+            log.info("Try to parse file '{}'...", fileEntry.getName());
+            final String header = readHeader(fileEntry);
+            final ParserDescriptor descriptor = findDescriptor(header, plugin);
+            if (descriptor == null) {
+                continue;
+            }
+            log.info("Supported exchange: {}", descriptor.getSupportedExchange(header).getDisplayName());
+            final ICsvParser parserInstance = plugin.createParserInstance(descriptor.getId());
+            final ParseResult parseResult;
+            try {
+                parseResult = parserInstance.parse(fileEntry, header);
+                printResult(parseResult);
+            } catch (Exception e) {
+                log.info("File parse error: {}", e.getMessage());
+            }
+        }
+    }
+
+    private void testConnectors(IPlugin plugin) {
         final List<ConnectorDescriptor> connectorDescriptors = plugin.allConnectorDescriptors();
         for (ConnectorDescriptor connectorDescriptor : connectorDescriptors) {
             log.info("connectorDescriptor = " + connectorDescriptor);
@@ -98,26 +126,6 @@ public class Tester {
             //follow-up connection
             printResult(connector.getTransactions(downloadResult.getLastDownloadedTransactionId()));
         }
-
-        //load and try to parse all files in folder
-        final File folder = new File("parser-files");
-        for (final File fileEntry : folder.listFiles()) {
-            log.info("Try to parse file '{}'...", fileEntry.getName());
-            final String header = readFirstRow(fileEntry);
-            final ParserDescriptor descriptor = findDescriptor(header, plugin);
-            if (descriptor == null) {
-                continue;
-            }
-            log.info("Supported exchange: {}", descriptor.getSupportedExchange(header).getDisplayName());
-            final ICsvParser parserInstance = plugin.createParserInstance(descriptor.getId());
-            final ParseResult parseResult;
-            try {
-                parseResult = parserInstance.parse(fileEntry, header);
-                printResult(parseResult);
-            } catch (Exception e) {
-                log.info("File parse error: {}", e.getMessage());
-            }
-        }
     }
 
     private ParserDescriptor findDescriptor(String header, IPlugin plugin) {
@@ -130,16 +138,17 @@ public class Tester {
             }
         }
         if (matchDescriptors.isEmpty()) {
-            log.info("No parsers found.");
+            log.warn("No parsers found.");
         } else if (matchDescriptors.size() > 1) {
-            log.info("More than one parsers found: '{}'.", matchDescriptors.size());
+            log.warn("More than one parsers found: '{}'.", matchDescriptors.size());
         } else {
             return matchDescriptors.get(0);
         }
         return null;
     }
 
-    private String readFirstRow(File file) {
+
+    private String readHeader(File file) {
         final String header;
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {
             header = bufferedReader.readLine();

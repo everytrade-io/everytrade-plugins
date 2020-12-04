@@ -12,16 +12,14 @@ import io.everytrade.server.plugin.api.parser.RowError;
 import io.everytrade.server.plugin.api.parser.RowErrorType;
 import io.everytrade.server.plugin.impl.everytrade.EveryTradePlugin;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.UnknownHeaderException;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BinanceBeanV1;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BinanceBeanV2;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BittrexBeanV1;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BittrexBeanV2;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BitfinexExchangeSpecificParser;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BinanceBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchangeparser.ExchangeParserFinder;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchangeparser.IExchangeParser;
-import io.everytrade.server.plugin.impl.everytrade.parser.postprocessor.ConversionParams;
-import io.everytrade.server.plugin.impl.everytrade.parser.postprocessor.IPostProcessor;
-import io.everytrade.server.plugin.impl.everytrade.parser.postprocessor.PostProcessorFinder;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v2.BinanceExchangeSpecificParser;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.DefaultUnivocityExchangeSpecificParser;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.IExchangeSpecificParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,17 +30,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class EverytradeCsvParser implements ICsvParser {
+public class EverytradeCsvMultiParser implements ICsvParser {
     private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "everytradeParser";
-    private static final Map<String, ExchangeDescriptor> exchangeDescriptors = new HashMap<>();
+    private static final Map<String, ExchangeParseDetail> exchangeDescriptors = new HashMap<>();
     private static final String DELIMITER_COMMA = ",";
     private static final String DELIMITER_SEMICOLON = ";";
 
     static {
         exchangeDescriptors.put(
             "OrderUuid,Exchange,Type,Quantity,Limit,CommissionPaid,Price,Opened,Closed",
-            new ExchangeDescriptor(
-                BittrexBeanV1.class,
+            new ExchangeParseDetail(
+                new DefaultUnivocityExchangeSpecificParser(BittrexBeanV1.class),
                 SupportedExchange.BITTREX,
                 DELIMITER_COMMA
             )
@@ -50,26 +48,34 @@ public class EverytradeCsvParser implements ICsvParser {
         exchangeDescriptors.put(
             "Uuid,Exchange,TimeStamp,OrderType,Limit,Quantity,QuantityRemaining,Commission,Price,PricePerUnit,"
                 + "IsConditional,Condition,ConditionTarget,ImmediateOrCancel,Closed",
-            new ExchangeDescriptor(
-                BittrexBeanV2.class,
+            new ExchangeParseDetail(
+                new DefaultUnivocityExchangeSpecificParser(BittrexBeanV2.class),
                 SupportedExchange.BITTREX,
                 DELIMITER_COMMA
             )
         );
         exchangeDescriptors.put(
             "Date(UTC);Market;Type;Price;Amount;Total;Fee;Fee Coin",
-            new ExchangeDescriptor(
-                BinanceBeanV1.class,
+            new ExchangeParseDetail(
+                new DefaultUnivocityExchangeSpecificParser(BinanceBeanV1.class),
                 SupportedExchange.BINANCE,
                 DELIMITER_SEMICOLON
             )
         );
         exchangeDescriptors.put(
             "Date(UTC);Pair;Type;Order Price;Order Amount;AvgTrading Price;Filled;Total;status",
-            new ExchangeDescriptor(
-                BinanceBeanV2.class,
+            new ExchangeParseDetail(
+                new BinanceExchangeSpecificParser(),
                 SupportedExchange.BINANCE,
                 DELIMITER_SEMICOLON
+            )
+        );
+        exchangeDescriptors.put(
+            "#,PAIR,AMOUNT,PRICE,FEE,FEE CURRENCY,DATE,ORDER ID",
+            new ExchangeParseDetail(
+                new BitfinexExchangeSpecificParser(),
+                SupportedExchange.BITFINEX,
+                DELIMITER_COMMA
             )
         );
     }
@@ -95,26 +101,23 @@ public class EverytradeCsvParser implements ICsvParser {
 
     @Override
     public ParseResult parse(File file, String header) {
-        final ExchangeDescriptor exchangeDescriptor = exchangeDescriptors.get(header);
-        if (exchangeDescriptor == null) {
+        final ExchangeParseDetail exchangeParseDetail = exchangeDescriptors.get(header);
+        if (exchangeParseDetail == null) {
             throw new UnknownHeaderException(String.format("Unknown header: '%s'", header));
         }
-        final Class<? extends ExchangeBean> exchangeBean = exchangeDescriptor.getExchangeBean();
         final List<RowError> rowErrors = new ArrayList<>();
-        final IExchangeParser exchangeParser = new ExchangeParserFinder().find(exchangeBean);
+        final IExchangeSpecificParser exchangeParser = exchangeParseDetail.getExchangeSpecificParser();
         List<? extends ExchangeBean> listBeans = exchangeParser.parse(
             file,
-            exchangeDescriptor.getDelimiter(),
+            exchangeParseDetail.getDelimiter(),
             rowErrors
         );
-        final IPostProcessor postProcessor = new PostProcessorFinder().find(exchangeBean);
-        final ConversionParams conversionParams = postProcessor.evalConversionParams(listBeans);
 
         int ignoredFeeCount = 0;
         List<ImportedTransactionBean> importedTransactionBeans = new ArrayList<>();
         for (ExchangeBean p : listBeans) {
             try {
-                final ImportedTransactionBean importedTransactionBean = p.toImportedTransactionBean(conversionParams);
+                final ImportedTransactionBean importedTransactionBean = p.toImportedTransactionBean();
                 importedTransactionBeans.add(importedTransactionBean);
                 if (importedTransactionBean.getImportDetail().isIgnoredFee()) {
                     ignoredFeeCount++;

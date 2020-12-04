@@ -1,15 +1,14 @@
-package io.everytrade.server.plugin.impl.everytrade.parser.exchange;
+package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
 import com.univocity.parsers.annotations.Format;
 import com.univocity.parsers.annotations.Headers;
 import com.univocity.parsers.annotations.Parsed;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
-import io.everytrade.server.model.SupportedExchange;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
-import io.everytrade.server.plugin.impl.everytrade.parser.postprocessor.ConversionParams;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -19,7 +18,7 @@ import java.util.Date;
 //MAX> BTX-002:|Uuid|Exchange|TimeStamp|OrderType|Limit|Quantity|QuantityRemaining|Commission|Price|PricePerUnit|
 //              IsConditional|Condition|ConditionTarget|ImmediateOrCancel|Closed|
 @Headers(sequence = {"Uuid", "Exchange", "OrderType", "Quantity", "Commission", "Price", "Closed"}, extract = true)
-public class BittrexBeanV2 extends ExchangeBean{
+public class BittrexBeanV2 extends ExchangeBean {
     private String uuid;
     private Currency exchangeQuote;
     private Currency exchangeBase;
@@ -79,7 +78,7 @@ public class BittrexBeanV2 extends ExchangeBean{
     }
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean(ConversionParams conversionParams) {
+    public ImportedTransactionBean toImportedTransactionBean() {
         validateCurrencyPair(exchangeBase, exchangeQuote);
 
         return new ImportedTransactionBean(

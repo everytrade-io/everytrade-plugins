@@ -1,16 +1,15 @@
-package io.everytrade.server.plugin.impl.everytrade.parser.exchange;
+package io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v2;
 
 import com.univocity.parsers.annotations.Headers;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.CurrencyPair;
-import io.everytrade.server.model.SupportedExchange;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.ImportDetail;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
-import io.everytrade.server.plugin.impl.everytrade.parser.postprocessor.ConversionParams;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -27,7 +26,6 @@ import static io.everytrade.server.model.CurrencyPair.getTradeablePairs;
 public class BinanceBeanV2 extends ExchangeBean {
     private static final String STATUS_FILLED = "Filled";
     private static final String STATUS_PARTIAL_FILL = "Partial Fill";
-    private static final String DELIMITER = ";";
     private static Map<String, CurrencyPair> fastCurrencyPair = new HashMap<>();
     private Instant date;
     private Currency pairBase;
@@ -76,7 +74,7 @@ public class BinanceBeanV2 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean(ConversionParams conversionParams) {
+    public ImportedTransactionBean toImportedTransactionBean() {
         validateCurrencyPair(pairBase, pairQuote);
 
         final boolean isIncorrectFeeCoin

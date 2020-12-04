@@ -1,19 +1,19 @@
-package io.everytrade.server.plugin.impl.everytrade.parser.exchange;
+package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
 import com.univocity.parsers.annotations.Headers;
 import com.univocity.parsers.annotations.Parsed;
 import com.univocity.parsers.annotations.Replace;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
-import io.everytrade.server.model.SupportedExchange;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.ImportDetail;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
-import io.everytrade.server.plugin.impl.everytrade.parser.postprocessor.ConversionParams;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Instant;
 
 //MIN> BFX-001:|#|PAIR|AMOUNT|PRICE|FEE|FEE CURRENCY|DATE|
 //FULL> BFX-001:|#|PAIR|AMOUNT|PRICE|FEE|FEE CURRENCY|DATE|ORDER ID|
@@ -28,6 +28,7 @@ public class BitfinexBeanV1 extends ExchangeBean {
     private BigDecimal fee;
     private Currency feeCurrency;
     private String date;
+    private Instant dateConverted;
 
     @Parsed(field = "#")
     public void setUid(String value) {
@@ -80,9 +81,12 @@ public class BitfinexBeanV1 extends ExchangeBean {
         return date;
     }
 
+    public void setDateConverted(Instant dateConverted) {
+        this.dateConverted = dateConverted;
+    }
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean(ConversionParams conversionParams) {
+    public ImportedTransactionBean toImportedTransactionBean() {
         validateCurrencyPair(pairBase, pairQuote);
 
         TransactionType transactionType = amount.compareTo(BigDecimal.ZERO) > 0
@@ -122,7 +126,7 @@ public class BitfinexBeanV1 extends ExchangeBean {
 
         return new ImportedTransactionBean(
             uid,               //uuid
-            ParserUtils.parse(conversionParams.getDateTimePattern(), date),          //executed
+            dateConverted,     //executed
             pairBase,          //base
             pairQuote,         //quote
             transactionType,   //action

@@ -1,10 +1,10 @@
-package io.everytrade.server.plugin.impl.everytrade.parser.exchange;
+package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
 import io.everytrade.server.plugin.api.parser.ConversionStatistic;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParseResult;
 import io.everytrade.server.plugin.api.parser.RowError;
-import io.everytrade.server.plugin.impl.everytrade.parser.EverytradeCsvParser;
+import io.everytrade.server.plugin.impl.everytrade.parser.EverytradeCsvMultiParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 
 public class ParserTestUtils {
-    private static final EverytradeCsvParser CSV_PARSER = new EverytradeCsvParser();
+    private static final EverytradeCsvMultiParser CSV_PARSER = new EverytradeCsvMultiParser();
     private static final Logger LOG = LoggerFactory.getLogger(ParserTestUtils.class);
 
     private static File createTestFile(String rows) {
