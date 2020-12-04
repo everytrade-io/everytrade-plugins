@@ -1,0 +1,99 @@
+package io.everytrade.server.plugin.impl.everytrade.parser.exchange;
+
+import io.everytrade.server.plugin.api.parser.ConversionStatistic;
+import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.ParseResult;
+import io.everytrade.server.plugin.api.parser.RowError;
+import io.everytrade.server.plugin.impl.everytrade.parser.EverytradeCsvParser;
+import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
+
+
+public class ParserTestUtils {
+    private static final EverytradeCsvParser CSV_PARSER = new EverytradeCsvParser();
+    private static final Logger LOG = LoggerFactory.getLogger(ParserTestUtils.class);
+
+    private static File createTestFile(String rows) {
+        try {
+            File file = File.createTempFile("parsertest", "csv");
+            new FileWriter(file)
+                    .append(rows)
+                    .close();
+            return file;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static void checkEqual(ImportedTransactionBean transA, ImportedTransactionBean transB) {
+        assertNotNull(transA);
+        assertNotNull(transB);
+        assertEquals(transA.getUid(), transB.getUid());
+        assertEquals(0, transA.getExecuted().compareTo(transB.getExecuted()));
+        assertEquals(transA.getBase(), transB.getBase());
+        assertEquals(transA.getQuote(), transB.getQuote());
+        assertEquals(transA.getAction(), transB.getAction());
+        assertEquals(0, transA.getBaseQuantity().compareTo(transB.getBaseQuantity()));
+        assertEquals(0, transA.getUnitPrice().compareTo(transB.getUnitPrice()));
+        assertEquals(0, transA.getFeeQuote().compareTo(transB.getFeeQuote()));
+    }
+
+    public static ImportedTransactionBean getTransactionBean(String rows, String headerOrigin) {
+        try {
+            ParseResult result = CSV_PARSER.parse(ParserTestUtils.createTestFile(rows), headerOrigin);
+            if (!result.getConversionStatistic().isErrorRowsEmpty()) {
+                StringBuilder stringBuilder = new StringBuilder();
+                result.getConversionStatistic().getErrorRows().forEach(p->stringBuilder.append(p).append("\n"));
+                LOG.error("getRawTransaction(): NOT PARSED ROWS: {}", stringBuilder.toString());
+            }
+            List<ImportedTransactionBean> list = result.getImportedTransactionBeans();
+
+            if (list.isEmpty()) {
+                return null;
+            }
+            return list.get(0);
+        } catch (ParsingProcessException e) {
+            LOG.error("getRawTransaction(): {}" ,e);
+            return null;
+        }
+    }
+
+    public static void testParsing(String rows, String headerOrigin)  {
+        CSV_PARSER.parse(ParserTestUtils.createTestFile(rows), headerOrigin);
+    }
+
+    public static RowError getRowError(String rows, String headerOrigin) {
+        try {
+            ParseResult result = CSV_PARSER.parse(ParserTestUtils.createTestFile(rows), headerOrigin);
+            List<RowError> list = result.getConversionStatistic().getErrorRows();
+            if (list.size() < 1) {
+                return null;
+            }
+            return list.get(0);
+        } catch (ParsingProcessException e) {
+            fail(e.getMessage());
+            return null;
+        }
+    }
+
+    public static ConversionStatistic getConversionStatistic(String rows, String headerOrigin) {
+        try {
+            ParseResult result = CSV_PARSER.parse(ParserTestUtils.createTestFile(rows), headerOrigin);
+            return result.getConversionStatistic();
+        } catch (ParsingProcessException e) {
+            fail(e.getMessage());
+            return null;
+        }
+    }
+}
