@@ -315,5 +315,6 @@
 <!--            <property name="optional" value="true"/>-->
 <!--        </module>-->
         <module name="AvoidNestedBlocks" />
+        <module name="ConstantName"/>
     </module>
 </module>
