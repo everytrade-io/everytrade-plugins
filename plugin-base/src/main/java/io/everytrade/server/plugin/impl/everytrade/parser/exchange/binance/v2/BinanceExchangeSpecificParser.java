@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 public class BinanceExchangeSpecificParser implements IExchangeSpecificParser {
 
     public static final Pattern DATE_PATTERN;
+    private static final String DELIMITER = ";";
 
     enum RowType {
         HEADER, GROUP, GROUP_HEADER, GROUP_ROW
@@ -39,13 +40,12 @@ public class BinanceExchangeSpecificParser implements IExchangeSpecificParser {
     @Override
     public List<? extends ExchangeBean> parse(
         File inputFile,
-        String delimiter,
         List<RowError> rowErrors
     ) {
         final List<BinanceBeanV2> binanceBeans = new ArrayList<>();
         try (Reader reader = new FileReader(inputFile, StandardCharsets.UTF_8)) {
             final CsvParserSettings csvParserSettings = new CsvParserSettings();
-            csvParserSettings.getFormat().setDelimiter(delimiter);
+            csvParserSettings.getFormat().setDelimiter(DELIMITER);
             csvParserSettings.setHeaderExtractionEnabled(false);
             CsvParser parser = new CsvParser(csvParserSettings);
             List<Record> allRecords = parser.parseAllRecords(reader);

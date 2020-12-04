@@ -14,20 +14,38 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+
 public class DefaultUnivocityExchangeSpecificParser implements IExchangeSpecificParser {
+    private static final String DEFAUL_DELIMITER = ",";
     private final Class<? extends ExchangeBean> exchangeBean;
+    private final String delimiter;
+    private final String lineSeparator;
 
     public DefaultUnivocityExchangeSpecificParser(Class<? extends ExchangeBean> exchangeBean) {
-        this.exchangeBean = exchangeBean;
+        this(exchangeBean, DEFAUL_DELIMITER, null);
+    }
+
+    public DefaultUnivocityExchangeSpecificParser(
+        Class<? extends ExchangeBean> exchangeBean,
+        String delimiter
+    ) {
+        this(exchangeBean, delimiter, null);
+    }
+
+    public DefaultUnivocityExchangeSpecificParser(
+        Class<? extends ExchangeBean> exchangeBean,
+        String delimiter,
+        String lineSeparator
+    ) {
+        Objects.requireNonNull(this.exchangeBean = exchangeBean);
+        Objects.requireNonNull(this.delimiter = delimiter);
+        this.lineSeparator = lineSeparator;
     }
 
     @Override
-    public List<? extends ExchangeBean> parse(File inputFile, String delimiter, List<RowError> rowErrors) {
-        final CsvParserSettings parserSettings = createParserSettings(rowErrors, delimiter);
-        return parse(inputFile, parserSettings, exchangeBean);
-    }
-
-    public List<? extends ExchangeBean> parse(File inputFile, CsvParserSettings parserSettings) {
+    public List<? extends ExchangeBean> parse(File inputFile, List<RowError> rowErrors) {
+        final CsvParserSettings parserSettings = createParserSettings(rowErrors);
         return parse(inputFile, parserSettings, exchangeBean);
     }
 
@@ -55,8 +73,7 @@ public class DefaultUnivocityExchangeSpecificParser implements IExchangeSpecific
     }
 
     public CsvParserSettings createParserSettings(
-        List<RowError> rowErrors,
-        String delimiter
+        List<RowError> rowErrors
     ) {
         CsvParserSettings parserSettings = new CsvParserSettings();
         parserSettings.setHeaderExtractionEnabled(true);
@@ -67,6 +84,10 @@ public class DefaultUnivocityExchangeSpecificParser implements IExchangeSpecific
             rowErrors.add(rowError);
         });
         parserSettings.getFormat().setDelimiter(delimiter);
+        //default setting is autodetect
+        if (lineSeparator != null) {
+            parserSettings.getFormat().setLineSeparator(lineSeparator);
+        }
         parserSettings.getFormat().setComment('\0'); // No symbol for comments
 
         return parserSettings;

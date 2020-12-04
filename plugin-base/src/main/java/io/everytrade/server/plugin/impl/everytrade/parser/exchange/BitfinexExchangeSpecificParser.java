@@ -12,13 +12,15 @@ import java.util.List;
 import java.util.Set;
 
 public class BitfinexExchangeSpecificParser implements IExchangeSpecificParser {
+    public static final String DELIMITER = ",";
+
     @Override
-    public List<? extends ExchangeBean> parse(File inputFile, String delimiter, List<RowError> rowErrors) {
+    public List<? extends ExchangeBean> parse(File inputFile, List<RowError> rowErrors) {
 
         final DefaultUnivocityExchangeSpecificParser parser
-            = new DefaultUnivocityExchangeSpecificParser(BitfinexBeanV1.class);
+            = new DefaultUnivocityExchangeSpecificParser(BitfinexBeanV1.class, DELIMITER);
 
-        final List<BitfinexBeanV1> beans = (List<BitfinexBeanV1>) parser.parse(inputFile, delimiter, rowErrors);
+        final List<BitfinexBeanV1> beans = (List<BitfinexBeanV1>) parser.parse(inputFile, rowErrors);
         final String datePattern = evalDatePattern(beans);
         return updateDate(beans, datePattern);
 

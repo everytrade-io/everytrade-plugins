@@ -6,16 +6,13 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.IExchangeSpec
 public class ExchangeParseDetail {
     private final IExchangeSpecificParser exchangeSpecificParser;
     private final SupportedExchange supportedExchange;
-    private final String delimiter;
 
     public ExchangeParseDetail(
         IExchangeSpecificParser exchangeSpecificParser,
-        SupportedExchange supportedExchange,
-        String delimiter
+        SupportedExchange supportedExchange
     ) {
         this.exchangeSpecificParser = exchangeSpecificParser;
         this.supportedExchange = supportedExchange;
-        this.delimiter = delimiter;
     }
 
     public IExchangeSpecificParser getExchangeSpecificParser() {
@@ -24,9 +21,5 @@ public class ExchangeParseDetail {
 
     public SupportedExchange getSupportedExchange() {
         return supportedExchange;
-    }
-
-    public String getDelimiter() {
-        return delimiter;
     }
 }

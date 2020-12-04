@@ -13,7 +13,6 @@ import io.everytrade.server.plugin.api.parser.RowErrorType;
 import io.everytrade.server.plugin.impl.everytrade.EveryTradePlugin;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.UnknownHeaderException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BitfinexExchangeSpecificParser;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.OkexExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BinanceBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BitflyerBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BitmexBeanV1;
@@ -33,6 +32,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.HitBtcBe
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.HuobiBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.KrakenBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.LocalBitcoinsBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OkexBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.PaxfulBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.PoloniexBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.ShakePayBeanV1;
@@ -54,39 +54,36 @@ public class EverytradeCsvMultiParser implements ICsvParser {
     private static final Map<String, ExchangeParseDetail> EXCHANGE_PARSE_DETAILS = new HashMap<>();
     private static final String DELIMITER_COMMA = ",";
     private static final String DELIMITER_SEMICOLON = ";";
+    private static final String LINE_SEPARATOR = "\n";
 
     static {
         EXCHANGE_PARSE_DETAILS.put(
             "Date(UTC);Market;Type;Price;Amount;Total;Fee;Fee Coin",
             new ExchangeParseDetail(
-                new DefaultUnivocityExchangeSpecificParser(BinanceBeanV1.class),
-                SupportedExchange.BINANCE,
-                DELIMITER_SEMICOLON
+                new DefaultUnivocityExchangeSpecificParser(BinanceBeanV1.class, DELIMITER_SEMICOLON),
+                SupportedExchange.BINANCE
             )
         );
         EXCHANGE_PARSE_DETAILS.put(
             "Date(UTC);Pair;Type;Order Price;Order Amount;AvgTrading Price;Filled;Total;status",
             new ExchangeParseDetail(
                 new BinanceExchangeSpecificParser(),
-                SupportedExchange.BINANCE,
-                DELIMITER_SEMICOLON
+                SupportedExchange.BINANCE
             )
         );
         EXCHANGE_PARSE_DETAILS.put(
             "#,PAIR,AMOUNT,PRICE,FEE,FEE CURRENCY,DATE,ORDER ID",
             new ExchangeParseDetail(
                 new BitfinexExchangeSpecificParser(),
-                SupportedExchange.BITFINEX,
-                DELIMITER_COMMA
+                SupportedExchange.BITFINEX
             )
         );
         EXCHANGE_PARSE_DETAILS.put(
             "Trade Date;Product;Trade Type;Traded Price;Currency 1;Amount (Currency 1);Fee;USD Rate (Currency);" +
                 "Currency 2;Amount (Currency 2);Order ID;Details",
             new ExchangeParseDetail(
-                new DefaultUnivocityExchangeSpecificParser(BitflyerBeanV1.class),
-                SupportedExchange.BITFLYER,
-                DELIMITER_SEMICOLON
+                new DefaultUnivocityExchangeSpecificParser(BitflyerBeanV1.class, DELIMITER_SEMICOLON),
+                SupportedExchange.BITFLYER
             )
         );
         EXCHANGE_PARSE_DETAILS.put(
@@ -94,24 +91,21 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 "\"commission\",\"execComm\",\"ordType\",\"orderQty\",\"leavesQty\",\"price\",\"text\",\"orderID\"",
             new ExchangeParseDetail(
                 new DefaultUnivocityExchangeSpecificParser(BitmexBeanV1.class),
-                SupportedExchange.BITMEX,
-                DELIMITER_COMMA
+                SupportedExchange.BITMEX
             )
         );
         EXCHANGE_PARSE_DETAILS.put(
             "Type,Datetime,Account,Amount,Value,Rate,Fee,Sub Type",
             new ExchangeParseDetail(
                 new DefaultUnivocityExchangeSpecificParser(BitstampBeanV1.class),
-                SupportedExchange.BITSTAMP,
-                DELIMITER_COMMA
+                SupportedExchange.BITSTAMP
             )
         );
         EXCHANGE_PARSE_DETAILS.put(
             "OrderUuid,Exchange,Type,Quantity,Limit,CommissionPaid,Price,Opened,Closed",
             new ExchangeParseDetail(
                 new DefaultUnivocityExchangeSpecificParser(BittrexBeanV1.class),
-                SupportedExchange.BITTREX,
-                DELIMITER_COMMA
+                SupportedExchange.BITTREX
             )
         );
         EXCHANGE_PARSE_DETAILS.put(
@@ -119,25 +113,22 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 + "IsConditional,Condition,ConditionTarget,ImmediateOrCancel,Closed",
             new ExchangeParseDetail(
                 new DefaultUnivocityExchangeSpecificParser(BittrexBeanV2.class),
-                SupportedExchange.BITTREX,
-                DELIMITER_COMMA
+                SupportedExchange.BITTREX
             )
         );
         EXCHANGE_PARSE_DETAILS.put(
             "portfolio,trade id,product,side,created at,size,size unit,price,fee,total,price/fee/total unit",
             new ExchangeParseDetail(
                 new DefaultUnivocityExchangeSpecificParser(CoinbaseBeanV1.class),
-                SupportedExchange.COINBASE,
-                DELIMITER_COMMA
+                SupportedExchange.COINBASE
             )
         );
         EXCHANGE_PARSE_DETAILS.put(
             "ID;Date;Type;Amount;Amount Currency;Price;Price Currency;Fee;Fee Currency;Total;" +
                 "Total Currency;Description;Status",
             new ExchangeParseDetail(
-                new DefaultUnivocityExchangeSpecificParser(CoinmateBeanV1.class),
-                SupportedExchange.COINMATE,
-                DELIMITER_SEMICOLON
+                new DefaultUnivocityExchangeSpecificParser(CoinmateBeanV1.class, DELIMITER_SEMICOLON),
+                SupportedExchange.COINMATE
             )
         );
         EXCHANGE_PARSE_DETAILS.put(
@@ -145,41 +136,36 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 "Currency fee;Fee;Currency total;Total;Description;Status;Currency first balance after;" +
                 "First balance after;Currency second balance after;Second balance after",
             new ExchangeParseDetail(
-                new DefaultUnivocityExchangeSpecificParser(CoinmateBeanV2.class),
-                SupportedExchange.COINMATE,
-                DELIMITER_SEMICOLON
+                new DefaultUnivocityExchangeSpecificParser(CoinmateBeanV2.class, DELIMITER_SEMICOLON),
+                SupportedExchange.COINMATE
             )
         );
         EXCHANGE_PARSE_DETAILS.put(
             "date;action;currency;base_currency;price;amount;base_amount",
             new ExchangeParseDetail(
-                new DefaultUnivocityExchangeSpecificParser(CoinsquareBeanV1.class),
-                SupportedExchange.COINSQUARE,
-                DELIMITER_SEMICOLON
+                new DefaultUnivocityExchangeSpecificParser(CoinsquareBeanV1.class, DELIMITER_SEMICOLON),
+                SupportedExchange.COINSQUARE
             )
         );
         EXCHANGE_PARSE_DETAILS.put(
             "date;from_currency;from_amount;to_currency;to_amount",
             new ExchangeParseDetail(
-                new DefaultUnivocityExchangeSpecificParser(CoinsquareBeanV2.class),
-                SupportedExchange.COINSQUARE,
-                DELIMITER_SEMICOLON
+                new DefaultUnivocityExchangeSpecificParser(CoinsquareBeanV2.class, DELIMITER_SEMICOLON),
+                SupportedExchange.COINSQUARE
             )
         );
         EXCHANGE_PARSE_DETAILS.put(
             "UID;DATE;SYMBOL;ACTION;QUANTY;PRICE;FEE",
             new ExchangeParseDetail(
-                new DefaultUnivocityExchangeSpecificParser(EveryTradeBeanV1.class),
-                SupportedExchange.EVERYTRADE,
-                DELIMITER_SEMICOLON
+                new DefaultUnivocityExchangeSpecificParser(EveryTradeBeanV1.class, DELIMITER_SEMICOLON),
+                SupportedExchange.EVERYTRADE
             )
         );
         EXCHANGE_PARSE_DETAILS.put(
             "UID;DATE;SYMBOL;ACTION;QUANTY;VOLUME;FEE",
             new ExchangeParseDetail(
-                new DefaultUnivocityExchangeSpecificParser(EveryTradeBeanV2.class),
-                SupportedExchange.EVERYTRADE,
-                DELIMITER_SEMICOLON
+                new DefaultUnivocityExchangeSpecificParser(EveryTradeBeanV2.class, DELIMITER_SEMICOLON),
+                SupportedExchange.EVERYTRADE
             )
         );
         EXCHANGE_PARSE_DETAILS.put(
@@ -187,9 +173,8 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 "Cash Currency;Crypto Amount;Crypto Currency;Used Discount;Actual Discount (%);Destination address;" +
                 "Related Remote Transaction Id;Identity;Status;Phone Number;Transaction Detail;",
             new ExchangeParseDetail(
-                new DefaultUnivocityExchangeSpecificParser(GeneralBytesBeanV1.class),
-                SupportedExchange.GENERAL_BYTES,
-                DELIMITER_SEMICOLON
+                new DefaultUnivocityExchangeSpecificParser(GeneralBytesBeanV1.class, DELIMITER_SEMICOLON),
+                SupportedExchange.GENERAL_BYTES
             )
         );
         //
@@ -198,8 +183,7 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 "\"Fee\",\"Rebate\",\"Total\"",
             new ExchangeParseDetail(
                 new DefaultUnivocityExchangeSpecificParser(HitBtcBeanV1.class),
-                SupportedExchange.HITBTC,
-                DELIMITER_COMMA
+                SupportedExchange.HITBTC
             )
         );
         EXCHANGE_PARSE_DETAILS.put(
@@ -207,24 +191,21 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 "\"Fee\",\"Rebate\",\"Total\"",
             new ExchangeParseDetail(
                 new DefaultUnivocityExchangeSpecificParser(HitBtcBeanV1.class),
-                SupportedExchange.HITBTC,
-                DELIMITER_COMMA
+                SupportedExchange.HITBTC
             )
         );
         EXCHANGE_PARSE_DETAILS.put(
             "\uFEFF\"Time\",\"Type\",\"Pair\",\"Side\",\"Price\",\"Amount\",\"Total\",\"Fee\"",
             new ExchangeParseDetail(
                 new DefaultUnivocityExchangeSpecificParser(HuobiBeanV1.class),
-                SupportedExchange.HUOBI,
-                DELIMITER_COMMA
+                SupportedExchange.HUOBI
             )
         );
         EXCHANGE_PARSE_DETAILS.put(
             "txid,ordertxid,pair,time,type,ordertype,price,cost,fee,vol,margin,misc,ledgers",
             new ExchangeParseDetail(
                 new DefaultUnivocityExchangeSpecificParser(KrakenBeanV1.class),
-                SupportedExchange.KRAKEN,
-                DELIMITER_COMMA
+                SupportedExchange.KRAKEN
             )
         );
         EXCHANGE_PARSE_DETAILS.put(
@@ -233,17 +214,15 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 "reference",
             new ExchangeParseDetail(
                 new DefaultUnivocityExchangeSpecificParser(LocalBitcoinsBeanV1.class),
-                SupportedExchange.LOCALBITCOINS,
-                DELIMITER_COMMA
+                SupportedExchange.LOCALBITCOINS
             )
         );
         EXCHANGE_PARSE_DETAILS.put(
             "\uFEFFOrder ID,\uFEFFTrade ID,\uFEFFTrade Time,\uFEFFPairs,\uFEFFAmount,\uFEFFPrice,\uFEFFTotal," +
                 "\uFEFFtaker/maker,\uFEFFFee,\uFEFFunit",
             new ExchangeParseDetail(
-                new OkexExchangeSpecificParser(),
-                SupportedExchange.OKEX,
-                DELIMITER_COMMA
+                new DefaultUnivocityExchangeSpecificParser(OkexBeanV1.class, DELIMITER_COMMA, LINE_SEPARATOR),
+                SupportedExchange.OKEX
             )
         );
         EXCHANGE_PARSE_DETAILS.put(
@@ -251,16 +230,14 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 "status,completed_at,trade_hash,offer_hash",
             new ExchangeParseDetail(
                 new DefaultUnivocityExchangeSpecificParser(PaxfulBeanV1.class),
-                SupportedExchange.PAXFUL,
-                DELIMITER_COMMA
+                SupportedExchange.PAXFUL
             )
         );
         EXCHANGE_PARSE_DETAILS.put(
             "Date,Market,Category,Type,Price,Amount,Total,Fee,Order Number,Base Total Less Fee,Quote Total Less Fee",
             new ExchangeParseDetail(
                 new DefaultUnivocityExchangeSpecificParser(PoloniexBeanV1.class),
-                SupportedExchange.POLONIEX,
-                DELIMITER_COMMA
+                SupportedExchange.POLONIEX
             )
         );
         EXCHANGE_PARSE_DETAILS.put(
@@ -268,8 +245,7 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 "Credit/Debit,Spot Rate",
             new ExchangeParseDetail(
                 new DefaultUnivocityExchangeSpecificParser(ShakePayBeanV1.class),
-                SupportedExchange.SHAKEPAY,
-                DELIMITER_COMMA
+                SupportedExchange.SHAKEPAY
             )
         );
     }
@@ -303,7 +279,6 @@ public class EverytradeCsvMultiParser implements ICsvParser {
         final IExchangeSpecificParser exchangeParser = exchangeParseDetail.getExchangeSpecificParser();
         List<? extends ExchangeBean> listBeans = exchangeParser.parse(
             file,
-            exchangeParseDetail.getDelimiter(),
             rowErrors
         );
 
