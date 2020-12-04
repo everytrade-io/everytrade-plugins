@@ -214,7 +214,7 @@ public class Tester {
         log.info("importedTransactionBeans = \n" + stringBuilder.toString());
 
         final ConversionStatistic conversionStatistic = parseResult.getConversionStatistic();
-        log.info("conversionStatistic = " + conversionStatistic);
+        log.info("conversionStatistic = {}\n", conversionStatistic);
 
     }
 

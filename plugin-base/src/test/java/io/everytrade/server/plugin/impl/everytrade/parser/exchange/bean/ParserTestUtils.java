@@ -36,17 +36,17 @@ public class ParserTestUtils {
         }
     }
 
-    public static void checkEqual(ImportedTransactionBean transA, ImportedTransactionBean transB) {
-        assertNotNull(transA);
-        assertNotNull(transB);
-        assertEquals(transA.getUid(), transB.getUid());
-        assertEquals(0, transA.getExecuted().compareTo(transB.getExecuted()));
-        assertEquals(transA.getBase(), transB.getBase());
-        assertEquals(transA.getQuote(), transB.getQuote());
-        assertEquals(transA.getAction(), transB.getAction());
-        assertEquals(0, transA.getBaseQuantity().compareTo(transB.getBaseQuantity()));
-        assertEquals(0, transA.getUnitPrice().compareTo(transB.getUnitPrice()));
-        assertEquals(0, transA.getFeeQuote().compareTo(transB.getFeeQuote()));
+    public static void checkEqual(ImportedTransactionBean txCorrect, ImportedTransactionBean txExpected) {
+        assertNotNull(txExpected);
+        assertNotNull(txCorrect);
+        assertEquals(txExpected.getUid(), txCorrect.getUid());
+        assertEquals(0, txExpected.getExecuted().compareTo(txCorrect.getExecuted()));
+        assertEquals(txExpected.getBase(), txCorrect.getBase());
+        assertEquals(txExpected.getQuote(), txCorrect.getQuote());
+        assertEquals(txExpected.getAction(), txCorrect.getAction());
+        assertEquals(0, txExpected.getBaseQuantity().compareTo(txCorrect.getBaseQuantity()));
+        assertEquals(0, txExpected.getUnitPrice().compareTo(txCorrect.getUnitPrice()));
+        assertEquals(0, txExpected.getFeeQuote().compareTo(txCorrect.getFeeQuote()));
     }
 
     public static ImportedTransactionBean getTransactionBean(String rows) {
@@ -98,7 +98,10 @@ public class ParserTestUtils {
     }
 
     private static String getHeader(String rows) {
-        final int lineSeparator = rows.indexOf("\n");
+        int lineSeparator = rows.indexOf("\r\n");
+        if (lineSeparator < 0) {
+            lineSeparator = rows.indexOf("\n");
+        }
         if (lineSeparator < 0) {
             return null;
         }
