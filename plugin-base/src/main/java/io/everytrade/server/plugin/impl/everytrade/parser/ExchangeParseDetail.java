@@ -3,20 +3,24 @@ package io.everytrade.server.plugin.impl.everytrade.parser;
 import io.everytrade.server.model.SupportedExchange;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.IExchangeSpecificParser;
 
+import java.util.function.Supplier;
+
 public class ExchangeParseDetail {
-    private final IExchangeSpecificParser exchangeSpecificParser;
+
+    private final Supplier<IExchangeSpecificParser> parserFactory;
     private final SupportedExchange supportedExchange;
 
     public ExchangeParseDetail(
-        IExchangeSpecificParser exchangeSpecificParser,
+
+        Supplier<IExchangeSpecificParser> exchangeSpecificParser,
         SupportedExchange supportedExchange
     ) {
-        this.exchangeSpecificParser = exchangeSpecificParser;
+        this.parserFactory = exchangeSpecificParser;
         this.supportedExchange = supportedExchange;
     }
 
-    public IExchangeSpecificParser getExchangeSpecificParser() {
-        return exchangeSpecificParser;
+    public Supplier<IExchangeSpecificParser> getParserFactory() {
+        return parserFactory;
     }
 
     public SupportedExchange getSupportedExchange() {
