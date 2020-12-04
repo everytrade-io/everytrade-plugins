@@ -90,8 +90,8 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             )
         );
         EXCHANGE_PARSE_DETAILS.put(
-            "\uFEFF\"transactTime\",\"symbol\",\"execType\",\"side\",\"lastQty\",\"lastPx\",\"execCost\",\"commission\"," +
-                "\"execComm\",\"ordType\",\"orderQty\",\"leavesQty\",\"price\",\"text\",\"orderID\"",
+            "\uFEFF\"transactTime\",\"symbol\",\"execType\",\"side\",\"lastQty\",\"lastPx\",\"execCost\"," +
+                "\"commission\",\"execComm\",\"ordType\",\"orderQty\",\"leavesQty\",\"price\",\"text\",\"orderID\"",
             new ExchangeParseDetail(
                 new DefaultUnivocityExchangeSpecificParser(BitmexBeanV1.class),
                 SupportedExchange.BITMEX,
