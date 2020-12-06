@@ -145,13 +145,13 @@ How to create a new plugin and make it part of the Base Plugin Pack:
    |Bitmex|everytrade|everytrade.bitmexApiConnector|everytrade.everytradeParser|
    |Huobi|everytrade|everytrade.bitmexApiConnector|everytrade.everytradeParser|
    |OKEX|everytrade|everytrade.okexApiConnector|everytrade.everytradeParser|
-   |bitFlyer|everytrade|-not supported-|everytrade.everytradeParser|
-   |Coinsquare|everytrade|-not supported-|everytrade.everytradeParser|
-   |HitBTC|everytrade|-not supported-|everytrade.everytradeParser|
-   |LocalBitcoins|everytrade|-not supported-|everytrade.everytradeParser|
-   |Paxful|everytrade|-not supported-|everytrade.everytradeParser|
-   |Poloniex|everytrade|-not supported-|everytrade.everytradeParser|
-   |ShakePay|everytrade|-not supported-|everytrade.everytradeParser|
+   |bitFlyer|everytrade|_not supported_|everytrade.everytradeParser|
+   |Coinsquare|everytrade|_not supported_|everytrade.everytradeParser|
+   |HitBTC|everytrade|_not supported_|everytrade.everytradeParser|
+   |LocalBitcoins|everytrade|_not supported_|everytrade.everytradeParser|
+   |Paxful|everytrade|_not supported_|everytrade.everytradeParser|
+   |Poloniex|everytrade|_not supported_|everytrade.everytradeParser|
+   |ShakePay|everytrade|_not supported_|everytrade.everytradeParser|
 
 
 
