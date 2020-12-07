@@ -3,28 +3,41 @@
 ## Enhance an existing module with new components
 1. Fork this repository.
 1. Implement your plugin in `plugin-base` OR just use an already existing plugin and add just the new functionality
-   (e.g. a new connector). In any case, you can use the template classes in `plugin-template` module. If you don't want
+   (e.g. a new connector or new parser). In any case, you can use the template classes in `plugin-template` module. If
+    you don't want
    to add a new plugin but use an existing plugin as parent instead, don't forget to change the parent plugin's code
    to include/reference your new functionality where appropriate.
 1. Customize the skeleton code:
-    - The Gradle module can contain multiple plugins and each plugin can contain multiple connectors. Add 
-      plugins/connectors as appropriate.
+    - The Gradle module can contain multiple plugins and each plugin can contain multiple connectors and/or multiple
+     parsers.
+    . Add
+      plugins/connectors or plugins/parsers as appropriate.
     - Rename the skeleton classes and packages as you see appropriate.
     - Choose a unique plugin ID (a good approach is to base the name off of you organization's name)
-    - Choose a connector ID unique in the scope of your plugin
-    - Choose your connector's parameters and create a connector descriptor. This will be transformed into a user-facing
+    - Add new connector
+        - Choose a connector ID unique in the scope of your plugin
+        - Choose your connector's parameters and create a connector descriptor. This will be transformed into a user-facing
       form to fill the connector's instance parameters (usually credentials, remote URL, etc.).
-    - Implement the connector's methods (most importantly the `getTransactions` method).
-    - You can take a look at the `plugin-base` module for some inspiration. It contains some real plugin
+        - Implement the connector's methods (most importantly the `getTransactions` method).
+        - You can take a look at the `plugin-base` module for some inspiration. It contains some real plugin
       implementations.
-    - Respect connector limitations:
-       - There's a limit on how many transactions can be downloaded during a single download pass (10,000). Don't try
+        - Respect connector limitations:
+            - There's a limit on how many transactions can be downloaded during a single download pass (10,000). Don't try
          to download more than the single-pass limit. If your transaction source has additional data, you will dowload
          more during the next download pass. Connectors are called periodically (multiple times per hour) to keep the
          portfolios in sync with the source of data, so this shouldn't be a problem. Eventually, your portfolio will
          become synchronized.
-       - Close all unneeded resources (if present) in the `close` method which is called when the connector instance
+            - Close all unneeded resources (if present) in the `close` method which is called when the connector instance
          goes out of scope. In order to save resources, connector instances are destroyed after each download pass.
+    - Add new parser
+        - Choose a parser ID unique in the scope of your plugin
+        - Create a parser descriptor. It describes which files the parser is able to parse - using file headers and
+        supported exchange for each header.
+        - Implement the parser's methods (most importantly the `parse` method - which should parse a csv file with
+        some specific header).
+        - You can take a look at the `plugin-base` module for some inspiration. It contains some real plugin
+            implementations.
+
 
 ## Implementing new components as a new module
 1. Fork this repository.
@@ -54,18 +67,22 @@ runtime, respectively.
    own module.
 1. Prepare connector credentials and/or other parameters.
     - In order to pass parameters to your connector's instances, you have to create a property file.
-    - In the `plugin-tester` directory create a Java property file named `<connector-id>.properties`, 
+    - In the `plugin-tester` directory create a Java property file named `<connector-id>.properties`,
       e.g. for the Everytrade Kraken Connector, the file name is *everytrade.krkApiConnector.properties* bacause the
       connector's ID is *krkApiConnector* and the connector parent plugin's ID is *everytrade*.
-   - The file's content will be loaded into a map as key-value pairs and used to initialize the connector's 
+   - The file's content will be loaded into a map as key-value pairs and used to initialize the connector's
      instance. Your code can read the data in the `createConnectorInstance` method implementation. The template
      implementation just passes the data into the connector's constructor.
+1. Prepare test CSV files with transactions which you want to parse in the `parser-files` directory.
 1. Run the Gradle task `:plugin-tester:run` either via your IDE of choice (recommended, as you can debug your plugin
    this way) or via the command line (in the repository's root dir, run `./gradlew :plugin-tester:run`).
-1. Watch the tester's output to determine whether correct data is downloaded.
-1. The tester specifically tries two passes of the download procedure in order to check whether your connector can
-   correctly resume download from where it left off after the first download pass. In order to fully test this, you
-   should adjust your connector when testing to limit the amound of data being downloaded in a single pass.     
+1. Watch the tester's output to determine whether correct data is downloaded and correct data is parsed.
+    - For the tested connector the tester specifically tries two passes of the download procedure in order to check
+     whether your connector can correctly resume download from where it left off after the first download pass. In
+      order to fully test this, you should adjust your connector when testing to limit the amound of data being
+      downloaded in a single pass.
+   - The tester tries to parse each file in the `parser-files` directory with an appropriate parser. A parser is chosen
+     based on a match between the CSV file's header and one of the parser's advertised headers.
 
 ## Contribute back and make it part of Everytrade cloud instance
 How to create a new plugin and make it part of the Base Plugin Pack:
@@ -85,13 +102,13 @@ How to create a new plugin and make it part of the Base Plugin Pack:
    ```
               "Mountpoint": "/var/lib/docker/volumes/everytrade_webapp-data/_data",
    ```
-1. Copy the JAR into the `plugins` subdirectory located underneath the mountpoint (i.e. for the mountpoint 
-`/var/lib/docker/volumes/everytrade_webapp-data/_data` copy the JAR into 
+1. Copy the JAR into the `plugins` subdirectory located underneath the mountpoint (i.e. for the mountpoint
+`/var/lib/docker/volumes/everytrade_webapp-data/_data` copy the JAR into
 `/var/lib/docker/volumes/everytrade_webapp-data/_data/plugins` directory)
 1. Restart the Everytrade webapp container:
    ```
    $ docker container restart everytrade_webapp_1
-   ``` 
+   ```
 1. Check the container logs whether your plugin has been loaded:
    ```
    $ docker logs everytrade_webapp_1
@@ -113,19 +130,38 @@ How to create a new plugin and make it part of the Base Plugin Pack:
    2020-09-11 14:44:39,821 INFO  [ejb.PluginRegistry] (ServerService Thread Pool -- 88) Finished loading plugin 'everytrade'.
    [...]
    ```
-   You should see your components being loaded. 
-   ## Implemented exchange API connectors
-   |Exchange|Plugin|ID|
-   |--|------|--------|
-   |General Bytes|generalbytes|generalbytes.GBConnector|
-   |EveryTrade|everytrade|everytrade.etApiConnector|
-   |Kraken|everytrade|everytrade.krkApiConnector|
-   |Bitstamp|everytrade|everytrade.bitstampApiConnector|
-   |CoinMate|everytrade|everytrade.coinmateApiConnector|
-   |Bitfinex|everytrade|everytrade.bitfinexApiConnector|
-   |Binance|everytrade|everytrade.binanceApiConnector|
-   |Bittrex|everytrade|everytrade.bittrexApiConnector|
-   |Coinbase PRO|everytrade|everytrade.coinbaseProApiConnector|
-   |Bitmex|everytrade|everytrade.bitmexApiConnector|
-   |OKEX|everytrade|everytrade.okexApiConnector|
-   
+   You should see your components being loaded.
+   ## Implemented exchange API connectors and parsers
+   |Plugin ID| Connector/parser ID|Type|Exchange|Notes|
+   |--|-------|--------|--------|--------|
+   |generalbytes|generalbytes.GBConnector|Connector|General Bytes||
+   |everytrade|everytrade.everytradeParser|Parser|General Bytes||
+   |everytrade|everytrade.etApiConnector|Connector|EveryTrade||
+   |everytrade|everytrade.everytradeParser|Parser|EveryTrade||
+   |everytrade|everytrade.krkApiConnector|Connector|Kraken||
+   |everytrade|everytrade.everytradeParser|Parser|Kraken||
+   |everytrade|everytrade.bitstampApiConnector|Connector|Bitstamp||
+   |everytrade|everytrade.everytradeParser|Parser|Bitstamp||
+   |everytrade|everytrade.coinmateApiConnector|Connector|CoinMate||
+   |everytrade|everytrade.everytradeParser|Parser|CoinMate||
+   |everytrade|everytrade.bitfinexApiConnector|Connector|Bitfinex||
+   |everytrade|everytrade.everytradeParser|Parser|Bitfinex||
+   |everytrade|everytrade.binanceApiConnector|Connector|Binance||
+   |everytrade|everytrade.everytradeParser|Parser|Binance||
+   |everytrade|everytrade.bittrexApiConnector|Connector|Bittrex||
+   |everytrade|everytrade.everytradeParser|Parser|Bittrex||
+   |everytrade|everytrade.coinbaseProApiConnector|Connector|Coinbase Pro||
+   |everytrade|everytrade.everytradeParser|Parser|Coinbase Pro||
+   |everytrade|everytrade.bitmexApiConnector|Connector|Bitmex||
+   |everytrade|everytrade.everytradeParser|Parser|Bitmex||
+   |everytrade|everytrade.huobiApiConnector|Connector|Huobi||
+   |everytrade|everytrade.everytradeParser|Parser|Huobi||
+   |everytrade|everytrade.okexApiConnector|Connector|OKEX||
+   |everytrade|everytrade.everytradeParser|Parser|OKEX||
+   |everytrade|everytrade.everytradeParser|Parser|bitFlyer||
+   |everytrade|everytrade.everytradeParser|Parser|Coinsquare||
+   |everytrade|everytrade.everytradeParser|Parser|HitBTC||
+   |everytrade|everytrade.everytradeParser|Parser|LocalBitcoins||
+   |everytrade|everytrade.everytradeParser|Parser|Paxful||
+   |everytrade|everytrade.everytradeParser|Parser|Poloniex||
+   |everytrade|everytrade.everytradeParser|Parser|ShakePay||
