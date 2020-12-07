@@ -70,7 +70,7 @@ public class BitflyerBeanV1 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean() {
+    public ImportedTransactionBean toTransactionCluster() {
         validateCurrencyPair(currency1, currency2);
 
         return new ImportedTransactionBean(

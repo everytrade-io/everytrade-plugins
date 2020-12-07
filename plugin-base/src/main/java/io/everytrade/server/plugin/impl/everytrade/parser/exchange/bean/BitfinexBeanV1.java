@@ -86,7 +86,7 @@ public class BitfinexBeanV1 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean() {
+    public ImportedTransactionBean toTransactionCluster() {
         validateCurrencyPair(pairBase, pairQuote);
 
         TransactionType transactionType = amount.compareTo(BigDecimal.ZERO) > 0

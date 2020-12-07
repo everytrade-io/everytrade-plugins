@@ -69,7 +69,7 @@ public class HitBtcBeanV1 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean() {
+    public ImportedTransactionBean toTransactionCluster() {
         validateCurrencyPair(instrumentBase, instrumentQuote);
 
         return new ImportedTransactionBean(

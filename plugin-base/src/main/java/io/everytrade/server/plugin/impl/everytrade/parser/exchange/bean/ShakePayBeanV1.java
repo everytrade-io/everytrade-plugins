@@ -69,7 +69,7 @@ public class ShakePayBeanV1 extends ExchangeBean {
 
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean() {
+    public ImportedTransactionBean toTransactionCluster() {
         final TransactionType transactionType = detectTransactionType(debitCurrency, creditCurrency);
         final boolean isBuy = transactionType.equals(TransactionType.BUY);
         final BigDecimal baseQuantity = isBuy ? amountCredited.abs() : amountDebited.abs();

@@ -105,7 +105,7 @@ public class BitmexBeanV1 extends ExchangeBean {
 
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean() {
+    public ImportedTransactionBean toTransactionCluster() {
         validateCurrencyPair(symbolBase, symbolQuote);
 
         return new ImportedTransactionBean(

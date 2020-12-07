@@ -5,11 +5,13 @@ import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -52,7 +54,7 @@ public class OkexApiTransactionBean {
         fee = new BigDecimal(orderInfo.getFee());
     }
 
-    public ImportedTransactionBean toImportedTransactionBean() {
+    public TransactionCluster toTransactionCluster() {
         try {
             new CurrencyPair(instrumentIdBase, instrumentIdQuote);
         } catch (CurrencyPair.FiatCryptoCombinationException e) {
@@ -74,15 +76,19 @@ public class OkexApiTransactionBean {
             }
             convertedFee = fee.abs();
         }
-        return new ImportedTransactionBean(
+        final BuySellImportedTransactionBean buySellImportedTransactionBean = new BuySellImportedTransactionBean(
             orderId,             //uuid
             timeStamp,           //executed
             instrumentIdBase,    //base
             instrumentIdQuote,   //quote
             side,                //action
             filledSize,          //base quantity
-            priceAvg,           //unit price
-            convertedFee   //fee quote
+            priceAvg//,           //unit price
+            //convertedFee   //fee quote
+        );
+        return new TransactionCluster(
+            buySellImportedTransactionBean,
+            Collections.emptyList()  //TODO: ET-700 - mcharvat - add related transactions (e.g. fees)
         );
     }
 

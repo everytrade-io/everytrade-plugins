@@ -56,7 +56,7 @@ public class CoinsquareBeanV1 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean() {
+    public ImportedTransactionBean toTransactionCluster() {
         validateCurrencyPair(baseCurrenncy, currenncy);
 
         return new ImportedTransactionBean(

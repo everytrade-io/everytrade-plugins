@@ -89,7 +89,7 @@ public class CoinbaseBeanV1 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean() {
+    public ImportedTransactionBean toTransactionCluster() {
         if (!sizeUnit.equals(productBase)) {
             throw new DataValidationException(String.format(
                 BASE_DIFFERS_FROM_UNIT_SIZE,

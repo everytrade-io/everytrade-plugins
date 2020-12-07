@@ -92,7 +92,7 @@ public class KrakenBeanV1 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean() {
+    public ImportedTransactionBean toTransactionCluster() {
         validateCurrencyPair(pairBase, pairQuote);
 
         return new ImportedTransactionBean(

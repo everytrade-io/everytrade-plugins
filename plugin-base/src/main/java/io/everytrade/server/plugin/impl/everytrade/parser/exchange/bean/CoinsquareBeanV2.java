@@ -50,7 +50,7 @@ public class CoinsquareBeanV2 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean() {
+    public ImportedTransactionBean toTransactionCluster() {
         final TransactionType transactionType = detectTransactionType(fromCurrenncy, toCurrenncy);
         final boolean isBuy = transactionType.equals(TransactionType.BUY);
 

@@ -78,7 +78,7 @@ public class BittrexBeanV1 extends ExchangeBean {
 
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean() {
+    public ImportedTransactionBean toTransactionCluster() {
         validateCurrencyPair(exchangeBase, exchangeQuote);
 
         return new ImportedTransactionBean(

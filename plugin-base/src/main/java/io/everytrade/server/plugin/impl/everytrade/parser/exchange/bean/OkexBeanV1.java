@@ -76,7 +76,7 @@ public class OkexBeanV1 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean() {
+    public ImportedTransactionBean toTransactionCluster() {
         validateCurrencyPair(pairsBase, pairsQuote);
 
         if (!pairsBase.equals(unit)) {

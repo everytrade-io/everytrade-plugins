@@ -89,7 +89,7 @@ public class CoinmateBeanV2 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean() {
+    public ImportedTransactionBean toTransactionCluster() {
         validateCurrencyPair(currencyAmount, currencyPrice);
         if (!currencyPrice.equals(auxCurrencyFee)) {
             throw new DataValidationException(String.format("Price currecy(%s) and fee currency(%s) are different.",

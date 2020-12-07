@@ -9,10 +9,10 @@ import io.everytrade.server.plugin.api.connector.ConnectorParameterDescriptor;
 import io.everytrade.server.plugin.api.connector.IConnector;
 import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.parser.ConversionStatistic;
-import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParseResult;
 import io.everytrade.server.plugin.api.parser.RowError;
 import io.everytrade.server.plugin.api.parser.RowErrorType;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.EveryTradeApiDigest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -109,12 +109,17 @@ public class GbConnector implements IConnector {
         final List<GbApiTransactionBean> transactions
             = Objects.requireNonNullElse(data.getTransactions(), new ArrayList<>());
 
-        final List<ImportedTransactionBean> importedTransactions = new ArrayList<>();
+        final List<TransactionCluster> importedClusters = new ArrayList<>();
         final List<RowError> errorRows = new ArrayList<>();
+        long transactionCount = 0;
+        String lastDownloadedTxUid = lastTransactionId;
         for (GbApiTransactionBean transaction : transactions) {
             try {
                 if (transaction.isImportable()) {
-                    importedTransactions.add(transaction.toImportedTransactionBean());
+                    final TransactionCluster cluster = transaction.toTransactionCluster();
+                    importedClusters.add(cluster);
+                    transactionCount += 1 + cluster.getRelated().size();
+                    lastDownloadedTxUid = transaction.getUid();
                 }
             } catch (Exception e) {
                 log.error("Error converting to ImportedTransactionBean: {}", e.getMessage());
@@ -122,21 +127,17 @@ public class GbConnector implements IConnector {
                 errorRows.add(new RowError(transaction.toString(), e.getMessage(), RowErrorType.FAILED));
             }
         }
-        log.info("{} transaction(s) parsed successfully.", importedTransactions.size());
+        log.info(
+            "{} transaction cluster(s) with {} transactions parsed successfully.",
+            importedClusters.size(),
+            transactionCount
+        );
         if (!errorRows.isEmpty()) {
             log.warn("{} row(s) not parsed.", errorRows.size());
         }
 
-        final String lastDownloadedTxUid;
-        if (importedTransactions.isEmpty()) {
-            lastDownloadedTxUid = lastTransactionId;
-        } else {
-            final ImportedTransactionBean lastTransaction = importedTransactions.get(importedTransactions.size() - 1);
-            lastDownloadedTxUid = lastTransaction.getUid();
-        }
-
         return new DownloadResult(
-            new ParseResult(importedTransactions, new ConversionStatistic(errorRows, 0)),
+            new ParseResult(importedClusters, new ConversionStatistic(errorRows, 0)),
             lastDownloadedTxUid
         );
     }

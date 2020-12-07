@@ -62,7 +62,7 @@ public class PoloniexBeanV1 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean() {
+    public ImportedTransactionBean toTransactionCluster() {
         validateCurrencyPair(marketBase, marketQuote);
         return new ImportedTransactionBean(
             null,               //uuid

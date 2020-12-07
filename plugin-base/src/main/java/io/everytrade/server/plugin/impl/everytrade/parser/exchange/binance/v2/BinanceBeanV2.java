@@ -74,7 +74,7 @@ public class BinanceBeanV2 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean() {
+    public ImportedTransactionBean toTransactionCluster() {
         validateCurrencyPair(pairBase, pairQuote);
 
         final boolean isIncorrectFeeCoin

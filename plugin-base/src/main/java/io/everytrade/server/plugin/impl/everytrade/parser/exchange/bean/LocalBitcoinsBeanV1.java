@@ -89,7 +89,7 @@ public class LocalBitcoinsBeanV1 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean() {
+    public ImportedTransactionBean toTransactionCluster() {
 
         final boolean isCrypto = !currency.isFiat();
         final boolean isReverseTrade = isCrypto && !Currency.USDT.equals(currency);

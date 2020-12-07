@@ -80,7 +80,7 @@ public class BitstampBeanV1 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean() {
+    public ImportedTransactionBean toTransactionCluster() {
         validateCurrencyPair(amountCurrency, valueCurrency);
         if (!valueCurrency.equals(rateCurrency) || !valueCurrency.equals(feeCurrency)) {
             throw new DataValidationException(CURRENCY_EQUALITY_MESSAGE);

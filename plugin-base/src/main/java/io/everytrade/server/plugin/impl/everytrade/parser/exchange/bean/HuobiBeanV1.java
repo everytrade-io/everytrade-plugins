@@ -77,7 +77,7 @@ public class HuobiBeanV1 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean() {
+    public ImportedTransactionBean toTransactionCluster() {
         validateCurrencyPair(pairBase, pairQuote);
 
         final boolean isIncorrectFeeCoin

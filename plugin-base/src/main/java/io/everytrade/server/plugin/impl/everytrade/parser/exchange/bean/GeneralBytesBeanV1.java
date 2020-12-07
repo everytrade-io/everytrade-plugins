@@ -97,7 +97,7 @@ public class GeneralBytesBeanV1 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean() {
+    public ImportedTransactionBean toTransactionCluster() {
         validateCurrencyPair(cryptoCurrency, cashCurrency);
         return new ImportedTransactionBean(
             localTransactionId.concat("-").concat(remoteTransactionId),   //uuid

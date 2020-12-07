@@ -2,25 +2,26 @@ package io.everytrade.server.parser.exchange;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-//import com.univocity.parsers.annotations.Format;
-//import com.univocity.parsers.annotations.Headers;
-//import com.univocity.parsers.annotations.Parsed;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.model.Currency;
+import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.ImportDetail;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
-//import io.everytrade.server.parser.postparse.ConversionParams;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 @JsonFormat(shape = JsonFormat.Shape.ARRAY)
-@JsonPropertyOrder({"uid", "timestamp", "base", "quote", "action", "quantity", "volume", "fee"})
-//@Headers(sequence = {"UID", "TIMESTAMP", "BASE", "QUOTE", "ACTION", "QUANTITY", "VOLUME", "FEE"}, extract = true)
-public class EveryTradeApiTransactionBean /*extends ExchangeBean*/ {
+@JsonPropertyOrder({"uid", "timestamp", "base", "quote", "action", "quantity", "volume", "fee", "feeCurrency"})
+public class EveryTradeApiTransactionBean {
     private String uid;
     private Instant timestamp;
     private String base;
@@ -29,72 +30,81 @@ public class EveryTradeApiTransactionBean /*extends ExchangeBean*/ {
     private BigDecimal quantity;
     private BigDecimal volume;
     private BigDecimal fee;
+    private String feeCurrency;
 
-//    public EveryTradeApiTransactionBean() {
-//        super(SupportedExchange.EVERYTRADE);
-//    }
-
-//    @Parsed(field = "UID")
     public void setUid(String uid) {
         this.uid = uid;
     }
 
-//    @Parsed(field = "TIMESTAMP")
-//    @Format(formats = {"dd.MM.yy HH:mm:ss"}, options = {"locale=US", "timezone=UTC"})
     public void setTimestamp(Date timestamp) {
         this.timestamp = timestamp.toInstant();
     }
 
-//    @Parsed(field = "BASE")
     public void setBase(String symbol) {
         base = symbol;
     }
 
-//    @Parsed(field = "QUOTE")
     public void setQuote(String symbol) {
         quote = symbol;
     }
 
-//    @Parsed(field = "ACTION")
     public void setAction(String action) {
         this.action = action;
     }
 
-//    @Parsed(field = "QUANTITY", defaultNullRead = "0")
     public void setQuantity(BigDecimal quantity) {
         this.quantity = quantity;
     }
 
-//    @Parsed(field = "VOLUME", defaultNullRead = "0")
     public void setVolume(BigDecimal volume) {
         this.volume = volume;
     }
 
-//    @Parsed(field = "FEE", defaultNullRead = "0")
     public void setFee(BigDecimal fee) {
         this.fee = fee;
     }
 
-//    @Override
-//    public ImportedTransactionBean toImportedTransactionBean(ConversionParams conversionParams) {
-//        final Currency base = Currency.valueOf(this.base);
-//        final Currency quote = Currency.valueOf(this.quote);
-//        validateCurrencyPair(base, quote);
-//
-//        return new ImportedTransactionBean(
-//            uid,                             //uuid
-//            timestamp,                       //executed
-//            base,                            //base
-//            quote,                           //quote
-//            TransactionType.valueOf(action), //action
-//            quantity,                        //base quantity
-//            evalUnitPrice(volume, quantity), //unit price
-//            volume,                          //transaction price
-//            fee                              //fee quote
-//        );
-//    }
+    public void setFeeCurrency(String feeCurrency) {
+        this.feeCurrency = feeCurrency;
+    }
 
-    public ImportedTransactionBean toImportedTransactionBean() {
+    public String getUid() {
+        return uid;
+    }
+
+    public Instant getTimestamp() {
+        return timestamp;
+    }
+
+    public String getBase() {
+        return base;
+    }
+
+    public String getQuote() {
+        return quote;
+    }
+
+    public String getAction() {
+        return action;
+    }
+
+    public BigDecimal getQuantity() {
+        return quantity;
+    }
+
+    public BigDecimal getVolume() {
+        return volume;
+    }
+
+    public BigDecimal getFee() {
+        return fee;
+    }
+
+    public String getFeeCurrency() {
+        return feeCurrency;
+    }
+
+    public TransactionCluster toTransactionCluster() {
         final Currency base = Currency.valueOf(this.base);
         final Currency quote = Currency.valueOf(this.quote);
         try {
@@ -103,16 +113,39 @@ public class EveryTradeApiTransactionBean /*extends ExchangeBean*/ {
             throw new DataValidationException(e.getMessage());
         }
 
+        final Currency parsedFeeCurrency = Currency.valueOf(feeCurrency);
+        final List<ImportedTransactionBean> related;
+        final ImportDetail importDetail;
+        if (parsedFeeCurrency == base || parsedFeeCurrency == quote) {
+            related = List.of(
+                new FeeRebateImportedTransactionBean(
+                    uid + "-fee",
+                    timestamp,
+                    base,
+                    quote,
+                    TransactionType.FEE,
+                    fee,
+                    parsedFeeCurrency
+                )
+            );
+            importDetail = ImportDetail.noError();
+        } else {
+            related = Collections.emptyList();
+            importDetail = new ImportDetail(true);
+        }
 
-        return new ImportedTransactionBean(
-            uid,                             //uuid
-            timestamp,                       //executed
-            base,                            //base
-            quote,                           //quote
-            TransactionType.valueOf(action), //action
-            quantity,                        //base quantity
-            volume.divide(quantity, 10, RoundingMode.HALF_UP), //unit price
-            fee                              //fee quote
+        return new TransactionCluster(
+            new BuySellImportedTransactionBean(
+                uid,
+                timestamp,
+                base,
+                quote,
+                TransactionType.valueOf(action),
+                quantity,
+                volume.divide(quantity, 10, RoundingMode.HALF_UP), //unit price
+                importDetail
+            ),
+            related
         );
     }
 
@@ -127,6 +160,7 @@ public class EveryTradeApiTransactionBean /*extends ExchangeBean*/ {
             ", quantity=" + quantity +
             ", volume=" + volume +
             ", fee=" + fee +
+            ", feeCurrency=" + feeCurrency +
             '}';
     }
 }

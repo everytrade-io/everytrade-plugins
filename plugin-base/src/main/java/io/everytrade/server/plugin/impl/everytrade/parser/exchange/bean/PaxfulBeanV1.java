@@ -78,7 +78,7 @@ public class PaxfulBeanV1 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean() {
+    public ImportedTransactionBean toTransactionCluster() {
         validateCurrencyPair(Currency.BTC, fiatCurrency);
         return new ImportedTransactionBean(
             tradeHash,               //uuid

@@ -2,11 +2,11 @@ package io.everytrade.server.plugin.impl.everytrade;
 
 import io.everytrade.server.model.SupportedExchange;
 import io.everytrade.server.plugin.api.parser.ConversionStatistic;
-import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParseResult;
 import io.everytrade.server.plugin.api.parser.RowError;
 import io.everytrade.server.plugin.api.parser.RowErrorType;
 import io.everytrade.server.parser.exchange.XChangeApiTransactionBean;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import org.knowm.xchange.dto.trade.UserTrade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,13 +21,13 @@ public class XChangeConnectorParser {
     }
 
     public static ParseResult getParseResult(List<UserTrade> userTrades, SupportedExchange supportedExchange) {
-        final List<ImportedTransactionBean> importedTransactionBeans = new ArrayList<>();
+        final List<TransactionCluster> transactionClusters = new ArrayList<>();
         final List<RowError> errorRows = new ArrayList<>();
         for (UserTrade userTrade : userTrades) {
             try {
                 XChangeApiTransactionBean xchangeApiTransactionBean
                     = new XChangeApiTransactionBean(userTrade, supportedExchange);
-                importedTransactionBeans.add(xchangeApiTransactionBean.toImportedTransactionBean());
+                transactionClusters.add(xchangeApiTransactionBean.toTransactionCluster());
             } catch (Exception e) {
                 LOG.error("Error converting to ImportedTransactionBean: {}", e.getMessage());
                 LOG.debug("Exception by converting to ImportedTransactionBean.", e);
@@ -36,7 +36,7 @@ public class XChangeConnectorParser {
         }
 
         return new ParseResult(
-            importedTransactionBeans,
+            transactionClusters,
             new ConversionStatistic(errorRows, 0)
         );
     }
