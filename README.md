@@ -82,7 +82,7 @@ runtime, respectively.
       order to fully test this, you should adjust your connector when testing to limit the amound of data being
       downloaded in a single pass.
    - The tester tries to parse each file in the `parser-files` directory with an appropriate parser. A parser is chosen
-     based on a match between the CVS file's header and one of the parser's advertised headers.
+     based on a match between the CSV file's header and one of the parser's advertised headers.
 
 ## Contribute back and make it part of Everytrade cloud instance
 How to create a new plugin and make it part of the Base Plugin Pack:
