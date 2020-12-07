@@ -134,7 +134,7 @@ How to create a new plugin and make it part of the Base Plugin Pack:
    ## Implemented exchange API connectors and parsers
    |Plugin ID| Connector/parser ID|Type|Exchange|Notes|
    |--|-------|--------|--------|--------|
-   |generalbytes|generalbytes.GBConnector|Connector|General Bytes||
+   |generalbytes|generalbytes.GbConnector|Connector|General Bytes||
    |everytrade|everytrade.everytradeParser|Parser|General Bytes||
    |everytrade|everytrade.etApiConnector|Connector|EveryTrade||
    |everytrade|everytrade.everytradeParser|Parser|EveryTrade||
