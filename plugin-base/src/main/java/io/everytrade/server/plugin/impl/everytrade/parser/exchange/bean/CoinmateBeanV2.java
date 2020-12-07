@@ -7,6 +7,7 @@ import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
@@ -89,21 +90,23 @@ public class CoinmateBeanV2 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toTransactionCluster() {
-        validateCurrencyPair(currencyAmount, currencyPrice);
-        if (!currencyPrice.equals(auxCurrencyFee)) {
-            throw new DataValidationException(String.format("Price currecy(%s) and fee currency(%s) are different.",
-                currencyPrice.name(), auxCurrencyFee.name()));
-        }
-        return new ImportedTransactionBean(
-            transactionId,      //uuid
-            date,               //executed
-            currencyAmount,     //base
-            currencyPrice,      //quote
-            typeDetail,         //action
-            amount,             //base quantity
-            price,              //unit price
-            fee                 //fee quote
-        );
+    public TransactionCluster toTransactionCluster() {
+        //TODO: mcharvat - implement
+        return null;
+//        validateCurrencyPair(currencyAmount, currencyPrice);
+//        if (!currencyPrice.equals(auxCurrencyFee)) {
+//            throw new DataValidationException(String.format("Price currecy(%s) and fee currency(%s) are different.",
+//                currencyPrice.name(), auxCurrencyFee.name()));
+//        }
+//        return new ImportedTransactionBean(
+//            transactionId,      //uuid
+//            date,               //executed
+//            currencyAmount,     //base
+//            currencyPrice,      //quote
+//            typeDetail,         //action
+//            amount,             //base quantity
+//            price,              //unit price
+//            fee                 //fee quote
+//        );
     }
 }

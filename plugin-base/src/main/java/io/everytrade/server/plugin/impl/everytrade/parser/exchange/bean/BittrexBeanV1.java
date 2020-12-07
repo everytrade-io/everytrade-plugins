@@ -7,6 +7,7 @@ import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
@@ -78,18 +79,20 @@ public class BittrexBeanV1 extends ExchangeBean {
 
 
     @Override
-    public ImportedTransactionBean toTransactionCluster() {
-        validateCurrencyPair(exchangeBase, exchangeQuote);
-
-        return new ImportedTransactionBean(
-            orderUuid,          //uuid
-            closed,             //executed
-            exchangeBase,       //base
-            exchangeQuote,      //quote
-            type,               //action
-            quantity,           //base quantity
-            evalUnitPrice(price, quantity), //unit price
-            comissionPaid       //fee quote
-        );
+    public TransactionCluster toTransactionCluster() {
+        //TODO: mcharvat - implement
+        return null;
+//        validateCurrencyPair(exchangeBase, exchangeQuote);
+//
+//        return new ImportedTransactionBean(
+//            orderUuid,          //uuid
+//            closed,             //executed
+//            exchangeBase,       //base
+//            exchangeQuote,      //quote
+//            type,               //action
+//            quantity,           //base quantity
+//            evalUnitPrice(price, quantity), //unit price
+//            comissionPaid       //fee quote
+//        );
     }
 }

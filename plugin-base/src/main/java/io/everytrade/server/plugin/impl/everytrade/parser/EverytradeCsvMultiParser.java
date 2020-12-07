@@ -288,9 +288,9 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 transactionClusters.add(transactionCluster);
                 //TODO: ET-700 mcharvat - move ignored fee to getRowErrors() and rename it to getParseStatistics() or
                 // getCounters()?
-                if (transactionCluster.getMain().getImportDetail().isIgnoredFee()) {
-                    ignoredFeeCount++;
-                }
+//                if (transactionCluster.getMain().getImportDetail().isIgnoredFee()) {
+//                    ignoredFeeCount++;
+//                }
             } catch (DataValidationException e) {
                 rowErrors.add(new RowError(p.rowToString(), e.getMessage(), RowErrorType.FAILED));
             }

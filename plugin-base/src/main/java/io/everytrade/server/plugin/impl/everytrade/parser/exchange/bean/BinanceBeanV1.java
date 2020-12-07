@@ -10,6 +10,7 @@ import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.ImportDetail;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
@@ -90,51 +91,53 @@ public class BinanceBeanV1 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toTransactionCluster() {
-        validateCurrencyPair(marketBase, marketQuote);
-
-        final boolean isIncorrectFeeCoin
-            = feeCoin == null || !(feeCoin.equals(marketBase) || feeCoin.equals(marketQuote));
-        final BigDecimal coefFeeBase;
-        final BigDecimal coefFeeQuote;
-        if (isIncorrectFeeCoin) {
-            coefFeeBase = BigDecimal.ZERO;
-            coefFeeQuote = BigDecimal.ZERO;
-        } else {
-            if (TransactionType.BUY.equals(type)) {
-                if (feeCoin.equals(marketBase)) {
-                    coefFeeBase = BigDecimal.ONE.negate();
-                    coefFeeQuote = BigDecimal.ZERO;
-                } else {
-                    coefFeeBase = BigDecimal.ZERO;
-                    coefFeeQuote = BigDecimal.ONE;
-                }
-            } else {
-                if (feeCoin.equals(marketBase)) {
-                    coefFeeBase = BigDecimal.ONE;
-                    coefFeeQuote = BigDecimal.ZERO;
-                } else {
-                    coefFeeBase = BigDecimal.ZERO;
-                    coefFeeQuote = BigDecimal.ONE.negate();
-                }
-            }
-        }
-        final BigDecimal baseQuantity = amount.abs().add(coefFeeBase.multiply(fee));
-        final BigDecimal quoteVolume = total.abs().add(coefFeeQuote.multiply(fee));
-        final BigDecimal unitPrice = evalUnitPrice(quoteVolume, baseQuantity);
-
-        validatePositivity(baseQuantity, quoteVolume, unitPrice);
-
-        return new ImportedTransactionBean(
-            null,         //uuid
-            date,              //executed
-            marketBase,        //base
-            marketQuote,       //quote
-            type,              //action
-            baseQuantity.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),      //base quantity
-            unitPrice,         //unit price
-            BigDecimal.ZERO,    //fee quote
-            new ImportDetail(isIncorrectFeeCoin)
-        );
+    public TransactionCluster toTransactionCluster() {
+        //TODO: mcharvat - implement
+        return null;
+//        validateCurrencyPair(marketBase, marketQuote);
+//
+//        final boolean isIncorrectFeeCoin
+//            = feeCoin == null || !(feeCoin.equals(marketBase) || feeCoin.equals(marketQuote));
+//        final BigDecimal coefFeeBase;
+//        final BigDecimal coefFeeQuote;
+//        if (isIncorrectFeeCoin) {
+//            coefFeeBase = BigDecimal.ZERO;
+//            coefFeeQuote = BigDecimal.ZERO;
+//        } else {
+//            if (TransactionType.BUY.equals(type)) {
+//                if (feeCoin.equals(marketBase)) {
+//                    coefFeeBase = BigDecimal.ONE.negate();
+//                    coefFeeQuote = BigDecimal.ZERO;
+//                } else {
+//                    coefFeeBase = BigDecimal.ZERO;
+//                    coefFeeQuote = BigDecimal.ONE;
+//                }
+//            } else {
+//                if (feeCoin.equals(marketBase)) {
+//                    coefFeeBase = BigDecimal.ONE;
+//                    coefFeeQuote = BigDecimal.ZERO;
+//                } else {
+//                    coefFeeBase = BigDecimal.ZERO;
+//                    coefFeeQuote = BigDecimal.ONE.negate();
+//                }
+//            }
+//        }
+//        final BigDecimal baseQuantity = amount.abs().add(coefFeeBase.multiply(fee));
+//        final BigDecimal quoteVolume = total.abs().add(coefFeeQuote.multiply(fee));
+//        final BigDecimal unitPrice = evalUnitPrice(quoteVolume, baseQuantity);
+//
+//        validatePositivity(baseQuantity, quoteVolume, unitPrice);
+//
+//        return new ImportedTransactionBean(
+//            null,         //uuid
+//            date,              //executed
+//            marketBase,        //base
+//            marketQuote,       //quote
+//            type,              //action
+//            baseQuantity.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),      //base quantity
+//            unitPrice,         //unit price
+//            BigDecimal.ZERO,    //fee quote
+//            new ImportDetail(isIncorrectFeeCoin)
+//        );
     }
 }

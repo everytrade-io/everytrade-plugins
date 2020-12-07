@@ -7,6 +7,7 @@ import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
@@ -92,19 +93,21 @@ public class KrakenBeanV1 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toTransactionCluster() {
-        validateCurrencyPair(pairBase, pairQuote);
-
-        return new ImportedTransactionBean(
-            txid,                   //uuid
-            time,                   //executed
-            pairBase,               //base
-            pairQuote,              //quote
-            type,                   //action
-            vol,                    //base quantity
-            evalUnitPrice(cost, vol),   //unit price
-            fee                     //fee quote
-        );
+    public TransactionCluster toTransactionCluster() {
+        //TODO: mcharvat - implement
+        return null;
+//        validateCurrencyPair(pairBase, pairQuote);
+//
+//        return new ImportedTransactionBean(
+//            txid,                   //uuid
+//            time,                   //executed
+//            pairBase,               //base
+//            pairQuote,              //quote
+//            type,                   //action
+//            vol,                    //base quantity
+//            evalUnitPrice(cost, vol),   //unit price
+//            fee                     //fee quote
+//        );
     }
 
     private String findStarts(String value) {

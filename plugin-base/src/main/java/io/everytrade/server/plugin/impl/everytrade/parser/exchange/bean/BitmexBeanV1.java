@@ -8,6 +8,7 @@ import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
@@ -105,19 +106,21 @@ public class BitmexBeanV1 extends ExchangeBean {
 
 
     @Override
-    public ImportedTransactionBean toTransactionCluster() {
-        validateCurrencyPair(symbolBase, symbolQuote);
-
-        return new ImportedTransactionBean(
-            orderID,            //uuid
-            transactTime,       //executed
-            symbolBase,         //base
-            symbolQuote,        //quote
-            side,               //action
-            lastQty,            //base quantity
-            lastPx,             //unit price
-            execComm            //fee quote
-        );
+    public TransactionCluster toTransactionCluster() {
+        //TODO: mcharvat - implement
+        return null;
+//        validateCurrencyPair(symbolBase, symbolQuote);
+//
+//        return new ImportedTransactionBean(
+//            orderID,            //uuid
+//            transactTime,       //executed
+//            symbolBase,         //base
+//            symbolQuote,        //quote
+//            side,               //action
+//            lastQty,            //base quantity
+//            lastPx,             //unit price
+//            execComm            //fee quote
+//        );
     }
 
     private String findStarts(String value) {

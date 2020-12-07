@@ -7,6 +7,7 @@ import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.ImportDetail;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
@@ -74,52 +75,54 @@ public class BinanceBeanV2 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toTransactionCluster() {
-        validateCurrencyPair(pairBase, pairQuote);
-
-        final boolean isIncorrectFeeCoin
-            = feeCurrency == null || !(feeCurrency.equals(pairBase) || feeCurrency.equals(pairQuote));
-        final BigDecimal coefFeeBase;
-        final BigDecimal coefFeeQuote;
-        if (isIncorrectFeeCoin) {
-            coefFeeBase = BigDecimal.ZERO;
-            coefFeeQuote = BigDecimal.ZERO;
-        } else {
-            if (TransactionType.BUY.equals(type)) {
-                if (feeCurrency.equals(pairBase)) {
-                    coefFeeBase = BigDecimal.ONE.negate();
-                    coefFeeQuote = BigDecimal.ZERO;
-                } else {
-                    coefFeeBase = BigDecimal.ZERO;
-                    coefFeeQuote = BigDecimal.ONE;
-                }
-            } else {
-                if (feeCurrency.equals(pairBase)) {
-                    coefFeeBase = BigDecimal.ONE;
-                    coefFeeQuote = BigDecimal.ZERO;
-                } else {
-                    coefFeeBase = BigDecimal.ZERO;
-                    coefFeeQuote = BigDecimal.ONE.negate();
-                }
-            }
-        }
-        final BigDecimal baseQuantity = filled.abs().add(coefFeeBase.multiply(fee));
-        final BigDecimal quoteVolume = total.abs().add(coefFeeQuote.multiply(fee));
-        final BigDecimal unitPrice = evalUnitPrice(quoteVolume, baseQuantity);
-
-        validatePositivity(baseQuantity, quoteVolume, unitPrice);
-
-        return new ImportedTransactionBean(
-            null,         //uuid
-            date,              //executed
-            pairBase,          //base
-            pairQuote,         //quote
-            type,              //action
-            baseQuantity.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),      //base quantity
-            unitPrice,         //unit price
-            BigDecimal.ZERO,    //fee quote
-            new ImportDetail(isIncorrectFeeCoin)
-        );
+    public TransactionCluster toTransactionCluster() {
+        //TODO: mcharvat - implement
+        return null;
+//        validateCurrencyPair(pairBase, pairQuote);
+//
+//        final boolean isIncorrectFeeCoin
+//            = feeCurrency == null || !(feeCurrency.equals(pairBase) || feeCurrency.equals(pairQuote));
+//        final BigDecimal coefFeeBase;
+//        final BigDecimal coefFeeQuote;
+//        if (isIncorrectFeeCoin) {
+//            coefFeeBase = BigDecimal.ZERO;
+//            coefFeeQuote = BigDecimal.ZERO;
+//        } else {
+//            if (TransactionType.BUY.equals(type)) {
+//                if (feeCurrency.equals(pairBase)) {
+//                    coefFeeBase = BigDecimal.ONE.negate();
+//                    coefFeeQuote = BigDecimal.ZERO;
+//                } else {
+//                    coefFeeBase = BigDecimal.ZERO;
+//                    coefFeeQuote = BigDecimal.ONE;
+//                }
+//            } else {
+//                if (feeCurrency.equals(pairBase)) {
+//                    coefFeeBase = BigDecimal.ONE;
+//                    coefFeeQuote = BigDecimal.ZERO;
+//                } else {
+//                    coefFeeBase = BigDecimal.ZERO;
+//                    coefFeeQuote = BigDecimal.ONE.negate();
+//                }
+//            }
+//        }
+//        final BigDecimal baseQuantity = filled.abs().add(coefFeeBase.multiply(fee));
+//        final BigDecimal quoteVolume = total.abs().add(coefFeeQuote.multiply(fee));
+//        final BigDecimal unitPrice = evalUnitPrice(quoteVolume, baseQuantity);
+//
+//        validatePositivity(baseQuantity, quoteVolume, unitPrice);
+//
+//        return new ImportedTransactionBean(
+//            null,         //uuid
+//            date,              //executed
+//            pairBase,          //base
+//            pairQuote,         //quote
+//            type,              //action
+//            baseQuantity.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),      //base quantity
+//            unitPrice,         //unit price
+//            BigDecimal.ZERO,    //fee quote
+//            new ImportDetail(isIncorrectFeeCoin)
+//        );
     }
 
     private Currency findEnds(String value) {

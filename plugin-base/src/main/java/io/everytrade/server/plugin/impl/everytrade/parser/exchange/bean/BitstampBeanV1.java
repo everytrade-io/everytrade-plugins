@@ -7,6 +7,7 @@ import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
@@ -80,22 +81,24 @@ public class BitstampBeanV1 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toTransactionCluster() {
-        validateCurrencyPair(amountCurrency, valueCurrency);
-        if (!valueCurrency.equals(rateCurrency) || !valueCurrency.equals(feeCurrency)) {
-            throw new DataValidationException(CURRENCY_EQUALITY_MESSAGE);
-        }
-
-        return new ImportedTransactionBean(
-            null,          //uuid
-            dateTime,           //executed
-            amountCurrency,     //base
-            valueCurrency,      //quote
-            subType,            //action
-            amountValue,        //base quantity
-            evalUnitPrice(value, amountValue),   //unit price
-            fee                 //fee quote
-        );
+    public TransactionCluster toTransactionCluster() {
+        //TODO: mcharvat - implement
+        return null;
+//        validateCurrencyPair(amountCurrency, valueCurrency);
+//        if (!valueCurrency.equals(rateCurrency) || !valueCurrency.equals(feeCurrency)) {
+//            throw new DataValidationException(CURRENCY_EQUALITY_MESSAGE);
+//        }
+//
+//        return new ImportedTransactionBean(
+//            null,          //uuid
+//            dateTime,           //executed
+//            amountCurrency,     //base
+//            valueCurrency,      //quote
+//            subType,            //action
+//            amountValue,        //base quantity
+//            evalUnitPrice(value, amountValue),   //unit price
+//            fee                 //fee quote
+//        );
     }
 }
 

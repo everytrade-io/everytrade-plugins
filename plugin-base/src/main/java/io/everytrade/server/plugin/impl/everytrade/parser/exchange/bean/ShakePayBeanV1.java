@@ -7,6 +7,7 @@ import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
@@ -69,20 +70,22 @@ public class ShakePayBeanV1 extends ExchangeBean {
 
 
     @Override
-    public ImportedTransactionBean toTransactionCluster() {
-        final TransactionType transactionType = detectTransactionType(debitCurrency, creditCurrency);
-        final boolean isBuy = transactionType.equals(TransactionType.BUY);
-        final BigDecimal baseQuantity = isBuy ? amountCredited.abs() : amountDebited.abs();
-        final BigDecimal transactionPrice = isBuy ? amountDebited.abs() : amountCredited.abs();
-        return new ImportedTransactionBean(
-            null,                                //uuid
-            date,                                     //executed
-            isBuy ? creditCurrency : debitCurrency,   //base
-            isBuy ? debitCurrency : creditCurrency,   //quote
-            transactionType,                          //action
-            baseQuantity,                             //baseQuantity
-            evalUnitPrice(transactionPrice, baseQuantity), //unitPrice
-            BigDecimal.ZERO                           //fee
-        );
+    public TransactionCluster toTransactionCluster() {
+        //TODO: mcharvat - implement
+        return null;
+//        final TransactionType transactionType = detectTransactionType(debitCurrency, creditCurrency);
+//        final boolean isBuy = transactionType.equals(TransactionType.BUY);
+//        final BigDecimal baseQuantity = isBuy ? amountCredited.abs() : amountDebited.abs();
+//        final BigDecimal transactionPrice = isBuy ? amountDebited.abs() : amountCredited.abs();
+//        return new ImportedTransactionBean(
+//            null,                                //uuid
+//            date,                                     //executed
+//            isBuy ? creditCurrency : debitCurrency,   //base
+//            isBuy ? debitCurrency : creditCurrency,   //quote
+//            transactionType,                          //action
+//            baseQuantity,                             //baseQuantity
+//            evalUnitPrice(transactionPrice, baseQuantity), //unitPrice
+//            BigDecimal.ZERO                           //fee
+//        );
     }
 }
