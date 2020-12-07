@@ -33,9 +33,9 @@
         - Choose a parser ID unique in the scope of your plugin
         - Create a parser descriptor. It describes which files the parser is able to parse - using file headers and
         supported exchange for each header.
-        - Implement the parser's methods (most importantly the `parse` method - which parse the file with the
-         specific header).
-    - You can take a look at the `plugin-base` module for some inspiration. It contains some real plugin
+        - Implement the parser's methods (most importantly the `parse` method - which should parse a csv file with
+        some specific header).
+        - You can take a look at the `plugin-base` module for some inspiration. It contains some real plugin
             implementations.
 
 
@@ -81,7 +81,8 @@ runtime, respectively.
      whether your connector can correctly resume download from where it left off after the first download pass. In
       order to fully test this, you should adjust your connector when testing to limit the amound of data being
       downloaded in a single pass.
-   - The tester try to find and parse each file in the `parser-files` directory with appropriate parser.
+   - The tester tries to parse each file in the `parser-files` directory with an appropriate parser. A parser is chosen
+     based on a match between the CVS file's header and one of the parser's advertised headers.
 
 ## Contribute back and make it part of Everytrade cloud instance
 How to create a new plugin and make it part of the Base Plugin Pack:
@@ -131,30 +132,36 @@ How to create a new plugin and make it part of the Base Plugin Pack:
    ```
    You should see your components being loaded.
    ## Implemented exchange API connectors and parsers
-   |Exchange|Plugin|connector ID|parser ID|
-   |--|------|--------|--------|
-   |General Bytes|generalbytes|generalbytes.GBConnector|_not supported_|
-   |General Bytes|everytrade|_not supported_|everytrade.everytradeParser|
-   |EveryTrade|everytrade|everytrade.etApiConnector|everytrade.everytradeParser|
-   |Kraken|everytrade|everytrade.krkApiConnector|everytrade.everytradeParser|
-   |Bitstamp|everytrade|everytrade.bitstampApiConnesor|everytrade.everytradeParser|
-   |CoinMate|everytrade|everytrade.coinmateApiConnector|everytrade.everytradeParser|
-   |Bitfinex|everytrade|everytrade.bitfinexApiConnector|everytrade.everytradeParser|
-   |Binance|everytrade|everytrade.binanceApiConnector|everytrade.everytradeParser|
-   |Bittrex|everytrade|everytrade.bittrexApiConnector|everytrade.everytradeParser|
-   |Coinbase Pro|everytrade|everytrade.coinbaseProApiConnector|everytrade.everytradeParser|
-   |Bitmex|everytrade|everytrade.bitmexApiConnector|everytrade.everytradeParser|
-   |Huobi|everytrade|everytrade.bitmexApiConnector|everytrade.everytradeParser|
-   |OKEX|everytrade|everytrade.okexApiConnector|everytrade.everytradeParser|
-   |bitFlyer|everytrade|_not supported_|everytrade.everytradeParser|
-   |Coinsquare|everytrade|_not supported_|everytrade.everytradeParser|
-   |HitBTC|everytrade|_not supported_|everytrade.everytradeParser|
-   |LocalBitcoins|everytrade|_not supported_|everytrade.everytradeParser|
-   |Paxful|everytrade|_not supported_|everytrade.everytradeParser|
-   |Poloniex|everytrade|_not supported_|everytrade.everytradeParser|
-   |ShakePay|everytrade|_not supported_|everytrade.everytradeParser|
-
-
-
-
-
+   |Plugin ID| Connector/parser ID|Type|Exchange|Notes|
+   |--|-------|--------|--------|--------|
+   |generalbytes|generalbytes.GBConnector|Connector|General Bytes||
+   |everytrade|everytrade.everytradeParser|Parser|General Bytes||
+   |everytrade|everytrade.etApiConnector|Connector|EveryTrade||
+   |everytrade|everytrade.everytradeParser|Parser|EveryTrade||
+   |everytrade|everytrade.krkApiConnector|Connector|Kraken||
+   |everytrade|everytrade.everytradeParser|Parser|Kraken||
+   |everytrade|everytrade.bitstampApiConnector|Connector|Bitstamp||
+   |everytrade|everytrade.everytradeParser|Parser|Bitstamp||
+   |everytrade|everytrade.coinmateApiConnector|Connector|CoinMate||
+   |everytrade|everytrade.everytradeParser|Parser|CoinMate||
+   |everytrade|everytrade.bitfinexApiConnector|Connector|Bitfinex||
+   |everytrade|everytrade.everytradeParser|Parser|Bitfinex||
+   |everytrade|everytrade.binanceApiConnector|Connector|Binance||
+   |everytrade|everytrade.everytradeParser|Parser|Binance||
+   |everytrade|everytrade.bittrexApiConnector|Connector|Bittrex||
+   |everytrade|everytrade.everytradeParser|Parser|Bittrex||
+   |everytrade|everytrade.coinbaseProApiConnector|Connector|Coinbase Pro||
+   |everytrade|everytrade.everytradeParser|Parser|Coinbase Pro||
+   |everytrade|everytrade.bitmexApiConnector|Connector|Bitmex||
+   |everytrade|everytrade.everytradeParser|Parser|Bitmex||
+   |everytrade|everytrade.huobiApiConnector|Connector|Huobi||
+   |everytrade|everytrade.everytradeParser|Parser|Huobi||
+   |everytrade|everytrade.okexApiConnector|Connector|OKEX||
+   |everytrade|everytrade.everytradeParser|Parser|OKEX||
+   |everytrade|everytrade.everytradeParser|Parser|bitFlyer||
+   |everytrade|everytrade.everytradeParser|Parser|Coinsquare||
+   |everytrade|everytrade.everytradeParser|Parser|HitBTC||
+   |everytrade|everytrade.everytradeParser|Parser|LocalBitcoins||
+   |everytrade|everytrade.everytradeParser|Parser|Paxful||
+   |everytrade|everytrade.everytradeParser|Parser|Poloniex||
+   |everytrade|everytrade.everytradeParser|Parser|ShakePay||
