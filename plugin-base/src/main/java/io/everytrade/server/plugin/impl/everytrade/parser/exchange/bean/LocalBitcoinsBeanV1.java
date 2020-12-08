@@ -7,6 +7,7 @@ import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
@@ -89,22 +90,23 @@ public class LocalBitcoinsBeanV1 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean() {
-
-        final boolean isCrypto = !currency.isFiat();
-        final boolean isReverseTrade = isCrypto && !Currency.USDT.equals(currency);
-        final BigDecimal baseQuantity = isReverseTrade ? fiatAmount.abs() : btcFinal.abs();
-        final BigDecimal volume = isReverseTrade ? btcFinal.abs() : fiatAmount.abs();
-        return new ImportedTransactionBean(
-            id,                      //uuid
-            transactionReleasedAt,   //executed
-            isReverseTrade ? currency : Currency.BTC,            //base
-            isReverseTrade ? Currency.BTC : currency,            //quote
-            isReverseTrade ? switchAction(tradeType) : tradeType,//action
-            baseQuantity,                        //base quantity
-            evalUnitPrice(volume, baseQuantity), //unit price
-            BigDecimal.ZERO          //fee quote
-        );
+    public TransactionCluster toTransactionCluster() {
+        //TODO: mcharvat - implement
+        return null;
+//        final boolean isCrypto = !currency.isFiat();
+//        final boolean isReverseTrade = isCrypto && !Currency.USDT.equals(currency);
+//        final BigDecimal baseQuantity = isReverseTrade ? fiatAmount.abs() : btcFinal.abs();
+//        final BigDecimal volume = isReverseTrade ? btcFinal.abs() : fiatAmount.abs();
+//        return new ImportedTransactionBean(
+//            id,                      //uuid
+//            transactionReleasedAt,   //executed
+//            isReverseTrade ? currency : Currency.BTC,            //base
+//            isReverseTrade ? Currency.BTC : currency,            //quote
+//            isReverseTrade ? switchAction(tradeType) : tradeType,//action
+//            baseQuantity,                        //base quantity
+//            evalUnitPrice(volume, baseQuantity), //unit price
+//            BigDecimal.ZERO          //fee quote
+//        );
     }
 
     private TransactionType switchAction(TransactionType transactionType) {

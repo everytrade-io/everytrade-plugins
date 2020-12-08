@@ -7,6 +7,7 @@ import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
@@ -89,21 +90,23 @@ public class CoinmateBeanV1 extends ExchangeBean {
 
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean() {
-        validateCurrencyPair(amountCurrency, priceCurrency);
-        if (!priceCurrency.equals(auxFeeCurrency)) {
-            throw new DataValidationException(String.format("Price currecy(%s) and fee currency(%s) are different.",
-                priceCurrency.name(), auxFeeCurrency.name()));
-        }
-        return new ImportedTransactionBean(
-            id,             //uuid
-            date,           //executed
-            amountCurrency, //base
-            priceCurrency,  //quote
-            type,           //action
-            amount,         //base quantity
-            price,          //unit price
-            fee             //fee quote
-        );
+    public TransactionCluster toTransactionCluster() {
+        //TODO: mcharvat - implement
+        return null;
+//        validateCurrencyPair(amountCurrency, priceCurrency);
+//        if (!priceCurrency.equals(auxFeeCurrency)) {
+//            throw new DataValidationException(String.format("Price currecy(%s) and fee currency(%s) are different.",
+//                priceCurrency.name(), auxFeeCurrency.name()));
+//        }
+//        return new ImportedTransactionBean(
+//            id,             //uuid
+//            date,           //executed
+//            amountCurrency, //base
+//            priceCurrency,  //quote
+//            type,           //action
+//            amount,         //base quantity
+//            price,          //unit price
+//            fee             //fee quote
+//        );
     }
 }

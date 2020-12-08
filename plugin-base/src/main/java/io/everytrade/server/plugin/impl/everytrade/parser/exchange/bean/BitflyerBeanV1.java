@@ -7,6 +7,7 @@ import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
@@ -70,18 +71,20 @@ public class BitflyerBeanV1 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean() {
-        validateCurrencyPair(currency1, currency2);
-
-        return new ImportedTransactionBean(
-            orderID,            //uuid
-            tradeDate,          //executed
-            currency1,         //base
-            currency2,         //quote
-            tradeType,          //action
-            amountCurrency1.abs(), //base quantity
-            tradedPrice,        //unit price
-            fee                //fee quote
-        );
+    public TransactionCluster toTransactionCluster() {
+        //TODO: mcharvat - implement
+        return null;
+//        validateCurrencyPair(currency1, currency2);
+//
+//        return new ImportedTransactionBean(
+//            orderID,            //uuid
+//            tradeDate,          //executed
+//            currency1,         //base
+//            currency2,         //quote
+//            tradeType,          //action
+//            amountCurrency1.abs(), //base quantity
+//            tradedPrice,        //unit price
+//            fee                //fee quote
+//        );
     }
 }

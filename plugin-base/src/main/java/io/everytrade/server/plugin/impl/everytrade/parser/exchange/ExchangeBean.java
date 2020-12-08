@@ -4,7 +4,7 @@ import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.impl.everytrade.parser.IImportedTransactionBeanable;
+import io.everytrade.server.plugin.impl.everytrade.parser.IImportableBean;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 
@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public abstract class ExchangeBean implements IImportedTransactionBeanable {
+public abstract class ExchangeBean implements IImportableBean {
     public static final String UNSUPPORTED_CURRENCY_PAIR = "Unsupported currency pair ";
     public static final String UNSUPPORTED_TRANSACTION_TYPE = "Unsupported transaction type ";
     public static final String UNSUPPORTED_STATUS_TYPE = "Unsupported status type ";

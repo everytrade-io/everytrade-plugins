@@ -7,6 +7,7 @@ import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
@@ -76,47 +77,49 @@ public class OkexBeanV1 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean() {
-        validateCurrencyPair(pairsBase, pairsQuote);
-
-        if (!pairsBase.equals(unit)) {
-            throw new DataValidationException(String.format(
-                "Pairs-base currency '%s' differs from unit currency '%s'", pairsBase, unit)
-            );
-        }
-        if (!pairsQuote.equals(totalCurrency)) {
-            throw new DataValidationException(String.format(
-                "Pairs-quote currency '%s' differs from Total currency '%s'", pairsQuote, totalCurrency)
-            );
-        }
-        final TransactionType action = amount.compareTo(BigDecimal.ZERO) > 0 ? TransactionType.BUY :
-            TransactionType.SELL;
-        final BigDecimal feeConverted;
-        if (action.equals(TransactionType.BUY)) {
-            if (!feeCurrency.equals(pairsBase)) {
-                throw new DataValidationException(
-                    String.format("Fee currency '%s' differ to base currency '%s'.",  feeCurrency, pairsBase)
-                );
-            }
-            feeConverted = price.multiply(fee).abs().setScale(10, RoundingMode.HALF_UP);
-        } else {
-            if (!feeCurrency.equals(pairsQuote)) {
-                throw new DataValidationException(
-                    String.format("Fee currency '%s' differ to quote currency '%s'.",  feeCurrency, pairsQuote)
-                );
-            }
-            feeConverted = fee.abs();
-        }
-
-        return new ImportedTransactionBean(
-            tradeID,           //uuid
-            tradeTime,         //executed
-            pairsBase,         //base
-            pairsQuote,        //quote
-            action,            //action
-            amount.abs(),      //base quantity
-            price,             //unit price
-            feeConverted      //fee quote
-        );
+    public TransactionCluster toTransactionCluster() {
+        //TODO: mcharvat - implement
+        return null;
+//        validateCurrencyPair(pairsBase, pairsQuote);
+//
+//        if (!pairsBase.equals(unit)) {
+//            throw new DataValidationException(String.format(
+//                "Pairs-base currency '%s' differs from unit currency '%s'", pairsBase, unit)
+//            );
+//        }
+//        if (!pairsQuote.equals(totalCurrency)) {
+//            throw new DataValidationException(String.format(
+//                "Pairs-quote currency '%s' differs from Total currency '%s'", pairsQuote, totalCurrency)
+//            );
+//        }
+//        final TransactionType action = amount.compareTo(BigDecimal.ZERO) > 0 ? TransactionType.BUY :
+//            TransactionType.SELL;
+//        final BigDecimal feeConverted;
+//        if (action.equals(TransactionType.BUY)) {
+//            if (!feeCurrency.equals(pairsBase)) {
+//                throw new DataValidationException(
+//                    String.format("Fee currency '%s' differ to base currency '%s'.",  feeCurrency, pairsBase)
+//                );
+//            }
+//            feeConverted = price.multiply(fee).abs().setScale(10, RoundingMode.HALF_UP);
+//        } else {
+//            if (!feeCurrency.equals(pairsQuote)) {
+//                throw new DataValidationException(
+//                    String.format("Fee currency '%s' differ to quote currency '%s'.",  feeCurrency, pairsQuote)
+//                );
+//            }
+//            feeConverted = fee.abs();
+//        }
+//
+//        return new ImportedTransactionBean(
+//            tradeID,           //uuid
+//            tradeTime,         //executed
+//            pairsBase,         //base
+//            pairsQuote,        //quote
+//            action,            //action
+//            amount.abs(),      //base quantity
+//            price,             //unit price
+//            feeConverted      //fee quote
+//        );
     }
 }

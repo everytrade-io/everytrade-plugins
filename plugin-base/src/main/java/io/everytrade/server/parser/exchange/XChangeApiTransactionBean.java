@@ -1,21 +1,21 @@
 package io.everytrade.server.parser.exchange;
 
-//import com.univocity.parsers.common.DataValidationException;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.SupportedExchange;
-import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
-//import io.everytrade.server.parser.postparse.ConversionParams;
+import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import org.knowm.xchange.dto.Order;
 import org.knowm.xchange.dto.trade.UserTrade;
 import org.knowm.xchange.instrument.Instrument;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Collections;
 
-public class XChangeApiTransactionBean /*extends ExchangeBean*/ {
+public class XChangeApiTransactionBean {
     private final String id;
     private final Instant timestamp;
     private final TransactionType type;
@@ -27,7 +27,6 @@ public class XChangeApiTransactionBean /*extends ExchangeBean*/ {
     private final BigDecimal feeAmount;
 
     public XChangeApiTransactionBean(UserTrade userTrade, SupportedExchange supportedExchange) {
-//        super(supportedExchange);
         id = userTrade.getId();
         timestamp = userTrade.getTimestamp().toInstant();
         type = getTransactionType(userTrade.getType());
@@ -46,23 +45,7 @@ public class XChangeApiTransactionBean /*extends ExchangeBean*/ {
 
     }
 
-//    @Override
-//    public ImportedTransactionBean toImportedTransactionBean(ConversionParams conversionParams) {
-//        validateCurrencyPair(base, quote);
-//
-//        return new ImportedTransactionBean(
-//            id,                             //uuid
-//            timestamp,                       //executed
-//            base,                            //base
-//            quote,                           //quote
-//            type,                           //action
-//            originalAmount,                  //base quantity
-//            price,                           //unit price
-//            evalTransactionPrice(price, originalAmount),  //transaction price
-//            feeAmount                        //fee quote
-//        );
-//    }
-    public ImportedTransactionBean toImportedTransactionBean() {
+    public TransactionCluster toTransactionCluster() {
         try {
             new CurrencyPair(base, quote);
         } catch (CurrencyPair.FiatCryptoCombinationException e) {
@@ -70,15 +53,19 @@ public class XChangeApiTransactionBean /*extends ExchangeBean*/ {
         }
 
 
-        return new ImportedTransactionBean(
+        final BuySellImportedTransactionBean buySellImportedTransactionBean = new BuySellImportedTransactionBean(
             id,                             //uuid
             timestamp,                       //executed
             base,                            //base
             quote,                           //quote
             type,                           //action
             originalAmount,                  //base quantity
-            price,                           //unit price
-            feeAmount                        //fee quote
+            price//,                           //unit price
+            //feeAmount                        //fee quote
+        );
+        return new TransactionCluster(
+            buySellImportedTransactionBean,
+            Collections.emptyList() //TODO: ET-700 - mcharvat - add related transactions (e.g. fees)
         );
     }
 

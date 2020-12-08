@@ -8,6 +8,7 @@ import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.ImportDetail;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
@@ -86,54 +87,56 @@ public class BitfinexBeanV1 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean() {
-        validateCurrencyPair(pairBase, pairQuote);
-
-        TransactionType transactionType = amount.compareTo(BigDecimal.ZERO) > 0
-            ? TransactionType.BUY : TransactionType.SELL;
-
-        final boolean isIncorrectFeeCurr
-            = feeCurrency == null || !(feeCurrency.equals(pairBase) || feeCurrency.equals(pairQuote));
-        final BigDecimal coefFeeBase;
-        final BigDecimal coefFeeQuote;
-        if (isIncorrectFeeCurr) {
-            coefFeeBase = BigDecimal.ZERO;
-            coefFeeQuote = BigDecimal.ZERO;
-        } else {
-            if (TransactionType.BUY.equals(transactionType)) {
-                if (feeCurrency.equals(pairBase)) {
-                    coefFeeBase = BigDecimal.ONE;
-                    coefFeeQuote = BigDecimal.ZERO;
-                } else {
-                    coefFeeBase = BigDecimal.ZERO;
-                    coefFeeQuote = BigDecimal.ONE.negate();
-                }
-            } else {
-                if (feeCurrency.equals(pairBase)) {
-                    coefFeeBase = BigDecimal.ONE.negate();
-                    coefFeeQuote = BigDecimal.ZERO;
-                } else {
-                    coefFeeBase = BigDecimal.ZERO;
-                    coefFeeQuote = BigDecimal.ONE;
-                }
-            }
-        }
-        final BigDecimal baseQuantity = amount.abs().add(coefFeeBase.multiply(fee));
-        final BigDecimal quoteVolume = amount.abs().multiply(price).add(coefFeeQuote.multiply(fee));
-        final BigDecimal unitPrice = evalUnitPrice(quoteVolume, baseQuantity);
-
-        validatePositivity(baseQuantity, quoteVolume, unitPrice);
-
-        return new ImportedTransactionBean(
-            uid,               //uuid
-            dateConverted,     //executed
-            pairBase,          //base
-            pairQuote,         //quote
-            transactionType,   //action
-            baseQuantity.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),      //base quantity
-            unitPrice,         //unit price
-            BigDecimal.ZERO,    //fee quote
-            new ImportDetail(isIncorrectFeeCurr)
-        );
+    public TransactionCluster toTransactionCluster() {
+        //TODO: mcharvat - implement
+        return null;
+//        validateCurrencyPair(pairBase, pairQuote);
+//
+//        TransactionType transactionType = amount.compareTo(BigDecimal.ZERO) > 0
+//            ? TransactionType.BUY : TransactionType.SELL;
+//
+//        final boolean isIncorrectFeeCurr
+//            = feeCurrency == null || !(feeCurrency.equals(pairBase) || feeCurrency.equals(pairQuote));
+//        final BigDecimal coefFeeBase;
+//        final BigDecimal coefFeeQuote;
+//        if (isIncorrectFeeCurr) {
+//            coefFeeBase = BigDecimal.ZERO;
+//            coefFeeQuote = BigDecimal.ZERO;
+//        } else {
+//            if (TransactionType.BUY.equals(transactionType)) {
+//                if (feeCurrency.equals(pairBase)) {
+//                    coefFeeBase = BigDecimal.ONE;
+//                    coefFeeQuote = BigDecimal.ZERO;
+//                } else {
+//                    coefFeeBase = BigDecimal.ZERO;
+//                    coefFeeQuote = BigDecimal.ONE.negate();
+//                }
+//            } else {
+//                if (feeCurrency.equals(pairBase)) {
+//                    coefFeeBase = BigDecimal.ONE.negate();
+//                    coefFeeQuote = BigDecimal.ZERO;
+//                } else {
+//                    coefFeeBase = BigDecimal.ZERO;
+//                    coefFeeQuote = BigDecimal.ONE;
+//                }
+//            }
+//        }
+//        final BigDecimal baseQuantity = amount.abs().add(coefFeeBase.multiply(fee));
+//        final BigDecimal quoteVolume = amount.abs().multiply(price).add(coefFeeQuote.multiply(fee));
+//        final BigDecimal unitPrice = evalUnitPrice(quoteVolume, baseQuantity);
+//
+//        validatePositivity(baseQuantity, quoteVolume, unitPrice);
+//
+//        return new ImportedTransactionBean(
+//            uid,               //uuid
+//            dateConverted,     //executed
+//            pairBase,          //base
+//            pairQuote,         //quote
+//            transactionType,   //action
+//            baseQuantity.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),      //base quantity
+//            unitPrice,         //unit price
+//            BigDecimal.ZERO,    //fee quote
+//            new ImportDetail(isIncorrectFeeCurr)
+//        );
     }
 }

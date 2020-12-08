@@ -9,6 +9,7 @@ import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.ImportDetail;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
@@ -77,50 +78,52 @@ public class HuobiBeanV1 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean() {
-        validateCurrencyPair(pairBase, pairQuote);
-
-        final boolean isIncorrectFeeCoin
-            = feeCurrency == null || !(feeCurrency.equals(pairBase) || feeCurrency.equals(pairQuote));
-        final BigDecimal baseQuantity;
-        final BigDecimal quoteVolume;
-        if (isIncorrectFeeCoin) {
-            baseQuantity = amount.abs();
-            quoteVolume = total.abs();
-        } else {
-            if (TransactionType.BUY.equals(side)) {
-                if (feeCurrency.equals(pairBase)) {
-                    baseQuantity = amount.abs().subtract(fee);
-                    quoteVolume = total.abs();
-                } else {
-                    baseQuantity = amount.abs();
-                    quoteVolume = total.abs().negate().subtract(fee).negate();
-                }
-            } else {
-                if (feeCurrency.equals(pairBase)) {
-                    baseQuantity = amount.abs().negate().subtract(fee).negate();
-                    quoteVolume = total.abs();
-                } else {
-                    baseQuantity = amount.abs();
-                    quoteVolume = total.abs().subtract(fee);
-                }
-            }
-        }
-
-        final BigDecimal unitPrice = evalUnitPrice(quoteVolume, baseQuantity);
-        validatePositivity(baseQuantity, quoteVolume, unitPrice);
-
-        return new ImportedTransactionBean(
-            null,               //uuid
-            time,                    //executed
-            pairBase,                //base
-            pairQuote,               //quote
-            side,                    //action
-            baseQuantity,            //base quantity
-            unitPrice,               //unit price
-            BigDecimal.ZERO,         //fee quote
-            new ImportDetail(isIncorrectFeeCoin)
-        );
+    public TransactionCluster toTransactionCluster() {
+        //TODO: mcharvat - implement
+        return null;
+//        validateCurrencyPair(pairBase, pairQuote);
+//
+//        final boolean isIncorrectFeeCoin
+//            = feeCurrency == null || !(feeCurrency.equals(pairBase) || feeCurrency.equals(pairQuote));
+//        final BigDecimal baseQuantity;
+//        final BigDecimal quoteVolume;
+//        if (isIncorrectFeeCoin) {
+//            baseQuantity = amount.abs();
+//            quoteVolume = total.abs();
+//        } else {
+//            if (TransactionType.BUY.equals(side)) {
+//                if (feeCurrency.equals(pairBase)) {
+//                    baseQuantity = amount.abs().subtract(fee);
+//                    quoteVolume = total.abs();
+//                } else {
+//                    baseQuantity = amount.abs();
+//                    quoteVolume = total.abs().negate().subtract(fee).negate();
+//                }
+//            } else {
+//                if (feeCurrency.equals(pairBase)) {
+//                    baseQuantity = amount.abs().negate().subtract(fee).negate();
+//                    quoteVolume = total.abs();
+//                } else {
+//                    baseQuantity = amount.abs();
+//                    quoteVolume = total.abs().subtract(fee);
+//                }
+//            }
+//        }
+//
+//        final BigDecimal unitPrice = evalUnitPrice(quoteVolume, baseQuantity);
+//        validatePositivity(baseQuantity, quoteVolume, unitPrice);
+//
+//        return new ImportedTransactionBean(
+//            null,               //uuid
+//            time,                    //executed
+//            pairBase,                //base
+//            pairQuote,               //quote
+//            side,                    //action
+//            baseQuantity,            //base quantity
+//            unitPrice,               //unit price
+//            BigDecimal.ZERO,         //fee quote
+//            new ImportDetail(isIncorrectFeeCoin)
+//        );
     }
 
     private Currency findEnds(String value) {

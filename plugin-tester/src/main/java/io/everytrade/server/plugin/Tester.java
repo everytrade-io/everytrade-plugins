@@ -9,6 +9,7 @@ import io.everytrade.server.plugin.api.parser.ConversionStatistic;
 import io.everytrade.server.plugin.api.parser.ICsvParser;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParseResult;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.api.parser.ParserDescriptor;
 import io.everytrade.server.plugin.support.EverytradePluginManager;
 import org.slf4j.Logger;
@@ -200,16 +201,11 @@ public class Tester {
             .append("unitPrice").append(columnSeparator)
             .append("feeQuote").append(lineSeparator);
 
-        for (ImportedTransactionBean b : parseResult.getImportedTransactionBeans()) {
-            stringBuilder
-                .append(b.getUid()).append(columnSeparator)
-                .append(b.getExecuted()).append(columnSeparator)
-                .append(b.getBase()).append(columnSeparator)
-                .append(b.getQuote()).append(columnSeparator)
-                .append(b.getAction()).append(columnSeparator)
-                .append(b.getBaseQuantity()).append(columnSeparator)
-                .append(b.getUnitPrice()).append(columnSeparator)
-                .append(b.getFeeQuote()).append(lineSeparator);
+        for (TransactionCluster c : parseResult.getTransactionClusters()) {
+            stringBuilder.append(c.getMain()).append(lineSeparator);
+            for (ImportedTransactionBean relatedTx : c.getRelated()) {
+                stringBuilder.append(relatedTx).append(lineSeparator);
+            }
         }
         log.info("importedTransactionBeans = \n" + stringBuilder.toString());
 

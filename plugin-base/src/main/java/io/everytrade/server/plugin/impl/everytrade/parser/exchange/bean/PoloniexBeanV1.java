@@ -8,6 +8,7 @@ import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
@@ -62,18 +63,20 @@ public class PoloniexBeanV1 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean() {
-        validateCurrencyPair(marketBase, marketQuote);
-        return new ImportedTransactionBean(
-            null,               //uuid
-            date,                    //executed
-            marketBase,              //base
-            marketQuote,             //quote
-            type,                    //action
-            quoteTotalLessFee.abs(), //base quantity
-            evalUnitPrice(baseTotalLessFee.abs(), quoteTotalLessFee.abs()), //unit price
-            BigDecimal.ZERO          //fee quote
-
-        );
+    public TransactionCluster toTransactionCluster() {
+        //TODO: mcharvat - implement
+        return null;
+//        validateCurrencyPair(marketBase, marketQuote);
+//        return new ImportedTransactionBean(
+//            null,               //uuid
+//            date,                    //executed
+//            marketBase,              //base
+//            marketQuote,             //quote
+//            type,                    //action
+//            quoteTotalLessFee.abs(), //base quantity
+//            evalUnitPrice(baseTotalLessFee.abs(), quoteTotalLessFee.abs()), //unit price
+//            BigDecimal.ZERO          //fee quote
+//
+//        );
     }
 }

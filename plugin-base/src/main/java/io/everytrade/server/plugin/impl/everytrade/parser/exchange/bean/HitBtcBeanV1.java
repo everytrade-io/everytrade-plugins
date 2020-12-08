@@ -6,6 +6,7 @@ import com.univocity.parsers.annotations.Parsed;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
@@ -69,18 +70,20 @@ public class HitBtcBeanV1 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean() {
-        validateCurrencyPair(instrumentBase, instrumentQuote);
-
-        return new ImportedTransactionBean(
-            tradeId,            //uuid
-            date,               //executed
-            instrumentBase,     //base
-            instrumentQuote,    //quote
-            side,               //action
-            quantity,           //base quantity
-            price,              //unit price
-            fee.subtract(rebate) //fee Quote
-        );
+    public TransactionCluster toTransactionCluster() {
+        //TODO: mcharvat - implement
+        return null;
+//        validateCurrencyPair(instrumentBase, instrumentQuote);
+//
+//        return new ImportedTransactionBean(
+//            tradeId,            //uuid
+//            date,               //executed
+//            instrumentBase,     //base
+//            instrumentQuote,    //quote
+//            side,               //action
+//            quantity,           //base quantity
+//            price,              //unit price
+//            fee.subtract(rebate) //fee Quote
+//        );
     }
 }

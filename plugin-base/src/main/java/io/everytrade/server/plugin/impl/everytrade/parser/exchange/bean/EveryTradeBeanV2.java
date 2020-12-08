@@ -6,6 +6,7 @@ import com.univocity.parsers.annotations.Parsed;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
@@ -62,18 +63,20 @@ public class EveryTradeBeanV2 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean() {
-        validateCurrencyPair(symbolBase, symbolQuote);
-
-        return new ImportedTransactionBean(
-            uid,            //uuid
-            date,           //executed
-            symbolBase,     //base
-            symbolQuote,    //quote
-            action,         //action
-            quantity,       //base quantity
-            evalUnitPrice(volume, quantity),  //unit price
-            fee             //fee quote
-        );
+    public TransactionCluster toTransactionCluster() {
+        //TODO: mcharvat - implement
+        return null;
+//        validateCurrencyPair(symbolBase, symbolQuote);
+//
+//        return new ImportedTransactionBean(
+//            uid,            //uuid
+//            date,           //executed
+//            symbolBase,     //base
+//            symbolQuote,    //quote
+//            action,         //action
+//            quantity,       //base quantity
+//            evalUnitPrice(volume, quantity),  //unit price
+//            fee             //fee quote
+//        );
     }
 }

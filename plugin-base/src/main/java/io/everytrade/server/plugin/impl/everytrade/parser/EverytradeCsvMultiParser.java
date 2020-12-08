@@ -10,6 +10,7 @@ import io.everytrade.server.plugin.api.parser.ParseResult;
 import io.everytrade.server.plugin.api.parser.ParserDescriptor;
 import io.everytrade.server.plugin.api.parser.RowError;
 import io.everytrade.server.plugin.api.parser.RowErrorType;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.EveryTradePlugin;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.UnknownHeaderException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BitfinexExchangeSpecificParser;
@@ -280,24 +281,26 @@ public class EverytradeCsvMultiParser implements ICsvParser {
         final List<RowError> rowErrors = new ArrayList<>(exchangeParser.getRowErrors());
 
         int ignoredFeeCount = 0;
-        List<ImportedTransactionBean> importedTransactionBeans = new ArrayList<>();
+        List<TransactionCluster> transactionClusters = new ArrayList<>();
         for (ExchangeBean p : listBeans) {
             try {
-                final ImportedTransactionBean importedTransactionBean = p.toImportedTransactionBean();
-                importedTransactionBeans.add(importedTransactionBean);
-                if (importedTransactionBean.getImportDetail().isIgnoredFee()) {
-                    ignoredFeeCount++;
-                }
+                final TransactionCluster transactionCluster = p.toTransactionCluster();
+                transactionClusters.add(transactionCluster);
+                //TODO: ET-700 mcharvat - move ignored fee to getRowErrors() and rename it to getParseStatistics() or
+                // getCounters()?
+//                if (transactionCluster.getMain().getImportDetail().isIgnoredFee()) {
+//                    ignoredFeeCount++;
+//                }
             } catch (DataValidationException e) {
                 rowErrors.add(new RowError(p.rowToString(), e.getMessage(), RowErrorType.FAILED));
             }
         }
 
-        log.info("{} transaction(s) parsed successfully.", importedTransactionBeans.size());
+        log.info("{} transaction(s) parsed successfully.", transactionClusters.size());
         if (!rowErrors.isEmpty()) {
             log.warn("{} row(s) not parsed.", rowErrors.size());
         }
 
-        return new ParseResult(importedTransactionBeans, new ConversionStatistic(rowErrors, ignoredFeeCount));
+        return new ParseResult(transactionClusters, new ConversionStatistic(rowErrors, ignoredFeeCount));
     }
 }
