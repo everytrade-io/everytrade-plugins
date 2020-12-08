@@ -169,6 +169,20 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             )
         );
         EXCHANGE_PARSE_DETAILS.put(
+            "UID,DATE,SYMBOL,ACTION,QUANTY,PRICE,FEE",
+            new ExchangeParseDetail(
+                () -> new DefaultUnivocityExchangeSpecificParser(EveryTradeBeanV1.class, DELIMITER_COMMA),
+                SupportedExchange.EVERYTRADE
+            )
+        );
+        EXCHANGE_PARSE_DETAILS.put(
+            "UID,DATE,SYMBOL,ACTION,QUANTY,VOLUME,FEE",
+            new ExchangeParseDetail(
+                () -> new DefaultUnivocityExchangeSpecificParser(EveryTradeBeanV2.class, DELIMITER_COMMA),
+                SupportedExchange.EVERYTRADE
+            )
+        );
+        EXCHANGE_PARSE_DETAILS.put(
             "Terminal SN;Server Time;Terminal Time;Local Transaction Id;Remote Transaction Id;Type;Cash Amount;" +
                 "Cash Currency;Crypto Amount;Crypto Currency;Used Discount;Actual Discount (%);Destination address;" +
                 "Related Remote Transaction Id;Identity;Status;Phone Number;Transaction Detail;",
