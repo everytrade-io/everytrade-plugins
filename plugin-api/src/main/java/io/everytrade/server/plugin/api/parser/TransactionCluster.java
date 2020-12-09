@@ -9,9 +9,14 @@ public class TransactionCluster {
 
 
     public TransactionCluster(ImportedTransactionBean main, List<ImportedTransactionBean> related) {
-        this(main,related, 0);
+        this(main, related, 0);
     }
-    public TransactionCluster(ImportedTransactionBean main, List<ImportedTransactionBean> related, int ignoredFeeTransactions) {
+
+    public TransactionCluster(
+        ImportedTransactionBean main,
+        List<ImportedTransactionBean> related,
+        int ignoredFeeTransactions
+    ) {
         this.main = main;
         this.related = related;
         this.ignoredFeeTransactions = ignoredFeeTransactions;
