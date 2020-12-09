@@ -5,13 +5,15 @@ import com.univocity.parsers.annotations.Headers;
 import com.univocity.parsers.annotations.Parsed;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Date;
+import java.util.List;
 
 @Headers(sequence = {"UID", "DATE", "SYMBOL", "ACTION", "QUANTY", "VOLUME", "FEE"}, extract = true)
 public class EveryTradeBeanV2 extends ExchangeBean {
@@ -64,19 +66,28 @@ public class EveryTradeBeanV2 extends ExchangeBean {
 
     @Override
     public TransactionCluster toTransactionCluster() {
-        //TODO: mcharvat - implement
-        return null;
-//        validateCurrencyPair(symbolBase, symbolQuote);
-//
-//        return new ImportedTransactionBean(
-//            uid,            //uuid
-//            date,           //executed
-//            symbolBase,     //base
-//            symbolQuote,    //quote
-//            action,         //action
-//            quantity,       //base quantity
-//            evalUnitPrice(volume, quantity),  //unit price
-//            fee             //fee quote
-//        );
+        validateCurrencyPair(symbolBase, symbolQuote);
+
+        return new TransactionCluster(
+            new BuySellImportedTransactionBean(
+                uid,
+                date,
+                symbolBase,
+                symbolQuote,
+                action,
+                quantity,
+                evalUnitPrice(volume, quantity)
+            ),
+            List.of(new FeeRebateImportedTransactionBean(
+                    uid + "-fee",
+                    date,
+                    symbolBase,
+                    symbolQuote,
+                    TransactionType.FEE,
+                    fee,
+                    symbolQuote
+                )
+            )
+        );
     }
 }
