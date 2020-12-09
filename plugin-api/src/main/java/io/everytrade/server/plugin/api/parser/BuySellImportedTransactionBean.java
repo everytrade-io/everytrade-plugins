@@ -10,7 +10,6 @@ import java.util.Objects;
 public class BuySellImportedTransactionBean extends ImportedTransactionBean{
     private final BigDecimal baseQuantity;
     private final BigDecimal unitPrice;
-    private final ImportDetail importDetail;
 
     public BuySellImportedTransactionBean(
         String uid,
@@ -20,28 +19,6 @@ public class BuySellImportedTransactionBean extends ImportedTransactionBean{
         TransactionType action,
         BigDecimal baseQuantity,
         BigDecimal unitPrice
-    ) {
-        this(
-            uid,
-            executed,
-            base,
-            quote,
-            action,
-            baseQuantity,
-            unitPrice,
-            ImportDetail.noError()
-        );
-    }
-
-    public BuySellImportedTransactionBean(
-        String uid,
-        Instant executed,
-        Currency base,
-        Currency quote,
-        TransactionType action,
-        BigDecimal baseQuantity,
-        BigDecimal unitPrice,
-        ImportDetail importDetail
     ) {
         super(
             uid,
@@ -53,7 +30,6 @@ public class BuySellImportedTransactionBean extends ImportedTransactionBean{
 
         Objects.requireNonNull(this.baseQuantity = baseQuantity);
         Objects.requireNonNull(this.unitPrice = unitPrice);
-        Objects.requireNonNull(this.importDetail = importDetail);
     }
 
     public BigDecimal getBaseQuantity() {
@@ -64,9 +40,6 @@ public class BuySellImportedTransactionBean extends ImportedTransactionBean{
         return unitPrice;
     }
 
-    public ImportDetail getImportDetail() {
-        return importDetail;
-    }
 
     @Override
     public String toString() {
@@ -78,7 +51,6 @@ public class BuySellImportedTransactionBean extends ImportedTransactionBean{
             ", action=" + getAction() +
             ", baseQuantity=" + baseQuantity +
             ", unitPrice=" + unitPrice +
-            ", importDetail=" + importDetail +
             '}';
     }
 }

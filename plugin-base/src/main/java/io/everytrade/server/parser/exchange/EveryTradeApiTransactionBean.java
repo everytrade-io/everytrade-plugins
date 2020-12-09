@@ -8,7 +8,6 @@ import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.ImportDetail;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 
@@ -104,7 +103,7 @@ public class EveryTradeApiTransactionBean {
         return feeCurrency;
     }
 
-    public TransactionCluster toTransactionCluster() {
+    public TransactionCluster  toTransactionCluster() {
         final Currency base = Currency.valueOf(this.base);
         final Currency quote = Currency.valueOf(this.quote);
         try {
@@ -115,7 +114,7 @@ public class EveryTradeApiTransactionBean {
 
         final Currency parsedFeeCurrency = Currency.valueOf(feeCurrency);
         final List<ImportedTransactionBean> related;
-        final ImportDetail importDetail;
+        final boolean ignoredFee;
         if (parsedFeeCurrency == base || parsedFeeCurrency == quote) {
             related = List.of(
                 new FeeRebateImportedTransactionBean(
@@ -128,10 +127,10 @@ public class EveryTradeApiTransactionBean {
                     parsedFeeCurrency
                 )
             );
-            importDetail = ImportDetail.noError();
+            ignoredFee = false;
         } else {
             related = Collections.emptyList();
-            importDetail = new ImportDetail(true);
+            ignoredFee = true;
         }
 
         return new TransactionCluster(
@@ -142,10 +141,10 @@ public class EveryTradeApiTransactionBean {
                 quote,
                 TransactionType.valueOf(action),
                 quantity,
-                volume.divide(quantity, 10, RoundingMode.HALF_UP), //unit price
-                importDetail
+                volume.divide(quantity, 10, RoundingMode.HALF_UP) //unit price
             ),
-            related
+            related,
+            ignoredFee ? 1 : 0
         );
     }
 

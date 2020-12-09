@@ -5,7 +5,6 @@ import io.everytrade.server.model.SupportedExchange;
 import io.everytrade.server.plugin.api.IPlugin;
 import io.everytrade.server.plugin.api.parser.ConversionStatistic;
 import io.everytrade.server.plugin.api.parser.ICsvParser;
-import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParseResult;
 import io.everytrade.server.plugin.api.parser.ParserDescriptor;
 import io.everytrade.server.plugin.api.parser.RowError;
@@ -288,9 +287,7 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 transactionClusters.add(transactionCluster);
                 //TODO: ET-700 mcharvat - move ignored fee to getRowErrors() and rename it to getParseStatistics() or
                 // getCounters()?
-//                if (transactionCluster.getMain().getImportDetail().isIgnoredFee()) {
-//                    ignoredFeeCount++;
-//                }
+                ignoredFeeCount += transactionCluster.getIgnoredFeeTransactions();
             } catch (DataValidationException e) {
                 rowErrors.add(new RowError(p.rowToString(), e.getMessage(), RowErrorType.FAILED));
             }
