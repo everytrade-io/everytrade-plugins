@@ -1,11 +1,12 @@
 package io.everytrade.server.parser.exchange;
 
 import com.univocity.parsers.common.DataValidationException;
-import io.everytrade.server.model.CurrencyPair;
-import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.model.Currency;
+import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.model.SupportedExchange;
+import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import org.knowm.xchange.dto.Order;
 import org.knowm.xchange.dto.trade.UserTrade;
@@ -13,7 +14,7 @@ import org.knowm.xchange.instrument.Instrument;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.Collections;
+import java.util.List;
 
 public class XChangeApiTransactionBean {
     private final String id;
@@ -52,20 +53,26 @@ public class XChangeApiTransactionBean {
             throw new DataValidationException(e.getMessage());
         }
 
-
-        final BuySellImportedTransactionBean buySellImportedTransactionBean = new BuySellImportedTransactionBean(
-            id,                             //uuid
-            timestamp,                       //executed
-            base,                            //base
-            quote,                           //quote
-            type,                           //action
-            originalAmount,                  //base quantity
-            price//,                           //unit price
-            //feeAmount                        //fee quote
-        );
         return new TransactionCluster(
-            buySellImportedTransactionBean,
-            Collections.emptyList() //TODO: ET-700 - mcharvat - add related transactions (e.g. fees)
+            new BuySellImportedTransactionBean(
+                id,
+                timestamp,
+                base,
+                quote,
+                type,
+                originalAmount,
+                price
+            ),
+            List.of(new FeeRebateImportedTransactionBean(
+                    id + "-fee",
+                    timestamp,
+                    base,
+                    quote,
+                    TransactionType.FEE,
+                    feeAmount,
+                    feeCurrency
+                )
+            )
         );
     }
 
