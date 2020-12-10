@@ -68,7 +68,6 @@ public class ParserTestUtils {
         assertEquals(expected.getQuote(), actual.getQuote());
         assertEquals(expected.getAction(), actual.getAction());
         assertEquals(0, expected.getBaseQuantity().compareTo(actual.getBaseQuantity()));
-        System.out.println(expected.getUnitPrice() + " " + actual.getUnitPrice());
         assertEquals(0, expected.getUnitPrice().compareTo(actual.getUnitPrice()));
     }
 
