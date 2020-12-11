@@ -88,7 +88,8 @@ public class DefaultUnivocityExchangeSpecificParser implements IExchangeSpecific
         parserSettings.setProcessorErrorHandler((error, inputRow, context) -> {
             PrarsingProblemType prarsingProblemType = error instanceof DataIgnoredException
                 ? PrarsingProblemType.PARSED_ROW_IGNORED : PrarsingProblemType.ROW_PARSING_FAILED;
-            ParsingProblem parsingProblem = new ParsingProblem(Arrays.toString(inputRow), error.getMessage(), prarsingProblemType);
+            ParsingProblem parsingProblem
+                = new ParsingProblem(Arrays.toString(inputRow), error.getMessage(), prarsingProblemType);
             parsingProblems.add(parsingProblem);
         });
         parserSettings.getFormat().setDelimiter(delimiter);

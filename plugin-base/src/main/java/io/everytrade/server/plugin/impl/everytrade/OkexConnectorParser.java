@@ -28,7 +28,9 @@ public class OkexConnectorParser {
             } catch (Exception e) {
                 LOG.error("Error converting to ImportedTransactionBean: {}", e.getMessage());
                 LOG.debug("Exception by converting to ImportedTransactionBean.", e);
-                parsingProblems.add(new ParsingProblem(orderInfo.toString(), e.getMessage(), PrarsingProblemType.ROW_PARSING_FAILED));
+                parsingProblems.add(
+                    new ParsingProblem(orderInfo.toString(), e.getMessage(), PrarsingProblemType.ROW_PARSING_FAILED)
+                );
             }
         }
         return new ParseResult(transactionClusters, parsingProblems);
