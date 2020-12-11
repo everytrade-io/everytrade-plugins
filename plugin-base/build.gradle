@@ -39,9 +39,21 @@ dependencies {
     pluginCompile "org.knowm.xchange:xchange-core:$xchangeVersion"
     pluginCompile "org.knowm.xchange:xchange-huobi:$xchangeVersion"
     pluginCompile "com.github.charvam:V3-Open-API-SDK:b50b7f4ae522160a4d718523e719b48134d0c31c"
+
+    pluginCompile "io.netty:netty-all:4.1.46.Final" //TODO: remove once okex fixes its dependencies
+    pluginCompile "commons-beanutils:commons-beanutils:1.9.4" //TODO: remove once okex fixes its dependencies
+    pluginCompile "org.apache.commons:commons-compress:1.19" //TODO: remove once okex fixes its dependencies
+    pluginCompile "com.squareup.okhttp3:okhttp:3.12.1" //TODO: remove once okex fixes its dependencies
+    pluginCompile "com.alibaba:fastjson:1.2.31" //TODO: remove once okex fixes its dependencies
+    pluginCompile "org.springframework:spring-context:5.1.18.RELEASE" //TODO: remove once okex fixes its dependencies
+    pluginCompile "com.squareup.retrofit2:retrofit:2.5.0" //TODO: remove once okex fixes its dependencies
+    pluginCompile "com.squareup.retrofit2:adapter-rxjava:2.5.0" //TODO: remove once okex fixes its dependencies
+    pluginCompile "com.squareup.retrofit2:converter-gson:2.5.0" //TODO: remove once okex fixes its dependencies
+    pluginCompile "com.squareup.retrofit2:converter-scalars:2.5.0" //TODO: remove once okex fixes its dependencies
+
     //TODO Remove it once ResCU releases a newer version with updated dependency - due to security bugs in the older
     // version used by ResCU
-    pluginCompile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.10.1'
+    pluginCompile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.10.5.1'
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
     testImplementation project(':plugin-api')
