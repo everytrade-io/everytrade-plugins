@@ -18,6 +18,8 @@ public abstract class ExchangeBean implements IImportableBean {
     public static final String UNSUPPORTED_TRANSACTION_TYPE = "Unsupported transaction type ";
     public static final String UNSUPPORTED_STATUS_TYPE = "Unsupported status type ";
     public static final String IGNORED_CHARS_IN_NUMBER = "[,\\s\\$]";
+    public static final String FEE_UID_PART = "-fee";
+    public static final String REBATE_UID_PART = "-rebate";
     private List<String> rowValues;
     private long rowNumber;
 

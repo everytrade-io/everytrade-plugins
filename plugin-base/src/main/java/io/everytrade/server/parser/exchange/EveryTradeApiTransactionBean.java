@@ -18,6 +18,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
+
 @JsonFormat(shape = JsonFormat.Shape.ARRAY)
 @JsonPropertyOrder({"uid", "timestamp", "base", "quote", "action", "quantity", "volume", "fee", "feeCurrency"})
 public class EveryTradeApiTransactionBean {
@@ -118,7 +120,7 @@ public class EveryTradeApiTransactionBean {
         if (parsedFeeCurrency == base || parsedFeeCurrency == quote) {
             related = List.of(
                 new FeeRebateImportedTransactionBean(
-                    uid + "-fee",
+                    uid + FEE_UID_PART,
                     timestamp,
                     base,
                     quote,

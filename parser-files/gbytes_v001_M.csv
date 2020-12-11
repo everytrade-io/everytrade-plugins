@@ -1,0 +1,3 @@
+Terminal SN;Server Time;Terminal Time;Local Transaction Id;Remote Transaction Id;Type;Cash Amount;Cash Currency;Crypto Amount;Crypto Currency;Used Discount;Actual Discount (%);Destination Address;Related Remote Transaction Id;Identity;Status;Phone Number;Transaction Detail;Transaction Note;Rate Incl. Fee;Rate Without Fee;Fixed Transaction Fee;Expected Profit Percent Setting;Expected Profit Value;Crypto Setting Name;Transaction Scoring Result;Expense;Expense Currency;
+B1;2020-12-10 15:02:41;2020-12-10 16:02:41;L;R;BUY;100;CZK;0.04595383;LTC;;0.00;x;;;COMPLETED (0);;;;2176.097183;2176.0974;0;0;0;LTC test;;0;LTC;
+B1;2020-12-07 15:33:55;2020-12-07 16:33:55;L;R;SELL;200;CZK;0.107841;LTC;;0.00;x;;;PAYMENT ARRIVED;;;;1854.582209;1854.57753657;0;0;0;ltc  ltc ltc;;0;LTC;

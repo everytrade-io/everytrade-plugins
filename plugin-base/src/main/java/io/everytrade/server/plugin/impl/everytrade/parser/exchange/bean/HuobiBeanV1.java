@@ -95,7 +95,7 @@ public class HuobiBeanV1 extends ExchangeBean {
         } else {
             related = List.of(
                 new FeeRebateImportedTransactionBean(
-                    "-fee",
+                    FEE_UID_PART,
                     time,
                     pairBase,
                     pairQuote,

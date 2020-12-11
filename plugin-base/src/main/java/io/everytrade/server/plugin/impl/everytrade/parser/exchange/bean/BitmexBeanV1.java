@@ -115,12 +115,12 @@ public class BitmexBeanV1 extends ExchangeBean {
         validatePositivity(lastPx,lastQty,execComm);
 
         List<ImportedTransactionBean> related;
-        if (execComm.compareTo(BigDecimal.ZERO) == 0) {
+        if (ParserUtils.equalsToZero(execComm)) {
             related = Collections.emptyList();
         } else {
             related = List.of(
                 new FeeRebateImportedTransactionBean(
-                    orderID + "-fee",
+                    orderID + FEE_UID_PART,
                     transactTime,
                     symbolBase,
                     symbolQuote,

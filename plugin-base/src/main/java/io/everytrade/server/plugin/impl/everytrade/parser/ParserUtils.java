@@ -1,5 +1,6 @@
 package io.everytrade.server.plugin.impl.everytrade.parser;
 
+import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -18,5 +19,9 @@ public class ParserUtils {
             DateTimeFormatter.ofPattern(dateTimePattern, Locale.US).withZone(ZoneOffset.UTC);
 
         return dateTimeFormatter.parse(dateTime, Instant::from);
+    }
+
+    public static boolean equalsToZero(BigDecimal number) {
+        return number.compareTo(BigDecimal.ZERO) == 0;
     }
 }

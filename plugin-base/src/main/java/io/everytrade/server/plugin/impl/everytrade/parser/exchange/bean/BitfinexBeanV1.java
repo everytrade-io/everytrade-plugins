@@ -101,12 +101,12 @@ public class BitfinexBeanV1 extends ExchangeBean {
 
         List<ImportedTransactionBean> related;
 
-        if (isIncorrectFeeCurr) {
+        if (isIncorrectFeeCurr || ParserUtils.equalsToZero(fee)) {
             related = Collections.emptyList();
         } else {
             related = List.of(
                 new FeeRebateImportedTransactionBean(
-                    uid + "-fee",
+                    uid + FEE_UID_PART,
                     dateConverted,
                     pairBase,
                     pairQuote,

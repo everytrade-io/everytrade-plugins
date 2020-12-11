@@ -15,6 +15,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.UNSUPPORTED_CURRENCY_PAIR;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.HuobiBeanV1.UNSUPPORTED_TYPE;
@@ -53,7 +54,7 @@ class HuobiBeanV1Test {
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
-                    "-fee",
+                    FEE_UID_PART,
                     Instant.parse("2020-03-31T21:31:43Z"),
                     Currency.LTC,
                     Currency.BTC,
@@ -84,7 +85,7 @@ class HuobiBeanV1Test {
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
-                    "-fee",
+                    FEE_UID_PART,
                     Instant.parse("2020-03-31T21:31:43Z"),
                     Currency.LTC,
                     Currency.BTC,
@@ -116,7 +117,7 @@ class HuobiBeanV1Test {
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
-                    "-fee",
+                    FEE_UID_PART,
                     Instant.parse("2020-03-31T21:31:24Z"),
                     Currency.LTC,
                     Currency.BTC,
@@ -147,7 +148,7 @@ class HuobiBeanV1Test {
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
-                    "-fee",
+                    FEE_UID_PART,
                     Instant.parse("2020-03-31T21:31:24Z"),
                     Currency.LTC,
                     Currency.BTC,

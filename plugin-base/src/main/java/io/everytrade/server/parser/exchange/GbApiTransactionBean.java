@@ -17,6 +17,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
+
 @JsonFormat(shape = JsonFormat.Shape.ARRAY)
 @JsonPropertyOrder(
     {
@@ -144,7 +146,7 @@ public class GbApiTransactionBean {
                 volume.divide(quantity, 10, RoundingMode.HALF_UP)
             ),
             List.of(new FeeRebateImportedTransactionBean(
-                    uid + "-fee",
+                    uid + FEE_UID_PART,
                     timestamp,
                     base,
                     quote,

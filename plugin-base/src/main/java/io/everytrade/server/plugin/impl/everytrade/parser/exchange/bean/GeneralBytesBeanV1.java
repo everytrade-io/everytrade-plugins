@@ -5,6 +5,8 @@ import com.univocity.parsers.annotations.Parsed;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
+import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
@@ -12,11 +14,14 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredE
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
+import java.util.Collections;
+import java.util.List;
 
 @Headers(sequence = {"Server Time","Local Transaction Id","Remote Transaction Id","Type","Cash Amount","Cash Currency",
-    "Crypto Amount","Crypto Currency","Status"}, extract = true)
+    "Crypto Amount","Crypto Currency","Status", "Expense", "Expense Currency"}, extract = true)
 public class GeneralBytesBeanV1 extends ExchangeBean {
     private Instant serverTime;
     private String localTransactionId;
@@ -26,6 +31,8 @@ public class GeneralBytesBeanV1 extends ExchangeBean {
     private Currency cashCurrency;
     private BigDecimal cryptoAmount;
     private Currency cryptoCurrency;
+    private BigDecimal expense;
+    private Currency expenseCurrency;
 
     @Parsed(field = "Server Time")
     public void setDate(String value) {
@@ -97,20 +104,50 @@ public class GeneralBytesBeanV1 extends ExchangeBean {
         }
     }
 
+    @Parsed(field = "Expense", defaultNullRead = "0")
+    public void setExpense(BigDecimal value) {
+        expense = value;
+    }
+
+    @Parsed(field = "Expense Currency")
+    public void setExpenseCurrency(String value) {
+        expenseCurrency = Currency.valueOf(value);
+    }
+
     @Override
     public TransactionCluster toTransactionCluster() {
-        //TODO: mcharvat - implement
-        return null;
-//        validateCurrencyPair(cryptoCurrency, cashCurrency);
-//        return new ImportedTransactionBean(
-//            localTransactionId.concat("-").concat(remoteTransactionId),   //uuid
-//            serverTime,                 //executed
-//            cryptoCurrency,             //base
-//            cashCurrency,               //quote
-//            type,                       //action
-//            cryptoAmount,               //base quantity
-//            evalUnitPrice(cashAmount, cryptoAmount),  //unit price
-//            BigDecimal.ZERO             //fee quote
-//        );
+        validateCurrencyPair(cryptoCurrency, cashCurrency);
+        List<ImportedTransactionBean> related;
+        final boolean isIgnoredFee = !expenseCurrency.equals(cryptoCurrency) || !expenseCurrency.equals(cashCurrency);
+        if (ParserUtils.equalsToZero(expense) || isIgnoredFee) {
+            related = Collections.emptyList();
+        } else {
+            related = List.of(
+                new FeeRebateImportedTransactionBean(
+                    localTransactionId.concat("-").concat(remoteTransactionId) + FEE_UID_PART,
+                    serverTime,
+                    cryptoCurrency,
+                    cashCurrency,
+                    TransactionType.FEE,
+                    expense.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
+                    expenseCurrency
+                )
+            );
+        }
+
+        return new TransactionCluster(
+            new BuySellImportedTransactionBean(
+                localTransactionId.concat("-").concat(remoteTransactionId),   //uuid
+                serverTime,                 //executed
+                cryptoCurrency,             //base
+                cashCurrency,               //quote
+                type,                       //action
+                cryptoAmount,               //base quantity
+                evalUnitPrice(cashAmount, cryptoAmount)  //unit price
+
+            ),
+            related,
+            isIgnoredFee ? 1 : 0
+        );
     }
 }

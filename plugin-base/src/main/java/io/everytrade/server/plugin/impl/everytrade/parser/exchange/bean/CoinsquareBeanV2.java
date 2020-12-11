@@ -6,12 +6,13 @@ import com.univocity.parsers.annotations.Parsed;
 import com.univocity.parsers.annotations.Replace;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.Date;
 
 @Headers(sequence = {"date","from_currency","from_amount","to_currency","to_amount"}, extract = true)
@@ -52,22 +53,23 @@ public class CoinsquareBeanV2 extends ExchangeBean {
 
     @Override
     public TransactionCluster toTransactionCluster() {
-        //TODO: mcharvat - implement
-        return null;
-//        final TransactionType transactionType = detectTransactionType(fromCurrenncy, toCurrenncy);
-//        final boolean isBuy = transactionType.equals(TransactionType.BUY);
-//
-//        final BigDecimal baseQuantity = isBuy ? toAmount.abs() : fromAmount.abs();
-//        final BigDecimal transactionPrice = isBuy ? fromAmount.abs() : toAmount.abs();
-//        return new ImportedTransactionBean(
-//            null,                               //uuid
-//            date,                                    //executed
-//            isBuy ? toCurrenncy : fromCurrenncy,     //base
-//            isBuy ? fromCurrenncy : toCurrenncy,     //quote
-//            transactionType,                         //action
-//            baseQuantity,                            //base quantity
-//            evalUnitPrice(transactionPrice, baseQuantity),   //unit price
-//            BigDecimal.ZERO                          //fee quote
-//        );
+        final TransactionType transactionType = detectTransactionType(fromCurrenncy, toCurrenncy);
+        final boolean isBuy = transactionType.equals(TransactionType.BUY);
+
+        final BigDecimal baseQuantity = isBuy ? toAmount.abs() : fromAmount.abs();
+        final BigDecimal transactionPrice = isBuy ? fromAmount.abs() : toAmount.abs();
+
+        return new TransactionCluster(
+            new BuySellImportedTransactionBean(
+                null,             //uuid
+                date,                 //executed
+                isBuy ? toCurrenncy : fromCurrenncy,     //base
+                isBuy ? fromCurrenncy : toCurrenncy,     //quote
+                transactionType,                         //action
+                baseQuantity,                            //base quantity
+                evalUnitPrice(transactionPrice, baseQuantity)   //unit price
+            ),
+            Collections.emptyList()
+        );
     }
 }

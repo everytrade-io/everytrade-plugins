@@ -6,6 +6,8 @@ import com.univocity.parsers.annotations.Replace;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
+import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
@@ -14,6 +16,8 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
 
 @Headers(
     sequence = {
@@ -91,32 +95,50 @@ public class CoinbaseBeanV1 extends ExchangeBean {
 
     @Override
     public TransactionCluster toTransactionCluster() {
-        //TODO: mcharvat - implement
-        return null;
-//        if (!sizeUnit.equals(productBase)) {
-//            throw new DataValidationException(String.format(
-//                BASE_DIFFERS_FROM_UNIT_SIZE,
-//                productBase.name(), sizeUnit.name()
-//            ));
-//        }
-//
-//        if (!setPriceFeeTotalUnit.equals(productQuote)) {
-//            throw new DataValidationException(String.format(
-//                QUOTE_DIFFERS_FROM_PRICE_FEE_TOTAL_UNIT,
-//                productQuote.name(), setPriceFeeTotalUnit.name())
-//            );
-//        }
-//        validateCurrencyPair(productBase, productQuote);
-//
-//        return new ImportedTransactionBean(
-//            tradeId,             //uuid
-//            createdAt,           //executed
-//            productBase,         //base
-//            productQuote,        //quote
-//            side,                //action
-//            size.abs().setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),         //base quantity
-//            price.abs().setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),        //unit price
-//            fee.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP)                 //fee quote
-//        );
+        if (!sizeUnit.equals(productBase)) {
+            throw new DataValidationException(String.format(
+                BASE_DIFFERS_FROM_UNIT_SIZE,
+                productBase.name(), sizeUnit.name()
+            ));
+        }
+
+        if (!setPriceFeeTotalUnit.equals(productQuote)) {
+            throw new DataValidationException(String.format(
+                QUOTE_DIFFERS_FROM_PRICE_FEE_TOTAL_UNIT,
+                productQuote.name(), setPriceFeeTotalUnit.name())
+            );
+        }
+        validateCurrencyPair(productBase, productQuote);
+
+        List<ImportedTransactionBean> related;
+        if (ParserUtils.equalsToZero(fee)) {
+            related = Collections.emptyList();
+        } else {
+            related = List.of(
+                new FeeRebateImportedTransactionBean(
+                    tradeId + FEE_UID_PART,
+                    createdAt,
+                    productBase,
+                    productQuote,
+                    TransactionType.FEE,
+                    fee.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
+                    productQuote
+                )
+            );
+        }
+
+        return new TransactionCluster(
+            new BuySellImportedTransactionBean(
+                tradeId,             //uuid
+                createdAt,           //executed
+                productBase,         //base
+                productQuote,        //quote
+                side,                //action
+                size.abs().setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),         //base quantity
+                price.abs().setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP)        //unit price
+
+            ),
+            related
+        );
     }
 }

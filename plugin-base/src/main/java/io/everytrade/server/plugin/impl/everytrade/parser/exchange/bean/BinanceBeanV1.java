@@ -102,12 +102,12 @@ public class BinanceBeanV1 extends ExchangeBean {
 
         final List<ImportedTransactionBean> related;
 
-        if (isIncorrectFeeCoin) {
+        if (isIncorrectFeeCoin || ParserUtils.equalsToZero(fee)) {
             related = Collections.emptyList();
         } else {
             related = List.of(
                 new FeeRebateImportedTransactionBean(
-                    "-fee",
+                    FEE_UID_PART,
                     date,
                     marketBase,
                     marketQuote,

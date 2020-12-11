@@ -16,6 +16,8 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
+
 public class XChangeApiTransactionBean {
     private final String id;
     private final Instant timestamp;
@@ -64,7 +66,7 @@ public class XChangeApiTransactionBean {
                 price
             ),
             List.of(new FeeRebateImportedTransactionBean(
-                    id + "-fee",
+                    id + FEE_UID_PART,
                     timestamp,
                     base,
                     quote,

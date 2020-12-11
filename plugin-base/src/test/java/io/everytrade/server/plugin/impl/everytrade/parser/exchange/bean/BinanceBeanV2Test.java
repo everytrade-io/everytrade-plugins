@@ -15,6 +15,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.UNSUPPORTED_CURRENCY_PAIR;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -80,7 +81,7 @@ class BinanceBeanV2Test {
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
-                    "-fee",
+                    FEE_UID_PART,
                     Instant.parse("2020-03-19T17:02:52Z"),
                     Currency.BTC,
                     Currency.USDT,
@@ -114,7 +115,7 @@ class BinanceBeanV2Test {
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
-                    "-fee",
+                    FEE_UID_PART,
                     Instant.parse("2020-03-19T17:02:52Z"),
                     Currency.BTC,
                     Currency.USDT,
@@ -171,7 +172,7 @@ class BinanceBeanV2Test {
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
-                    "-fee",
+                    FEE_UID_PART,
                     Instant.parse("2020-03-19T17:02:52Z"),
                     Currency.BTC,
                     Currency.USDT,
@@ -205,7 +206,7 @@ class BinanceBeanV2Test {
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
-                    "-fee",
+                    FEE_UID_PART,
                     Instant.parse("2020-03-19T17:02:52Z"),
                     Currency.BTC,
                     Currency.USDT,

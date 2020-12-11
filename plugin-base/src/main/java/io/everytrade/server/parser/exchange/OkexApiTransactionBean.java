@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
+
 public class OkexApiTransactionBean {
     public static final int DECIMAL_SCALE = 10;
     public static final String FULLY_FILLED = "2";
@@ -91,7 +93,7 @@ public class OkexApiTransactionBean {
                 priceAvg
             ),
             List.of(new FeeRebateImportedTransactionBean(
-                    orderId + "-fee",
+                    orderId + FEE_UID_PART,
                     timeStamp,
                     instrumentIdBase,
                     instrumentIdQuote,

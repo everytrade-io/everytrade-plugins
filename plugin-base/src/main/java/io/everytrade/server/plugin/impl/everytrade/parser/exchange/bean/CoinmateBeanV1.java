@@ -6,14 +6,20 @@ import com.univocity.parsers.annotations.Parsed;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
+import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 @Headers(sequence = {"ID", "Date", "Type", "Amount", "Amount Currency", "Price", "Price Currency", "Fee",
     "Fee Currency", "Status"}, extract = true)
@@ -91,22 +97,37 @@ public class CoinmateBeanV1 extends ExchangeBean {
 
     @Override
     public TransactionCluster toTransactionCluster() {
-        //TODO: mcharvat - implement
-        return null;
-//        validateCurrencyPair(amountCurrency, priceCurrency);
-//        if (!priceCurrency.equals(auxFeeCurrency)) {
-//            throw new DataValidationException(String.format("Price currecy(%s) and fee currency(%s) are different.",
-//                priceCurrency.name(), auxFeeCurrency.name()));
-//        }
-//        return new ImportedTransactionBean(
-//            id,             //uuid
-//            date,           //executed
-//            amountCurrency, //base
-//            priceCurrency,  //quote
-//            type,           //action
-//            amount,         //base quantity
-//            price,          //unit price
-//            fee             //fee quote
-//        );
+        validateCurrencyPair(amountCurrency, priceCurrency);
+        final boolean ignoredFee = !priceCurrency.equals(auxFeeCurrency);
+        List<ImportedTransactionBean> related;
+        if (ParserUtils.equalsToZero(fee) || ignoredFee) {
+            related = Collections.emptyList();
+        } else {
+            related = List.of(
+                new FeeRebateImportedTransactionBean(
+                    id + FEE_UID_PART,
+                    date,
+                    amountCurrency,
+                    priceCurrency,
+                    TransactionType.FEE,
+                    fee.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
+                    auxFeeCurrency
+                )
+            );
+        }
+
+        return new TransactionCluster(
+            new BuySellImportedTransactionBean(
+                id,             //uuid
+                date,           //executed
+                amountCurrency, //base
+                priceCurrency,  //quote
+                type,           //action
+                amount,         //base quantity
+                price          //unit price
+            ),
+            related,
+            ignoredFee ? 1 : 0
+        );
     }
 }
