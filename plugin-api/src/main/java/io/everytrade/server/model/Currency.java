@@ -24,7 +24,8 @@ public enum Currency {
     XMR(false, Instant.parse("2014-04-18T00:00:00Z")),
     XRP(false, Instant.parse("2012-01-01T00:00:00Z")), // can't find exact date
     DAI(false, Instant.parse("2017-12-19T00:00:00Z")),
-    DASH(false, Instant.parse("2014-01-18T00:00:00Z"));
+    DASH(false, Instant.parse("2014-01-18T00:00:00Z")),
+    LINK(false, Instant.parse("2017-09-20T00:00:00Z"));
 
     private final int decimalDigits;
     private final boolean fiat;
