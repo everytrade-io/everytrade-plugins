@@ -5,12 +5,11 @@ import io.everytrade.server.plugin.api.connector.ConnectorDescriptor;
 import io.everytrade.server.plugin.api.connector.ConnectorParameterDescriptor;
 import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.connector.IConnector;
-import io.everytrade.server.plugin.api.parser.ConversionStatistic;
 import io.everytrade.server.plugin.api.parser.ICsvParser;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParseResult;
-import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.api.parser.ParserDescriptor;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.support.EverytradePluginManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -209,8 +208,8 @@ public class Tester {
         }
         log.info("importedTransactionBeans = \n" + stringBuilder.toString());
 
-        final ConversionStatistic conversionStatistic = parseResult.getConversionStatistic();
-        log.info("conversionStatistic = {}\n", conversionStatistic);
+        //TODO check if is human readable
+        log.info("parsingProblems = {}\n", parseResult.getParsingProblems());
 
     }
 

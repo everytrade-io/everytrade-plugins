@@ -1,6 +1,6 @@
 package io.everytrade.server.plugin.impl.everytrade.parser.exchange;
 
-import io.everytrade.server.plugin.api.parser.RowError;
+import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BitfinexBeanV1;
@@ -15,7 +15,7 @@ import java.util.Set;
 
 public class BitfinexExchangeSpecificParser implements IExchangeSpecificParser {
     private static final String DELIMITER = ",";
-    private List<RowError> rowErrors = List.of();
+    private List<ParsingProblem> parsingProblems = List.of();
 
     @Override
     public List<? extends ExchangeBean> parse(File inputFile) {
@@ -31,14 +31,14 @@ public class BitfinexExchangeSpecificParser implements IExchangeSpecificParser {
             }
             bitfinexBeans.add((BitfinexBeanV1) exchangeBean);
         }
-        rowErrors = parser.getRowErrors();
+        parsingProblems = parser.getParsingProblems();
         final String datePattern = evalDatePattern(bitfinexBeans);
         return updateDate(bitfinexBeans, datePattern);
     }
 
     @Override
-    public List<RowError> getRowErrors() {
-        return rowErrors;
+    public List<ParsingProblem> getParsingProblems() {
+        return parsingProblems;
     }
 
     private List<? extends ExchangeBean> updateDate(List<BitfinexBeanV1> beans, String datePattern) {

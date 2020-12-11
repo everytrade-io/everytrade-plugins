@@ -3,10 +3,8 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.ConversionStatistic;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.RowError;
+import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
 import org.junit.jupiter.api.Test;
@@ -19,7 +17,6 @@ import java.util.List;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.UNSUPPORTED_CURRENCY_PAIR;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BitfinexBeanV1.ILLEGAL_ZERO_VALUE_OF_AMOUNT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -192,9 +189,8 @@ class BitfinexBeanV1Test {
     @Test
     void testZerroAmount() {
         final String row = "0,BTC/USD,0.0,9212.82428,-0.00002097,BTC,04-02-20 16:52:06,1\n";
-        final RowError rowError = ParserTestUtils.getRowError(HEADER_CORRECT + row);
-        assertNotNull(rowError);
-        final String error = rowError.getMessage();
+        final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
+        final String error = parsingProblem.getMessage();
         assertTrue(error.contains(ILLEGAL_ZERO_VALUE_OF_AMOUNT));
     }
 
@@ -222,9 +218,8 @@ class BitfinexBeanV1Test {
     @Test
     void testNotAllowedPair() {
         final String row = "0,CAD/USD,0.01048537,9212.82428,-0.00002097,USD,04-02-20 16:52:06,1\n";
-        final RowError rowError = ParserTestUtils.getRowError(HEADER_CORRECT + row);
-        assertNotNull(rowError);
-        final String error = rowError.getMessage();
+        final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
+        final String error = parsingProblem.getMessage();
         assertTrue(error.contains(UNSUPPORTED_CURRENCY_PAIR.concat("CAD/USD")));
     }
 
@@ -293,9 +288,7 @@ class BitfinexBeanV1Test {
     @Test
     void testIgnoredFee() {
         final String row = "0,BTC/USD,0.01048537,9212.82428,-0.00002097,XXX,04-02-20 16:52:06,1\n";
-        final ConversionStatistic conversionStatistic =
-            ParserTestUtils.getConversionStatistic(HEADER_CORRECT + row);
-        assertNotNull(conversionStatistic);
-        assertEquals(1, conversionStatistic.getIgnoredFeeTransactionCount());
+        final TransactionCluster transactionCluster = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
+        assertEquals(1, transactionCluster.getIgnoredFeeTransactions());
     }
 }

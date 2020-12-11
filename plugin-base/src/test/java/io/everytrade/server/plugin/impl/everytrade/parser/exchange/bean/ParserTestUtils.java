@@ -1,11 +1,9 @@
 package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
 import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.ConversionStatistic;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParseResult;
-import io.everytrade.server.plugin.api.parser.RowError;
+import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.EverytradeCsvMultiParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
@@ -91,49 +89,44 @@ public class ParserTestUtils {
     public static TransactionCluster getTransactionCluster(String rows) {
         try {
             final ParseResult result = CSV_PARSER.parse(ParserTestUtils.createTestFile(rows), getHeader(rows));
-            if (!result.getConversionStatistic().isErrorRowsEmpty()) {
+            if (!result.getParsingProblems().isEmpty()) {
                 StringBuilder stringBuilder = new StringBuilder();
-                result.getConversionStatistic().getErrorRows().forEach(p -> stringBuilder.append(p).append("\n"));
-                LOG.error("getRawTransaction(): NOT PARSED ROWS: {}", stringBuilder.toString());
+                result.getParsingProblems().forEach(p -> stringBuilder.append(p).append("\n"));
+                LOG.error("Not parsed rows: {}", stringBuilder.toString());
             }
             List<TransactionCluster> list = result.getTransactionClusters();
             if (list.isEmpty()) {
-                return null;
+                fail("No transaction parsed.");
             }
             return list.get(0);
         } catch (ParsingProcessException e) {
-            LOG.error("getRawTransaction(): ", e);
-            return null;
+            fail(e);
         }
+        throw new IllegalStateException("Unexpected state during tests.");
     }
 
     public static void testParsing(String rows) {
         CSV_PARSER.parse(ParserTestUtils.createTestFile(rows), getHeader(rows));
     }
 
-    public static RowError getRowError(String rows) {
+    public static ParsingProblem getParsingProblem(String rows) {
         try {
             final ParseResult result = CSV_PARSER.parse(ParserTestUtils.createTestFile(rows), getHeader(rows));
-            List<RowError> list = result.getConversionStatistic().getErrorRows();
+            List<ParsingProblem> list = result.getParsingProblems();
             if (list.size() < 1) {
-                return null;
+                LOG.error("No parsing problem found.");
+                fail("No expected parsing problem found.");
+            } else if (list.size() > 1) {
+                fail("More than on problem found: " + list.size());
+            } else {
+                return list.get(0);
             }
-            return list.get(0);
         } catch (ParsingProcessException e) {
             fail(e.getMessage());
-            return null;
         }
+        throw new IllegalStateException("Unexpected state during tests.");
     }
 
-    public static ConversionStatistic getConversionStatistic(String rows) {
-        try {
-            final ParseResult result = CSV_PARSER.parse(ParserTestUtils.createTestFile(rows), getHeader(rows));
-            return result.getConversionStatistic();
-        } catch (ParsingProcessException e) {
-            fail(e.getMessage());
-            return null;
-        }
-    }
 
     private static String getHeader(String rows) {
         int lineSeparator = rows.indexOf("\r\n");

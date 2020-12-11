@@ -4,7 +4,7 @@ import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.RowError;
+import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
 import org.junit.jupiter.api.Test;
@@ -13,7 +13,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -106,9 +105,8 @@ class BitflyerBeanV1Test {
     @Test
     void testUnknonwExchangePair() {
         final String row = "2020/09/29 17:55:30;LTC/USD;Buy;46.43;LTC;0.9;0;46.43;LTC;-41.79;BF-01;\n";
-        final RowError rowError = ParserTestUtils.getRowError(HEADER_CORRECT + row);
-        assertNotNull(rowError);
-        final String error = rowError.getMessage();
+        final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
+        final String error = parsingProblem.getMessage();
         assertTrue(error.contains("Unsupported currency pair LTC/LTC"));
     }
 }

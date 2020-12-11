@@ -1,17 +1,16 @@
 package io.everytrade.server.plugin.impl.generalbytes;
 
-import io.everytrade.server.parser.exchange.GbApiTransactionBean;
-import io.everytrade.server.plugin.api.connector.ConnectorParameterType;
 import io.everytrade.server.model.SupportedExchange;
+import io.everytrade.server.parser.exchange.GbApiTransactionBean;
 import io.everytrade.server.plugin.api.IPlugin;
 import io.everytrade.server.plugin.api.connector.ConnectorDescriptor;
 import io.everytrade.server.plugin.api.connector.ConnectorParameterDescriptor;
-import io.everytrade.server.plugin.api.connector.IConnector;
+import io.everytrade.server.plugin.api.connector.ConnectorParameterType;
 import io.everytrade.server.plugin.api.connector.DownloadResult;
-import io.everytrade.server.plugin.api.parser.ConversionStatistic;
+import io.everytrade.server.plugin.api.connector.IConnector;
 import io.everytrade.server.plugin.api.parser.ParseResult;
-import io.everytrade.server.plugin.api.parser.RowError;
-import io.everytrade.server.plugin.api.parser.RowErrorType;
+import io.everytrade.server.plugin.api.parser.ParsingProblem;
+import io.everytrade.server.plugin.api.parser.PrarsingProblemType;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.EveryTradeApiDigest;
 import org.slf4j.Logger;
@@ -110,7 +109,7 @@ public class GbConnector implements IConnector {
             = Objects.requireNonNullElse(data.getTransactions(), new ArrayList<>());
 
         final List<TransactionCluster> importedClusters = new ArrayList<>();
-        final List<RowError> errorRows = new ArrayList<>();
+        final List<ParsingProblem> parsingProblems = new ArrayList<>();
         long transactionCount = 0;
         String lastDownloadedTxUid = lastTransactionId;
         for (GbApiTransactionBean transaction : transactions) {
@@ -124,7 +123,9 @@ public class GbConnector implements IConnector {
             } catch (Exception e) {
                 log.error("Error converting to ImportedTransactionBean: {}", e.getMessage());
                 log.debug("Exception by converting to ImportedTransactionBean.", e);
-                errorRows.add(new RowError(transaction.toString(), e.getMessage(), RowErrorType.FAILED));
+                parsingProblems.add(
+                    new ParsingProblem(transaction.toString(), e.getMessage(), PrarsingProblemType.ROW_PARSING_FAILED)
+                );
             }
         }
         log.info(
@@ -132,12 +133,12 @@ public class GbConnector implements IConnector {
             importedClusters.size(),
             transactionCount
         );
-        if (!errorRows.isEmpty()) {
-            log.warn("{} row(s) not parsed.", errorRows.size());
+        if (!parsingProblems.isEmpty()) {
+            log.warn("{} row(s) not parsed.", parsingProblems.size());
         }
 
         return new DownloadResult(
-            new ParseResult(importedClusters, new ConversionStatistic(errorRows, 0)),
+            new ParseResult(importedClusters,parsingProblems),
             lastDownloadedTxUid
         );
     }

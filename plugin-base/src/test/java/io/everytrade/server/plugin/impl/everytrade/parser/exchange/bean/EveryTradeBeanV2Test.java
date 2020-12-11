@@ -3,10 +3,8 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.ConversionStatistic;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.RowError;
+import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
@@ -16,7 +14,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -39,7 +36,7 @@ class EveryTradeBeanV2Test {
         try {
             ParserTestUtils.testParsing(headerWrong);
             fail("No expected exception has been thrown.");
-        } catch (ParsingProcessException e) {
+        } catch (ParsingProcessException ignored) {
         }
     }
 
@@ -137,25 +134,18 @@ class EveryTradeBeanV2Test {
     @Test
     void testUnknonwExchange() {
         final String row = "1;1.9.2019 14:43:18;XXX/CZK;BUY;0.066506;210507.322647581000;0\n";
-        final RowError rowError = ParserTestUtils.getRowError(HEADER_CORRECT + row);
-        assertNotNull(rowError);
-        final String error = rowError.getMessage();
+        final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
+        assertNotNull(parsingProblem);
+        final String error = parsingProblem.getMessage();
         assertTrue(error.contains("XXX/CZK"));
     }
 
     @Test
     void testIgnoredTransactionType() {
         final String row = "1;1.9.2019 14:43:18;BTC/CZK;BOUGHT;0.066506;14000;0\n";
-        final ConversionStatistic conversionStatistic
-            = ParserTestUtils.getConversionStatistic(HEADER_CORRECT + row);
-        assertNotNull(conversionStatistic);
-        assertEquals(1, conversionStatistic.getIgnoredRowsCount());
-        assertTrue(
-            conversionStatistic
-                .getErrorRows()
-                .get(0)
-                .getMessage()
-                .contains(ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE.concat("BOUGHT"))
+        final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
+        assertNotNull(parsingProblem);
+        assertTrue(parsingProblem.getMessage().contains(ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE.concat("BOUGHT"))
         );
     }
 }

@@ -3,10 +3,8 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.ConversionStatistic;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.RowError;
+import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
@@ -19,7 +17,6 @@ import java.util.List;
 
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.UNSUPPORTED_CURRENCY_PAIR;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -35,7 +32,7 @@ class BinanceBeanV2Test {
         try {
             ParserTestUtils.testParsing(headerWrong);
             fail("No expected exception has been thrown.");
-        } catch (ParsingProcessException e) {
+        } catch (ParsingProcessException ignored) {
         }
     }
 
@@ -229,9 +226,9 @@ class BinanceBeanV2Test {
         final String row1 = ";Date(UTC);Trading Price;Filled;Total;Fee;;;\n";
         final String row2 = ";2020-03-19 17:02:52;6236.39;0.041600;259.43382400;0.1612653USDT;;;\n";
 
-        final RowError rowError = ParserTestUtils.getRowError(HEADER_CORRECT + row0 + row1 + row2);
-        assertNotNull(rowError);
-        final String error = rowError.getMessage();
+        final ParsingProblem parsingProblem
+            = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row0 + row1 + row2);
+        final String error = parsingProblem.getMessage();
         assertTrue(error.contains(UNSUPPORTED_CURRENCY_PAIR.concat("USDTBTC")));
     }
 
@@ -240,11 +237,9 @@ class BinanceBeanV2Test {
         final String row0 = "2020-03-19 17:02:52;BTCUSDT;BUY;0.0;0.041600;6236.39;0.041600;259.44;Filled\n";
         final String row1 = ";Date(UTC);Trading Price;Filled;Total;Fee;;;\n";
         final String row2 = ";2020-03-19 17:02:52;6236.39;0.041600;259.43382400;0.1612653BNB;;;\n";
-
-        final ConversionStatistic conversionStatistic =
-            ParserTestUtils.getConversionStatistic(HEADER_CORRECT + row0 + row1 + row2);
-        assertNotNull(conversionStatistic);
-        assertEquals(1, conversionStatistic.getIgnoredFeeTransactionCount());
+        final TransactionCluster transactionCluster
+            = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row0 + row1 + row2);
+        assertEquals(1, transactionCluster.getIgnoredFeeTransactions());
     }
 
     @Test
@@ -253,17 +248,9 @@ class BinanceBeanV2Test {
         final String row1 = ";Date(UTC);Trading Price;Filled;Total;Fee;;;\n";
         final String row2 = ";2020-03-19 17:02:52;6236.39;0.041600;259.43382400;0.01612653BNB;;;\n";
 
-        final ConversionStatistic conversionStatistic =
-            ParserTestUtils.getConversionStatistic(HEADER_CORRECT + row0 + row1 + row2);
-        assertNotNull(conversionStatistic);
-        assertEquals(1, conversionStatistic.getIgnoredRowsCount());
-        assertTrue(
-            conversionStatistic
-                .getErrorRows()
-                .get(0)
-                .getMessage()
-                .contains(ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE.concat("SOLD"))
-        );
+        final ParsingProblem parsingProblem =
+            ParserTestUtils.getParsingProblem(HEADER_CORRECT + row0 + row1 + row2);
+        assertTrue(parsingProblem.getMessage().contains(ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE.concat("SOLD")));
     }
 
     @Test
@@ -272,16 +259,8 @@ class BinanceBeanV2Test {
         final String row1 = ";Date(UTC);Trading Price;Filled;Total;Fee;;;\n";
         final String row2 = ";2020-03-19 17:02:52;6236.39;0.041600;259.43382400;0.01612653BNB;;;\n";
 
-        final ConversionStatistic conversionStatistic =
-            ParserTestUtils.getConversionStatistic(HEADER_CORRECT + row0 + row1 + row2);
-        assertNotNull(conversionStatistic);
-        assertEquals(1, conversionStatistic.getIgnoredRowsCount());
-        assertTrue(
-            conversionStatistic
-                .getErrorRows()
-                .get(0)
-                .getMessage()
-                .contains(ExchangeBean.UNSUPPORTED_STATUS_TYPE.concat("Cancel"))
-        );
+        final ParsingProblem parsingProblem
+            = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row0 + row1 + row2);
+        assertTrue(parsingProblem.getMessage().contains(ExchangeBean.UNSUPPORTED_STATUS_TYPE.concat("Cancel")));
     }
 }

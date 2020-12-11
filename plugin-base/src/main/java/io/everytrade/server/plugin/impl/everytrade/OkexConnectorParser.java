@@ -2,10 +2,9 @@ package io.everytrade.server.plugin.impl.everytrade;
 
 import com.okcoin.commons.okex.open.api.bean.spot.result.OrderInfo;
 import io.everytrade.server.parser.exchange.OkexApiTransactionBean;
-import io.everytrade.server.plugin.api.parser.ConversionStatistic;
 import io.everytrade.server.plugin.api.parser.ParseResult;
-import io.everytrade.server.plugin.api.parser.RowError;
-import io.everytrade.server.plugin.api.parser.RowErrorType;
+import io.everytrade.server.plugin.api.parser.ParsingProblem;
+import io.everytrade.server.plugin.api.parser.PrarsingProblemType;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +20,7 @@ public class OkexConnectorParser {
 
     public static ParseResult getParseResult(List<OrderInfo> orderInfos) {
         final List<TransactionCluster> transactionClusters = new ArrayList<>();
-        final List<RowError> errorRows = new ArrayList<>();
+        final List<ParsingProblem> parsingProblems = new ArrayList<>();
         for (OrderInfo orderInfo : orderInfos) {
             try {
                 OkexApiTransactionBean okexApiTransactionBean = new OkexApiTransactionBean(orderInfo);
@@ -29,12 +28,9 @@ public class OkexConnectorParser {
             } catch (Exception e) {
                 LOG.error("Error converting to ImportedTransactionBean: {}", e.getMessage());
                 LOG.debug("Exception by converting to ImportedTransactionBean.", e);
-                errorRows.add(new RowError(orderInfo.toString(), e.getMessage(), RowErrorType.FAILED));
+                parsingProblems.add(new ParsingProblem(orderInfo.toString(), e.getMessage(), PrarsingProblemType.ROW_PARSING_FAILED));
             }
         }
-        return new ParseResult(
-            transactionClusters,
-            new ConversionStatistic(errorRows, 0)
-        );
+        return new ParseResult(transactionClusters, parsingProblems);
     }
 }
