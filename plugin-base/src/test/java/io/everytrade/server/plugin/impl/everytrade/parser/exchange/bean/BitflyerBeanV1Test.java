@@ -44,7 +44,7 @@ class BitflyerBeanV1Test {
 
     @Test
     void testCorrectParsingRawTransaction() {
-        final String row = "2020/09/29 17:55:30;LTC/USD;Buy;46.43;LTC;0.9;0;46.43;USD;-41.79;BF-01;\n";
+        final String row = "2020/09/29 17:55:30;LTC/USD;Buy;46.43;LTC;0.9;0.4;46.43;USD;-41.79;BF-01;\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
             new BuySellImportedTransactionBean(
@@ -63,7 +63,7 @@ class BitflyerBeanV1Test {
                     Currency.LTC,
                     Currency.USD,
                     TransactionType.FEE,
-                    new BigDecimal("0"),
+                    new BigDecimal("0.4"),
                     Currency.USD
                 )
             ),
@@ -74,7 +74,7 @@ class BitflyerBeanV1Test {
 
     @Test
     void testCorrectParsingRawTransactionSell() {
-        final String row = "2020/09/29 17:53:28;LTC/USD;Sell;44.16;LTC;-1;0;44.16;USD;44.16;BF-02;\n";
+        final String row = "2020/09/29 17:53:28;LTC/USD;Sell;44.16;LTC;-1;0.2;44.16;USD;44.16;BF-02;\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
             new BuySellImportedTransactionBean(
@@ -93,7 +93,7 @@ class BitflyerBeanV1Test {
                     Currency.LTC,
                     Currency.USD,
                     TransactionType.FEE,
-                    new BigDecimal("0"),
+                    new BigDecimal("0.2"),
                     Currency.USD
                 )
             ),
