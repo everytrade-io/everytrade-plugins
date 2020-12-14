@@ -38,7 +38,7 @@ dependencies {
     pluginCompile "org.knowm.xchange:xchange-bitflyer:$xchangeVersion"
     pluginCompile "org.knowm.xchange:xchange-core:$xchangeVersion"
     pluginCompile "org.knowm.xchange:xchange-huobi:$xchangeVersion"
-    pluginCompile "com.github.charvam:V3-Open-API-SDK:b50b7f4ae522160a4d718523e719b48134d0c31c"
+    pluginCompile "com.github.charvam:V3-Open-API-SDK:52ae9f193f081aecd746f6d71e1b227ad18f17af"
     //TODO Remove it once ResCU releases a newer version with updated dependency - due to security bugs in the older
     // version used by ResCU
     pluginCompile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.10.1'
