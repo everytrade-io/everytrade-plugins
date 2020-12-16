@@ -3,8 +3,8 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange;
 import com.univocity.parsers.common.Context;
 import com.univocity.parsers.common.processor.BeanListProcessor;
 import com.univocity.parsers.csv.CsvParserSettings;
-import io.everytrade.server.plugin.api.parser.RowError;
-import io.everytrade.server.plugin.api.parser.RowErrorType;
+import io.everytrade.server.plugin.api.parser.ParsingProblem;
+import io.everytrade.server.plugin.api.parser.PrarsingProblemType;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
 
@@ -22,7 +22,7 @@ public class DefaultUnivocityExchangeSpecificParser implements IExchangeSpecific
     private final Class<? extends ExchangeBean> exchangeBean;
     private final String delimiter;
     private final String lineSeparator;
-    private List<RowError> rowErrors = List.of();
+    private List<ParsingProblem> parsingProblems = List.of();
 
     public DefaultUnivocityExchangeSpecificParser(Class<? extends ExchangeBean> exchangeBean) {
         this(exchangeBean, DEFAUL_DELIMITER, null);
@@ -47,14 +47,14 @@ public class DefaultUnivocityExchangeSpecificParser implements IExchangeSpecific
 
     @Override
     public List<? extends ExchangeBean> parse(File inputFile) {
-        rowErrors = new ArrayList<>();
-        final CsvParserSettings parserSettings = createParserSettings(rowErrors);
+        parsingProblems = new ArrayList<>();
+        final CsvParserSettings parserSettings = createParserSettings(parsingProblems);
         return parse(inputFile, parserSettings, exchangeBean);
     }
 
     @Override
-    public List<RowError> getRowErrors() {
-        return rowErrors;
+    public List<ParsingProblem> getParsingProblems() {
+        return parsingProblems;
     }
 
     private <T extends ExchangeBean> List<T> parse(File file, CsvParserSettings parserSettings, Class<T> exchangeBean) {
@@ -81,15 +81,16 @@ public class DefaultUnivocityExchangeSpecificParser implements IExchangeSpecific
     }
 
     private CsvParserSettings createParserSettings(
-        List<RowError> rowErrors
+        List<ParsingProblem> parsingProblems
     ) {
         CsvParserSettings parserSettings = new CsvParserSettings();
         parserSettings.setHeaderExtractionEnabled(true);
         parserSettings.setProcessorErrorHandler((error, inputRow, context) -> {
-            RowErrorType rowErrorType = error instanceof DataIgnoredException
-                ? RowErrorType.IGNORED : RowErrorType.FAILED;
-            RowError rowError = new RowError(Arrays.toString(inputRow), error.getMessage(), rowErrorType);
-            rowErrors.add(rowError);
+            PrarsingProblemType prarsingProblemType = error instanceof DataIgnoredException
+                ? PrarsingProblemType.PARSED_ROW_IGNORED : PrarsingProblemType.ROW_PARSING_FAILED;
+            ParsingProblem parsingProblem
+                = new ParsingProblem(Arrays.toString(inputRow), error.getMessage(), prarsingProblemType);
+            parsingProblems.add(parsingProblem);
         });
         parserSettings.getFormat().setDelimiter(delimiter);
         //default setting is autodetect

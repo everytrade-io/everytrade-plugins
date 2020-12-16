@@ -6,12 +6,17 @@ import com.univocity.parsers.annotations.Parsed;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
+import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,20 +99,36 @@ public class KrakenBeanV1 extends ExchangeBean {
 
     @Override
     public TransactionCluster toTransactionCluster() {
-        //TODO: mcharvat - implement
-        return null;
-//        validateCurrencyPair(pairBase, pairQuote);
-//
-//        return new ImportedTransactionBean(
-//            txid,                   //uuid
-//            time,                   //executed
-//            pairBase,               //base
-//            pairQuote,              //quote
-//            type,                   //action
-//            vol,                    //base quantity
-//            evalUnitPrice(cost, vol),   //unit price
-//            fee                     //fee quote
-//        );
+        validateCurrencyPair(pairBase, pairQuote);
+        List<ImportedTransactionBean> related;
+        if (ParserUtils.equalsToZero(fee)) {
+            related = Collections.emptyList();
+        } else {
+            related = List.of(
+                new FeeRebateImportedTransactionBean(
+                    txid + FEE_UID_PART,
+                    time,
+                    pairBase,
+                    pairQuote,
+                    TransactionType.FEE,
+                    fee.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
+                    pairQuote
+                )
+            );
+        }
+
+        return new TransactionCluster(
+            new BuySellImportedTransactionBean(
+                txid,             //uuid
+                time,             //executed
+                pairBase,         //base
+                pairQuote,        //quote
+                type,             //action
+                vol,              //base quantity
+                evalUnitPrice(cost, vol)   //unit price
+            ),
+            related
+        );
     }
 
     private String findStarts(String value) {

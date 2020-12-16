@@ -1,11 +1,10 @@
 package io.everytrade.server.plugin.impl.everytrade;
 
 import io.everytrade.server.model.SupportedExchange;
-import io.everytrade.server.plugin.api.parser.ConversionStatistic;
-import io.everytrade.server.plugin.api.parser.ParseResult;
-import io.everytrade.server.plugin.api.parser.RowError;
-import io.everytrade.server.plugin.api.parser.RowErrorType;
 import io.everytrade.server.parser.exchange.XChangeApiTransactionBean;
+import io.everytrade.server.plugin.api.parser.ParseResult;
+import io.everytrade.server.plugin.api.parser.ParsingProblem;
+import io.everytrade.server.plugin.api.parser.PrarsingProblemType;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import org.knowm.xchange.dto.trade.UserTrade;
 import org.slf4j.Logger;
@@ -22,7 +21,7 @@ public class XChangeConnectorParser {
 
     public static ParseResult getParseResult(List<UserTrade> userTrades, SupportedExchange supportedExchange) {
         final List<TransactionCluster> transactionClusters = new ArrayList<>();
-        final List<RowError> errorRows = new ArrayList<>();
+        final List<ParsingProblem> parsingProblems = new ArrayList<>();
         for (UserTrade userTrade : userTrades) {
             try {
                 XChangeApiTransactionBean xchangeApiTransactionBean
@@ -31,13 +30,12 @@ public class XChangeConnectorParser {
             } catch (Exception e) {
                 LOG.error("Error converting to ImportedTransactionBean: {}", e.getMessage());
                 LOG.debug("Exception by converting to ImportedTransactionBean.", e);
-                errorRows.add(new RowError(userTrade.toString(), e.getMessage(), RowErrorType.FAILED));
+                parsingProblems.add(
+                    new ParsingProblem(userTrade.toString(), e.getMessage(), PrarsingProblemType.ROW_PARSING_FAILED)
+                );
             }
         }
 
-        return new ParseResult(
-            transactionClusters,
-            new ConversionStatistic(errorRows, 0)
-        );
+        return new ParseResult(transactionClusters, parsingProblems);
     }
 }

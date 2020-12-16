@@ -6,13 +6,18 @@ import com.univocity.parsers.annotations.Parsed;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
+import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 @Headers(sequence = {"Trade Date", "Trade Type", "Traded Price", "Currency 1", "Amount (Currency 1)", "Fee",
     "Currency 2", "Order ID"}, extract = true)
@@ -72,19 +77,36 @@ public class BitflyerBeanV1 extends ExchangeBean {
 
     @Override
     public TransactionCluster toTransactionCluster() {
-        //TODO: mcharvat - implement
-        return null;
-//        validateCurrencyPair(currency1, currency2);
-//
-//        return new ImportedTransactionBean(
-//            orderID,            //uuid
-//            tradeDate,          //executed
-//            currency1,         //base
-//            currency2,         //quote
-//            tradeType,          //action
-//            amountCurrency1.abs(), //base quantity
-//            tradedPrice,        //unit price
-//            fee                //fee quote
-//        );
+        validateCurrencyPair(currency1, currency2);
+        validatePositivity(tradedPrice);
+        List<ImportedTransactionBean> related;
+        if (ParserUtils.equalsToZero(fee)) {
+            related = Collections.emptyList();
+        } else {
+            related = List.of(new FeeRebateImportedTransactionBean(
+                    orderID + FEE_UID_PART,
+                    tradeDate,
+                    currency1,
+                    currency2,
+                    TransactionType.FEE,
+                    fee.abs().setScale(ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE),
+                    currency2
+                )
+            );
+        }
+
+
+        return new TransactionCluster(
+            new BuySellImportedTransactionBean(
+                orderID,
+                tradeDate,
+                currency1,
+                currency2,
+                tradeType,
+                amountCurrency1.abs().setScale(ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE),
+                tradedPrice.setScale(ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE)
+            ),
+            related
+        );
     }
 }

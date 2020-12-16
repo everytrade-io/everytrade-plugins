@@ -7,14 +7,18 @@ import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.model.TransactionType;
+import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -107,20 +111,38 @@ public class BitmexBeanV1 extends ExchangeBean {
 
     @Override
     public TransactionCluster toTransactionCluster() {
-        //TODO: mcharvat - implement
-        return null;
-//        validateCurrencyPair(symbolBase, symbolQuote);
-//
-//        return new ImportedTransactionBean(
-//            orderID,            //uuid
-//            transactTime,       //executed
-//            symbolBase,         //base
-//            symbolQuote,        //quote
-//            side,               //action
-//            lastQty,            //base quantity
-//            lastPx,             //unit price
-//            execComm            //fee quote
-//        );
+        validateCurrencyPair(symbolBase, symbolQuote);
+        validatePositivity(lastPx,lastQty,execComm);
+
+        List<ImportedTransactionBean> related;
+        if (ParserUtils.equalsToZero(execComm)) {
+            related = Collections.emptyList();
+        } else {
+            related = List.of(
+                new FeeRebateImportedTransactionBean(
+                    orderID + FEE_UID_PART,
+                    transactTime,
+                    symbolBase,
+                    symbolQuote,
+                    TransactionType.FEE,
+                    execComm.setScale(ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE),
+                    symbolQuote
+                )
+            );
+        }
+
+        return new TransactionCluster(
+            new BuySellImportedTransactionBean(
+                orderID,
+                transactTime,
+                symbolBase,
+                symbolQuote,
+                side,
+                lastQty.setScale(ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE),
+                lastPx.setScale(ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE)
+            ),
+            related
+        );
     }
 
     private String findStarts(String value) {

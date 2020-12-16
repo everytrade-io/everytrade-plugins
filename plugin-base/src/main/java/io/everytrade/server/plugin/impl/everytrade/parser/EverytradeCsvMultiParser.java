@@ -3,24 +3,24 @@ package io.everytrade.server.plugin.impl.everytrade.parser;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.SupportedExchange;
 import io.everytrade.server.plugin.api.IPlugin;
-import io.everytrade.server.plugin.api.parser.ConversionStatistic;
 import io.everytrade.server.plugin.api.parser.ICsvParser;
-import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParseResult;
 import io.everytrade.server.plugin.api.parser.ParserDescriptor;
-import io.everytrade.server.plugin.api.parser.RowError;
-import io.everytrade.server.plugin.api.parser.RowErrorType;
+import io.everytrade.server.plugin.api.parser.ParsingProblem;
+import io.everytrade.server.plugin.api.parser.PrarsingProblemType;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.EveryTradePlugin;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.UnknownHeaderException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BitfinexExchangeSpecificParser;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.DefaultUnivocityExchangeSpecificParser;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.IExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BinanceBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BitflyerBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BitmexBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BitstampBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexBeanV2;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinmateBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinmateBeanV2;
@@ -38,8 +38,6 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.PaxfulBe
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.PoloniexBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.ShakePayBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v2.BinanceExchangeSpecificParser;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.DefaultUnivocityExchangeSpecificParser;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.IExchangeSpecificParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -171,8 +169,10 @@ public class EverytradeCsvMultiParser implements ICsvParser {
         );
         EXCHANGE_PARSE_DETAILS.put(
             "Terminal SN;Server Time;Terminal Time;Local Transaction Id;Remote Transaction Id;Type;Cash Amount;" +
-                "Cash Currency;Crypto Amount;Crypto Currency;Used Discount;Actual Discount (%);Destination address;" +
-                "Related Remote Transaction Id;Identity;Status;Phone Number;Transaction Detail;",
+                "Cash Currency;Crypto Amount;Crypto Currency;Used Discount;Actual Discount (%);Destination Address;" +
+                "Related Remote Transaction Id;Identity;Status;Phone Number;Transaction Detail;Transaction Note;" +
+                "Rate Incl. Fee;Rate Without Fee;Fixed Transaction Fee;Expected Profit Percent Setting;" +
+                "Expected Profit Value;Crypto Setting Name;Transaction Scoring Result;Expense;Expense Currency;",
             new ExchangeParseDetail(
                 () -> new DefaultUnivocityExchangeSpecificParser(GeneralBytesBeanV1.class, DELIMITER_SEMICOLON),
                 SupportedExchange.GENERAL_BYTES
@@ -278,29 +278,25 @@ public class EverytradeCsvMultiParser implements ICsvParser {
         }
         final IExchangeSpecificParser exchangeParser = exchangeParseDetail.getParserFactory().get();
         List<? extends ExchangeBean> listBeans = exchangeParser.parse(file);
-        final List<RowError> rowErrors = new ArrayList<>(exchangeParser.getRowErrors());
+        final List<ParsingProblem> parsingProblems = new ArrayList<>(exchangeParser.getParsingProblems());
 
-        int ignoredFeeCount = 0;
         List<TransactionCluster> transactionClusters = new ArrayList<>();
         for (ExchangeBean p : listBeans) {
             try {
                 final TransactionCluster transactionCluster = p.toTransactionCluster();
                 transactionClusters.add(transactionCluster);
-                //TODO: ET-700 mcharvat - move ignored fee to getRowErrors() and rename it to getParseStatistics() or
-                // getCounters()?
-//                if (transactionCluster.getMain().getImportDetail().isIgnoredFee()) {
-//                    ignoredFeeCount++;
-//                }
             } catch (DataValidationException e) {
-                rowErrors.add(new RowError(p.rowToString(), e.getMessage(), RowErrorType.FAILED));
+                parsingProblems.add(
+                    new ParsingProblem(p.rowToString(), e.getMessage(), PrarsingProblemType.ROW_PARSING_FAILED)
+                );
             }
         }
 
         log.info("{} transaction(s) parsed successfully.", transactionClusters.size());
-        if (!rowErrors.isEmpty()) {
-            log.warn("{} row(s) not parsed.", rowErrors.size());
+        if (!parsingProblems.isEmpty()) {
+            log.warn("{} row(s) not parsed.", parsingProblems.size());
         }
 
-        return new ParseResult(transactionClusters, new ConversionStatistic(rowErrors, ignoredFeeCount));
+        return new ParseResult(transactionClusters, parsingProblems);
     }
 }

@@ -1,9 +1,10 @@
 package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
-import io.everytrade.server.plugin.api.parser.ConversionStatistic;
-import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParseResult;
-import io.everytrade.server.plugin.api.parser.RowError;
+import io.everytrade.server.plugin.api.parser.ParsingProblem;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.EverytradeCsvMultiParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
 import org.slf4j.Logger;
@@ -27,8 +28,8 @@ public class ParserTestUtils {
         try {
             File file = File.createTempFile("parsertest", "csv");
             new FileWriter(file)
-                    .append(rows)
-                    .close();
+                .append(rows)
+                .close();
             return file;
         } catch (IOException e) {
             e.printStackTrace();
@@ -36,66 +37,96 @@ public class ParserTestUtils {
         }
     }
 
-    public static void checkEqual(ImportedTransactionBean txCorrect, ImportedTransactionBean txExpected) {
-        assertNotNull(txExpected);
-        assertNotNull(txCorrect);
-        assertEquals(txExpected.getUid(), txCorrect.getUid());
-        assertEquals(0, txExpected.getExecuted().compareTo(txCorrect.getExecuted()));
-        assertEquals(txExpected.getBase(), txCorrect.getBase());
-        assertEquals(txExpected.getQuote(), txCorrect.getQuote());
-        assertEquals(txExpected.getAction(), txCorrect.getAction());
-        assertEquals(0, txExpected.getBaseQuantity().compareTo(txCorrect.getBaseQuantity()));
-        assertEquals(0, txExpected.getUnitPrice().compareTo(txCorrect.getUnitPrice()));
-        assertEquals(0, txExpected.getFeeQuote().compareTo(txCorrect.getFeeQuote()));
+    public static void checkEqual(TransactionCluster expected, TransactionCluster actual) {
+        assertNotNull(expected);
+        assertNotNull(actual);
+        checkEqualMain(
+            (BuySellImportedTransactionBean)expected.getMain(),
+            (BuySellImportedTransactionBean)actual.getMain()
+        );
+        assertEquals(expected.getRelated().size(), actual.getRelated().size());
+        for (int i = 0; i < expected.getRelated().size(); i++) {
+            checkEqualRelated(
+                (FeeRebateImportedTransactionBean)expected.getRelated().get(i),
+                (FeeRebateImportedTransactionBean)actual.getRelated().get(i)
+            );
+        }
+        assertEquals(expected.getIgnoredFeeTransactions(), actual.getIgnoredFeeTransactions());
     }
 
-    public static ImportedTransactionBean getTransactionBean(String rows) {
+    public static void checkEqualMain(
+        BuySellImportedTransactionBean expected,
+        BuySellImportedTransactionBean actual
+    ) {
+        assertNotNull(expected);
+        assertNotNull(actual);
+        assertEquals(expected.getUid(), actual.getUid());
+        assertEquals(expected.getExecuted(), actual.getExecuted());
+        assertEquals(expected.getBase(), actual.getBase());
+        assertEquals(expected.getQuote(), actual.getQuote());
+        assertEquals(expected.getAction(), actual.getAction());
+        assertEquals(0, expected.getBaseQuantity().compareTo(actual.getBaseQuantity()));
+        assertEquals(0, expected.getUnitPrice().compareTo(actual.getUnitPrice()));
+    }
+
+    public static void checkEqualRelated(
+        FeeRebateImportedTransactionBean expected,
+        FeeRebateImportedTransactionBean actual
+    ) {
+        assertNotNull(expected);
+        assertNotNull(actual);
+        assertNotNull(actual);
+        assertEquals(expected.getUid(), actual.getUid());
+        assertEquals(expected.getExecuted(), actual.getExecuted());
+        assertEquals(expected.getBase(), actual.getBase());
+        assertEquals(expected.getQuote(), actual.getQuote());
+        assertEquals(expected.getAction(), actual.getAction());
+        assertEquals(0, expected.getFeeRebate().compareTo(actual.getFeeRebate()));
+        assertEquals(expected.getFeeRebateCurrency(), actual.getFeeRebateCurrency());
+    }
+
+
+    public static TransactionCluster getTransactionCluster(String rows) {
         try {
             final ParseResult result = CSV_PARSER.parse(ParserTestUtils.createTestFile(rows), getHeader(rows));
-            if (!result.getConversionStatistic().isErrorRowsEmpty()) {
+            if (!result.getParsingProblems().isEmpty()) {
                 StringBuilder stringBuilder = new StringBuilder();
-                result.getConversionStatistic().getErrorRows().forEach(p->stringBuilder.append(p).append("\n"));
-                LOG.error("getRawTransaction(): NOT PARSED ROWS: {}", stringBuilder.toString());
+                result.getParsingProblems().forEach(p -> stringBuilder.append(p).append("\n"));
+                LOG.error("Not parsed rows: {}", stringBuilder.toString());
             }
-            List<ImportedTransactionBean> list = result.getImportedTransactionBeans();
-
+            List<TransactionCluster> list = result.getTransactionClusters();
             if (list.isEmpty()) {
-                return null;
+                fail("No transaction parsed.");
             }
             return list.get(0);
         } catch (ParsingProcessException e) {
-            LOG.error("getRawTransaction(): ", e);
-            return null;
+            fail(e);
         }
+        throw new IllegalStateException("Unexpected state during tests.");
     }
 
-    public static void testParsing(String rows)  {
+    public static void testParsing(String rows) {
         CSV_PARSER.parse(ParserTestUtils.createTestFile(rows), getHeader(rows));
     }
 
-    public static RowError getRowError(String rows) {
-        try {
-           final  ParseResult result = CSV_PARSER.parse(ParserTestUtils.createTestFile(rows), getHeader(rows));
-            List<RowError> list = result.getConversionStatistic().getErrorRows();
-            if (list.size() < 1) {
-                return null;
-            }
-            return list.get(0);
-        } catch (ParsingProcessException e) {
-            fail(e.getMessage());
-            return null;
-        }
-    }
-
-    public static ConversionStatistic getConversionStatistic(String rows) {
+    public static ParsingProblem getParsingProblem(String rows) {
         try {
             final ParseResult result = CSV_PARSER.parse(ParserTestUtils.createTestFile(rows), getHeader(rows));
-            return result.getConversionStatistic();
+            List<ParsingProblem> list = result.getParsingProblems();
+            if (list.size() < 1) {
+                LOG.error("No parsing problem found.");
+                fail("No expected parsing problem found.");
+            } else if (list.size() > 1) {
+                fail("More than on problem found: " + list.size());
+            } else {
+                return list.get(0);
+            }
         } catch (ParsingProcessException e) {
             fail(e.getMessage());
-            return null;
         }
+        throw new IllegalStateException("Unexpected state during tests.");
     }
+
 
     private static String getHeader(String rows) {
         int lineSeparator = rows.indexOf("\r\n");

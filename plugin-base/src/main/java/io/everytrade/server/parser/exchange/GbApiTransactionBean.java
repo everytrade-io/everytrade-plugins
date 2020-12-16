@@ -7,6 +7,7 @@ import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 
 import java.math.BigDecimal;
@@ -14,6 +15,9 @@ import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
+
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 
 @JsonFormat(shape = JsonFormat.Shape.ARRAY)
 @JsonPropertyOrder(
@@ -131,19 +135,26 @@ public class GbApiTransactionBean {
             throw new DataValidationException(e.getMessage());
         }
 
-        final BuySellImportedTransactionBean buySellImportedTransactionBean = new BuySellImportedTransactionBean(
-            uid,                             //uuid
-            timestamp,                       //executed
-            base,                            //base
-            quote,                           //quote
-            TransactionType.valueOf(action), //action
-            quantity,                        //base quantity
-            volume.divide(quantity, 10, RoundingMode.HALF_UP)//, //unit price
-            //BigDecimal.ZERO                  //fee quote
-        );
         return new TransactionCluster(
-            buySellImportedTransactionBean,
-            Collections.emptyList() //TODO: ET-700 - mcharvat - add related transactions (e.g. fees)
+            new BuySellImportedTransactionBean(
+                uid,
+                timestamp,
+                base,
+                quote,
+                TransactionType.valueOf(action),
+                quantity,
+                volume.divide(quantity, 10, RoundingMode.HALF_UP)
+            ),
+            List.of(new FeeRebateImportedTransactionBean(
+                    uid + FEE_UID_PART,
+                    timestamp,
+                    base,
+                    quote,
+                    TransactionType.FEE,
+                    expense,
+                    Currency.valueOf(expenseCurrency)
+                )
+            )
         );
     }
 

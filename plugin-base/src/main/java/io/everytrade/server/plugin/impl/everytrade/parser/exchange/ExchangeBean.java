@@ -9,7 +9,6 @@ import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -19,6 +18,8 @@ public abstract class ExchangeBean implements IImportableBean {
     public static final String UNSUPPORTED_TRANSACTION_TYPE = "Unsupported transaction type ";
     public static final String UNSUPPORTED_STATUS_TYPE = "Unsupported status type ";
     public static final String IGNORED_CHARS_IN_NUMBER = "[,\\s\\$]";
+    public static final String FEE_UID_PART = "-fee";
+    public static final String REBATE_UID_PART = "-rebate";
     private List<String> rowValues;
     private long rowNumber;
 
@@ -38,7 +39,7 @@ public abstract class ExchangeBean implements IImportableBean {
     }
 
     protected BigDecimal evalUnitPrice(BigDecimal transactionPrice, BigDecimal baseQuantity) {
-        return transactionPrice.divide(baseQuantity, ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP);
+        return transactionPrice.divide(baseQuantity, ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE);
     }
 
     protected void validateCurrencyPair(Currency base, Currency quote) {
