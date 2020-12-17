@@ -3,12 +3,12 @@ package io.everytrade.server.plugin.api.parser;
 public class ParsingProblem {
     private final String row;
     private final String message;
-    private final PrarsingProblemType prarsingProblemType;
+    private final ParsingProblemType parsingProblemType;
 
-    public ParsingProblem(String row, String message, PrarsingProblemType prarsingProblemType) {
+    public ParsingProblem(String row, String message, ParsingProblemType parsingProblemType) {
         this.row = row;
         this.message = message;
-        this.prarsingProblemType = prarsingProblemType;
+        this.parsingProblemType = parsingProblemType;
     }
 
     public String getRow() {
@@ -19,8 +19,8 @@ public class ParsingProblem {
         return message;
     }
 
-    public PrarsingProblemType getPrarsingProblemType() {
-        return prarsingProblemType;
+    public ParsingProblemType getPrarsingProblemType() {
+        return parsingProblemType;
     }
 
     @Override
@@ -28,7 +28,7 @@ public class ParsingProblem {
         return "ParsingProblem{" +
             "row='" + row + '\'' +
             ", message='" + message + '\'' +
-            ", prarsingProblemType=" + prarsingProblemType +
+            ", prarsingProblemType=" + parsingProblemType +
             '}';
     }
 }

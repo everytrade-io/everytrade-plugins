@@ -4,7 +4,7 @@ import com.univocity.parsers.common.record.Record;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
-import io.everytrade.server.plugin.api.parser.PrarsingProblemType;
+import io.everytrade.server.plugin.api.parser.ParsingProblemType;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.UnknownHeaderException;
@@ -152,7 +152,7 @@ public class BinanceExchangeSpecificParser implements IExchangeSpecificParser {
                 new ParsingProblem(
                     row,
                     e.getMessage(),
-                    PrarsingProblemType.PARSED_ROW_IGNORED
+                    ParsingProblemType.PARSED_ROW_IGNORED
                 )
             );
         } catch (Exception e) {
@@ -160,7 +160,7 @@ public class BinanceExchangeSpecificParser implements IExchangeSpecificParser {
                 new ParsingProblem(
                     row,
                     e.getMessage(),
-                    PrarsingProblemType.ROW_PARSING_FAILED
+                    ParsingProblemType.ROW_PARSING_FAILED
                 )
             );
         }

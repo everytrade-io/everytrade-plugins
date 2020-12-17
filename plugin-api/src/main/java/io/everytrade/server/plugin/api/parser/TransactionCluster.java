@@ -5,7 +5,7 @@ import java.util.List;
 public class TransactionCluster {
     private final ImportedTransactionBean main;
     private final List<ImportedTransactionBean> related;
-    private final int ignoredFeeTransactions;
+    private final int ignoredFeeTransactionCount;
 
 
     public TransactionCluster(ImportedTransactionBean main, List<ImportedTransactionBean> related) {
@@ -15,11 +15,11 @@ public class TransactionCluster {
     public TransactionCluster(
         ImportedTransactionBean main,
         List<ImportedTransactionBean> related,
-        int ignoredFeeTransactions
+        int ignoredFeeTransactionCount
     ) {
         this.main = main;
         this.related = related;
-        this.ignoredFeeTransactions = ignoredFeeTransactions;
+        this.ignoredFeeTransactionCount = ignoredFeeTransactionCount;
     }
 
     public ImportedTransactionBean getMain() {
@@ -30,7 +30,7 @@ public class TransactionCluster {
         return related;
     }
 
-    public int getIgnoredFeeTransactions() {
-        return ignoredFeeTransactions;
+    public int getIgnoredFeeTransactionCount() {
+        return ignoredFeeTransactionCount;
     }
 }

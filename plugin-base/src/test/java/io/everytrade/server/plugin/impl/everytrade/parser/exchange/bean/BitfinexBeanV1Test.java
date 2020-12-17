@@ -289,6 +289,6 @@ class BitfinexBeanV1Test {
     void testIgnoredFee() {
         final String row = "0,BTC/USD,0.01048537,9212.82428,-0.00002097,XXX,04-02-20 16:52:06,1\n";
         final TransactionCluster transactionCluster = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
-        assertEquals(1, transactionCluster.getIgnoredFeeTransactions());
+        assertEquals(1, transactionCluster.getIgnoredFeeTransactionCount());
     }
 }

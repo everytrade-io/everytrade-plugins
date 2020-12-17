@@ -83,7 +83,7 @@ public class Tester {
         log.info("plugin = " + plugin.getId());
         testConnectors(plugin);
 
-//        testParsers(plugin);
+        testParsers(plugin);
     }
 
     private void testParsers(IPlugin plugin) {

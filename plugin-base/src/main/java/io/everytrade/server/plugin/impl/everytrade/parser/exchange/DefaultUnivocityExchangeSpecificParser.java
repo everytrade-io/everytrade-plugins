@@ -4,7 +4,7 @@ import com.univocity.parsers.common.Context;
 import com.univocity.parsers.common.processor.BeanListProcessor;
 import com.univocity.parsers.csv.CsvParserSettings;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
-import io.everytrade.server.plugin.api.parser.PrarsingProblemType;
+import io.everytrade.server.plugin.api.parser.ParsingProblemType;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
 
@@ -86,10 +86,10 @@ public class DefaultUnivocityExchangeSpecificParser implements IExchangeSpecific
         CsvParserSettings parserSettings = new CsvParserSettings();
         parserSettings.setHeaderExtractionEnabled(true);
         parserSettings.setProcessorErrorHandler((error, inputRow, context) -> {
-            PrarsingProblemType prarsingProblemType = error instanceof DataIgnoredException
-                ? PrarsingProblemType.PARSED_ROW_IGNORED : PrarsingProblemType.ROW_PARSING_FAILED;
+            ParsingProblemType parsingProblemType = error instanceof DataIgnoredException
+                ? ParsingProblemType.PARSED_ROW_IGNORED : ParsingProblemType.ROW_PARSING_FAILED;
             ParsingProblem parsingProblem
-                = new ParsingProblem(Arrays.toString(inputRow), error.getMessage(), prarsingProblemType);
+                = new ParsingProblem(Arrays.toString(inputRow), error.getMessage(), parsingProblemType);
             parsingProblems.add(parsingProblem);
         });
         parserSettings.getFormat().setDelimiter(delimiter);

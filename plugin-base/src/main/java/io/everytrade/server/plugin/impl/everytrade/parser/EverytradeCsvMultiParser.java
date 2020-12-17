@@ -7,7 +7,7 @@ import io.everytrade.server.plugin.api.parser.ICsvParser;
 import io.everytrade.server.plugin.api.parser.ParseResult;
 import io.everytrade.server.plugin.api.parser.ParserDescriptor;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
-import io.everytrade.server.plugin.api.parser.PrarsingProblemType;
+import io.everytrade.server.plugin.api.parser.ParsingProblemType;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.EveryTradePlugin;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.UnknownHeaderException;
@@ -287,16 +287,25 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 transactionClusters.add(transactionCluster);
             } catch (DataValidationException e) {
                 parsingProblems.add(
-                    new ParsingProblem(p.rowToString(), e.getMessage(), PrarsingProblemType.ROW_PARSING_FAILED)
+                    new ParsingProblem(p.rowToString(), e.getMessage(), ParsingProblemType.ROW_PARSING_FAILED)
                 );
             }
         }
 
-        log.info("{} transaction(s) parsed successfully.", transactionClusters.size());
+
+        log.info("{} transaction(s) parsed successfully.", countTransactions(transactionClusters));
         if (!parsingProblems.isEmpty()) {
             log.warn("{} row(s) not parsed.", parsingProblems.size());
         }
 
         return new ParseResult(transactionClusters, parsingProblems);
+    }
+
+    private int countTransactions(List<TransactionCluster> transactionClusters) {
+        int counter = 0;
+        for (TransactionCluster transactionCluster : transactionClusters) {
+            counter = counter + 1 + transactionCluster.getRelated().size();
+        }
+        return counter;
     }
 }

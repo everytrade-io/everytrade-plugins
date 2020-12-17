@@ -8,7 +8,9 @@ import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -127,34 +129,42 @@ public class GbApiTransactionBean {
     }
 
     public TransactionCluster toTransactionCluster() {
-        final Currency base = Currency.valueOf(this.base);
-        final Currency quote = Currency.valueOf(this.quote);
+        final Currency baseCurrency = Currency.valueOf(base);
+        final Currency quoteCurrency = Currency.valueOf(quote);
         try {
-            new CurrencyPair(base, quote);
+            new CurrencyPair(baseCurrency, quoteCurrency);
         } catch (CurrencyPair.FiatCryptoCombinationException e) {
             throw new DataValidationException(e.getMessage());
+        }
+        final boolean isIgnoredFee = !(base.equals(expenseCurrency) || quote.equals(expenseCurrency));
+        List<ImportedTransactionBean> related;
+        if (ParserUtils.equalsToZero(expense) || isIgnoredFee) {
+            related = Collections.emptyList();
+        } else {
+            related = List.of(new FeeRebateImportedTransactionBean(
+                    uid + FEE_UID_PART,
+                    timestamp,
+                    baseCurrency,
+                    quoteCurrency,
+                    TransactionType.FEE,
+                    expense,
+                    Currency.valueOf(expenseCurrency)
+                )
+            );
         }
 
         return new TransactionCluster(
             new BuySellImportedTransactionBean(
                 uid,
                 timestamp,
-                base,
-                quote,
+                baseCurrency,
+                quoteCurrency,
                 TransactionType.valueOf(action),
                 quantity,
                 volume.divide(quantity, 10, RoundingMode.HALF_UP)
             ),
-            List.of(new FeeRebateImportedTransactionBean(
-                    uid + FEE_UID_PART,
-                    timestamp,
-                    base,
-                    quote,
-                    TransactionType.FEE,
-                    expense,
-                    Currency.valueOf(expenseCurrency)
-                )
-            )
+            related,
+            isIgnoredFee ? 1 : 0
         );
     }
 

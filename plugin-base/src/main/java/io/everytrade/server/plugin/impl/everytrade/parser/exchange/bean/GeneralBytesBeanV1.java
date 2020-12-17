@@ -118,7 +118,7 @@ public class GeneralBytesBeanV1 extends ExchangeBean {
     public TransactionCluster toTransactionCluster() {
         validateCurrencyPair(cryptoCurrency, cashCurrency);
         List<ImportedTransactionBean> related;
-        final boolean isIgnoredFee = !expenseCurrency.equals(cryptoCurrency) || !expenseCurrency.equals(cashCurrency);
+        final boolean isIgnoredFee = !(expenseCurrency.equals(cryptoCurrency) || expenseCurrency.equals(cashCurrency));
         if (ParserUtils.equalsToZero(expense) || isIgnoredFee) {
             related = Collections.emptyList();
         } else {

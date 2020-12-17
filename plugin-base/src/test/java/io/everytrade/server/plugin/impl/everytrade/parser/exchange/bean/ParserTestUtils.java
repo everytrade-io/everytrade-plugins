@@ -51,7 +51,7 @@ public class ParserTestUtils {
                 (FeeRebateImportedTransactionBean)actual.getRelated().get(i)
             );
         }
-        assertEquals(expected.getIgnoredFeeTransactions(), actual.getIgnoredFeeTransactions());
+        assertEquals(expected.getIgnoredFeeTransactionCount(), actual.getIgnoredFeeTransactionCount());
     }
 
     public static void checkEqualMain(
