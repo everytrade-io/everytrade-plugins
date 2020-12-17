@@ -1,14 +1,14 @@
 package io.everytrade.server.plugin.api.parser;
 
-public class RowError {
+public class ParsingProblem {
     private final String row;
     private final String message;
-    private final RowErrorType type;
+    private final ParsingProblemType parsingProblemType;
 
-    public RowError(String row, String message, RowErrorType type) {
+    public ParsingProblem(String row, String message, ParsingProblemType parsingProblemType) {
         this.row = row;
         this.message = message;
-        this.type = type;
+        this.parsingProblemType = parsingProblemType;
     }
 
     public String getRow() {
@@ -19,16 +19,16 @@ public class RowError {
         return message;
     }
 
-    public RowErrorType getType() {
-        return type;
+    public ParsingProblemType getPrarsingProblemType() {
+        return parsingProblemType;
     }
 
     @Override
     public String toString() {
-        return "RowError{" +
+        return "ParsingProblem{" +
             "row='" + row + '\'' +
             ", message='" + message + '\'' +
-            ", type=" + type +
+            ", prarsingProblemType=" + parsingProblemType +
             '}';
     }
 }

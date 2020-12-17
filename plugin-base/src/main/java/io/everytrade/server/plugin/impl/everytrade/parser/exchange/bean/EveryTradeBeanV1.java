@@ -5,12 +5,16 @@ import com.univocity.parsers.annotations.Headers;
 import com.univocity.parsers.annotations.Parsed;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
+import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Date;
+import java.util.List;
 
 @Headers(sequence = {"UID", "DATE", "SYMBOL", "ACTION", "QUANTY", "PRICE", "FEE"}, extract = true)
 public class EveryTradeBeanV1 extends ExchangeBean {
@@ -62,17 +66,30 @@ public class EveryTradeBeanV1 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean() {
+    public TransactionCluster toTransactionCluster() {
         validateCurrencyPair(symbolBase, symbolQuote);
-        return new ImportedTransactionBean(
+        final ImportedTransactionBean buySell = new BuySellImportedTransactionBean(
             uid,               //uuid
             date,               //executed
             symbolBase,         //base
             symbolQuote,        //quote
             action,             //action
             quantity,           //base quantity
-            price,              //unit price
-            fee                 //fee quote
+            price              //unit price
+        );
+        return new TransactionCluster(
+            buySell,
+            List.of(
+               new FeeRebateImportedTransactionBean(
+                   uid + FEE_UID_PART,
+                   date,
+                   symbolBase,
+                   symbolQuote,
+                   TransactionType.FEE,
+                   fee,
+                   symbolQuote
+               )
+            )
         );
     }
 }

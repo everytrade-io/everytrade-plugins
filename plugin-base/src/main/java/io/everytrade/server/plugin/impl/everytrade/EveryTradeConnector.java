@@ -1,18 +1,17 @@
 package io.everytrade.server.plugin.impl.everytrade;
 
-import io.everytrade.server.plugin.api.connector.ConnectorParameterType;
 import io.everytrade.server.model.SupportedExchange;
-import io.everytrade.server.plugin.api.parser.ConversionStatistic;
-import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.ParseResult;
-import io.everytrade.server.plugin.api.parser.RowError;
-import io.everytrade.server.plugin.api.parser.RowErrorType;
 import io.everytrade.server.parser.exchange.EveryTradeApiTransactionBean;
-import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.IPlugin;
 import io.everytrade.server.plugin.api.connector.ConnectorDescriptor;
 import io.everytrade.server.plugin.api.connector.ConnectorParameterDescriptor;
+import io.everytrade.server.plugin.api.connector.ConnectorParameterType;
+import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.connector.IConnector;
+import io.everytrade.server.plugin.api.parser.ParseResult;
+import io.everytrade.server.plugin.api.parser.ParsingProblem;
+import io.everytrade.server.plugin.api.parser.ParsingProblemType;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import si.mazi.rescu.ParamsDigest;
@@ -92,32 +91,35 @@ public class EveryTradeConnector implements IConnector {
         final List<EveryTradeApiTransactionBean> transactions
             = Objects.requireNonNullElse(data.getTransactions(), new ArrayList<>());
 
-        final List<ImportedTransactionBean> importedTransactions = new ArrayList<>();
-        final List<RowError> errorRows = new ArrayList<>();
+        final List<TransactionCluster> importedClusters = new ArrayList<>();
+        final List<ParsingProblem> parsingProblems = new ArrayList<>();
+        long transactionCount = 0;
+        String lastDownloadedTxUid = lastTransactionId;
         for (EveryTradeApiTransactionBean transaction : transactions) {
             try {
-                importedTransactions.add(transaction.toImportedTransactionBean());
+                final TransactionCluster cluster = transaction.toTransactionCluster();
+                importedClusters.add(cluster);
+                transactionCount += 1 + cluster.getRelated().size();
+                lastDownloadedTxUid = transaction.getUid();
             } catch (Exception e) {
                 log.error("Error converting to ImportedTransactionBean: {}", e.getMessage());
                 log.debug("Exception by converting to ImportedTransactionBean.", e);
-                errorRows.add(new RowError(transaction.toString(), e.getMessage(), RowErrorType.FAILED));
+                parsingProblems.add(
+                    new ParsingProblem(transaction.toString(), e.getMessage(), ParsingProblemType.ROW_PARSING_FAILED)
+                );
             }
         }
-        log.info("{} transaction(s) parsed successfully.", importedTransactions.size());
-        if (!errorRows.isEmpty()) {
-            log.warn("{} row(s) not parsed.", errorRows.size());
-        }
-
-        final String lastDownloadedTxUid;
-        if (importedTransactions.isEmpty()) {
-            lastDownloadedTxUid = lastTransactionId;
-        } else {
-            final ImportedTransactionBean lastTransaction = importedTransactions.get(importedTransactions.size() - 1);
-            lastDownloadedTxUid = lastTransaction.getUid();
+        log.info(
+            "{} transaction cluster(s) with {} transactions parsed successfully.",
+            importedClusters.size(),
+            transactionCount
+        );
+        if (!parsingProblems.isEmpty()) {
+            log.warn("{} row(s) not parsed.", parsingProblems.size());
         }
 
         return new DownloadResult(
-            new ParseResult(importedTransactions, new ConversionStatistic(errorRows, 0)),
+            new ParseResult(importedClusters, parsingProblems),
             lastDownloadedTxUid
         );
     }

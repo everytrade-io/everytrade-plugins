@@ -6,12 +6,18 @@ import com.univocity.parsers.annotations.Parsed;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
+import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 @Headers(sequence = {"DateTime", "Amount", "Value", "Rate", "Fee", "Sub Type"}, extract = true)
 public class BitstampBeanV1 extends ExchangeBean {
@@ -80,21 +86,40 @@ public class BitstampBeanV1 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean() {
+    public TransactionCluster toTransactionCluster() {
         validateCurrencyPair(amountCurrency, valueCurrency);
         if (!valueCurrency.equals(rateCurrency) || !valueCurrency.equals(feeCurrency)) {
             throw new DataValidationException(CURRENCY_EQUALITY_MESSAGE);
         }
+        List<ImportedTransactionBean> related;
+        if (ParserUtils.equalsToZero(fee)) {
+            related = Collections.emptyList();
+        } else {
+            related = List.of(
+                new FeeRebateImportedTransactionBean(
+                    null,
+                    dateTime,
+                    amountCurrency,
+                    valueCurrency,
+                    TransactionType.FEE,
+                    fee,
+                    feeCurrency
 
-        return new ImportedTransactionBean(
-            null,          //uuid
-            dateTime,           //executed
-            amountCurrency,     //base
-            valueCurrency,      //quote
-            subType,            //action
-            amountValue,        //base quantity
-            evalUnitPrice(value, amountValue),   //unit price
-            fee                 //fee quote
+                )
+            );
+        }
+
+        return new TransactionCluster(
+            new BuySellImportedTransactionBean(
+                null,          //uuid
+                dateTime,           //executed
+                amountCurrency,     //base
+                valueCurrency,      //quote
+                subType,            //action
+                amountValue,        //base quantity
+                evalUnitPrice(value, amountValue)   //unit price
+            ),
+            related
         );
     }
 }

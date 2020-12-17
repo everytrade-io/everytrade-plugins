@@ -8,16 +8,19 @@ import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.ImportDetail;
+import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static io.everytrade.server.model.CurrencyPair.getTradeablePairs;
@@ -90,51 +93,43 @@ public class BinanceBeanV1 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean() {
+    public TransactionCluster toTransactionCluster() {
         validateCurrencyPair(marketBase, marketQuote);
+        validatePositivity(amount, total, fee);
 
         final boolean isIncorrectFeeCoin
             = feeCoin == null || !(feeCoin.equals(marketBase) || feeCoin.equals(marketQuote));
-        final BigDecimal coefFeeBase;
-        final BigDecimal coefFeeQuote;
-        if (isIncorrectFeeCoin) {
-            coefFeeBase = BigDecimal.ZERO;
-            coefFeeQuote = BigDecimal.ZERO;
+
+        final List<ImportedTransactionBean> related;
+
+        if (isIncorrectFeeCoin || ParserUtils.equalsToZero(fee)) {
+            related = Collections.emptyList();
         } else {
-            if (TransactionType.BUY.equals(type)) {
-                if (feeCoin.equals(marketBase)) {
-                    coefFeeBase = BigDecimal.ONE.negate();
-                    coefFeeQuote = BigDecimal.ZERO;
-                } else {
-                    coefFeeBase = BigDecimal.ZERO;
-                    coefFeeQuote = BigDecimal.ONE;
-                }
-            } else {
-                if (feeCoin.equals(marketBase)) {
-                    coefFeeBase = BigDecimal.ONE;
-                    coefFeeQuote = BigDecimal.ZERO;
-                } else {
-                    coefFeeBase = BigDecimal.ZERO;
-                    coefFeeQuote = BigDecimal.ONE.negate();
-                }
-            }
+            related = List.of(
+                new FeeRebateImportedTransactionBean(
+                    null,
+                    date,
+                    marketBase,
+                    marketQuote,
+                    TransactionType.FEE,
+                    fee.setScale(ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE),
+                    feeCoin
+                )
+            );
         }
-        final BigDecimal baseQuantity = amount.abs().add(coefFeeBase.multiply(fee));
-        final BigDecimal quoteVolume = total.abs().add(coefFeeQuote.multiply(fee));
-        final BigDecimal unitPrice = evalUnitPrice(quoteVolume, baseQuantity);
 
-        validatePositivity(baseQuantity, quoteVolume, unitPrice);
-
-        return new ImportedTransactionBean(
-            null,         //uuid
-            date,              //executed
-            marketBase,        //base
-            marketQuote,       //quote
-            type,              //action
-            baseQuantity.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),      //base quantity
-            unitPrice,         //unit price
-            BigDecimal.ZERO,    //fee quote
-            new ImportDetail(isIncorrectFeeCoin)
+        return new TransactionCluster(
+            new BuySellImportedTransactionBean(
+                null,
+                date,
+                marketBase,
+                marketQuote,
+                type,
+                amount.setScale(ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE),
+                evalUnitPrice(total, amount)
+            ),
+            related,
+            isIncorrectFeeCoin ? 1 : 0
         );
     }
 }

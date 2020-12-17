@@ -1,12 +1,11 @@
 package io.everytrade.server.plugin.impl.everytrade;
 
 import io.everytrade.server.model.SupportedExchange;
-import io.everytrade.server.plugin.api.parser.ConversionStatistic;
-import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.ParseResult;
-import io.everytrade.server.plugin.api.parser.RowError;
-import io.everytrade.server.plugin.api.parser.RowErrorType;
 import io.everytrade.server.parser.exchange.XChangeApiTransactionBean;
+import io.everytrade.server.plugin.api.parser.ParseResult;
+import io.everytrade.server.plugin.api.parser.ParsingProblem;
+import io.everytrade.server.plugin.api.parser.ParsingProblemType;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import org.knowm.xchange.dto.trade.UserTrade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,23 +20,22 @@ public class XChangeConnectorParser {
     }
 
     public static ParseResult getParseResult(List<UserTrade> userTrades, SupportedExchange supportedExchange) {
-        final List<ImportedTransactionBean> importedTransactionBeans = new ArrayList<>();
-        final List<RowError> errorRows = new ArrayList<>();
+        final List<TransactionCluster> transactionClusters = new ArrayList<>();
+        final List<ParsingProblem> parsingProblems = new ArrayList<>();
         for (UserTrade userTrade : userTrades) {
             try {
                 XChangeApiTransactionBean xchangeApiTransactionBean
                     = new XChangeApiTransactionBean(userTrade, supportedExchange);
-                importedTransactionBeans.add(xchangeApiTransactionBean.toImportedTransactionBean());
+                transactionClusters.add(xchangeApiTransactionBean.toTransactionCluster());
             } catch (Exception e) {
                 LOG.error("Error converting to ImportedTransactionBean: {}", e.getMessage());
                 LOG.debug("Exception by converting to ImportedTransactionBean.", e);
-                errorRows.add(new RowError(userTrade.toString(), e.getMessage(), RowErrorType.FAILED));
+                parsingProblems.add(
+                    new ParsingProblem(userTrade.toString(), e.getMessage(), ParsingProblemType.ROW_PARSING_FAILED)
+                );
             }
         }
 
-        return new ParseResult(
-            importedTransactionBeans,
-            new ConversionStatistic(errorRows, 0)
-        );
+        return new ParseResult(transactionClusters, parsingProblems);
     }
 }

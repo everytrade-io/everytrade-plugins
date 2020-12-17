@@ -6,7 +6,9 @@ import com.univocity.parsers.annotations.Replace;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
+import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
@@ -15,6 +17,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 
 @Headers(sequence = {
     "type", "fiat_currency", "amount_fiat", "amount_btc", "status", "completed_at", "trade_hash"
@@ -78,17 +81,19 @@ public class PaxfulBeanV1 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean() {
+    public TransactionCluster toTransactionCluster() {
         validateCurrencyPair(Currency.BTC, fiatCurrency);
-        return new ImportedTransactionBean(
-            tradeHash,               //uuid
-            completedAt,             //executed
-            Currency.BTC,            //base
-            fiatCurrency,            //quote
-            TransactionType.BUY.equals(type) ? TransactionType.SELL : TransactionType.BUY,    //action
-            amountBtc.abs(),               //base quantity
-            evalUnitPrice(amountFiat.abs(), amountBtc.abs()), //unit price
-            BigDecimal.ZERO          //fee quote
+        return new TransactionCluster(
+            new BuySellImportedTransactionBean(
+                tradeHash,               //uuid
+                completedAt,             //executed
+                Currency.BTC,            //base
+                fiatCurrency,            //quote
+                TransactionType.BUY.equals(type) ? TransactionType.SELL : TransactionType.BUY,    //action
+                amountBtc.abs(),               //base quantity
+                evalUnitPrice(amountFiat.abs(), amountBtc.abs()) //unit price
+            ),
+            Collections.emptyList()
         );
     }
 }

@@ -3,8 +3,8 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v2;
 import com.univocity.parsers.common.record.Record;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
-import io.everytrade.server.plugin.api.parser.RowError;
-import io.everytrade.server.plugin.api.parser.RowErrorType;
+import io.everytrade.server.plugin.api.parser.ParsingProblem;
+import io.everytrade.server.plugin.api.parser.ParsingProblemType;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.UnknownHeaderException;
@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 public class BinanceExchangeSpecificParser implements IExchangeSpecificParser {
     public static final Pattern DATE_PATTERN;
     private static final String DELIMITER = ";";
-    private List<RowError> rowErrors = List.of();
+    private List<ParsingProblem> parsingProblems = List.of();
 
     enum RowType {
         HEADER, GROUP, GROUP_HEADER, GROUP_ROW
@@ -41,7 +41,7 @@ public class BinanceExchangeSpecificParser implements IExchangeSpecificParser {
     public List<? extends ExchangeBean> parse(
         File inputFile
     ) {
-        rowErrors = new ArrayList<>();
+        parsingProblems = new ArrayList<>();
         final List<BinanceBeanV2> binanceBeans = new ArrayList<>();
         try (Reader reader = new FileReader(inputFile, StandardCharsets.UTF_8)) {
             final CsvParserSettings csvParserSettings = new CsvParserSettings();
@@ -88,7 +88,7 @@ public class BinanceExchangeSpecificParser implements IExchangeSpecificParser {
                         final String columnValueTotal = columnValues[level2HeaderIndexes.get(Level2Header.TOTAL)];
                         final String columnValueFee = columnValues[level2HeaderIndexes.get(Level2Header.FEE)];
                         createExchangeBean(
-                            rowErrors,
+                            parsingProblems,
                             binanceBeans,
                             columnValueDateL2,
                             columnValuePair,
@@ -111,12 +111,12 @@ public class BinanceExchangeSpecificParser implements IExchangeSpecificParser {
     }
 
     @Override
-    public List<RowError> getRowErrors() {
-        return rowErrors;
+    public List<ParsingProblem> getParsingProblems() {
+        return parsingProblems;
     }
 
     private void createExchangeBean(
-        List<RowError> rowErrors,
+        List<ParsingProblem> parsingProblems,
         List<BinanceBeanV2> binanceBeans,
         String columnValueDateL2,
         String columnValuePair,
@@ -148,19 +148,19 @@ public class BinanceExchangeSpecificParser implements IExchangeSpecificParser {
                     columnValueStatus
                 ));
         } catch (DataIgnoredException e) {
-            rowErrors.add(
-                new RowError(
+            parsingProblems.add(
+                new ParsingProblem(
                     row,
                     e.getMessage(),
-                    RowErrorType.IGNORED
+                    ParsingProblemType.PARSED_ROW_IGNORED
                 )
             );
         } catch (Exception e) {
-            rowErrors.add(
-                new RowError(
+            parsingProblems.add(
+                new ParsingProblem(
                     row,
                     e.getMessage(),
-                    RowErrorType.FAILED
+                    ParsingProblemType.ROW_PARSING_FAILED
                 )
             );
         }

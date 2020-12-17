@@ -6,13 +6,19 @@ import com.univocity.parsers.annotations.Parsed;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
+import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 //MIN> BTX-001:|OrderUuid|Exchange|Type|Quantity|CommissionPaid|Price|Closed|
 //MAX> BTX-001:|OrderUuid|Exchange|Type|Quantity|Limit|CommissionPaid|Price|Opened|Closed|
@@ -45,7 +51,7 @@ public class BittrexBeanV1 extends ExchangeBean {
     public void setType(String type) {
         if ("LIMIT_BUY".equals(type)) {
             this.type = TransactionType.BUY;
-        } else if("LIMIT_SELL".equals(type)) {
+        } else if ("LIMIT_SELL".equals(type)) {
             this.type = TransactionType.SELL;
         } else {
             throw new DataIgnoredException(UNSUPPORTED_TRANSACTION_TYPE.concat(type));
@@ -78,18 +84,36 @@ public class BittrexBeanV1 extends ExchangeBean {
 
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean() {
+    public TransactionCluster toTransactionCluster() {
         validateCurrencyPair(exchangeBase, exchangeQuote);
+        List<ImportedTransactionBean> related;
+        if (ParserUtils.equalsToZero(comissionPaid)) {
+            related = Collections.emptyList();
+        } else {
+            related = List.of(
+                new FeeRebateImportedTransactionBean(
+                    orderUuid + FEE_UID_PART,
+                    closed,
+                    exchangeBase,
+                    exchangeQuote,
+                    TransactionType.FEE,
+                    comissionPaid,
+                    exchangeQuote
+                )
+            );
+        }
 
-        return new ImportedTransactionBean(
-            orderUuid,          //uuid
-            closed,             //executed
-            exchangeBase,       //base
-            exchangeQuote,      //quote
-            type,               //action
-            quantity,           //base quantity
-            evalUnitPrice(price, quantity), //unit price
-            comissionPaid       //fee quote
+        return new TransactionCluster(
+            new BuySellImportedTransactionBean(
+                orderUuid,          //uuid
+                closed,             //executed
+                exchangeBase,       //base
+                exchangeQuote,      //quote
+                type,               //action
+                quantity,           //base quantity
+                evalUnitPrice(price, quantity) //unit price
+            ),
+            related
         );
     }
 }

@@ -1,21 +1,27 @@
 package io.everytrade.server.parser.exchange;
 
-//import com.univocity.parsers.common.DataValidationException;
 import com.univocity.parsers.common.DataValidationException;
-import io.everytrade.server.model.CurrencyPair;
-import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.model.Currency;
+import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.model.SupportedExchange;
+import io.everytrade.server.model.TransactionType;
+import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
-//import io.everytrade.server.parser.postparse.ConversionParams;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import org.knowm.xchange.dto.Order;
 import org.knowm.xchange.dto.trade.UserTrade;
 import org.knowm.xchange.instrument.Instrument;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
 
-public class XChangeApiTransactionBean /*extends ExchangeBean*/ {
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
+
+public class XChangeApiTransactionBean {
     private final String id;
     private final Instant timestamp;
     private final TransactionType type;
@@ -27,7 +33,6 @@ public class XChangeApiTransactionBean /*extends ExchangeBean*/ {
     private final BigDecimal feeAmount;
 
     public XChangeApiTransactionBean(UserTrade userTrade, SupportedExchange supportedExchange) {
-//        super(supportedExchange);
         id = userTrade.getId();
         timestamp = userTrade.getTimestamp().toInstant();
         type = getTransactionType(userTrade.getType());
@@ -46,39 +51,41 @@ public class XChangeApiTransactionBean /*extends ExchangeBean*/ {
 
     }
 
-//    @Override
-//    public ImportedTransactionBean toImportedTransactionBean(ConversionParams conversionParams) {
-//        validateCurrencyPair(base, quote);
-//
-//        return new ImportedTransactionBean(
-//            id,                             //uuid
-//            timestamp,                       //executed
-//            base,                            //base
-//            quote,                           //quote
-//            type,                           //action
-//            originalAmount,                  //base quantity
-//            price,                           //unit price
-//            evalTransactionPrice(price, originalAmount),  //transaction price
-//            feeAmount                        //fee quote
-//        );
-//    }
-    public ImportedTransactionBean toImportedTransactionBean() {
+    public TransactionCluster toTransactionCluster() {
         try {
             new CurrencyPair(base, quote);
         } catch (CurrencyPair.FiatCryptoCombinationException e) {
             throw new DataValidationException(e.getMessage());
         }
+        final boolean isIgnoredFee = !(base.equals(feeCurrency) || quote.equals(feeCurrency));
+        List<ImportedTransactionBean> related;
+        if (ParserUtils.equalsToZero(feeAmount) || isIgnoredFee) {
+            related = Collections.emptyList();
+        } else {
+            related = List.of(new FeeRebateImportedTransactionBean(
+                    id + FEE_UID_PART,
+                    timestamp,
+                    base,
+                    quote,
+                    TransactionType.FEE,
+                    feeAmount,
+                    feeCurrency
+                )
+            );
+        }
 
-
-        return new ImportedTransactionBean(
-            id,                             //uuid
-            timestamp,                       //executed
-            base,                            //base
-            quote,                           //quote
-            type,                           //action
-            originalAmount,                  //base quantity
-            price,                           //unit price
-            feeAmount                        //fee quote
+        return new TransactionCluster(
+            new BuySellImportedTransactionBean(
+                id,
+                timestamp,
+                base,
+                quote,
+                type,
+                originalAmount,
+                price
+            ),
+            related,
+            isIgnoredFee ? 1 : 0
         );
     }
 

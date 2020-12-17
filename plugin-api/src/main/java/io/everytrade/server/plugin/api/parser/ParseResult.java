@@ -1,26 +1,24 @@
 package io.everytrade.server.plugin.api.parser;
 
 import java.util.List;
+import java.util.Objects;
 
 public class ParseResult {
-    private final List<ImportedTransactionBean> importedTransactionBeans;
+    private final List<TransactionCluster> transactionClusters;
+    private final List<ParsingProblem> parsingProblems;
 
-    //TODO: Inline the statistics? Why separate class?
-    private final ConversionStatistic conversionStatistic;
-
-    public ParseResult(
-        List<ImportedTransactionBean> importedTransactionBeans,
-        ConversionStatistic conversionStatistic
-    ) {
-        this.importedTransactionBeans = importedTransactionBeans;
-        this.conversionStatistic = conversionStatistic;
+    public ParseResult(List<TransactionCluster> transactionClusters, List<ParsingProblem> parsingProblems) {
+        Objects.requireNonNull(transactionClusters);
+        Objects.requireNonNull(parsingProblems);
+        this.transactionClusters = List.copyOf(transactionClusters);
+        this.parsingProblems = List.copyOf(parsingProblems);
     }
 
-    public ConversionStatistic getConversionStatistic() {
-        return conversionStatistic;
+    public List<TransactionCluster> getTransactionClusters() {
+        return transactionClusters;
     }
 
-    public List<ImportedTransactionBean> getImportedTransactionBeans() {
-        return importedTransactionBeans;
+    public List<ParsingProblem> getParsingProblems() {
+        return parsingProblems;
     }
 }

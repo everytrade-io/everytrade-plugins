@@ -5,12 +5,18 @@ import com.univocity.parsers.annotations.Headers;
 import com.univocity.parsers.annotations.Parsed;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
+import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Headers(sequence = {"Instrument", "Trade ID", "Side", "Quantity", "Price", "Fee", "Rebate"}, extract = true)
 public class HitBtcBeanV1 extends ExchangeBean {
@@ -69,18 +75,47 @@ public class HitBtcBeanV1 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean() {
+    public TransactionCluster toTransactionCluster() {
         validateCurrencyPair(instrumentBase, instrumentQuote);
+        List<ImportedTransactionBean> related = new ArrayList<>();
+        if (!ParserUtils.equalsToZero(fee)) {
+            related.add(
+                new FeeRebateImportedTransactionBean(
+                    tradeId + FEE_UID_PART,
+                    date,
+                    instrumentBase,
+                    instrumentQuote,
+                    TransactionType.FEE,
+                    fee,
+                    instrumentQuote
+                )
+            );
+        }
+        if (!ParserUtils.equalsToZero(rebate)) {
+            related.add(
+                new FeeRebateImportedTransactionBean(
+                    tradeId + REBATE_UID_PART,
+                    date,
+                    instrumentBase,
+                    instrumentQuote,
+                    TransactionType.REBATE,
+                    rebate,
+                    instrumentQuote
+                )
+            );
+        }
 
-        return new ImportedTransactionBean(
-            tradeId,            //uuid
-            date,               //executed
-            instrumentBase,     //base
-            instrumentQuote,    //quote
-            side,               //action
-            quantity,           //base quantity
-            price,              //unit price
-            fee.subtract(rebate) //fee Quote
+        return new TransactionCluster(
+            new BuySellImportedTransactionBean(
+                tradeId,            //uuid
+                date,               //executed
+                instrumentBase,     //base
+                instrumentQuote,    //quote
+                side,               //action
+                quantity,           //base quantity
+                price               //unit price
+            ),
+            related
         );
     }
 }

@@ -2,15 +2,17 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.RowError;
+import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.ParsingProblem;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -36,54 +38,75 @@ class BitflyerBeanV1Test {
         try {
             ParserTestUtils.testParsing(headerWrong);
             fail("No expected exception has been thrown.");
-        } catch (ParsingProcessException e) {
+        } catch (ParsingProcessException ignored) {
         }
     }
 
-
     @Test
     void testCorrectParsingRawTransaction() {
-        final String row = "2020/09/29 17:55:30;LTC/USD;Buy;46.43;LTC;0.9;0;46.43;USD;-41.79;BF-01;\n";
-        final ImportedTransactionBean txBeanParsed = ParserTestUtils.getTransactionBean(HEADER_CORRECT + row);
-        final ImportedTransactionBean txBeanCorrect = new ImportedTransactionBean(
-            "BF-01",
-            Instant.parse("2020-09-29T17:55:30Z"),
-            Currency.LTC,
-            Currency.USD,
-            TransactionType.BUY,
-            new BigDecimal("0.9"),
-            new BigDecimal("46.43"),
-            new BigDecimal("0")
+        final String row = "2020/09/29 17:55:30;LTC/USD;Buy;46.43;LTC;0.9;0.4;46.43;USD;-41.79;BF-01;\n";
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new BuySellImportedTransactionBean(
+                "BF-01",
+                Instant.parse("2020-09-29T17:55:30Z"),
+                Currency.LTC,
+                Currency.USD,
+                TransactionType.BUY,
+                new BigDecimal("0.9"),
+                new BigDecimal("46.43")
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    "BF-01-fee",
+                    Instant.parse("2020-09-29T17:55:30Z"),
+                    Currency.LTC,
+                    Currency.USD,
+                    TransactionType.FEE,
+                    new BigDecimal("0.4"),
+                    Currency.USD
+                )
+            ),
+            0
         );
-
-        ParserTestUtils.checkEqual(txBeanParsed, txBeanCorrect);
+        ParserTestUtils.checkEqual(expected, actual);
     }
 
     @Test
     void testCorrectParsingRawTransactionSell() {
-        final String row = "2020/09/29 17:53:28;LTC/USD;Sell;44.16;LTC;-1;0;44.16;USD;44.16;BF-02;\n";
-        final ImportedTransactionBean txBeanParsed = ParserTestUtils.getTransactionBean(HEADER_CORRECT + row);
-        final ImportedTransactionBean txBeanCorrect = new ImportedTransactionBean(
-            "BF-02",
-            Instant.parse("2020-09-29T17:53:28Z"),
-            Currency.LTC,
-            Currency.USD,
-            TransactionType.SELL,
-            new BigDecimal("1"),
-            new BigDecimal("44.16"),
-            new BigDecimal("0")
+        final String row = "2020/09/29 17:53:28;LTC/USD;Sell;44.16;LTC;-1;0.2;44.16;USD;44.16;BF-02;\n";
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new BuySellImportedTransactionBean(
+                "BF-02",
+                Instant.parse("2020-09-29T17:53:28Z"),
+                Currency.LTC,
+                Currency.USD,
+                TransactionType.SELL,
+                new BigDecimal("1"),
+                new BigDecimal("44.16")
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    "BF-02-fee",
+                    Instant.parse("2020-09-29T17:53:28Z"),
+                    Currency.LTC,
+                    Currency.USD,
+                    TransactionType.FEE,
+                    new BigDecimal("0.2"),
+                    Currency.USD
+                )
+            ),
+            0
         );
-
-        ParserTestUtils.checkEqual(txBeanParsed, txBeanCorrect);
+        ParserTestUtils.checkEqual(expected, actual);
     }
-
 
     @Test
     void testUnknonwExchangePair() {
         final String row = "2020/09/29 17:55:30;LTC/USD;Buy;46.43;LTC;0.9;0;46.43;LTC;-41.79;BF-01;\n";
-        final RowError rowError = ParserTestUtils.getRowError(HEADER_CORRECT + row);
-        assertNotNull(rowError);
-        final String error = rowError.getMessage();
+        final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
+        final String error = parsingProblem.getMessage();
         assertTrue(error.contains("Unsupported currency pair LTC/LTC"));
     }
 }

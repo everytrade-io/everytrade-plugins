@@ -6,11 +6,13 @@ import com.univocity.parsers.annotations.Parsed;
 import com.univocity.parsers.annotations.Replace;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.Date;
 
 @Headers(sequence = {"date","action","currency","base_currency","amount","base_amount"}, extract = true)
@@ -56,18 +58,20 @@ public class CoinsquareBeanV1 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean() {
+    public TransactionCluster toTransactionCluster() {
         validateCurrencyPair(baseCurrenncy, currenncy);
 
-        return new ImportedTransactionBean(
-            null,         //uuid
-            date,              //executed
-            baseCurrenncy,     //base
-            currenncy,         //quote
-            action,            //action
-            baseAmount.abs(),  //base quantity
-            evalUnitPrice(amount.abs(), baseAmount.abs()),   //unit price
-            BigDecimal.ZERO    //fee quote
+        return new TransactionCluster(
+            new BuySellImportedTransactionBean(
+                null,             //uuid
+                date,                 //executed
+                baseCurrenncy,        //base
+                currenncy,            //quote
+                action,               //action
+                baseAmount.abs(),     //base quantity
+                evalUnitPrice(amount.abs(), baseAmount.abs())  //unit price
+            ),
+            Collections.emptyList()
         );
     }
 }

@@ -7,13 +7,16 @@ import com.univocity.parsers.annotations.Replace;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.ImportDetail;
+import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -39,7 +42,7 @@ public class HuobiBeanV1 extends ExchangeBean {
     @Parsed(field = "Type")
     public void setType(String value) {
         if (!"Exchange".equals(value)) {
-            throw new DataValidationException(String.format(UNSUPPORTED_TYPE.concat(value)));
+            throw new DataValidationException(UNSUPPORTED_TYPE.concat(value));
         }
     }
 
@@ -71,55 +74,53 @@ public class HuobiBeanV1 extends ExchangeBean {
     public void setFee(String value) {
         feeCurrency = findEnds(value);
         if (feeCurrency != null) {
-            final String feeValue = value.replaceAll("[A-Z,\\s\\$]", "");
+            final String feeValue = value.replaceAll("[A-Z,\\s$]", "");
             fee = new BigDecimal(feeValue);
         }
     }
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean() {
+    public TransactionCluster toTransactionCluster() {
         validateCurrencyPair(pairBase, pairQuote);
-
         final boolean isIncorrectFeeCoin
             = feeCurrency == null || !(feeCurrency.equals(pairBase) || feeCurrency.equals(pairQuote));
         final BigDecimal baseQuantity;
         final BigDecimal quoteVolume;
+        final List<ImportedTransactionBean> related;
+        baseQuantity = amount.abs();
+        quoteVolume = total.abs();
+
         if (isIncorrectFeeCoin) {
-            baseQuantity = amount.abs();
-            quoteVolume = total.abs();
+            related = Collections.emptyList();
         } else {
-            if (TransactionType.BUY.equals(side)) {
-                if (feeCurrency.equals(pairBase)) {
-                    baseQuantity = amount.abs().subtract(fee);
-                    quoteVolume = total.abs();
-                } else {
-                    baseQuantity = amount.abs();
-                    quoteVolume = total.abs().negate().subtract(fee).negate();
-                }
-            } else {
-                if (feeCurrency.equals(pairBase)) {
-                    baseQuantity = amount.abs().negate().subtract(fee).negate();
-                    quoteVolume = total.abs();
-                } else {
-                    baseQuantity = amount.abs();
-                    quoteVolume = total.abs().subtract(fee);
-                }
-            }
+            related = List.of(
+                new FeeRebateImportedTransactionBean(
+                    null,
+                    time,
+                    pairBase,
+                    pairQuote,
+                    TransactionType.FEE,
+                    fee,
+                    feeCurrency
+                )
+            );
         }
 
         final BigDecimal unitPrice = evalUnitPrice(quoteVolume, baseQuantity);
         validatePositivity(baseQuantity, quoteVolume, unitPrice);
 
-        return new ImportedTransactionBean(
-            null,               //uuid
-            time,                    //executed
-            pairBase,                //base
-            pairQuote,               //quote
-            side,                    //action
-            baseQuantity,            //base quantity
-            unitPrice,               //unit price
-            BigDecimal.ZERO,         //fee quote
-            new ImportDetail(isIncorrectFeeCoin)
+        return new TransactionCluster(
+            new BuySellImportedTransactionBean(
+                null,
+                time,
+                pairBase,
+                pairQuote,
+                side,
+                baseQuantity,
+                unitPrice
+            ),
+            related,
+            isIncorrectFeeCoin ? 1 : 0
         );
     }
 
@@ -133,5 +134,4 @@ public class HuobiBeanV1 extends ExchangeBean {
         }
         return null;
     }
-
 }

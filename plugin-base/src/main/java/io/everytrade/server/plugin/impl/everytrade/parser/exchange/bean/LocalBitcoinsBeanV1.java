@@ -6,7 +6,9 @@ import com.univocity.parsers.annotations.Replace;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
+import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
@@ -15,12 +17,16 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
+import java.util.Collections;
 import java.util.Locale;
 
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
 
-@Headers(sequence = {"id","trade_type","btc_final","fiat_amount","currency","transaction_released_at"}, extract = true)
+@Headers(
+    sequence = {"id", "trade_type", "btc_final", "fiat_amount", "currency", "transaction_released_at"},
+    extract = true
+)
 public class LocalBitcoinsBeanV1 extends ExchangeBean {
     public static final DateTimeFormatter FORMATTER = new DateTimeFormatterBuilder()
         .parseCaseInsensitive()
@@ -89,22 +95,24 @@ public class LocalBitcoinsBeanV1 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean() {
-
+    public TransactionCluster toTransactionCluster() {
         final boolean isCrypto = !currency.isFiat();
         final boolean isReverseTrade = isCrypto && !Currency.USDT.equals(currency);
         final BigDecimal baseQuantity = isReverseTrade ? fiatAmount.abs() : btcFinal.abs();
         final BigDecimal volume = isReverseTrade ? btcFinal.abs() : fiatAmount.abs();
-        return new ImportedTransactionBean(
-            id,                      //uuid
-            transactionReleasedAt,   //executed
-            isReverseTrade ? currency : Currency.BTC,            //base
-            isReverseTrade ? Currency.BTC : currency,            //quote
-            isReverseTrade ? switchAction(tradeType) : tradeType,//action
-            baseQuantity,                        //base quantity
-            evalUnitPrice(volume, baseQuantity), //unit price
-            BigDecimal.ZERO          //fee quote
+        return new TransactionCluster(
+            new BuySellImportedTransactionBean(
+                id,                      //uuid
+                transactionReleasedAt,   //executed
+                isReverseTrade ? currency : Currency.BTC,            //base
+                isReverseTrade ? Currency.BTC : currency,            //quote
+                isReverseTrade ? switchAction(tradeType) : tradeType,//action
+                baseQuantity,                        //base quantity
+                evalUnitPrice(volume, baseQuantity) //unit price
+            ),
+            Collections.emptyList()
         );
+
     }
 
     private TransactionType switchAction(TransactionType transactionType) {

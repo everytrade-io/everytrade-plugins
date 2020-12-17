@@ -3,16 +3,22 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 import com.univocity.parsers.annotations.Format;
 import com.univocity.parsers.annotations.Headers;
 import com.univocity.parsers.annotations.Parsed;
-import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
+import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 @Headers(sequence = {
     "?Transaction id", "Date", "Type detail", "Currency amount", "Amount", "Currency price", "Price", "Currency fee",
@@ -89,21 +95,38 @@ public class CoinmateBeanV2 extends ExchangeBean {
     }
 
     @Override
-    public ImportedTransactionBean toImportedTransactionBean() {
+    public TransactionCluster toTransactionCluster() {
         validateCurrencyPair(currencyAmount, currencyPrice);
-        if (!currencyPrice.equals(auxCurrencyFee)) {
-            throw new DataValidationException(String.format("Price currecy(%s) and fee currency(%s) are different.",
-                currencyPrice.name(), auxCurrencyFee.name()));
+        final boolean ignoredFee = !currencyPrice.equals(auxCurrencyFee);
+        List<ImportedTransactionBean> related;
+        if (ParserUtils.equalsToZero(fee) || ignoredFee) {
+            related = Collections.emptyList();
+        } else {
+            related = List.of(
+                new FeeRebateImportedTransactionBean(
+                    transactionId + FEE_UID_PART,
+                    date,
+                    currencyAmount,
+                    currencyPrice,
+                    TransactionType.FEE,
+                    fee.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
+                    auxCurrencyFee
+                )
+            );
         }
-        return new ImportedTransactionBean(
-            transactionId,      //uuid
-            date,               //executed
-            currencyAmount,     //base
-            currencyPrice,      //quote
-            typeDetail,         //action
-            amount,             //base quantity
-            price,              //unit price
-            fee                 //fee quote
+
+        return new TransactionCluster(
+            new BuySellImportedTransactionBean(
+                transactionId,             //uuid
+                date,           //executed
+                currencyAmount, //base
+                currencyPrice,  //quote
+                typeDetail,           //action
+                amount,         //base quantity
+                price          //unit price
+            ),
+            related,
+            ignoredFee ? 1 : 0
         );
     }
 }
