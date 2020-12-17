@@ -293,7 +293,11 @@ public class EverytradeCsvMultiParser implements ICsvParser {
         }
 
 
-        log.info("{} transaction(s) parsed successfully.", countTransactions(transactionClusters));
+        log.info(
+            "{} transaction cluster(s) with {} transactions parsed successfully.",
+            transactionClusters.size(),
+            countTransactions(transactionClusters)
+        );
         if (!parsingProblems.isEmpty()) {
             log.warn("{} row(s) not parsed.", parsingProblems.size());
         }
