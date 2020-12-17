@@ -65,6 +65,13 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             )
         );
         EXCHANGE_PARSE_DETAILS.put(
+            "Date(UTC),Market,Type,Price,Amount,Total,Fee,Fee Coin",
+            new ExchangeParseDetail(
+                () -> new DefaultUnivocityExchangeSpecificParser(BinanceBeanV1.class, DELIMITER_SEMICOLON),
+                SupportedExchange.BINANCE
+            )
+        );
+        EXCHANGE_PARSE_DETAILS.put(
             "Date(UTC);Pair;Type;Order Price;Order Amount;AvgTrading Price;Filled;Total;status",
             new ExchangeParseDetail(
                 BinanceExchangeSpecificParser::new,
@@ -73,6 +80,13 @@ public class EverytradeCsvMultiParser implements ICsvParser {
         );
         EXCHANGE_PARSE_DETAILS.put(
             "#,PAIR,AMOUNT,PRICE,FEE,FEE CURRENCY,DATE,ORDER ID",
+            new ExchangeParseDetail(
+                BitfinexExchangeSpecificParser::new,
+                SupportedExchange.BITFINEX
+            )
+        );
+        EXCHANGE_PARSE_DETAILS.put(
+            "#,PAIR,AMOUNT,PRICE,FEE,FEE PERC,FEE CURRENCY,DATE,ORDER ID",
             new ExchangeParseDetail(
                 BitfinexExchangeSpecificParser::new,
                 SupportedExchange.BITFINEX
@@ -217,6 +231,14 @@ public class EverytradeCsvMultiParser implements ICsvParser {
         );
         EXCHANGE_PARSE_DETAILS.put(
             "txid,ordertxid,pair,time,type,ordertype,price,cost,fee,vol,margin,misc,ledgers",
+            new ExchangeParseDetail(
+                () -> new DefaultUnivocityExchangeSpecificParser(KrakenBeanV1.class),
+                SupportedExchange.KRAKEN
+            )
+        );
+        EXCHANGE_PARSE_DETAILS.put(
+            "\"txid\",\"ordertxid\",\"pair\",\"time\",\"type\",\"ordertype\",\"price\",\"cost\",\"fee\",\"vol\"," +
+                "\"margin\",\"misc\",\"ledgers\"",
             new ExchangeParseDetail(
                 () -> new DefaultUnivocityExchangeSpecificParser(KrakenBeanV1.class),
                 SupportedExchange.KRAKEN
