@@ -1,10 +1,12 @@
 package com.example.everytrade.plugin;
 
 import io.everytrade.server.plugin.api.IPlugin;
+import io.everytrade.server.plugin.api.rateprovider.RateProviderDescriptor;
 import io.everytrade.server.plugin.api.connector.ConnectorDescriptor;
 import io.everytrade.server.plugin.api.connector.IConnector;
 import io.everytrade.server.plugin.api.parser.ICsvParser;
 import io.everytrade.server.plugin.api.parser.ParserDescriptor;
+import io.everytrade.server.plugin.api.rateprovider.IRateProvider;
 import org.pf4j.Extension;
 
 import java.util.List;
@@ -58,5 +60,15 @@ public class ExamplePlugin implements IPlugin {
             return new ExampleParser();
         }
         return null;
+    }
+
+    @Override
+    public List<RateProviderDescriptor> allRateProviderDescriptors() {
+        return List.of(); //TODO: ET-666 - add sample rate provider
+    }
+
+    @Override
+    public IRateProvider createRateProviderInstance(String providerId) {
+        return null; //TODO: ET-666 - add sample rate provider
     }
 }

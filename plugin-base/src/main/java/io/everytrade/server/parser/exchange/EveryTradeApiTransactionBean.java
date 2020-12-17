@@ -17,6 +17,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 
@@ -106,15 +107,15 @@ public class EveryTradeApiTransactionBean {
     }
 
     public TransactionCluster  toTransactionCluster() {
-        final Currency base = Currency.valueOf(this.base);
-        final Currency quote = Currency.valueOf(this.quote);
+        final Currency base = Currency.valueOf(Objects.requireNonNull(this.base));
+        final Currency quote = Currency.valueOf(Objects.requireNonNull(this.quote));
         try {
             new CurrencyPair(base, quote);
         } catch (CurrencyPair.FiatCryptoCombinationException e) {
             throw new DataValidationException(e.getMessage());
         }
 
-        final Currency parsedFeeCurrency = Currency.valueOf(feeCurrency);
+        final Currency parsedFeeCurrency = Currency.valueOf(Objects.requireNonNull(feeCurrency));
         final List<ImportedTransactionBean> related;
         final boolean ignoredFee;
         if (parsedFeeCurrency == base || parsedFeeCurrency == quote) {

@@ -102,7 +102,11 @@ public class EveryTradeConnector implements IConnector {
                 transactionCount += 1 + cluster.getRelated().size();
                 lastDownloadedTxUid = transaction.getUid();
             } catch (Exception e) {
-                log.error("Error converting to ImportedTransactionBean: {}", e.getMessage());
+                log.error(
+                    "Error converting to ImportedTransactionBean: {}: {}",
+                    e.getClass().getName(),
+                    e.getMessage()
+                );
                 log.debug("Exception by converting to ImportedTransactionBean.", e);
                 parsingProblems.add(
                     new ParsingProblem(transaction.toString(), e.getMessage(), PrarsingProblemType.ROW_PARSING_FAILED)
