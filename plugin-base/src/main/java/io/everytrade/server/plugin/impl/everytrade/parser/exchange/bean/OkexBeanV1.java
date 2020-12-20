@@ -138,7 +138,7 @@ public class OkexBeanV1 extends ExchangeBean {
                 pairsBase,           //base
                 pairsQuote,          //quote
                 action,              //action
-                amount,              //base quantity
+                amount.abs(),        //base quantity
                 price                //unit price
             ),
             related
