@@ -41,7 +41,7 @@ dependencies {
     pluginCompile "com.github.charvam:V3-Open-API-SDK:52ae9f193f081aecd746f6d71e1b227ad18f17af"
     //TODO Remove it once ResCU releases a newer version with updated dependency - due to security bugs in the older
     // version used by ResCU
-    pluginCompile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.10.1'
+    pluginCompile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.12.0'
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
     testImplementation project(':plugin-api')
