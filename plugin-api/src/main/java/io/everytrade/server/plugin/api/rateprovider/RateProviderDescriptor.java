@@ -8,10 +8,16 @@ import java.util.Objects;
 public class RateProviderDescriptor {
     private final String id;
     private final List<Currency> currencies;
+    private final int priority; // unix process-style priority (i.e. lower numerical value means higher priority)
 
-    public RateProviderDescriptor(String id, List<Currency> currencies) {
+    public static final int HIGH_PRIORITY = 0;
+    public static final int NORMAL_PRIORITY = 5_000;
+    public static final int LOW_PRIORITY = 10_000;
+
+    public RateProviderDescriptor(String id, List<Currency> currencies, int priority) {
         Objects.requireNonNull(this.id = id);
         this.currencies = List.copyOf(currencies);
+        this.priority = priority;
     }
 
     public String getId() {
@@ -20,6 +26,10 @@ public class RateProviderDescriptor {
 
     public List<Currency> getCurrencies() {
         return currencies;
+    }
+
+    public int getPriority() {
+        return priority;
     }
 
     @Override

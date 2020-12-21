@@ -1,6 +1,5 @@
 package io.everytrade.server.plugin.impl.everytrade.rateprovider;
 
-import com.generalbytes.batm.server.extensions.extra.bitcoin.sources.coinpaprika.CoinPaprikaGlobalResponse;
 import com.generalbytes.batm.server.extensions.extra.bitcoin.sources.coinpaprika.CoinPaprikaHistoricalTickerResponse;
 import com.generalbytes.batm.server.extensions.extra.bitcoin.sources.coinpaprika.CoinPaprikaV1API;
 import io.everytrade.server.model.Currency;
@@ -116,7 +115,8 @@ public final class CoinPaprikaRateProvider implements IRateProvider {
 
     public static final RateProviderDescriptor DESCRIPTOR = new RateProviderDescriptor(
         ID,
-        List.copyOf(COIN_IDS_BY_CURRENCY.keySet())
+        List.copyOf(COIN_IDS_BY_CURRENCY.keySet()),
+        RateProviderDescriptor.HIGH_PRIORITY
     );
 
     public CoinPaprikaRateProvider() {
@@ -270,14 +270,6 @@ public final class CoinPaprikaRateProvider implements IRateProvider {
             }
         }
         LAST_CALL = now;
-    }
-
-    public CoinPaprikaGlobalResponse getGlobal() {
-        try {
-            return api.getGlobal();
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
     }
 
     public static void main(String[] args) {

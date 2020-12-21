@@ -7,9 +7,10 @@ import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
 public enum RateValidity {
-    FOREVER(ChronoField.INSTANT_SECONDS, Instant.MIN.until(Instant.MAX, ChronoUnit.SECONDS)),
+    //keep ordered so that Enum#compareTo is consistent with expected ordering (Duration#compareTo).
+    QUARTER_HOUR(ChronoField.MINUTE_OF_HOUR, 15),
     DAY(ChronoField.DAY_OF_MONTH, 1),
-    QUARTER_HOUR(ChronoField.MINUTE_OF_HOUR, 15);
+    FOREVER(ChronoField.INSTANT_SECONDS, Instant.MIN.until(Instant.MAX, ChronoUnit.SECONDS));
 
     private final ChronoField field;
     private final long count;
