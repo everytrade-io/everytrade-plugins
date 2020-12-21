@@ -10,7 +10,7 @@ import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.connector.IConnector;
 import io.everytrade.server.plugin.api.parser.ParseResult;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
-import io.everytrade.server.plugin.api.parser.PrarsingProblemType;
+import io.everytrade.server.plugin.api.parser.ParsingProblemType;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.EveryTradeApiDigest;
 import org.slf4j.Logger;
@@ -124,7 +124,7 @@ public class GbConnector implements IConnector {
                 log.error("Error converting to ImportedTransactionBean: {}", e.getMessage());
                 log.debug("Exception by converting to ImportedTransactionBean.", e);
                 parsingProblems.add(
-                    new ParsingProblem(transaction.toString(), e.getMessage(), PrarsingProblemType.ROW_PARSING_FAILED)
+                    new ParsingProblem(transaction.toString(), e.getMessage(), ParsingProblemType.ROW_PARSING_FAILED)
                 );
             }
         }

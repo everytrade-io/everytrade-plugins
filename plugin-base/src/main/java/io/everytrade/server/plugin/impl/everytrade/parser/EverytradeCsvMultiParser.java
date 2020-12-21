@@ -7,7 +7,7 @@ import io.everytrade.server.plugin.api.parser.ICsvParser;
 import io.everytrade.server.plugin.api.parser.ParseResult;
 import io.everytrade.server.plugin.api.parser.ParserDescriptor;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
-import io.everytrade.server.plugin.api.parser.PrarsingProblemType;
+import io.everytrade.server.plugin.api.parser.ParsingProblemType;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.EveryTradePlugin;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.UnknownHeaderException;
@@ -64,6 +64,13 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             )
         );
         EXCHANGE_PARSE_DETAILS.put(
+            "Date(UTC),Market,Type,Price,Amount,Total,Fee,Fee Coin",
+            new ExchangeParseDetail(
+                () -> new DefaultUnivocityExchangeSpecificParser(BinanceBeanV1.class, DELIMITER_SEMICOLON),
+                SupportedExchange.BINANCE
+            )
+        );
+        EXCHANGE_PARSE_DETAILS.put(
             "Date(UTC);Pair;Type;Order Price;Order Amount;AvgTrading Price;Filled;Total;status",
             new ExchangeParseDetail(
                 BinanceExchangeSpecificParser::new,
@@ -72,6 +79,13 @@ public class EverytradeCsvMultiParser implements ICsvParser {
         );
         EXCHANGE_PARSE_DETAILS.put(
             "#,PAIR,AMOUNT,PRICE,FEE,FEE CURRENCY,DATE,ORDER ID",
+            new ExchangeParseDetail(
+                BitfinexExchangeSpecificParser::new,
+                SupportedExchange.BITFINEX
+            )
+        );
+        EXCHANGE_PARSE_DETAILS.put(
+            "#,PAIR,AMOUNT,PRICE,FEE,FEE PERC,FEE CURRENCY,DATE,ORDER ID",
             new ExchangeParseDetail(
                 BitfinexExchangeSpecificParser::new,
                 SupportedExchange.BITFINEX
@@ -168,6 +182,20 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             )
         );
         EXCHANGE_PARSE_DETAILS.put(
+            "UID,DATE,SYMBOL,ACTION,QUANTY,PRICE,FEE",
+            new ExchangeParseDetail(
+                () -> new DefaultUnivocityExchangeSpecificParser(EveryTradeBeanV1.class, DELIMITER_COMMA),
+                SupportedExchange.EVERYTRADE
+            )
+        );
+        EXCHANGE_PARSE_DETAILS.put(
+            "UID,DATE,SYMBOL,ACTION,QUANTY,VOLUME,FEE",
+            new ExchangeParseDetail(
+                () -> new DefaultUnivocityExchangeSpecificParser(EveryTradeBeanV2.class, DELIMITER_COMMA),
+                SupportedExchange.EVERYTRADE
+            )
+        );
+        EXCHANGE_PARSE_DETAILS.put(
             "Terminal SN;Server Time;Terminal Time;Local Transaction Id;Remote Transaction Id;Type;Cash Amount;" +
                 "Cash Currency;Crypto Amount;Crypto Currency;Used Discount;Actual Discount (%);Destination Address;" +
                 "Related Remote Transaction Id;Identity;Status;Phone Number;Transaction Detail;Transaction Note;" +
@@ -204,6 +232,14 @@ public class EverytradeCsvMultiParser implements ICsvParser {
         );
         EXCHANGE_PARSE_DETAILS.put(
             "txid,ordertxid,pair,time,type,ordertype,price,cost,fee,vol,margin,misc,ledgers",
+            new ExchangeParseDetail(
+                () -> new DefaultUnivocityExchangeSpecificParser(KrakenBeanV1.class),
+                SupportedExchange.KRAKEN
+            )
+        );
+        EXCHANGE_PARSE_DETAILS.put(
+            "\"txid\",\"ordertxid\",\"pair\",\"time\",\"type\",\"ordertype\",\"price\",\"cost\",\"fee\",\"vol\"," +
+                "\"margin\",\"misc\",\"ledgers\"",
             new ExchangeParseDetail(
                 () -> new DefaultUnivocityExchangeSpecificParser(KrakenBeanV1.class),
                 SupportedExchange.KRAKEN
@@ -287,16 +323,29 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 transactionClusters.add(transactionCluster);
             } catch (DataValidationException e) {
                 parsingProblems.add(
-                    new ParsingProblem(p.rowToString(), e.getMessage(), PrarsingProblemType.ROW_PARSING_FAILED)
+                    new ParsingProblem(p.rowToString(), e.getMessage(), ParsingProblemType.ROW_PARSING_FAILED)
                 );
             }
         }
 
-        log.info("{} transaction(s) parsed successfully.", transactionClusters.size());
+
+        log.info(
+            "{} transaction cluster(s) with {} transactions parsed successfully.",
+            transactionClusters.size(),
+            countTransactions(transactionClusters)
+        );
         if (!parsingProblems.isEmpty()) {
             log.warn("{} row(s) not parsed.", parsingProblems.size());
         }
 
         return new ParseResult(transactionClusters, parsingProblems);
+    }
+
+    private int countTransactions(List<TransactionCluster> transactionClusters) {
+        int counter = 0;
+        for (TransactionCluster transactionCluster : transactionClusters) {
+            counter = counter + 1 + transactionCluster.getRelated().size();
+        }
+        return counter;
     }
 }

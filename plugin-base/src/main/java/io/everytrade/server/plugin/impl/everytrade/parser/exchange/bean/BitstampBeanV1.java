@@ -97,7 +97,7 @@ public class BitstampBeanV1 extends ExchangeBean {
         } else {
             related = List.of(
                 new FeeRebateImportedTransactionBean(
-                    FEE_UID_PART,
+                    null,
                     dateTime,
                     amountCurrency,
                     valueCurrency,

@@ -15,7 +15,6 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 
-import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.UNSUPPORTED_CURRENCY_PAIR;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.HuobiBeanV1.UNSUPPORTED_TYPE;
@@ -54,7 +53,7 @@ class HuobiBeanV1Test {
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
-                    FEE_UID_PART,
+                    null,
                     Instant.parse("2020-03-31T21:31:43Z"),
                     Currency.LTC,
                     Currency.BTC,
@@ -85,7 +84,7 @@ class HuobiBeanV1Test {
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
-                    FEE_UID_PART,
+                    null,
                     Instant.parse("2020-03-31T21:31:43Z"),
                     Currency.LTC,
                     Currency.BTC,
@@ -117,7 +116,7 @@ class HuobiBeanV1Test {
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
-                    FEE_UID_PART,
+                    null,
                     Instant.parse("2020-03-31T21:31:24Z"),
                     Currency.LTC,
                     Currency.BTC,
@@ -148,7 +147,7 @@ class HuobiBeanV1Test {
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
-                    FEE_UID_PART,
+                    null,
                     Instant.parse("2020-03-31T21:31:24Z"),
                     Currency.LTC,
                     Currency.BTC,
@@ -213,7 +212,7 @@ class HuobiBeanV1Test {
     void testIgnoredFee() {
         final String row = "2020-03-31 21:31:24,Exchange,LTC/BTC,Sell,0.006036,0.7362,0.0044,0.00000888XXX,\n";
         final TransactionCluster transactionCluster = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
-        assertEquals(1, transactionCluster.getIgnoredFeeTransactions());
+        assertEquals(1, transactionCluster.getIgnoredFeeTransactionCount());
     }
 
     @Test

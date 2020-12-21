@@ -93,10 +93,10 @@ public class Tester {
         testConnectors(plugin);
         log.info("done testing connectors");
         log.info("--------------------------------------------------------------------------------");
-//        log.info("testing parsers...");
-//        testParsers(plugin);
-//        log.info("done testing parsers");
-//        log.info("--------------------------------------------------------------------------------");
+        log.info("testing parsers...");
+        testParsers(plugin);
+        log.info("done testing parsers");
+        log.info("--------------------------------------------------------------------------------");
         log.info("testing rate providers...");
         testRateProviders(plugin);
         log.info("done testing rate providers");

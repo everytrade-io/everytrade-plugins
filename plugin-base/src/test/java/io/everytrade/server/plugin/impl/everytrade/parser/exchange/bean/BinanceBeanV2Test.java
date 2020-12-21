@@ -15,7 +15,6 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 
-import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.UNSUPPORTED_CURRENCY_PAIR;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -81,7 +80,7 @@ class BinanceBeanV2Test {
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
-                    FEE_UID_PART,
+                    null,
                     Instant.parse("2020-03-19T17:02:52Z"),
                     Currency.BTC,
                     Currency.USDT,
@@ -115,7 +114,7 @@ class BinanceBeanV2Test {
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
-                    FEE_UID_PART,
+                    null,
                     Instant.parse("2020-03-19T17:02:52Z"),
                     Currency.BTC,
                     Currency.USDT,
@@ -172,7 +171,7 @@ class BinanceBeanV2Test {
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
-                    FEE_UID_PART,
+                    null,
                     Instant.parse("2020-03-19T17:02:52Z"),
                     Currency.BTC,
                     Currency.USDT,
@@ -206,7 +205,7 @@ class BinanceBeanV2Test {
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
-                    FEE_UID_PART,
+                    null,
                     Instant.parse("2020-03-19T17:02:52Z"),
                     Currency.BTC,
                     Currency.USDT,
@@ -240,7 +239,7 @@ class BinanceBeanV2Test {
         final String row2 = ";2020-03-19 17:02:52;6236.39;0.041600;259.43382400;0.1612653BNB;;;\n";
         final TransactionCluster transactionCluster
             = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row0 + row1 + row2);
-        assertEquals(1, transactionCluster.getIgnoredFeeTransactions());
+        assertEquals(1, transactionCluster.getIgnoredFeeTransactionCount());
     }
 
     @Test

@@ -4,7 +4,7 @@ import com.okcoin.commons.okex.open.api.bean.spot.result.OrderInfo;
 import io.everytrade.server.parser.exchange.OkexApiTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParseResult;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
-import io.everytrade.server.plugin.api.parser.PrarsingProblemType;
+import io.everytrade.server.plugin.api.parser.ParsingProblemType;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +29,7 @@ public class OkexConnectorParser {
                 LOG.error("Error converting to ImportedTransactionBean: {}", e.getMessage());
                 LOG.debug("Exception by converting to ImportedTransactionBean.", e);
                 parsingProblems.add(
-                    new ParsingProblem(orderInfo.toString(), e.getMessage(), PrarsingProblemType.ROW_PARSING_FAILED)
+                    new ParsingProblem(orderInfo.toString(), e.getMessage(), ParsingProblemType.ROW_PARSING_FAILED)
                 );
             }
         }

@@ -7,13 +7,16 @@ import io.everytrade.server.model.SupportedExchange;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import org.knowm.xchange.dto.Order;
 import org.knowm.xchange.dto.trade.UserTrade;
 import org.knowm.xchange.instrument.Instrument;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
@@ -54,6 +57,22 @@ public class XChangeApiTransactionBean {
         } catch (CurrencyPair.FiatCryptoCombinationException e) {
             throw new DataValidationException(e.getMessage());
         }
+        final boolean isIgnoredFee = !(base.equals(feeCurrency) || quote.equals(feeCurrency));
+        List<ImportedTransactionBean> related;
+        if (ParserUtils.equalsToZero(feeAmount) || isIgnoredFee) {
+            related = Collections.emptyList();
+        } else {
+            related = List.of(new FeeRebateImportedTransactionBean(
+                    id + FEE_UID_PART,
+                    timestamp,
+                    base,
+                    quote,
+                    TransactionType.FEE,
+                    feeAmount,
+                    feeCurrency
+                )
+            );
+        }
 
         return new TransactionCluster(
             new BuySellImportedTransactionBean(
@@ -65,16 +84,8 @@ public class XChangeApiTransactionBean {
                 originalAmount,
                 price
             ),
-            List.of(new FeeRebateImportedTransactionBean(
-                    id + FEE_UID_PART,
-                    timestamp,
-                    base,
-                    quote,
-                    TransactionType.FEE,
-                    feeAmount,
-                    feeCurrency
-                )
-            )
+            related,
+            isIgnoredFee ? 1 : 0
         );
     }
 

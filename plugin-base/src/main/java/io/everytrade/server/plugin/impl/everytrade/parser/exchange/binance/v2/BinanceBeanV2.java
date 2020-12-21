@@ -90,7 +90,7 @@ public class BinanceBeanV2 extends ExchangeBean {
         } else {
             related = List.of(
                 new FeeRebateImportedTransactionBean(
-                    FEE_UID_PART,
+                    null,
                     date,
                     pairBase,
                     pairQuote,

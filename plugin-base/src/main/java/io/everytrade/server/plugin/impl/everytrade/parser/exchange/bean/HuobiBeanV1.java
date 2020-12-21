@@ -42,7 +42,7 @@ public class HuobiBeanV1 extends ExchangeBean {
     @Parsed(field = "Type")
     public void setType(String value) {
         if (!"Exchange".equals(value)) {
-            throw new DataValidationException(String.format(UNSUPPORTED_TYPE.concat(value)));
+            throw new DataValidationException(UNSUPPORTED_TYPE.concat(value));
         }
     }
 
@@ -74,7 +74,7 @@ public class HuobiBeanV1 extends ExchangeBean {
     public void setFee(String value) {
         feeCurrency = findEnds(value);
         if (feeCurrency != null) {
-            final String feeValue = value.replaceAll("[A-Z,\\s\\$]", "");
+            final String feeValue = value.replaceAll("[A-Z,\\s$]", "");
             fee = new BigDecimal(feeValue);
         }
     }
@@ -95,7 +95,7 @@ public class HuobiBeanV1 extends ExchangeBean {
         } else {
             related = List.of(
                 new FeeRebateImportedTransactionBean(
-                    FEE_UID_PART,
+                    null,
                     time,
                     pairBase,
                     pairQuote,

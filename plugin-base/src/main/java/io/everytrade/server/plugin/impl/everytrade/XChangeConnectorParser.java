@@ -4,7 +4,7 @@ import io.everytrade.server.model.SupportedExchange;
 import io.everytrade.server.parser.exchange.XChangeApiTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParseResult;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
-import io.everytrade.server.plugin.api.parser.PrarsingProblemType;
+import io.everytrade.server.plugin.api.parser.ParsingProblemType;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import org.knowm.xchange.dto.trade.UserTrade;
 import org.slf4j.Logger;
@@ -31,7 +31,7 @@ public class XChangeConnectorParser {
                 LOG.error("Error converting to ImportedTransactionBean: {}", e.getMessage());
                 LOG.debug("Exception by converting to ImportedTransactionBean.", e);
                 parsingProblems.add(
-                    new ParsingProblem(userTrade.toString(), e.getMessage(), PrarsingProblemType.ROW_PARSING_FAILED)
+                    new ParsingProblem(userTrade.toString(), e.getMessage(), ParsingProblemType.ROW_PARSING_FAILED)
                 );
             }
         }
