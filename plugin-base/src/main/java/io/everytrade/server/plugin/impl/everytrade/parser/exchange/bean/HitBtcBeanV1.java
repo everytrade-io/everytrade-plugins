@@ -86,7 +86,7 @@ public class HitBtcBeanV1 extends ExchangeBean {
                     instrumentBase,
                     instrumentQuote,
                     TransactionType.FEE,
-                    fee,
+                    fee.abs(),
                     instrumentQuote
                 )
             );
@@ -99,7 +99,7 @@ public class HitBtcBeanV1 extends ExchangeBean {
                     instrumentBase,
                     instrumentQuote,
                     TransactionType.REBATE,
-                    rebate,
+                    rebate.abs(),
                     instrumentQuote
                 )
             );
