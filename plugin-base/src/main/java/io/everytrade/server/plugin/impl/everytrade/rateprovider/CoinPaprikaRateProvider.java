@@ -49,8 +49,7 @@ public final class CoinPaprikaRateProvider implements IRateProvider {
     private static final Logger LOG = LoggerFactory.getLogger(CoinPaprikaRateProvider.class);
     private static Instant LAST_CALL = Instant.now();
 
-    public static final String ORIGIN = "CoinPaprika";
-    public static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "etApiConnector";
+    public static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "coinPaprika";
 
     static {
         // coin ids can be viewed at https://api.coinpaprika.com/v1/coins
