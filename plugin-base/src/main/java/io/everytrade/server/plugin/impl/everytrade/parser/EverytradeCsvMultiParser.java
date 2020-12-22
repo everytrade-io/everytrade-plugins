@@ -154,6 +154,15 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             )
         );
         EXCHANGE_PARSE_DETAILS.put(
+            "ID;Date;Account;Type;Amount;Amount Currency;Price;Price Currency;Fee;Fee Currency;Total;Total Currency;" +
+                "Description;Status;First balance after;First balance after Currency;Second balance after;" +
+                "Second balance after Currency",
+            new ExchangeParseDetail(
+                () -> new DefaultUnivocityExchangeSpecificParser(CoinmateBeanV1.class, DELIMITER_SEMICOLON),
+                SupportedExchange.COINMATE
+            )
+        );
+        EXCHANGE_PARSE_DETAILS.put(
             "?Transaction id;Date;Email;Name;Type;Type detail;Currency amount;Amount;Currency price;Price;" +
                 "Currency fee;Fee;Currency total;Total;Description;Status;Currency first balance after;" +
                 "First balance after;Currency second balance after;Second balance after",
