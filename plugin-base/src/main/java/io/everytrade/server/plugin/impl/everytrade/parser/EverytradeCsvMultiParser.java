@@ -21,6 +21,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BitmexBe
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BitstampBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexBeanV2;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexBeanV3;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinmateBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinmateBeanV2;
@@ -126,6 +127,14 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 + "IsConditional,Condition,ConditionTarget,ImmediateOrCancel,Closed",
             new ExchangeParseDetail(
                 () -> new DefaultUnivocityExchangeSpecificParser(BittrexBeanV2.class),
+                SupportedExchange.BITTREX
+            )
+        );
+        EXCHANGE_PARSE_DETAILS.put(
+            "Uuid,Exchange,TimeStamp,OrderType,Limit,Quantity,QuantityRemaining,Commission,Price,PricePerUnit," +
+                "IsConditional,Condition,ConditionTarget,ImmediateOrCancel,Closed,TimeInForceTypeId,TimeInForce",
+            new ExchangeParseDetail(
+                () -> new DefaultUnivocityExchangeSpecificParser(BittrexBeanV3.class),
                 SupportedExchange.BITTREX
             )
         );
