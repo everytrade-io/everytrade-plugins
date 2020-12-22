@@ -21,6 +21,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BitmexBe
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BitstampBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexBeanV2;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexBeanV3;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinmateBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinmateBeanV2;
@@ -130,6 +131,14 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             )
         );
         EXCHANGE_PARSE_DETAILS.put(
+            "Uuid,Exchange,TimeStamp,OrderType,Limit,Quantity,QuantityRemaining,Commission,Price,PricePerUnit," +
+                "IsConditional,Condition,ConditionTarget,ImmediateOrCancel,Closed,TimeInForceTypeId,TimeInForce",
+            new ExchangeParseDetail(
+                () -> new DefaultUnivocityExchangeSpecificParser(BittrexBeanV3.class),
+                SupportedExchange.BITTREX
+            )
+        );
+        EXCHANGE_PARSE_DETAILS.put(
             "portfolio,trade id,product,side,created at,size,size unit,price,fee,total,price/fee/total unit",
             new ExchangeParseDetail(
                 () -> new DefaultUnivocityExchangeSpecificParser(CoinbaseBeanV1.class),
@@ -139,6 +148,15 @@ public class EverytradeCsvMultiParser implements ICsvParser {
         EXCHANGE_PARSE_DETAILS.put(
             "ID;Date;Type;Amount;Amount Currency;Price;Price Currency;Fee;Fee Currency;Total;" +
                 "Total Currency;Description;Status",
+            new ExchangeParseDetail(
+                () -> new DefaultUnivocityExchangeSpecificParser(CoinmateBeanV1.class, DELIMITER_SEMICOLON),
+                SupportedExchange.COINMATE
+            )
+        );
+        EXCHANGE_PARSE_DETAILS.put(
+            "ID;Date;Account;Type;Amount;Amount Currency;Price;Price Currency;Fee;Fee Currency;Total;Total Currency;" +
+                "Description;Status;First balance after;First balance after Currency;Second balance after;" +
+                "Second balance after Currency",
             new ExchangeParseDetail(
                 () -> new DefaultUnivocityExchangeSpecificParser(CoinmateBeanV1.class, DELIMITER_SEMICOLON),
                 SupportedExchange.COINMATE
