@@ -37,7 +37,7 @@ import java.util.Properties;
 
 public class Tester {
     public static final String TEMPLATE_FILE_SUFFIX = ".template";
-    private static final String EMULATED_EVERYTRADE_VERSION = "20201023";
+    private static final String EMULATED_EVERYTRADE_VERSION = "20201223";
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     private final Path workDir;
     private final Path pluginDir;
@@ -90,7 +90,7 @@ public class Tester {
         log.info("testing plugin " + plugin.getId());
         log.info("--------------------------------------------------------------------------------");
         log.info("testing connectors...");
-        testConnectors(plugin);
+//        testConnectors(plugin);
         log.info("done testing connectors");
         log.info("--------------------------------------------------------------------------------");
         log.info("testing parsers...");
@@ -105,7 +105,7 @@ public class Tester {
     }
 
     private void testRateProviders(IPlugin plugin) {
-        final Instant now = Instant.parse("2020-01-01T00:00:00Z");
+        final Instant now = Instant.parse("2020-12-23T00:00:00Z");
         final List<RateProviderDescriptor> providerDescriptors = plugin.allRateProviderDescriptors();
         for (RateProviderDescriptor rateProviderDescriptor : providerDescriptors) {
             log.info("rateProviderDescriptor = " + rateProviderDescriptor);

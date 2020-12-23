@@ -9,6 +9,7 @@ import io.everytrade.server.plugin.api.parser.ParserDescriptor;
 import io.everytrade.server.plugin.api.rateprovider.IRateProvider;
 import org.pf4j.Extension;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -25,6 +26,10 @@ public class ExamplePlugin implements IPlugin {
     private static final Map<String, ParserDescriptor> PARSERS_BY_ID = Set.of(
         ExampleParser.DESCRIPTOR
     ).stream().collect(Collectors.toMap(ParserDescriptor::getId, it -> it));
+
+    private static final Map<String, RateProviderDescriptor> RATE_PROVIDERS_BY_ID = Set.of(
+        ExampleRateProvider.DESCRIPTOR
+    ).stream().collect(Collectors.toMap(RateProviderDescriptor::getId, it -> it));;
 
     @Override
     public String getId() {
@@ -64,11 +69,14 @@ public class ExamplePlugin implements IPlugin {
 
     @Override
     public List<RateProviderDescriptor> allRateProviderDescriptors() {
-        return List.of(); //TODO: ET-666 - add sample rate provider
+        return List.copyOf(RATE_PROVIDERS_BY_ID.values());
     }
 
     @Override
     public IRateProvider createRateProviderInstance(String providerId) {
-        return null; //TODO: ET-666 - add sample rate provider
+        if (providerId.equals(ExampleRateProvider.DESCRIPTOR.getId())) {
+            return new ExampleRateProvider();
+        }
+        return null;
     }
 }
