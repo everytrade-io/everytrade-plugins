@@ -9,13 +9,19 @@ import java.util.Set;
 
 public final class CurrencyPair implements Comparable<CurrencyPair>{
 
-    public enum CurrencyPosition {BASE, QUOTE}
+    private final Currency base;
+    private final Currency quote;
 
     private static final Set<Currency> ALLOWED_CRYPTO_QUOTES =
         Set.of(Currency.USDT, Currency.BTC, Currency.ETH, Currency.BNB);
 
-    private final Currency base;
-    private final Currency quote;
+    public enum CurrencyPosition {BASE, QUOTE}
+    public static final Comparator<CurrencyPair> COMPARATOR =
+        Comparator
+            .comparing(CurrencyPair::getBase)
+            .thenComparing(CurrencyPair::getQuote);
+
+
 
     public CurrencyPair(String base, String quote) {
         this(Currency.valueOf(base), Currency.valueOf(quote));
@@ -93,9 +99,7 @@ public final class CurrencyPair implements Comparable<CurrencyPair>{
 
     @Override
     public int compareTo(CurrencyPair currencyPair) {
-        return Comparator.comparing(CurrencyPair::getBase)
-            .thenComparing(CurrencyPair::getQuote)
-            .compare(this, currencyPair);
+        return COMPARATOR.compare(this, currencyPair);
     }
 
 

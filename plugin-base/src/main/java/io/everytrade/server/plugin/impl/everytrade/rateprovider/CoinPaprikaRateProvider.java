@@ -40,8 +40,6 @@ import java.util.concurrent.TimeUnit;
 public final class CoinPaprikaRateProvider implements IRateProvider {
     private final CoinPaprikaV1API api;
 
-    public static final RateValidity MIN_RATE_VALIDITY = RateValidity.QUARTER_HOUR;
-
     private static final Map<Currency, String> COIN_IDS_BY_CURRENCY = new EnumMap<>(Currency.class);
     private static final Map<Currency, Instant> LISTING_START_BY_CURRENCY = new EnumMap<>(Currency.class);
     private static final Set<Currency> SUPPORTED_QUOTES = new HashSet<>();
@@ -49,6 +47,7 @@ public final class CoinPaprikaRateProvider implements IRateProvider {
     private static final Logger LOG = LoggerFactory.getLogger(CoinPaprikaRateProvider.class);
     private static Instant LAST_CALL = Instant.now();
 
+    public static final RateValidity MIN_RATE_VALIDITY = RateValidity.QUARTER_HOUR;
     public static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "coinPaprika";
 
     static {
@@ -64,6 +63,15 @@ public final class CoinPaprikaRateProvider implements IRateProvider {
         COIN_IDS_BY_CURRENCY.put(Currency.USDT, "usdt-tether");
         COIN_IDS_BY_CURRENCY.put(Currency.BNB, "bnb-binance-coin");
         COIN_IDS_BY_CURRENCY.put(Currency.LINK, "link-chainlink");
+        COIN_IDS_BY_CURRENCY.put(Currency.IOTA, "miota-iota");
+        COIN_IDS_BY_CURRENCY.put(Currency.TRX, "trx-tron");
+        COIN_IDS_BY_CURRENCY.put(Currency.USDC, "usdc-usd-coin");
+        COIN_IDS_BY_CURRENCY.put(Currency.XTZ, "xtz-tezos");
+        COIN_IDS_BY_CURRENCY.put(Currency.XLM, "xlm-stellar");
+        COIN_IDS_BY_CURRENCY.put(Currency.ADA, "ada-cardano");
+        COIN_IDS_BY_CURRENCY.put(Currency.EOS, "eos-eos");
+        COIN_IDS_BY_CURRENCY.put(Currency.DOT, "dot-polkadot");
+        COIN_IDS_BY_CURRENCY.put(Currency.ETC, "eos-eos");
 
         LISTING_START_BY_CURRENCY.put(Currency.BTC, Instant.parse("2013-04-28T18:45:00Z"));
         LISTING_START_BY_CURRENCY.put(Currency.ETH, Instant.parse("2015-08-07T14:45:00Z"));
@@ -76,37 +84,15 @@ public final class CoinPaprikaRateProvider implements IRateProvider {
         LISTING_START_BY_CURRENCY.put(Currency.USDT, Instant.parse("2015-03-06T13:05:00Z"));
         LISTING_START_BY_CURRENCY.put(Currency.BNB, Instant.parse("2017-07-25T04:30:00Z"));
         LISTING_START_BY_CURRENCY.put(Currency.LINK, Instant.parse("2017-09-21T04:30:00Z"));
-
-        // Rates with earliest timestamp available:
-        //        BTC/USD = Rate{value=135.3, base='BTC', quote='USD', instant=2013-04-28T18:45:00Z}
-        //        BTC/BTC = Rate{value=1, base='BTC', quote='BTC', instant=2009-01-03T00:00:00Z}
-
-        //        ETH/USD = Rate{value=2.83, base='ETH', quote='USD', instant=2015-08-07T14:45:00Z}
-        //        ETH/BTC = Rate{value=0.0101411, base='ETH', quote='BTC', instant=2015-08-07T14:45:00Z}
-
-        //        LTC/USD = Rate{value=4.3, base='LTC', quote='USD', instant=2013-04-28T18:45:00Z}
-        //        LTC/BTC = Rate{value=0.0316211, base='LTC', quote='BTC', instant=2013-04-28T18:45:00Z}
-
-        //        BCH/USD = Rate{value=299.21, base='BCH', quote='USD', instant=2017-08-01T05:45:00Z}
-        //        BCH/BTC = Rate{value=0.103046, base='BCH', quote='BTC', instant=2017-08-01T05:45:00Z}
-
-        //        XRP/USD = Rate{value=0.005874, base='XRP', quote='USD', instant=2013-08-04T18:50:00Z}
-        //        XRP/BTC = Rate{value=0.000056, base='XRP', quote='BTC', instant=2013-08-04T18:50:00Z}
-
-        //        XMR/USD = Rate{value=1.83, base='XMR', quote='USD', instant=2014-05-21T09:30:00Z}
-        //        XMR/BTC = Rate{value=0.003712, base='XMR', quote='BTC', instant=2014-05-21T09:30:00Z}
-
-        //        DAI/USD = Rate{value=0.915159, base='DAI', quote='USD', instant=2017-12-27T01:30:00Z}
-        //        DAI/BTC = Rate{value=0.000057, base='DAI', quote='BTC', instant=2017-12-27T01:30:00Z}
-
-        //        DASH/USD = Rate{value=0.213954, base='DASH', quote='USD', instant=2014-02-14T13:50:00Z}
-        //        DASH/BTC = Rate{value=0.000341, base='DASH', quote='BTC', instant=2014-02-14T13:50:00Z}
-
-        //        USDT/USD = Rate{value=1, base=USDT, quote=USD, timestamp=2015-03-06T13:05:00Z, sourceType=MARKET}
-        //        USDT/USD = Rate{value=0, base=USDT, quote=BTC, timestamp=2015-03-06T13:05:00Z, sourceType=MARKET}
-
-        //        BNB/USD = Rate{value=0.000042, base=BNB, quote=BTC, timestamp=2017-07-25T04:30:00Z, sourceType=MARKET}
-        //        BNB/BTC = Rate{value=0.000042, base=BNB, quote=BTC, timestamp=2017-07-25T04:30:00Z, sourceType=MARKET}
+        LISTING_START_BY_CURRENCY.put(Currency.IOTA, Instant.parse("2017-06-20T00:00:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency.TRX, Instant.parse("2017-09-14T00:00:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency.USDC, Instant.parse("2018-10-10T00:00:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency.XTZ, Instant.parse("2017-10-03T00:00:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency.XLM, Instant.parse("2014-08-06T00:00:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency.ADA, Instant.parse("2017-10-01T21:30:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency.EOS, Instant.parse("2017-07-02T00:00:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency.DOT, Instant.parse("2020-08-22T00:00:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency.ETC, Instant.parse("2017-07-02T00:00:00Z"));
 
         SUPPORTED_QUOTES.add(Currency.USD);
         SUPPORTED_QUOTES.add(Currency.BTC);
@@ -273,18 +259,11 @@ public final class CoinPaprikaRateProvider implements IRateProvider {
 
     public static void main(String[] args) {
         final CoinPaprikaRateProvider coinPaprikaRateSource = new CoinPaprikaRateProvider();
-        final CurrencyPair pair = new CurrencyPair("LINK", "USD");
-        final Instant instant = Instant.parse("2017-12-24T18:00:00.00Z");
-        System.out.println("instant = " + instant);
-        final Currency base = pair.getBase();
-        final Currency quote = pair.getQuote();
-        Rate rate = coinPaprikaRateSource.getRate(base, quote, instant);
-
-        System.out.println("rate = " + rate);
-        Instant now1 = Instant.now();
-        Instant now2 = Instant.now();
-        System.out.println("now1 = " + now1);
-        System.out.println("now2 = " + now2);
-        System.out.println("Duration.between(now2,now1).isNegative() = " + Duration.between(now2, now1).isNegative());
+        for (Currency base : Set.of(Currency.ADA)) {
+            for (Currency quote : Set.of(Currency.USD, Currency.BTC)) {
+                final Rate rate = coinPaprikaRateSource.getRate(base, quote, Instant.parse("2020-01-01T00:00:00Z"));
+                System.out.println("rate = " + rate);
+            }
+        }
     }
 }
