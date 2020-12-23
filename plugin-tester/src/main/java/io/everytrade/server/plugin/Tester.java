@@ -90,7 +90,7 @@ public class Tester {
         log.info("testing plugin " + plugin.getId());
         log.info("--------------------------------------------------------------------------------");
         log.info("testing connectors...");
-//        testConnectors(plugin);
+        testConnectors(plugin);
         log.info("done testing connectors");
         log.info("--------------------------------------------------------------------------------");
         log.info("testing parsers...");
