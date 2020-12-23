@@ -1,6 +1,9 @@
 package io.everytrade.server.model;
 
-//TODO: duplicate information with Exchange?
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
 public enum SupportedExchange {
     BITSTAMP("Bitstamp", "bitstamp"),
     BITTREX("Bittrex", "bittrex"),
@@ -25,6 +28,21 @@ public enum SupportedExchange {
     private final String displayName;
     private final String internalId;
 
+    private static final Map<String, SupportedExchange> BY_ID;
+
+    static {
+        BY_ID = new HashMap<>();
+        for (SupportedExchange value : values()) {
+            final SupportedExchange previousMapping = BY_ID.put(value.internalId, value);
+            if (previousMapping != null) {
+                throw new IllegalStateException(
+                    String.format(
+                        "Multiple constants map to '%s': '%s', '%s'.", value.internalId, value, previousMapping)
+                );
+            }
+        }
+    }
+
     SupportedExchange(String displayName, String internalId) {
         this.displayName = displayName;
         this.internalId = internalId;
@@ -36,5 +54,9 @@ public enum SupportedExchange {
 
     public String getInternalId() {
         return internalId;
+    }
+
+    public static Optional<SupportedExchange> fromId(String id) {
+        return Optional.ofNullable(BY_ID.get(id));
     }
 }

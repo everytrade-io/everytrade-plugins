@@ -1,6 +1,8 @@
 package io.everytrade.server.plugin;
 
+import io.everytrade.server.model.Currency;
 import io.everytrade.server.plugin.api.IPlugin;
+import io.everytrade.server.plugin.api.rateprovider.RateProviderDescriptor;
 import io.everytrade.server.plugin.api.connector.ConnectorDescriptor;
 import io.everytrade.server.plugin.api.connector.ConnectorParameterDescriptor;
 import io.everytrade.server.plugin.api.connector.DownloadResult;
@@ -10,6 +12,8 @@ import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParseResult;
 import io.everytrade.server.plugin.api.parser.ParserDescriptor;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.plugin.api.rateprovider.IRateProvider;
+import io.everytrade.server.plugin.api.rateprovider.Rate;
 import io.everytrade.server.plugin.support.EverytradePluginManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +27,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +37,7 @@ import java.util.Properties;
 
 public class Tester {
     public static final String TEMPLATE_FILE_SUFFIX = ".template";
-    private static final String EMULATED_EVERYTRADE_VERSION = "20201023";
+    private static final String EMULATED_EVERYTRADE_VERSION = "20201223";
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     private final Path workDir;
     private final Path pluginDir;
@@ -77,13 +82,51 @@ public class Tester {
         for (IPlugin plugin : plugins) {
             testPlugin(plugin);
         }
+        log.info("================================================================================");
     }
 
     private void testPlugin(IPlugin plugin) {
-        log.info("plugin = " + plugin.getId());
+        log.info("================================================================================");
+        log.info("testing plugin " + plugin.getId());
+        log.info("--------------------------------------------------------------------------------");
+        log.info("testing connectors...");
         testConnectors(plugin);
-
+        log.info("done testing connectors");
+        log.info("--------------------------------------------------------------------------------");
+        log.info("testing parsers...");
         testParsers(plugin);
+        log.info("done testing parsers");
+        log.info("--------------------------------------------------------------------------------");
+        log.info("testing rate providers...");
+        testRateProviders(plugin);
+        log.info("done testing rate providers");
+        log.info("--------------------------------------------------------------------------------");
+        log.info("done testing plugin " + plugin.getId());
+    }
+
+    private void testRateProviders(IPlugin plugin) {
+        final Instant now = Instant.parse("2020-12-23T00:00:00Z");
+        final List<RateProviderDescriptor> providerDescriptors = plugin.allRateProviderDescriptors();
+        for (RateProviderDescriptor rateProviderDescriptor : providerDescriptors) {
+            log.info("rateProviderDescriptor = " + rateProviderDescriptor);
+            final IRateProvider rateProvider = plugin.createRateProviderInstance(rateProviderDescriptor.getId());
+            for (Currency currency : rateProviderDescriptor.getCurrencies()) {
+                final Rate rateBtc = rateProvider.getRate(currency, Currency.BTC, now);
+                if (rateBtc == null) {
+                    log.error("Returned null for rate query {}/{} @ {}", currency, Currency.BTC, now);
+                } else {
+                    log.info("{}/{} rate: {}", rateBtc.getBase(), rateBtc.getQuote(), rateBtc);
+                }
+
+                final Rate rateUsd = rateProvider.getRate(currency, Currency.USD, now);
+                if (rateUsd == null) {
+                    log.error("Returned null for rate query {}/{} @ {}", currency, Currency.USD, now);
+                } else {
+                    log.info("{}/{} rate: {}", rateUsd.getBase(), rateUsd.getQuote(), rateUsd);
+                }
+            }
+        }
+
     }
 
     private void testParsers(IPlugin plugin) {
@@ -209,7 +252,7 @@ public class Tester {
         log.info("importedTransactionBeans = \n" + stringBuilder.toString());
 
         //TODO check if is human readable
-        log.info("parsingProblems = {}\n", parseResult.getParsingProblems());
+        log.info("parsingProblems = {}", parseResult.getParsingProblems());
 
     }
 

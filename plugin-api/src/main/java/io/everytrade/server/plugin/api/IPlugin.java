@@ -4,6 +4,8 @@ import io.everytrade.server.plugin.api.connector.ConnectorDescriptor;
 import io.everytrade.server.plugin.api.connector.IConnector;
 import io.everytrade.server.plugin.api.parser.ICsvParser;
 import io.everytrade.server.plugin.api.parser.ParserDescriptor;
+import io.everytrade.server.plugin.api.rateprovider.IRateProvider;
+import io.everytrade.server.plugin.api.rateprovider.RateProviderDescriptor;
 import org.pf4j.ExtensionPoint;
 
 import java.util.List;
@@ -39,7 +41,29 @@ public interface IPlugin extends ExtensionPoint {
      */
     IConnector createConnectorInstance(String connectorId, Map<String, String> parameters);
 
+    /**
+     * Gets all parser descriptors.
+     * @return list of descriptors for each of the plugin's parsers.
+     */
     List<ParserDescriptor> allParserDescriptors();
 
+    /**
+     * Instantiates a new parser.
+     * @param parserId parser ID
+     * @return a new parser instance
+     */
     ICsvParser createParserInstance(String parserId);
+
+    /**
+     * Gets all rate provider descriptors.
+     * @return list of descriptors for each of the plugin's conversion rate provider.
+     */
+    List<RateProviderDescriptor> allRateProviderDescriptors();
+
+    /**
+     * Instantiates a new conversion rate provider.
+     * @param providerId rate provider ID
+     * @return a new rate provider instance
+     */
+    IRateProvider createRateProviderInstance(String providerId);
 }

@@ -1,12 +1,15 @@
 package io.everytrade.server.plugin.impl.generalbytes;
 
 import io.everytrade.server.plugin.api.IPlugin;
+import io.everytrade.server.plugin.api.rateprovider.RateProviderDescriptor;
 import io.everytrade.server.plugin.api.connector.ConnectorDescriptor;
 import io.everytrade.server.plugin.api.connector.IConnector;
 import io.everytrade.server.plugin.api.parser.ICsvParser;
 import io.everytrade.server.plugin.api.parser.ParserDescriptor;
+import io.everytrade.server.plugin.api.rateprovider.IRateProvider;
 import org.pf4j.Extension;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,6 +54,16 @@ public class GbPlugin implements IPlugin {
 
     @Override
     public ICsvParser createParserInstance(String parserId) {
+        return null;
+    }
+
+    @Override
+    public List<RateProviderDescriptor> allRateProviderDescriptors() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public IRateProvider createRateProviderInstance(String providerId) {
         return null;
     }
 }

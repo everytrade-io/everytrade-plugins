@@ -2,53 +2,69 @@
 
 ## Enhance an existing module with new components
 1. Fork this repository.
-1. Implement your plugin in `plugin-base` OR just use an already existing plugin and add just the new functionality
-   (e.g. a new connector or new parser). In any case, you can use the template classes in `plugin-template` module. If
-    you don't want
-   to add a new plugin but use an existing plugin as parent instead, don't forget to change the parent plugin's code
-   to include/reference your new functionality where appropriate.
-1. Customize the skeleton code:
-    - The Gradle module can contain multiple plugins and each plugin can contain multiple connectors and/or multiple
-     parsers.
-    . Add
-      plugins/connectors or plugins/parsers as appropriate.
-    - Rename the skeleton classes and packages as you see appropriate.
-    - Choose a unique plugin ID (a good approach is to base the name off of you organization's name)
-    - Add new connector
-        - Choose a connector ID unique in the scope of your plugin
-        - Choose your connector's parameters and create a connector descriptor. This will be transformed into a user-facing
-      form to fill the connector's instance parameters (usually credentials, remote URL, etc.).
-        - Implement the connector's methods (most importantly the `getTransactions` method).
-        - You can take a look at the `plugin-base` module for some inspiration. It contains some real plugin
-      implementations.
-        - Respect connector limitations:
-            - There's a limit on how many transactions can be downloaded during a single download pass (10,000). Don't try
-         to download more than the single-pass limit. If your transaction source has additional data, you will dowload
-         more during the next download pass. Connectors are called periodically (multiple times per hour) to keep the
-         portfolios in sync with the source of data, so this shouldn't be a problem. Eventually, your portfolio will
-         become synchronized.
-            - Close all unneeded resources (if present) in the `close` method which is called when the connector instance
-         goes out of scope. In order to save resources, connector instances are destroyed after each download pass.
-    - Add new parser
-        - Choose a parser ID unique in the scope of your plugin
-        - Create a parser descriptor. It describes which files the parser is able to parse - using file headers and
-        supported exchange for each header.
-        - Implement the parser's methods (most importantly the `parse` method - which should parse a csv file with
-        some specific header).
-        - You can take a look at the `plugin-base` module for some inspiration. It contains some real plugin
-            implementations.
+1. Implement your new plugin in `plugin-base` OR just use an already existing plugin and add just your new extensions
+   (e.g. a new connector, parser, etc.). In any case, you can use the template classes located in `plugin-template`
+   module, copy the appropriate ones to your desired location and start customizing them.
+   If you don't want to add a new plugin but use an existing plugin as parent instead, don't forget to change the parent
+   plugin's code to include/reference your new functionality where appropriate.
+## Customize the template code
+- your Gradle module can contain multiple plugins and each plugin can contain multiple connectors, parsers, or other
+  extensions. Add plugins/extensions as appropriate (see other parts of this document for more details).
+- Rename the template classes and packages as you see appropriate.
+- Choose a unique plugin ID (a good approach is to base the name off of you organization's name)
 
+### Adding a new connector
+- Choose a connector ID unique in the scope of your plugin
+- Choose your connector's parameters and create a connector descriptor. This will be transformed into a user-facing
+  form to fill the connector's instance parameters (usually credentials, remote URL, etc.).
+- Implement `IConnector` and its methods (most importantly the `getTransactions` method).
+- You can take a look at the `plugin-base` module for some inspiration. It contains some real plugin implementations.
+- Respect connector limitations:
+    - There's a limit on how many transactions can be downloaded during a single download pass (10,000). Don't try
+      to download more than the single-pass limit. If your transaction source has additional data, you will dowload
+      more during the next download pass. Connectors are called periodically (multiple times per hour) to keep the
+      portfolios in sync with the source of data, so this shouldn't be a problem. Eventually, your portfolio will
+      become synchronized.
+    - Close all unneeded resources (if present) in the `close` method which is called when the connector instance
+      goes out of scope. In order to save resources, connector instances are destroyed after each download pass.
+
+### Adding a new parser
+- Choose a parser ID unique in the scope of your plugin.
+- Create a parser descriptor. It describes which files the parser is able to parse - using file headers and
+  supported exchange for each header.
+- Implement `ICsvParser` and its methods (most importantly the `parse` method - which should parse a csv file with
+  some specific header).
+- You can take a look at the `plugin-base` module for some inspiration. It contains some real plugin implementations.
+
+### Add a new fiat currency
+Edit the `Currency` enum and add the appropriate currency. Set the enum constructor parameters accordingly. After
+the code makes it's way into the next Everytrade release, our fiat rates service should recognize your currency and
+start downloading the rates at startup.
+
+### Adding a new crypto currency
+Edit `Currency` enum and add the appropriate currency. Set the enum constructor parameters accordingly. Make sure
+there is a rate provide (`IRateProvider` implementation) for the currency. Since you're ading a new currency, you'll
+probably have to extend an existing crypt rate provider or write a new one for your currency.
+
+### Add a crypto rate provider
+- Choose a rate provider ID unique in the scope of your plugin.
+- Create a rate provider descriptor. It lists the currencies whose rates can be supplied by this rate provider.
+- Implement `IRateProvider` and its methods.
+- Again, `plugin-base` module contains some real implementations you can use as inspiration.
+
+### Adding a new exchange
+Just add a new entry to the `SupportedExchange` enum.
 
 ## Implementing new components as a new module
 1. Fork this repository.
 1. Add new Gradle module:
-    1. Duplicate the directory `plugin-template` which server as a plugin implementation skeleton.
+    1. Duplicate the directory `plugin-template` which server as a plugin implementation template.
     1. Include the new module in `settings.gradle`.
     1. Customize your plugin's `build.gradle` (module's `group` and jar manifest). Don't touch the rest if you don't
        know what you're doing. Specifically, the initial set od Gradle dependencies is the recommended minimum. You can
        add libraries as you progress with the plugin implementation, but you shouldn't remove any of the initial
        dependencies.
-1. Customize the skeleton code (as described before).
+1. Customize the template code (as described before).
 
 ## Using libraries
 To declare your plugin dependencies via Gradle, use only `compileOnly`, `pluginCompile` or `pluginRuntime` dependency

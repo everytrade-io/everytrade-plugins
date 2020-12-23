@@ -1,12 +1,15 @@
 package com.example.everytrade.plugin;
 
 import io.everytrade.server.plugin.api.IPlugin;
+import io.everytrade.server.plugin.api.rateprovider.RateProviderDescriptor;
 import io.everytrade.server.plugin.api.connector.ConnectorDescriptor;
 import io.everytrade.server.plugin.api.connector.IConnector;
 import io.everytrade.server.plugin.api.parser.ICsvParser;
 import io.everytrade.server.plugin.api.parser.ParserDescriptor;
+import io.everytrade.server.plugin.api.rateprovider.IRateProvider;
 import org.pf4j.Extension;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,6 +26,10 @@ public class ExamplePlugin implements IPlugin {
     private static final Map<String, ParserDescriptor> PARSERS_BY_ID = Set.of(
         ExampleParser.DESCRIPTOR
     ).stream().collect(Collectors.toMap(ParserDescriptor::getId, it -> it));
+
+    private static final Map<String, RateProviderDescriptor> RATE_PROVIDERS_BY_ID = Set.of(
+        ExampleRateProvider.DESCRIPTOR
+    ).stream().collect(Collectors.toMap(RateProviderDescriptor::getId, it -> it));;
 
     @Override
     public String getId() {
@@ -56,6 +63,19 @@ public class ExamplePlugin implements IPlugin {
     public ICsvParser createParserInstance(String parserId) {
         if (parserId.equals(ExampleConnector.DESCRIPTOR.getId())) {
             return new ExampleParser();
+        }
+        return null;
+    }
+
+    @Override
+    public List<RateProviderDescriptor> allRateProviderDescriptors() {
+        return List.copyOf(RATE_PROVIDERS_BY_ID.values());
+    }
+
+    @Override
+    public IRateProvider createRateProviderInstance(String providerId) {
+        if (providerId.equals(ExampleRateProvider.DESCRIPTOR.getId())) {
+            return new ExampleRateProvider();
         }
         return null;
     }

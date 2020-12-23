@@ -1,11 +1,14 @@
 package io.everytrade.server.plugin.impl.everytrade;
 
 import io.everytrade.server.plugin.api.IPlugin;
+import io.everytrade.server.plugin.api.rateprovider.RateProviderDescriptor;
 import io.everytrade.server.plugin.api.connector.ConnectorDescriptor;
 import io.everytrade.server.plugin.api.connector.IConnector;
 import io.everytrade.server.plugin.api.parser.ICsvParser;
 import io.everytrade.server.plugin.api.parser.ParserDescriptor;
+import io.everytrade.server.plugin.api.rateprovider.IRateProvider;
 import io.everytrade.server.plugin.impl.everytrade.parser.EverytradeCsvMultiParser;
+import io.everytrade.server.plugin.impl.everytrade.rateprovider.CoinPaprikaRateProvider;
 import org.pf4j.Extension;
 
 import java.util.List;
@@ -17,23 +20,28 @@ import java.util.stream.Collectors;
 public class EveryTradePlugin implements IPlugin {
     public static final String ID = "everytrade";
 
-    private static final Map<String, ConnectorDescriptor> CONNECTORS_BY_ID = Set.of(
-        EveryTradeConnector.DESCRIPTOR,
-        KrakenConnector.DESCRIPTOR,
-        BitstampConnector.DESCRIPTOR,
-        CoinmateConnector.DESCRIPTOR,
-        BitfinexConnector.DESCRIPTOR,
-        BinanceConnector.DESCRIPTOR,
-        BittrexConnector.DESCRIPTOR,
-        CoinbaseProConnector.DESCRIPTOR,
-        BitmexConnector.DESCRIPTOR,
-        OkexConnector.DESCRIPTOR,
-        HuobiConnector.DESCRIPTOR
-    ).stream().collect(Collectors.toMap(ConnectorDescriptor::getId, it -> it));
+    private static final Map<String, ConnectorDescriptor> CONNECTORS_BY_ID =
+        Set.of(
+            EveryTradeConnector.DESCRIPTOR,
+            KrakenConnector.DESCRIPTOR,
+            BitstampConnector.DESCRIPTOR,
+            CoinmateConnector.DESCRIPTOR,
+            BitfinexConnector.DESCRIPTOR,
+            BinanceConnector.DESCRIPTOR,
+            BittrexConnector.DESCRIPTOR,
+            CoinbaseProConnector.DESCRIPTOR,
+            BitmexConnector.DESCRIPTOR,
+            OkexConnector.DESCRIPTOR,
+            HuobiConnector.DESCRIPTOR
+        ).stream()
+            .collect(Collectors.toMap(ConnectorDescriptor::getId, it -> it));
 
     private static final List<ParserDescriptor> PARSER_DESCRIPTORS = List.of(
         EverytradeCsvMultiParser.DESCRIPTOR
     );
+
+    private static final List<RateProviderDescriptor> RATE_PROVIDER_DESCRIPTORS =
+        List.of(CoinPaprikaRateProvider.DESCRIPTOR);
 
     @Override
     public String getId() {
@@ -90,13 +98,26 @@ public class EveryTradePlugin implements IPlugin {
 
     @Override
     public List<ParserDescriptor> allParserDescriptors() {
-        return List.copyOf(PARSER_DESCRIPTORS);
+        return PARSER_DESCRIPTORS;
     }
 
     @Override
     public ICsvParser createParserInstance(String parserId) {
         if (parserId.equals(EverytradeCsvMultiParser.DESCRIPTOR.getId())) {
             return new EverytradeCsvMultiParser();
+        }
+        return null;
+    }
+
+    @Override
+    public List<RateProviderDescriptor> allRateProviderDescriptors() {
+        return RATE_PROVIDER_DESCRIPTORS;
+    }
+
+    @Override
+    public IRateProvider createRateProviderInstance(String providerId) {
+        if (providerId.equals(CoinPaprikaRateProvider.DESCRIPTOR.getId())) {
+            return new CoinPaprikaRateProvider();
         }
         return null;
     }
