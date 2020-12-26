@@ -36,20 +36,22 @@
   some specific header).
 - You can take a look at the `plugin-base` module for some inspiration. It contains some real plugin implementations.
 
-### Add a new fiat currency
+### Adding a new fiat currency
 Edit the `Currency` enum and add the appropriate currency. Set the enum constructor parameters accordingly. After
 the code makes it's way into the next Everytrade release, our fiat rates service should recognize your currency and
 start downloading the rates at startup.
 
 ### Adding a new crypto currency
 Edit `Currency` enum and add the appropriate currency. Set the enum constructor parameters accordingly. Make sure
-there is a rate provide (`IRateProvider` implementation) for the currency. Since you're ading a new currency, you'll
-probably have to extend an existing crypt rate provider or write a new one for your currency.
+there is a rate provide (`IRateProvider` implementation) for the currency (supporting both USD and BTC as quotes). Since
+you're ading a new currency, you'll probably have to extend an existing crypt rate provider or write a new one for
+your currency.
 
-### Add a crypto rate provider
+### Adding a crypto rate provider
 - Choose a rate provider ID unique in the scope of your plugin.
 - Create a rate provider descriptor. It lists the currencies whose rates can be supplied by this rate provider.
-- Implement `IRateProvider` and its methods.
+- Implement `IRateProvider` and its methods. Make sure your provider supports USD as well as BTC rates for your
+  currency (e.g. when adding LTC rate provider, you should support rates for LTC/USD and LTC/BTC).
 - Again, `plugin-base` module contains some real implementations you can use as inspiration.
 
 ### Adding a new exchange
