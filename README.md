@@ -44,7 +44,9 @@ start downloading the rates at startup.
 ### Adding a new crypto currency
 Edit `Currency` enum and add the appropriate currency. Set the enum constructor parameters accordingly. Make sure
 there is a rate provide (`IRateProvider` implementation) for the currency (supporting both USD and BTC as quotes). Since
-you're ading a new currency, you'll probably have to extend an existing crypt rate provider or write a new one for
+you're adding a new currency, you'll probably have to extend an existing crypto
+
+rate provider or write a new one for
 your currency.
 
 ### Adding a crypto rate provider
