@@ -34,7 +34,7 @@ public class CoinmateConnector implements IConnector {
         new ConnectorParameterDescriptor(
             "username",
             ConnectorParameterType.STRING,
-            "User Name",
+            "Client ID",
             ""
         );
 
