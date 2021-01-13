@@ -41,17 +41,17 @@ public enum Currency {
     private final int decimalDigits;
     private final boolean fiat;
     private final Instant introduction;
-    private final String name;
+    private final String description;
 
-    Currency(boolean fiat, Instant introduction, String name) {
-        this(fiat ? 2 : 6, fiat, introduction, name);
+    Currency(boolean fiat, Instant introduction, String description) {
+        this(fiat ? 2 : 6, fiat, introduction, description);
     }
 
-    Currency(int decimalDigits, boolean fiat, Instant introduction, String name) {
+    Currency(int decimalDigits, boolean fiat, Instant introduction, String description) {
         this.decimalDigits = decimalDigits;
         this.fiat = fiat;
         this.introduction = introduction;
-        this.name = name;
+        this.description = description;
     }
 
     public int getDecimalDigits() {
@@ -66,8 +66,8 @@ public enum Currency {
         return introduction;
     }
 
-    public String getName() {
-        return name;
+    public String getDescription() {
+        return description;
     }
 
     public static List<Currency> getFiats() {
