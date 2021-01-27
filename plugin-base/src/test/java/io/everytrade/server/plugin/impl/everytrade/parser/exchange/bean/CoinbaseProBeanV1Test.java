@@ -16,12 +16,12 @@ import java.util.List;
 
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.UNSUPPORTED_CURRENCY_PAIR;
-import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseBeanV1.BASE_DIFFERS_FROM_UNIT_SIZE;
-import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseBeanV1.QUOTE_DIFFERS_FROM_PRICE_FEE_TOTAL_UNIT;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseProBeanV1.BASE_DIFFERS_FROM_UNIT_SIZE;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseProBeanV1.QUOTE_DIFFERS_FROM_PRICE_FEE_TOTAL_UNIT;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-class CoinbaseBeanV1Test {
+class CoinbaseProBeanV1Test {
     private static final String HEADER_CORRECT = "portfolio,trade id,product,side,created at,size,size unit,price," +
         "fee,total,price/fee/total unit\n";
 

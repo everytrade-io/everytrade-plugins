@@ -22,7 +22,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.Bitstamp
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexBeanV3;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseProBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinmateBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinmateBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinsquareBeanV1;
@@ -141,8 +141,8 @@ public class EverytradeCsvMultiParser implements ICsvParser {
         EXCHANGE_PARSE_DETAILS.put(
             "portfolio,trade id,product,side,created at,size,size unit,price,fee,total,price/fee/total unit",
             new ExchangeParseDetail(
-                () -> new DefaultUnivocityExchangeSpecificParser(CoinbaseBeanV1.class),
-                SupportedExchange.COINBASE
+                () -> new DefaultUnivocityExchangeSpecificParser(CoinbaseProBeanV1.class),
+                SupportedExchange.COINBASE_PRO
             )
         );
         EXCHANGE_PARSE_DETAILS.put(

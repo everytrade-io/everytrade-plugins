@@ -25,7 +25,7 @@ import java.util.List;
     },
     extract = true
 )
-public class CoinbaseBeanV1 extends ExchangeBean {
+public class CoinbaseProBeanV1 extends ExchangeBean {
 
     public static final String QUOTE_DIFFERS_FROM_PRICE_FEE_TOTAL_UNIT
         = "Quote (%s) differs from price/fee/total unit (%s).";

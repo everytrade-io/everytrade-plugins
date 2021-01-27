@@ -21,7 +21,7 @@ import java.util.Objects;
 
 public class CoinbaseProConnector implements IConnector {
     private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "coinbaseProApiConnector";
-    private static final SupportedExchange SUPPORTED_EXCHANGE = SupportedExchange.COINBASE;
+    private static final SupportedExchange SUPPORTED_EXCHANGE = SupportedExchange.COINBASE_PRO;
 
     private static final ConnectorParameterDescriptor PARAMETER_API_SECRET =
         new ConnectorParameterDescriptor(
