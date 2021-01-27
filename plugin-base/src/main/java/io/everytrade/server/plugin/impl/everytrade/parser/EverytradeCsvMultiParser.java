@@ -69,7 +69,7 @@ public class EverytradeCsvMultiParser implements ICsvParser {
         EXCHANGE_PARSE_DETAILS.put(
             "Date(UTC),Market,Type,Price,Amount,Total,Fee,Fee Coin",
             new ExchangeParseDetail(
-                () -> new DefaultUnivocityExchangeSpecificParser(BinanceBeanV1.class, DELIMITER_SEMICOLON),
+                () -> new DefaultUnivocityExchangeSpecificParser(BinanceBeanV1.class),
                 SupportedExchange.BINANCE
             )
         );
