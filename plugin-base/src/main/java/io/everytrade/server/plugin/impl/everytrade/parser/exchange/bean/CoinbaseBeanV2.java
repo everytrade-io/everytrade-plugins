@@ -20,17 +20,17 @@ import java.util.List;
 
 @Headers(
     sequence = {
-        "Timestamp", "Transaction Type", "Asset", "Quantity Transacted", "EUR Subtotal", "EUR Fees"
+        "Timestamp", "Transaction Type", "Asset", "Quantity Transacted", "USD Subtotal", "USD Fees"
     },
     extract = true
 )
-public class CoinbaseBeanV1 extends ExchangeBean {
+public class CoinbaseBeanV2 extends ExchangeBean {
     private Instant timeStamp;
     private TransactionType transactionType;
     private Currency asset;
     private BigDecimal quantityTransacted;
-    private BigDecimal eurSubtotal;
-    private BigDecimal eurFees;
+    private BigDecimal usdSubtotal;
+    private BigDecimal usdFees;
 
     @Parsed(field = "Timestamp")
     public void setTimeStamp(String value) {
@@ -53,26 +53,26 @@ public class CoinbaseBeanV1 extends ExchangeBean {
         quantityTransacted = value;
     }
 
-    @Parsed(field = "EUR Subtotal")
+    @Parsed(field = "USD Subtotal")
     @Replace(expression = IGNORED_CHARS_IN_NUMBER, replacement = "")
-    public void setEurSubtotal(BigDecimal value) {
-        eurSubtotal = value;
+    public void setUsdSubtotal(BigDecimal value) {
+        usdSubtotal = value;
     }
 
-    @Parsed(field = "EUR Fees")
+    @Parsed(field = "USD Fees")
     @Replace(expression = IGNORED_CHARS_IN_NUMBER, replacement = "")
-    public void setEurFees(BigDecimal value) {
-        eurFees = value;
+    public void setUsdFees(BigDecimal value) {
+        usdFees = value;
     }
 
     @Override
     public TransactionCluster toTransactionCluster() {
-        final Currency quoteCurrency = Currency.EUR;
+        final Currency quoteCurrency = Currency.USD;
 
         validateCurrencyPair(asset, quoteCurrency);
 
         List<ImportedTransactionBean> related;
-        if (ParserUtils.equalsToZero(eurFees)) {
+        if (ParserUtils.equalsToZero(usdFees)) {
             related = Collections.emptyList();
         } else {
             related = List.of(
@@ -82,7 +82,7 @@ public class CoinbaseBeanV1 extends ExchangeBean {
                     asset,
                     quoteCurrency,
                     TransactionType.FEE,
-                    eurFees.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
+                    usdFees.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
                     quoteCurrency
                 )
             );
@@ -96,7 +96,7 @@ public class CoinbaseBeanV1 extends ExchangeBean {
                 quoteCurrency,
                 transactionType,
                 quantityTransacted.abs().setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
-                evalUnitPrice(eurSubtotal, quantityTransacted)
+                evalUnitPrice(usdSubtotal, quantityTransacted)
             ),
             related
         );

@@ -17,10 +17,10 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-class CoinbaseBeanV1Test {
+class CoinbaseBeanV3Test {
     private static final String HEADER_CORRECT
-        = "Timestamp,Transaction Type,Asset,Quantity Transacted,EUR Spot Price at Transaction,EUR Subtotal,EUR Total " +
-        "(inclusive of fees),EUR Fees,Notes\n";
+        = "Timestamp,Transaction Type,Asset,Quantity Transacted,GBP Spot Price at Transaction,GBP Subtotal,GBP Total " +
+        "(inclusive of fees),GBP Fees,Notes\n";
 
     @Test
     void testCorrectHeader() {
@@ -33,8 +33,8 @@ class CoinbaseBeanV1Test {
     @Test
     void testWrongHeader() {
         final String headerWrong
-            = "Timestamp,Transaction Type,XXX,Quantity Transacted,EUR Spot Price at Transaction,EUR Subtotal,"
-            + "EUR Total (inclusive of fees),EUR Fees,Notes\n";
+            = "Timestamp,Transaction Type,Asset,Quantity Transacted,USD Spot Price at Transaction,GBP Subtotal," +
+            "GBP Total (inclusive of fees),GBP Fees,Notes\n";
         try {
             ParserTestUtils.testParsing(headerWrong);
             fail("No expected exception has been thrown.");
@@ -44,28 +44,28 @@ class CoinbaseBeanV1Test {
 
     @Test
     void testCorrectParsingRawTransactionBuy() {
-        final String row = "2020-09-27T18:36:58Z,Buy,BTC,0.03182812,9287.38,295.60,300.00," +
-            "4.40,Bought 0,03182812 BTC for € 300,00 EUR\n";
+        final String row = "2020-03-29T12:49:52Z,Buy,LTC,1.124,129.83,145.90,150.00,4.10,Bought 1.124 LTC for 150.00 " +
+            "GBP";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
             new BuySellImportedTransactionBean(
                 null,
-                Instant.parse("2020-09-27T18:36:58Z"),
-                Currency.BTC,
-                Currency.EUR,
+                Instant.parse("2020-03-29T12:49:52Z"),
+                Currency.LTC,
+                Currency.GBP,
                 TransactionType.BUY,
-                new BigDecimal("0.03182812"),
-                new BigDecimal("9287.3848659613")
+                new BigDecimal("1.124"),
+                new BigDecimal("129.8042704626")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
                     null,
-                    Instant.parse("2020-09-27T18:36:58Z"),
-                    Currency.BTC,
-                    Currency.EUR,
+                    Instant.parse("2020-03-29T12:49:52Z"),
+                    Currency.LTC,
+                    Currency.GBP,
                     TransactionType.FEE,
-                    new BigDecimal("4.40"),
-                    Currency.EUR
+                    new BigDecimal("4.10"),
+                    Currency.GBP
                 )
             ),
             0
@@ -75,28 +75,27 @@ class CoinbaseBeanV1Test {
 
     @Test
     void testCorrectParsingRawTransactionSell() {
-        final String row = "2020-03-09T05:17:11Z,Sell,BTC,0.03517833,6831.48,240.32,236.74," +
-            "3.58,Sold 0.03517833 BTC for €236.74 EUR";
+        final String row = "2020-03-09T05:17:11Z,Sell,LTC,0.5,144.00,72.00,73.00,1.00,Sold 0.5 LTC for 73.00 GBP";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
             new BuySellImportedTransactionBean(
                 null,
                 Instant.parse("2020-03-09T05:17:11Z"),
-                Currency.BTC,
-                Currency.EUR,
+                Currency.LTC,
+                Currency.GBP,
                 TransactionType.SELL,
-                new BigDecimal("0.03517833"),
-                new BigDecimal("6831.4783561357")
+                new BigDecimal("0.5"),
+                new BigDecimal("144")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
                     null,
                     Instant.parse("2020-03-09T05:17:11Z"),
-                    Currency.BTC,
-                    Currency.EUR,
+                    Currency.LTC,
+                    Currency.GBP,
                     TransactionType.FEE,
-                    new BigDecimal("3.58"),
-                    Currency.EUR
+                    new BigDecimal("1"),
+                    Currency.GBP
                 )
             ),
             0
@@ -106,10 +105,9 @@ class CoinbaseBeanV1Test {
 
     @Test
     void testIgnoredTransactionType() {
-        final String row = "2020-09-27T18:36:58Z,Convert,BTC,0.03182812,9287.38,295.60,300.00," +
-            "4.40,Bought 0,03182812 BTC for € 300,00 EUR\n";
+        final String row = "2020-03-09T05:17:11Z,Receive,LTC,0.5,144.00,72.00,73.00,1.00,Sold 0.5 LTC for 73.00 GBP";
         final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
         final String error = parsingProblem.getMessage();
-        assertTrue(error.contains(ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE.concat("Convert")));
+        assertTrue(error.contains(ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE.concat("Receive")));
     }
 }

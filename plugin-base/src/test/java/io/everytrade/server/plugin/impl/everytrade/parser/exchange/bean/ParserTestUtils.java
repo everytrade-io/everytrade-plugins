@@ -7,8 +7,6 @@ import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.EverytradeCsvMultiParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -22,7 +20,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 public class ParserTestUtils {
     private static final EverytradeCsvMultiParser CSV_PARSER = new EverytradeCsvMultiParser();
-    private static final Logger LOG = LoggerFactory.getLogger(ParserTestUtils.class);
 
     private static File createTestFile(String rows) {
         try {
@@ -92,7 +89,7 @@ public class ParserTestUtils {
             if (!result.getParsingProblems().isEmpty()) {
                 StringBuilder stringBuilder = new StringBuilder();
                 result.getParsingProblems().forEach(p -> stringBuilder.append(p).append("\n"));
-                LOG.error("Not parsed rows: {}", stringBuilder.toString());
+                System.out.println("Not parsed rows: " + stringBuilder.toString());
             }
             List<TransactionCluster> list = result.getTransactionClusters();
             if (list.isEmpty()) {
@@ -114,7 +111,6 @@ public class ParserTestUtils {
             final ParseResult result = CSV_PARSER.parse(ParserTestUtils.createTestFile(rows), getHeader(rows));
             List<ParsingProblem> list = result.getParsingProblems();
             if (list.size() < 1) {
-                LOG.error("No parsing problem found.");
                 fail("No expected parsing problem found.");
             } else if (list.size() > 1) {
                 fail("More than on problem found: " + list.size());
