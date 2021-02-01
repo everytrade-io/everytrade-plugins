@@ -16,6 +16,7 @@ public enum Currency {
     GBP(true, Instant.parse("1971-08-01T00:00:00Z"), "British pound"),
     AUD(true, Instant.parse("1966-02-14T00:00:00Z"), "Australian dollar"),
     HKD(true, Instant.parse("1937-01-01T00:00:00Z"), "Hong Kong dollar"),
+    RON(true, Instant.parse("2005-01-01T00:00:00Z"), "Romanian New Leu"),
 
     USDT(false, Instant.parse("2015-07-01T00:00:00Z"), "Tether"),
     BTC(false, Instant.parse("2009-01-03T00:00:00Z"), "Bitcoin"),

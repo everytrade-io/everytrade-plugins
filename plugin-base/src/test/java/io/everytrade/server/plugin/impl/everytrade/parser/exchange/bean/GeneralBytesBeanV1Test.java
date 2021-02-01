@@ -21,10 +21,8 @@ import static org.junit.jupiter.api.Assertions.fail;
 class GeneralBytesBeanV1Test {
     private static final String HEADER_CORRECT = "Terminal SN;Server Time;Terminal Time;Local Transaction Id;" +
         "Remote Transaction Id;Type;Cash Amount;Cash Currency;Crypto Amount;Crypto Currency;Used Discount;" +
-        "Actual Discount (%);Destination Address;Related Remote Transaction Id;Identity;Status;Phone Number;" +
-        "Transaction Detail;Transaction Note;Rate Incl. Fee;Rate Without Fee;Fixed Transaction Fee;" +
-        "Expected Profit Percent Setting;Expected Profit Value;Crypto Setting Name;Transaction Scoring Result;" +
-        "Expense;Expense Currency;\n";
+        "Actual Discount (%);Destination address;Related Remote Transaction Id;Identity;Status;Phone Number;" +
+        "Transaction Detail;\n";
 
     @Test
     void testCorrectHeader() {
@@ -37,12 +35,10 @@ class GeneralBytesBeanV1Test {
 
     @Test
     void testWrongHeader() {
-        final String headerWrong = "Terminal SN;Server Time;Terminal Time;Local Transaction Id;" +
+        final String headerWrong = "Terminal XX;Server Time;Terminal Time;Local Transaction Id;" +
             "Remote Transaction Id;Type;Cash Amount;Cash Currency;Crypto Amount;Crypto Currency;Used Discount;" +
-            "Actual Discount (%);Destination Address;Related Remote Transaction Id;Identity;Status;Phone Number;" +
-            "Transaction Detail;Transaction Note;Rate Incl. Fee;Rate Without Fee;Fixed Transaction Fee;" +
-            "Expected Profit Percent Setting;Expected Profit Value;Crypto Setting Name;Transaction Scoring Result;" +
-            "Expense;Expense Currency\n";
+            "Actual Discount (%);Destination address;Related Remote Transaction Id;Identity;Status;Phone Number;" +
+            "Transaction Detail;\n";
         try {
             ParserTestUtils.testParsing(headerWrong);
             fail("No expected exception has been thrown.");
@@ -51,142 +47,100 @@ class GeneralBytesBeanV1Test {
     }
 
     @Test
-    void testCorrectParsingRawTransactionBuy() {
-        final String row = "B1;2020-12-07 15:33:55;2020-12-07 16:33:55;L;R;SELL;200;CZK;0.107841;LTC;;0.00;x;;;" +
-            "PAYMENT ARRIVED;;;;1854.582209;1854.57753657;0;0;0;ltc  ltc ltc;;0.0053;LTC;\n";
+    void testCorrectParsingRawTransactionSell() {
+        final String row = "BT1;2018-08-06 05:35:35.0;2018-08-06 11:35:35.0;L;R;BUY;5000;CZK;0.031637;BTC;;0.00;1Gz;" +
+            ";IC;ERROR (EXCHANGE PURCHASE);;76;\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
             new BuySellImportedTransactionBean(
                 "L-R",
-                Instant.parse("2020-12-07T15:33:55Z"),
-                Currency.LTC,
+                Instant.parse("2018-08-06T05:35:35.0Z"),
+                Currency.BTC,
                 Currency.CZK,
-                TransactionType.BUY,
-                new BigDecimal("0.107841"),
-                new BigDecimal("1854.5822089929")
+                TransactionType.SELL,
+                new BigDecimal("0.031637"),
+                new BigDecimal("158042.7979896956")
             ),
-            List.of(
-                new FeeRebateImportedTransactionBean(
-                    "L-R" + FEE_UID_PART,
-                    Instant.parse("2020-12-07T15:33:55Z"),
-                    Currency.LTC,
-                    Currency.CZK,
-                    TransactionType.FEE,
-                    new BigDecimal("0.0053"),
-                    Currency.LTC
-                )
-            ),
+            List.of(),
             0
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
 
     @Test
-    void testCorrectParsingRawTransactionSell() {
-        final String row = "B1;2020-12-10 15:02:41;2020-12-10 16:02:41;L;R;BUY;100;CZK;0.04595383;LTC;;0.00;x;;;" +
-            "COMPLETED (0);;;;2176.097183;2176.0974;0;0;0;LTC test;;0.0001;LTC;\n";
+    void testCorrectParsingRawTransactionBuy() {
+        final String row = "BT1;2018-08-06 04:44:44.0;2018-08-06 10:44:44.0;L;R;SELL;8000;CZK;0.052674;BTC;;0.00;1EQ;" +
+            ";IA;PAYMENT ARRIVED;7;;\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
             new BuySellImportedTransactionBean(
                 "L-R",
-                Instant.parse("2020-12-10T15:02:41Z"),
-                Currency.LTC,
+                Instant.parse("2018-08-06T04:44:44.0Z"),
+                Currency.BTC,
                 Currency.CZK,
-                TransactionType.SELL,
-                new BigDecimal("0.04595383"),
-                new BigDecimal("2176.0971827593")
+                TransactionType.BUY,
+                new BigDecimal("0.052674"),
+                new BigDecimal("151877.5866651479")
             ),
-            List.of(
-                new FeeRebateImportedTransactionBean(
-                    "L-R" + FEE_UID_PART,
-                    Instant.parse("2020-12-10T15:02:41Z"),
-                    Currency.LTC,
-                    Currency.CZK,
-                    TransactionType.FEE,
-                    new BigDecimal("0.0001"),
-                    Currency.LTC
-                )
-            ),
-            0
+            List.of()
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
+
 
     @Test
     void testCorrectParsingRawTransactionDate_d_m_yy() {
-        final String row = "B1;8/6/18 06:38:43.0;2020-12-10 16:02:41;L;R;BUY;100;CZK;0.04595383;LTC;;0.00;x;;;" +
-            "COMPLETED (0);;;;2176.097183;2176.0974;0;0;0;LTC test;;0.0001;LTC;\n";
+        final String row = "BT1;8/6/18 06:38:43.0;2018-08-06 10:44:44.0;L;R;SELL;8000;CZK;0.052674;BTC;;0.00;1EQ;" +
+            ";IA;PAYMENT ARRIVED;7;;\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
             new BuySellImportedTransactionBean(
                 "L-R",
                 Instant.parse("2018-08-06T06:38:43Z"),
-                Currency.LTC,
+                Currency.BTC,
                 Currency.CZK,
-                TransactionType.SELL,
-                new BigDecimal("0.04595383"),
-                new BigDecimal("2176.0971827593")
+                TransactionType.BUY,
+                new BigDecimal("0.052674"),
+                new BigDecimal("151877.5866651479")
             ),
-            List.of(
-                new FeeRebateImportedTransactionBean(
-                    "L-R" + FEE_UID_PART,
-                    Instant.parse("2018-08-06T06:38:43Z"),
-                    Currency.LTC,
-                    Currency.CZK,
-                    TransactionType.FEE,
-                    new BigDecimal("0.0001"),
-                    Currency.LTC
-                )
-            ),
-            0
+            List.of()
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
 
     @Test
     void testCorrectParsingRawTransactionDate_d_m_yyTime_h_mm() {
-        final String row = "B1;8/6/18 6:38:00 AM;2020-12-10 16:02:41;L;R;BUY;100;CZK;0.04595383;LTC;;0.00;x;;;" +
-            "COMPLETED (0);;;;2176.097183;2176.0974;0;0;0;LTC test;;0.0001;LTC;\n";
+        final String row = "BT1;8/6/18 6:38:00 AM;2018-08-06 10:44:44.0;L;R;SELL;8000;CZK;0.052674;BTC;;0.00;1EQ;" +
+            ";IA;PAYMENT ARRIVED;7;;\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
             new BuySellImportedTransactionBean(
                 "L-R",
                 Instant.parse("2018-08-06T06:38:00Z"),
-                Currency.LTC,
+                Currency.BTC,
                 Currency.CZK,
-                TransactionType.SELL,
-                new BigDecimal("0.04595383"),
-                new BigDecimal("2176.0971827593")
+                TransactionType.BUY,
+                new BigDecimal("0.052674"),
+                new BigDecimal("151877.5866651479")
             ),
-            List.of(
-                new FeeRebateImportedTransactionBean(
-                    "L-R" + FEE_UID_PART,
-                    Instant.parse("2018-08-06T06:38:00Z"),
-                    Currency.LTC,
-                    Currency.CZK,
-                    TransactionType.FEE,
-                    new BigDecimal("0.0001"),
-                    Currency.LTC
-                )
-            ),
-            0
+            List.of()
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
 
     @Test
     void testUnknownStatus() {
-        final String row = "B1;8/6/18 6:38:00 AM;2020-12-10 16:02:41;L;R;BUY;100;CZK;0.04595383;LTC;;0.00;x;;;" +
-            "UNKNOWN;;;;2176.097183;2176.0974;0;0;0;LTC test;;0.0001;LTC;\n";
-     final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
+        final String row = "BT1;2018-08-06 04:44:44.0;2018-08-06 10:44:44.0;L;R;SELL;8000;CZK;0.052674;BTC;;0.00;1EQ;" +
+            ";IA;UNKNOWN;7;;\n";
+        final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
         final String error = parsingProblem.getMessage();
         assertTrue(error.contains(ExchangeBean.UNSUPPORTED_STATUS_TYPE.concat("UNKNOWN")));
     }
 
     @Test
     void testIgnoredTransactionType() {
-        final String row = "B1;8/6/18 6:38:00 AM;2020-12-10 16:02:41;L;R;SOLD;100;CZK;0.04595383;LTC;;0.00;x;;;" +
-            "UNKNOWN;;;;2176.097183;2176.0974;0;0;0;LTC test;;0.0001;LTC;\n";
+        final String row = "BT1;2018-08-06 04:44:44.0;2018-08-06 10:44:44.0;L;R;SOLD;8000;CZK;0.052674;BTC;;0.00;1EQ;" +
+            ";IA;PAYMENT ARRIVED;7;;\n";
         final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
         final String error = parsingProblem.getMessage();
         assertTrue(error.contains(ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE.concat("SOLD")));

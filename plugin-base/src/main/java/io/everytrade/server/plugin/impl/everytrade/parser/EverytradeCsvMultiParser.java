@@ -33,6 +33,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.Coinsqua
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.EveryTradeBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.EveryTradeBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.GeneralBytesBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.GeneralBytesBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.HitBtcBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.HuobiBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.KrakenBeanV1;
@@ -218,12 +219,55 @@ public class EverytradeCsvMultiParser implements ICsvParser {
         );
         EXCHANGE_PARSE_DETAILS.put(
             "Terminal SN;Server Time;Terminal Time;Local Transaction Id;Remote Transaction Id;Type;Cash Amount;" +
+                "Cash Currency;Crypto Amount;Crypto Currency;Used Discount;Actual Discount (%);Destination address;" +
+                "Related Remote Transaction Id;Identity;Status;Phone Number;Transaction Detail;",
+            new ExchangeParseDetail(
+                () -> new DefaultUnivocityExchangeSpecificParser(GeneralBytesBeanV1.class, DELIMITER_SEMICOLON),
+                SupportedExchange.GENERAL_BYTES
+            )
+        );
+
+        EXCHANGE_PARSE_DETAILS.put(
+            "Terminal SN;Server Time;Terminal Time;Local Transaction Id;Remote Transaction Id;Type;Cash Amount;" +
+                "Cash Currency;Crypto Amount;Crypto Currency;Used Discount;Actual Discount (%);Destination address;" +
+                "Related Remote Transaction Id;Identity;Status;Phone Number;Transaction Detail;Transaction Note;" +
+                "Rate incl. Fee;Rate without Fee;Fixed Transaction Fee;Expected Profit Percent Setting;" +
+                "Expected Profit Value;",
+            new ExchangeParseDetail(
+                () -> new DefaultUnivocityExchangeSpecificParser(GeneralBytesBeanV1.class, DELIMITER_SEMICOLON),
+                SupportedExchange.GENERAL_BYTES
+            )
+        );
+        EXCHANGE_PARSE_DETAILS.put(
+            "Terminal SN;Server Time;Terminal Time;Local Transaction Id;Remote Transaction Id;Type;Cash Amount;" +
+                "Cash Currency;Crypto Amount;Crypto Currency;Used Discount;Actual Discount (%);Destination address;" +
+                "Related Remote Transaction Id;Identity;Status;Phone Number;Transaction Detail;Transaction Note;" +
+                "Rate incl. Fee;Rate without Fee;Fixed Transaction Fee;Expected Profit Percent Setting;" +
+                "Expected Profit Value;Crypto Setting Name;",
+            new ExchangeParseDetail(
+                () -> new DefaultUnivocityExchangeSpecificParser(GeneralBytesBeanV1.class, DELIMITER_SEMICOLON),
+                SupportedExchange.GENERAL_BYTES
+            )
+        );
+        EXCHANGE_PARSE_DETAILS.put(
+            "Terminal SN,Server Time,Terminal Time,Local Transaction Id,Remote Transaction Id,Type,Cash Amount," +
+                "Cash Currency,Crypto Amount,Crypto Currency,Used Discount,Actual Discount (%),Destination address," +
+                "Related Remote Transaction Id,Identity,Status,Phone Number,Transaction Detail,Transaction Note," +
+                "Rate incl. Fee,Rate without Fee,Fixed Transaction Fee,Expected Profit Percent Setting," +
+                "Expected Profit Value,Crypto Setting Name",
+            new ExchangeParseDetail(
+                () -> new DefaultUnivocityExchangeSpecificParser(GeneralBytesBeanV1.class),
+                SupportedExchange.GENERAL_BYTES
+            )
+        );
+        EXCHANGE_PARSE_DETAILS.put(
+            "Terminal SN;Server Time;Terminal Time;Local Transaction Id;Remote Transaction Id;Type;Cash Amount;" +
                 "Cash Currency;Crypto Amount;Crypto Currency;Used Discount;Actual Discount (%);Destination Address;" +
                 "Related Remote Transaction Id;Identity;Status;Phone Number;Transaction Detail;Transaction Note;" +
                 "Rate Incl. Fee;Rate Without Fee;Fixed Transaction Fee;Expected Profit Percent Setting;" +
                 "Expected Profit Value;Crypto Setting Name;Transaction Scoring Result;Expense;Expense Currency;",
             new ExchangeParseDetail(
-                () -> new DefaultUnivocityExchangeSpecificParser(GeneralBytesBeanV1.class, DELIMITER_SEMICOLON),
+                () -> new DefaultUnivocityExchangeSpecificParser(GeneralBytesBeanV2.class, DELIMITER_SEMICOLON),
                 SupportedExchange.GENERAL_BYTES
             )
         );
