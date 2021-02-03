@@ -71,7 +71,7 @@ public final class CoinPaprikaRateProvider implements IRateProvider {
         COIN_IDS_BY_CURRENCY.put(Currency.ADA, "ada-cardano");
         COIN_IDS_BY_CURRENCY.put(Currency.EOS, "eos-eos");
         COIN_IDS_BY_CURRENCY.put(Currency.DOT, "dot-polkadot");
-        COIN_IDS_BY_CURRENCY.put(Currency.ETC, "eos-eos");
+        COIN_IDS_BY_CURRENCY.put(Currency.ETC, "etc-ethereum-classic");
 
         LISTING_START_BY_CURRENCY.put(Currency.BTC, Instant.parse("2013-04-28T18:45:00Z"));
         LISTING_START_BY_CURRENCY.put(Currency.ETH, Instant.parse("2015-08-07T14:45:00Z"));
@@ -92,7 +92,7 @@ public final class CoinPaprikaRateProvider implements IRateProvider {
         LISTING_START_BY_CURRENCY.put(Currency.ADA, Instant.parse("2017-10-01T21:30:00Z"));
         LISTING_START_BY_CURRENCY.put(Currency.EOS, Instant.parse("2017-07-02T00:00:00Z"));
         LISTING_START_BY_CURRENCY.put(Currency.DOT, Instant.parse("2020-08-22T00:00:00Z"));
-        LISTING_START_BY_CURRENCY.put(Currency.ETC, Instant.parse("2017-07-02T00:00:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency.ETC, Instant.parse("2016-07-25T00:00:00Z"));
 
         SUPPORTED_QUOTES.add(Currency.USD);
         SUPPORTED_QUOTES.add(Currency.BTC);
