@@ -37,7 +37,26 @@ public enum Currency {
     ADA(false, Instant.parse("2017-09-29T00:00:00Z"), "Cardano"),
     EOS(false, Instant.parse("2017-05-06T00:00:00Z"), "EOS"),
     DOT(false, Instant.parse("2020-08-22T00:00:00Z"), "Polkadot"),
-    ETC(false, Instant.parse("2016-07-20T00:00:00Z"), "Ethereum Classic");
+    ETC(false, Instant.parse("2016-07-20T00:00:00Z"), "Ethereum Classic"),
+    UNI(false,Instant.parse("2020-09-01T00:00:00Z"), "Uniswap"), // token; can't find exact date
+    DOGE(false, Instant.parse("2013-12-06T00:00:00Z"), "Dogecoin"),
+    STORJ(false, Instant.parse("2015-11-01T00:00:00Z"), "Storj"), // token; can't find exact date
+    ZEC(false, Instant.parse("2016-10-28T00:00:00Z"), "Zcash"),
+    KAVA(false, Instant.parse("2019-10-01T00:00:00Z"), "Kava"), // can't find exact date
+    YFI(false, Instant.parse("2020-07-01T00:00:00Z"), "yearn.finance"), // token; can't find exact date
+    AAVE(false, Instant.parse("2020-10-13T00:00:00Z"), "Aave"), // token
+    LSK(false, Instant.parse("2016-02-01T00:00:00Z"), "Lisk"),
+    OMG(false, Instant.parse("2017-06-23T00:00:00Z"), "OMG Network"), // token
+    BAND(false, Instant.parse("2019-09-01T00:00:00Z"), "Band Protocol"), // token; can't find exact date
+    MATIC(false, Instant.parse("2019-04-01T00:00:00Z"), "Matic Network"), // token; can't find exact date
+    DNT(false, Instant.parse("2017-08-01T00:00:00Z"), "district0x"), // token; can't find exact date
+    SC(false, Instant.parse("2015-03-17T00:00:00Z"), "Siacoin"),
+    KMD(false, Instant.parse("2016-09-14T00:00:00Z"), "Komodo"),
+    DGB(false, Instant.parse("2014-01-10T00:00:00Z"), "DigiByte"),
+    NEO(false, Instant.parse("2016-09-09T00:00:00Z"), "NEO"),
+    DAT(false, Instant.parse("2017-08-11T00:00:00Z"), "Datum"),
+    FUN(false, Instant.parse("2017-02-01T00:00:00Z"), "FunFair"), // token
+    BAT(false, Instant.parse("2017-06-01T00:00:00Z"), "Basic Attention Token"); // token
 
     private final int decimalDigits;
     private final boolean fiat;
