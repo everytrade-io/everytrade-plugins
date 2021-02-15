@@ -29,7 +29,8 @@ dependencies {
     pluginCompile "com.univocity:univocity-parsers:2.8.4"
     pluginCompile "org.knowm.xchange:xchange-kraken:$xchangeVersion"
     pluginCompile "org.knowm.xchange:xchange-binance:$xchangeVersion"
-    pluginCompile "org.knowm.xchange:xchange-bittrex:$xchangeVersion"
+    //TODO Change it to release version when the fix is added.
+    pluginCompile "com.github.knowm.xchange:xchange-bittrex:2d82d94d7050c90f2bc50261895e3e6f3f9aa68c"
     pluginCompile "org.knowm.xchange:xchange-bitstamp:$xchangeVersion"
     pluginCompile "org.knowm.xchange:xchange-coinmate:$xchangeVersion"
     pluginCompile "org.knowm.xchange:xchange-bitfinex:$xchangeVersion"
