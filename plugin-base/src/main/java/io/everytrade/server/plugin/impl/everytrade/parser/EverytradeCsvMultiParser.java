@@ -78,6 +78,13 @@ public class EverytradeCsvMultiParser implements ICsvParser {
         EXCHANGE_PARSE_DETAILS.put(
             "Date(UTC);Pair;Type;Order Price;Order Amount;AvgTrading Price;Filled;Total;status",
             new ExchangeParseDetail(
+                () -> new BinanceExchangeSpecificParser(DELIMITER_SEMICOLON),
+                SupportedExchange.BINANCE
+            )
+        );
+        EXCHANGE_PARSE_DETAILS.put(
+            "Date(UTC),Pair,Type,Order Price,Order Amount,AvgTrading Price,Filled,Total,status",
+            new ExchangeParseDetail(
                 BinanceExchangeSpecificParser::new,
                 SupportedExchange.BINANCE
             )
