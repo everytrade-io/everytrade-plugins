@@ -39,6 +39,8 @@ dependencies {
     pluginCompile "org.knowm.xchange:xchange-bitflyer:$xchangeVersion"
     pluginCompile "org.knowm.xchange:xchange-core:$xchangeVersion"
     pluginCompile "org.knowm.xchange:xchange-huobi:$xchangeVersion"
+    //TODO Change it to knowm when they accept GENERALBYTES pull-request.
+    pluginCompile "com.github.GENERALBYTESCOM.XChange:xchange-coinbase:045371c93518b63b16d44667b2035c8ee26975bf"
 
     pluginCompile "com.github.charvam:V3-Open-API-SDK:52ae9f193f081aecd746f6d71e1b227ad18f17af"
 
