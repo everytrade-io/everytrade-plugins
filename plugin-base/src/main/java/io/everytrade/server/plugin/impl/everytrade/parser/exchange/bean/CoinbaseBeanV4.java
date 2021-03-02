@@ -21,17 +21,17 @@ import java.util.List;
 
 @Headers(
     sequence = {
-        "Timestamp", "Transaction Type", "Asset", "Quantity Transacted", "GBP Subtotal", "GBP Fees", "Notes"
+        "Timestamp", "Transaction Type", "Asset", "Quantity Transacted", "CZK Subtotal", "CZK Fees", "Notes"
     },
     extract = true
 )
-public class CoinbaseBeanV3 extends ExchangeBean {
+public class CoinbaseBeanV4 extends ExchangeBean {
     private Instant timeStamp;
     private TransactionType transactionType;
     private Currency asset;
     private BigDecimal quantityTransacted;
-    private BigDecimal gbpSubtotal;
-    private BigDecimal gbpFees;
+    private BigDecimal czkSubtotal;
+    private BigDecimal czkFees;
     //TODO remove after Coinbase fix (added due to an error in data export form Coinbase)
     private String notes;
 
@@ -56,16 +56,16 @@ public class CoinbaseBeanV3 extends ExchangeBean {
         quantityTransacted = value;
     }
 
-    @Parsed(field = "GBP Subtotal")
+    @Parsed(field = "CZK Subtotal")
     @Replace(expression = IGNORED_CHARS_IN_NUMBER, replacement = "")
-    public void setGbpSubtotal(BigDecimal value) {
-        gbpSubtotal = value;
+    public void setCzkSubtotal(BigDecimal value) {
+        czkSubtotal = value;
     }
 
-    @Parsed(field = "GBP Fees")
+    @Parsed(field = "CZK Fees")
     @Replace(expression = IGNORED_CHARS_IN_NUMBER, replacement = "")
-    public void setGbpFees(BigDecimal value) {
-        gbpFees = value;
+    public void setCzkFees(BigDecimal value) {
+        czkFees = value;
     }
 
     @Parsed(field = "Notes")
@@ -80,7 +80,7 @@ public class CoinbaseBeanV3 extends ExchangeBean {
         validateCurrencyPair(asset, quoteCurrency);
 
         List<ImportedTransactionBean> related;
-        if (ParserUtils.equalsToZero(gbpFees)) {
+        if (ParserUtils.equalsToZero(czkFees)) {
             related = Collections.emptyList();
         } else {
             related = List.of(
@@ -90,7 +90,7 @@ public class CoinbaseBeanV3 extends ExchangeBean {
                     asset,
                     quoteCurrency,
                     TransactionType.FEE,
-                    gbpFees.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
+                    czkFees.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
                     quoteCurrency
                 )
             );
@@ -104,7 +104,7 @@ public class CoinbaseBeanV3 extends ExchangeBean {
                 quoteCurrency,
                 transactionType,
                 quantityTransacted.abs().setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
-                evalUnitPrice(gbpSubtotal, quantityTransacted)
+                evalUnitPrice(czkSubtotal, quantityTransacted)
             ),
             related
         );

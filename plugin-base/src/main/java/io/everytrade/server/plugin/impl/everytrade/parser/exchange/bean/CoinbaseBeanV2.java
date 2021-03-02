@@ -3,6 +3,7 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 import com.univocity.parsers.annotations.Headers;
 import com.univocity.parsers.annotations.Parsed;
 import com.univocity.parsers.annotations.Replace;
+import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
@@ -20,7 +21,7 @@ import java.util.List;
 
 @Headers(
     sequence = {
-        "Timestamp", "Transaction Type", "Asset", "Quantity Transacted", "USD Subtotal", "USD Fees"
+        "Timestamp", "Transaction Type", "Asset", "Quantity Transacted", "USD Subtotal", "USD Fees", "Notes"
     },
     extract = true
 )
@@ -31,6 +32,8 @@ public class CoinbaseBeanV2 extends ExchangeBean {
     private BigDecimal quantityTransacted;
     private BigDecimal usdSubtotal;
     private BigDecimal usdFees;
+    //TODO remove after Coinbase fix (added due to an error in data export form Coinbase)
+    private String notes;
 
     @Parsed(field = "Timestamp")
     public void setTimeStamp(String value) {
@@ -65,9 +68,14 @@ public class CoinbaseBeanV2 extends ExchangeBean {
         usdFees = value;
     }
 
+    @Parsed(field = "Notes")
+    public void setNotes(String value) {
+        notes = value;
+    }
+
     @Override
     public TransactionCluster toTransactionCluster() {
-        final Currency quoteCurrency = Currency.USD;
+        final Currency quoteCurrency = detectQuote(notes);
 
         validateCurrencyPair(asset, quoteCurrency);
 
@@ -100,5 +108,16 @@ public class CoinbaseBeanV2 extends ExchangeBean {
             ),
             related
         );
+    }
+
+    //TODO change detection of quote from file header when Coinbase fix the CSV data export
+    private Currency detectQuote(String note) {
+        if (note.endsWith("EUR")) {
+            return Currency.EUR;
+        } else if (note.endsWith("USD")) {
+            return Currency.USD;
+        } else {
+            throw new DataValidationException("Unsupported quote currency in note: " + note);
+        }
     }
 }

@@ -25,6 +25,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexB
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseBeanV3;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseBeanV4;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseProBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinmateBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinmateBeanV2;
@@ -378,6 +379,14 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 "GBP Total (inclusive of fees),GBP Fees,Notes",
             new ExchangeParseDetail(
                 () -> new DefaultUnivocityExchangeSpecificParser(CoinbaseBeanV3.class),
+                SupportedExchange.COINBASE
+            )
+        );
+        EXCHANGE_PARSE_DETAILS.put(
+            "Timestamp,Transaction Type,Asset,Quantity Transacted,CZK Spot Price at Transaction,CZK Subtotal," +
+                "CZK Total (inclusive of fees),CZK Fees,Notes",
+            new ExchangeParseDetail(
+                () -> new DefaultUnivocityExchangeSpecificParser(CoinbaseBeanV4.class),
                 SupportedExchange.COINBASE
             )
         );
