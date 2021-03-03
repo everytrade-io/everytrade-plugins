@@ -37,7 +37,7 @@ import java.util.Properties;
 
 public class Tester {
     public static final String TEMPLATE_FILE_SUFFIX = ".template";
-    private static final String EMULATED_EVERYTRADE_VERSION = "20201223";
+    private static final String EMULATED_EVERYTRADE_VERSION = "20210303";
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     private final Path workDir;
     private final Path pluginDir;
@@ -175,7 +175,7 @@ public class Tester {
         final List<ParserDescriptor> parserDescriptors = plugin.allParserDescriptors();
         final List<ParserDescriptor> matchDescriptors = new ArrayList<>();
         for (ParserDescriptor parserDescriptor : parserDescriptors) {
-            if (parserDescriptor.getExchangeHeaders().contains(header)) {
+            if (parserDescriptor.isHeaderSupported(header)) {
                 log.info("Found parser id: '{}'", parserDescriptor.getId());
                 matchDescriptors.add(parserDescriptor);
             }

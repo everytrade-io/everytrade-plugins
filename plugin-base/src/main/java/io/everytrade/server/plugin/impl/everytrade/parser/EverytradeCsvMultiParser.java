@@ -3,6 +3,8 @@ package io.everytrade.server.plugin.impl.everytrade.parser;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.SupportedExchange;
 import io.everytrade.server.plugin.api.IPlugin;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.CoinbaseExchangeSpecificParser;
+import io.everytrade.server.plugin.utils.HeaderTemplateFinder;
 import io.everytrade.server.plugin.api.parser.ICsvParser;
 import io.everytrade.server.plugin.api.parser.ParseResult;
 import io.everytrade.server.plugin.api.parser.ParserDescriptor;
@@ -22,10 +24,6 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.Bitstamp
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexBeanV3;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseBeanV1;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseBeanV2;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseBeanV3;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseBeanV4;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseProBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinmateBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinmateBeanV2;
@@ -52,6 +50,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class EverytradeCsvMultiParser implements ICsvParser {
@@ -359,34 +359,10 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             )
         );
         EXCHANGE_PARSE_DETAILS.put(
-            "Timestamp,Transaction Type,Asset,Quantity Transacted,EUR Spot Price at Transaction,EUR Subtotal," +
-                "EUR Total (inclusive of fees),EUR Fees,Notes",
+            "^Timestamp,Transaction Type,Asset,Quantity Transacted,[A-Z]{3} Spot Price at Transaction,[A-Z]{3} " +
+                "Subtotal,[A-Z]{3} Total \\(inclusive of fees\\),[A-Z]{3} Fees,Notes$",
             new ExchangeParseDetail(
-                () -> new DefaultUnivocityExchangeSpecificParser(CoinbaseBeanV1.class),
-                SupportedExchange.COINBASE
-            )
-        );
-        EXCHANGE_PARSE_DETAILS.put(
-            "Timestamp,Transaction Type,Asset,Quantity Transacted,USD Spot Price at Transaction,USD Subtotal," +
-                "USD Total (inclusive of fees),USD Fees,Notes",
-            new ExchangeParseDetail(
-                () -> new DefaultUnivocityExchangeSpecificParser(CoinbaseBeanV2.class),
-                SupportedExchange.COINBASE
-            )
-        );
-        EXCHANGE_PARSE_DETAILS.put(
-            "Timestamp,Transaction Type,Asset,Quantity Transacted,GBP Spot Price at Transaction,GBP Subtotal," +
-                "GBP Total (inclusive of fees),GBP Fees,Notes",
-            new ExchangeParseDetail(
-                () -> new DefaultUnivocityExchangeSpecificParser(CoinbaseBeanV3.class),
-                SupportedExchange.COINBASE
-            )
-        );
-        EXCHANGE_PARSE_DETAILS.put(
-            "Timestamp,Transaction Type,Asset,Quantity Transacted,CZK Spot Price at Transaction,CZK Subtotal," +
-                "CZK Total (inclusive of fees),CZK Fees,Notes",
-            new ExchangeParseDetail(
-                () -> new DefaultUnivocityExchangeSpecificParser(CoinbaseBeanV4.class),
+                CoinbaseExchangeSpecificParser::new,
                 SupportedExchange.COINBASE
             )
         );
@@ -413,10 +389,11 @@ public class EverytradeCsvMultiParser implements ICsvParser {
 
     @Override
     public ParseResult parse(File file, String header) {
-        final ExchangeParseDetail exchangeParseDetail = EXCHANGE_PARSE_DETAILS.get(header);
-        if (exchangeParseDetail == null) {
+        final String headerTemplate = HeaderTemplateFinder.findHeaderTemplate(header, EXCHANGE_PARSE_DETAILS.keySet());
+        if (headerTemplate == null) {
             throw new UnknownHeaderException(String.format("Unknown header: '%s'", header));
         }
+        final ExchangeParseDetail exchangeParseDetail = EXCHANGE_PARSE_DETAILS.get(headerTemplate);
         final IExchangeSpecificParser exchangeParser = exchangeParseDetail.getParserFactory().get();
         List<? extends ExchangeBean> listBeans = exchangeParser.parse(file);
         final List<ParsingProblem> parsingProblems = new ArrayList<>(exchangeParser.getParsingProblems());
@@ -432,7 +409,6 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 );
             }
         }
-
 
         log.info(
             "{} transaction cluster(s) with {} transactions parsed successfully.",
