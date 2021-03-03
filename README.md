@@ -30,10 +30,11 @@
 
 ### Adding a new parser
 - Choose a parser ID unique in the scope of your plugin.
-- Create a parser descriptor. It describes which files the parser is able to parse - using file headers and
-  supported exchange for each header.
+- Create a parser descriptor. It describes which files the parser is able to parse - using file header templates and
+  supported exchange for each header template. The header template can directly match the header in the file or can
+  be entered like a regular expression.
 - Implement `ICsvParser` and its methods (most importantly the `parse` method - which should parse a csv file with
-  some specific header).
+  some specific header template).
 - You can take a look at the `plugin-base` module for some inspiration. It contains some real plugin implementations.
 
 ### Adding a new fiat currency
