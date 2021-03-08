@@ -21,11 +21,23 @@ class CoinbaseBeanV1Test {
     private static final String HEADER_CORRECT
         = "Timestamp,Transaction Type,Asset,Quantity Transacted,EUR Spot Price at Transaction,EUR Subtotal,EUR Total " +
         "(inclusive of fees),EUR Fees,Notes\n";
+    private static final String HEADER_CORRECT_SEK
+        = "Timestamp,Transaction Type,Asset,Quantity Transacted,SEK Spot Price at Transaction,SEK Subtotal,SEK Total " +
+        "(inclusive of fees),SEK Fees,Notes\n";
 
     @Test
     void testCorrectHeader() {
         try {
             ParserTestUtils.testParsing(HEADER_CORRECT);
+        } catch (ParsingProcessException e) {
+            fail("Unexpected exception has been thrown.");
+        }
+    }
+
+    @Test
+    void testCorrectHeaderUsd() {
+        try {
+            ParserTestUtils.testParsing(HEADER_CORRECT_SEK);
         } catch (ParsingProcessException e) {
             fail("Unexpected exception has been thrown.");
         }
@@ -45,7 +57,7 @@ class CoinbaseBeanV1Test {
     @Test
     void testCorrectParsingRawTransactionBuy() {
         final String row = "2020-09-27T18:36:58Z,Buy,BTC,0.03182812,9287.38,295.60,300.00," +
-            "4.40,Bought 0,03182812 BTC for € 300,00 EUR\n";
+            "4.40,Bought 0.03182812 BTC for € 300.00 EUR\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
             new BuySellImportedTransactionBean(
@@ -102,6 +114,15 @@ class CoinbaseBeanV1Test {
             0
         );
         ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
+    void testUnknownQuote() {
+        final String row = "2020-03-09T05:17:11Z,Sell,BTC,0.03517833,6831.48,240.32,236.74," +
+            "3.58,Sold 0.03517833 BTC for €236.74 XXX";
+        final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
+        final String error = parsingProblem.getMessage();
+        assertTrue(error.contains("XXX"));
     }
 
     @Test

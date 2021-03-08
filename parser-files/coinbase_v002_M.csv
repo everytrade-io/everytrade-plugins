@@ -1,4 +1,0 @@
-Timestamp,Transaction Type,Asset,Quantity Transacted,USD Spot Price at Transaction,USD Subtotal,USD Total (inclusive of fees),USD Fees,Notes
-2020-03-29T12:49:52Z,Buy,BTC,0.00162435,5546.83,9.01,10.00,0.990000,Bought 0.00162435 BTC for $10.00 USD
-2020-03-09T05:17:11Z,Sell,BTC,0.03517833,6831.48,240.32,236.74,3.58,Sold 0.03517833 BTC for $236.74 USD
-2020-11-28T03:14:02Z,Coinbase Earn,CGLD,1.11111111,39.61,44.01,44.01,0.00,Received 1.11111111 CGLD from Coinbase Earn
