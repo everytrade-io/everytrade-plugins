@@ -56,7 +56,38 @@ public enum Currency {
     NEO(false, Instant.parse("2016-09-09T00:00:00Z"), "NEO"),
     DAT(false, Instant.parse("2017-08-11T00:00:00Z"), "Datum"),
     FUN(false, Instant.parse("2017-02-01T00:00:00Z"), "FunFair"), // token
-    BAT(false, Instant.parse("2017-06-01T00:00:00Z"), "Basic Attention Token"); // token
+    BAT(false, Instant.parse("2017-06-01T00:00:00Z"), "Basic Attention Token"), // token
+    SPK(false, Instant.parse("2018-01-22T00:00:00Z"), "SparksPay"), // can't find exact date
+    TNB(false, Instant.parse("2016-10-01T00:00:00Z"), "Time New Bank"),
+    OGN(false, Instant.parse("2018-10-01T00:00:00Z"), "Origin Protocol"),
+    SXP(false, Instant.parse("2019-08-22T00:00:00Z"), "Swipe"),
+    REN(false, Instant.parse("2018-03-08T00:00:00Z"), "Ren"),
+    ANKR(false, Instant.parse("2019-03-07T00:00:00Z"), "Ankr"),
+    GRT(false, Instant.parse("2020-04-07T00:00:00Z"), "Golden Ratio Token"),
+    SNX(false, Instant.parse("2018-02-28T00:00:00Z"), "Synthetix Network Token"),
+    TROY(false, Instant.parse("2019-04-29T00:00:00Z"), "TROYA COIN"),
+    DIA(false, Instant.parse("2020-09-23T00:00:00Z"), "DIA"),
+    SUSHI(false, Instant.parse("2020-09-07T00:00:00Z"), "Sushi"),
+    ZRX(false, Instant.parse("2017-08-15T00:00:00Z"), "0x"),
+    UMA(false, Instant.parse("2020-08-31T00:00:00Z"), "UMA"),
+    LRC(false, Instant.parse("2016-08-06T00:00:00Z"), "Loopring"),
+    KNC(false, Instant.parse("2017-08-01T00:00:00Z"), "Kyber Network"),
+    QTUM(false, Instant.parse("2016-12-19T00:00:00Z"), "Qtum"),
+    CEL(false, Instant.parse("2018-05-03T00:00:00Z"), "Celsius"),
+    MANA(false, Instant.parse("2015-06-01T00:00:00Z"), "Decentraland"),
+    ZIL(false, Instant.parse("2017-11-06T00:00:00Z"), "Zilliqa"),
+    KSM(false, Instant.parse("2019-12-12T00:00:00Z"), "Kusama"),
+    VET(false, Instant.parse("2017-08-22T00:00:00Z"), "VeChain"),
+    CRO(false, Instant.parse("2018-12-14T00:00:00Z"), "Crypto.com Coin"),
+    FET(false, Instant.parse("2019-02-28T00:00:00Z"), "Fetch.AI"),
+    BLZ(false, Instant.parse("2017-10-01T00:00:00Z"), "Bluzelle"),
+    CELR(false, Instant.parse("2019-03-25T00:00:00Z"), "Celer Network"),
+    ONE(false, Instant.parse("2019-06-01T00:00:00Z"), "Harmony"),
+    IRIS(false, Instant.parse("2019-04-19T00:00:00Z"), "IRISnet"),
+    CHZ(false, Instant.parse("2018-01-01T00:00:00Z"), "Chiliz"),
+    SAND(false, Instant.parse("2020-12-15T00:00:00Z"), "The Sandbox"),
+    CKB(false, Instant.parse("2019-07-03T00:00:00Z"), "Nervos Network"),
+    SOL(false, Instant.parse("2020-04-10T00:00:00Z"), "Solana");
 
     private final int decimalDigits;
     private final boolean fiat;
