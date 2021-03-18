@@ -152,6 +152,13 @@ public final class CoinPaprikaRateProvider implements IRateProvider {
         COIN_IDS_BY_CURRENCY.put(Currency.WAVES, "waves-waves");
         COIN_IDS_BY_CURRENCY.put(Currency.TEL, "tel-telcoin");
         COIN_IDS_BY_CURRENCY.put(Currency.UTK, "utk-utrust");
+        COIN_IDS_BY_CURRENCY.put(Currency.GLM, "glm-golem");
+        COIN_IDS_BY_CURRENCY.put(Currency.MKR, "mkr-maker");
+        COIN_IDS_BY_CURRENCY.put(Currency.NMR, "nmr-numeraire");
+        COIN_IDS_BY_CURRENCY.put(Currency.PAXG, "paxg-pax-gold");
+        COIN_IDS_BY_CURRENCY.put(Currency.CAKE, "cake-pancakeswap");
+        COIN_IDS_BY_CURRENCY.put(Currency.BAL, "bal-balancer");
+        COIN_IDS_BY_CURRENCY.put(Currency.BEAM, "beam-beam");
 
         LISTING_START_BY_CURRENCY.put(Currency.BTC, Instant.parse("2013-04-28T18:45:00Z"));
         LISTING_START_BY_CURRENCY.put(Currency.ETH, Instant.parse("2015-08-07T14:45:00Z"));
@@ -253,6 +260,13 @@ public final class CoinPaprikaRateProvider implements IRateProvider {
         LISTING_START_BY_CURRENCY.put(Currency.WAVES, Instant.parse("2016-06-02T21:10:00Z"));
         LISTING_START_BY_CURRENCY.put(Currency.TEL, Instant.parse("2018-01-15T00:15:00Z"));
         LISTING_START_BY_CURRENCY.put(Currency.UTK, Instant.parse("2017-12-29T19:40:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency.GLM, Instant.parse("2016-11-18T07:30:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency.MKR, Instant.parse("2017-01-29T19:15:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency.NMR, Instant.parse("2017-06-23T04:50:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency.PAXG, Instant.parse("2019-09-26T09:20:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency.CAKE, Instant.parse("2021-02-05T14:50:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency.BAL, Instant.parse("2020-09-01T13:30:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency.BEAM, Instant.parse("2019-01-18T01:20:00Z"));
 
         SUPPORTED_QUOTES.add(Currency.USD);
         SUPPORTED_QUOTES.add(Currency.BTC);

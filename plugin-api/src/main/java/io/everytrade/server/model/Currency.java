@@ -117,7 +117,14 @@ public enum Currency {
     RVN(false, Instant.parse("2018-01-03T00:00:00Z"), "Ravencoin"),
     WAVES(false, Instant.parse("2016-04-12T00:00:00Z"), "Waves"),
     TEL(false, Instant.parse("2017-11-11T00:00:00Z"), "Telcoin"),
-    UTK(false, Instant.parse("2017-08-28T00:00:00Z"), "Utrust");
+    UTK(false, Instant.parse("2017-08-28T00:00:00Z"), "Utrust"),
+    GLM(false, Instant.parse("2016-11-18T00:00:00Z"), "Golem"),
+    MKR(false, Instant.parse("2015-08-15T00:00:00Z"), "Maker"),
+    NMR(false, Instant.parse("2017-06-21T00:00:00Z"), "Numeraire"),
+    PAXG(false, Instant.parse("2019-09-26T00:00:00Z"), "PAX Gold"),
+    CAKE(false, Instant.parse("2021-01-30T00:00:00Z"), "PancakeSwap"),
+    BAL(false, Instant.parse("2020-06-24T00:00:00Z"), "Balancer"),
+    BEAM(false, Instant.parse("2019-01-18T00:00:00Z"), "Beam");
 
     private final int decimalDigits;
     private final boolean fiat;
