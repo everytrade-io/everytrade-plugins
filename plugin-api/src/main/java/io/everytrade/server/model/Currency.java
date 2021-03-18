@@ -97,7 +97,17 @@ public enum Currency {
     EGLD(false, Instant.parse("2020-09-22T00:00:00Z"), "Elrond"),
     ALGO(false, Instant.parse("2019-06-19T00:00:00Z"), "Algorand"),
     ANT(false, Instant.parse("2017-05-05T00:00:00Z"), "Aragon"),
-    COMP(false, Instant.parse("2020-06-17T00:00:00Z"), "Compound");
+    COMP(false, Instant.parse("2020-06-17T00:00:00Z"), "Compound"),
+    ICX(false, Instant.parse("2017-10-27T00:00:00Z"), "ICON"),
+    CRV(false, Instant.parse("2020-08-25T00:00:00Z"), "Curve DAO Token"),
+    REP(false, Instant.parse("2015-10-27T00:00:00Z"), "Augur"),
+    FIRO(false, Instant.parse("2016-09-28T00:00:00Z"), "Firo"),
+    ZEN(false, Instant.parse("2017-05-30T00:00:00Z"), "Horizen"),
+    XVG(false, Instant.parse("2014-10-09T00:00:00Z"), "Verge"),
+    BUSD(false, Instant.parse("2019-09-20T00:00:00Z"), "Binance USD"),
+    THETA(false, Instant.parse("2017-11-23T00:00:00Z"), "THETA"),
+    ONT(false, Instant.parse("2018-03-08T00:00:00Z"), "Ontology"),
+    AKRO(false, Instant.parse("2019-08-07T00:00:00Z"), "Akropolis");
 
     private final int decimalDigits;
     private final boolean fiat;
