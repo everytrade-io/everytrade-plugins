@@ -142,6 +142,16 @@ public final class CoinPaprikaRateProvider implements IRateProvider {
         COIN_IDS_BY_CURRENCY.put(Currency.THETA, "theta-theta-token");
         COIN_IDS_BY_CURRENCY.put(Currency.ONT, "ont-ontology");
         COIN_IDS_BY_CURRENCY.put(Currency.AKRO, "akro-akropolis");
+        COIN_IDS_BY_CURRENCY.put(Currency.BTT, "btt-bittorrent");
+        COIN_IDS_BY_CURRENCY.put(Currency.NANO, "nano-nano");
+        COIN_IDS_BY_CURRENCY.put(Currency.FIL, "fil-filecoin");
+        COIN_IDS_BY_CURRENCY.put(Currency.IOST, "iost-iost");
+        COIN_IDS_BY_CURRENCY.put(Currency.XEM, "xem-nem");
+        COIN_IDS_BY_CURRENCY.put(Currency.DENT, "dent-dent");
+        COIN_IDS_BY_CURRENCY.put(Currency.RVN, "rvn-ravencoin");
+        COIN_IDS_BY_CURRENCY.put(Currency.WAVES, "waves-waves");
+        COIN_IDS_BY_CURRENCY.put(Currency.TEL, "tel-telcoin");
+        COIN_IDS_BY_CURRENCY.put(Currency.UTK, "utk-utrust");
 
         LISTING_START_BY_CURRENCY.put(Currency.BTC, Instant.parse("2013-04-28T18:45:00Z"));
         LISTING_START_BY_CURRENCY.put(Currency.ETH, Instant.parse("2015-08-07T14:45:00Z"));
@@ -233,6 +243,16 @@ public final class CoinPaprikaRateProvider implements IRateProvider {
         LISTING_START_BY_CURRENCY.put(Currency.THETA, Instant.parse("2018-01-17T17:30:00Z"));
         LISTING_START_BY_CURRENCY.put(Currency.ONT, Instant.parse("2018-03-08T07:10:00Z"));
         LISTING_START_BY_CURRENCY.put(Currency.AKRO, Instant.parse("2019-08-07T17:00:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency.BTT, Instant.parse("2019-01-31T11:05:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency.NANO, Instant.parse("2017-03-07T00:30:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency.FIL, Instant.parse("2017-12-13T20:40:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency.IOST, Instant.parse("2018-01-16T01:40:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency.XEM, Instant.parse("2015-04-01T00:25:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency.DENT, Instant.parse("2017-08-12T23:35:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency.RVN, Instant.parse("2018-04-01T13:50:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency.WAVES, Instant.parse("2016-06-02T21:10:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency.TEL, Instant.parse("2018-01-15T00:15:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency.UTK, Instant.parse("2017-12-29T19:40:00Z"));
 
         SUPPORTED_QUOTES.add(Currency.USD);
         SUPPORTED_QUOTES.add(Currency.BTC);

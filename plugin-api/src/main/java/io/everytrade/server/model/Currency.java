@@ -107,7 +107,17 @@ public enum Currency {
     BUSD(false, Instant.parse("2019-09-20T00:00:00Z"), "Binance USD"),
     THETA(false, Instant.parse("2017-11-23T00:00:00Z"), "THETA"),
     ONT(false, Instant.parse("2018-03-08T00:00:00Z"), "Ontology"),
-    AKRO(false, Instant.parse("2019-08-07T00:00:00Z"), "Akropolis");
+    AKRO(false, Instant.parse("2019-08-07T00:00:00Z"), "Akropolis"),
+    BTT(false, Instant.parse("2019-01-28T00:00:00Z"), "BitTorrent"),
+    NANO(false, Instant.parse("2015-10-05T00:00:00Z"), "Nano"),
+    FIL(false, Instant.parse("2017-12-03T00:00:00Z"), "Filecoin"),
+    IOST(false, Instant.parse("2018-01-03T00:00:00Z"), "IOST"),
+    XEM(false, Instant.parse("2014-06-06T00:00:00Z"), "NEM"),
+    DENT(false, Instant.parse("2017-08-12T00:00:00Z"), "Dent"),
+    RVN(false, Instant.parse("2018-01-03T00:00:00Z"), "Ravencoin"),
+    WAVES(false, Instant.parse("2016-04-12T00:00:00Z"), "Waves"),
+    TEL(false, Instant.parse("2017-11-11T00:00:00Z"), "Telcoin"),
+    UTK(false, Instant.parse("2017-08-28T00:00:00Z"), "Utrust");
 
     private final int decimalDigits;
     private final boolean fiat;
