@@ -87,7 +87,17 @@ public enum Currency {
     CHZ(false, Instant.parse("2018-01-01T00:00:00Z"), "Chiliz"),
     SAND(false, Instant.parse("2020-12-15T00:00:00Z"), "The Sandbox"),
     CKB(false, Instant.parse("2019-07-03T00:00:00Z"), "Nervos Network"),
-    SOL(false, Instant.parse("2020-04-10T00:00:00Z"), "Solana");
+    SOL(false, Instant.parse("2020-04-10T00:00:00Z"), "Solana"),
+    COS(false, Instant.parse("2018-08-02T00:00:00Z"), "Contentos"),
+    HOT(false, Instant.parse("2018-04-30T00:00:00Z"), "Holo"),
+    TOMO(false, Instant.parse("2018-03-26T00:00:00Z"), "TomoChain"),
+    BSV(false, Instant.parse("2018-11-09T00:00:00Z"), "Bitcoin SV"),
+    AVA(false, Instant.parse("2018-05-28T00:00:00Z"), "Travala.com"),
+    ATOM(false, Instant.parse("2019-03-15T00:00:00Z"), "Cosmos"),
+    EGLD(false, Instant.parse("2020-09-22T00:00:00Z"), "Elrond"),
+    ALGO(false, Instant.parse("2019-06-19T00:00:00Z"), "Algorand"),
+    ANT(false, Instant.parse("2017-05-05T00:00:00Z"), "Aragon"),
+    COMP(false, Instant.parse("2020-06-17T00:00:00Z"), "Compound");
 
     private final int decimalDigits;
     private final boolean fiat;

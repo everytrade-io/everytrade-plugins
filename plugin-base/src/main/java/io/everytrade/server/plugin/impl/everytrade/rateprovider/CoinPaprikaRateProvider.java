@@ -122,6 +122,16 @@ public final class CoinPaprikaRateProvider implements IRateProvider {
         COIN_IDS_BY_CURRENCY.put(Currency.SAND, "sand-the-sandbox");
         COIN_IDS_BY_CURRENCY.put(Currency.CKB, "ckb-nervos-network");
         COIN_IDS_BY_CURRENCY.put(Currency.SOL, "sol-solana");
+        COIN_IDS_BY_CURRENCY.put(Currency.COS, "cos-contentos");
+        COIN_IDS_BY_CURRENCY.put(Currency.HOT, "hot-holo");
+        COIN_IDS_BY_CURRENCY.put(Currency.TOMO, "tomo-tomochain");
+        COIN_IDS_BY_CURRENCY.put(Currency.BSV, "bsv-bitcoin-sv");
+        COIN_IDS_BY_CURRENCY.put(Currency.AVA, "ava-travala");
+        COIN_IDS_BY_CURRENCY.put(Currency.ATOM, "atom-cosmos");
+        COIN_IDS_BY_CURRENCY.put(Currency.EGLD, "egld-elrond");
+        COIN_IDS_BY_CURRENCY.put(Currency.ALGO, "algo-algorand");
+        COIN_IDS_BY_CURRENCY.put(Currency.ANT, "ant-aragon");
+        COIN_IDS_BY_CURRENCY.put(Currency.COMP, "comp-compoundd");
 
         LISTING_START_BY_CURRENCY.put(Currency.BTC, Instant.parse("2013-04-28T18:45:00Z"));
         LISTING_START_BY_CURRENCY.put(Currency.ETH, Instant.parse("2015-08-07T14:45:00Z"));
@@ -193,6 +203,16 @@ public final class CoinPaprikaRateProvider implements IRateProvider {
         LISTING_START_BY_CURRENCY.put(Currency.SAND, Instant.parse("2020-12-15T14:45:00Z"));
         LISTING_START_BY_CURRENCY.put(Currency.CKB, Instant.parse("2019-11-25T16:00:00Z"));
         LISTING_START_BY_CURRENCY.put(Currency.SOL, Instant.parse("2020-08-26T12:15:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency.COS, Instant.parse("2019-08-07T11:00:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency.HOT, Instant.parse("2018-04-30T22:10:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency.TOMO, Instant.parse("2018-03-29T05:00:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency.BSV, Instant.parse("2018-11-09T05:15:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency.AVA, Instant.parse("2018-05-28T19:40:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency.ATOM, Instant.parse("2019-03-15T04:45:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency.EGLD, Instant.parse("2020-09-22T11:30:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency.ALGO, Instant.parse("2019-08-07T09:10:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency.ANT, Instant.parse("2017-05-18T21:25:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency.COMP, Instant.parse("2020-07-16T13:10:00Z"));
 
         SUPPORTED_QUOTES.add(Currency.USD);
         SUPPORTED_QUOTES.add(Currency.BTC);
