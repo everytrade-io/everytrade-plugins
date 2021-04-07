@@ -50,8 +50,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class EverytradeCsvMultiParser implements ICsvParser {
@@ -167,6 +165,15 @@ public class EverytradeCsvMultiParser implements ICsvParser {
         );
         EXCHANGE_PARSE_DETAILS.put(
             "ID;Date;Account;Type;Amount;Amount Currency;Price;Price Currency;Fee;Fee Currency;Total;Total Currency;" +
+                "Description;Status;First balance after;First balance after Currency;Second balance after;" +
+                "Second balance after Currency",
+            new ExchangeParseDetail(
+                () -> new DefaultUnivocityExchangeSpecificParser(CoinmateBeanV1.class, DELIMITER_SEMICOLON),
+                SupportedExchange.COINMATE
+            )
+        );
+        EXCHANGE_PARSE_DETAILS.put(
+            "ID;Date;Type;Amount;Amount Currency;Price;Price Currency;Fee;Fee Currency;Total;Total Currency;" +
                 "Description;Status;First balance after;First balance after Currency;Second balance after;" +
                 "Second balance after Currency",
             new ExchangeParseDetail(
