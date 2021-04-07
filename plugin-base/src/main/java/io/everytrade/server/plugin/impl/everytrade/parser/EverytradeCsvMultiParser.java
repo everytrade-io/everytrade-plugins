@@ -3,8 +3,6 @@ package io.everytrade.server.plugin.impl.everytrade.parser;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.SupportedExchange;
 import io.everytrade.server.plugin.api.IPlugin;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.CoinbaseExchangeSpecificParser;
-import io.everytrade.server.plugin.utils.HeaderTemplateFinder;
 import io.everytrade.server.plugin.api.parser.ICsvParser;
 import io.everytrade.server.plugin.api.parser.ParseResult;
 import io.everytrade.server.plugin.api.parser.ParserDescriptor;
@@ -14,6 +12,7 @@ import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.EveryTradePlugin;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.UnknownHeaderException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BitfinexExchangeSpecificParser;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.CoinbaseExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.DefaultUnivocityExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.IExchangeSpecificParser;
@@ -42,6 +41,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.PaxfulBe
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.PoloniexBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.ShakePayBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v2.BinanceExchangeSpecificParser;
+import io.everytrade.server.plugin.utils.HeaderTemplateFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,8 +50,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class EverytradeCsvMultiParser implements ICsvParser {
@@ -167,6 +165,15 @@ public class EverytradeCsvMultiParser implements ICsvParser {
         );
         EXCHANGE_PARSE_DETAILS.put(
             "ID;Date;Account;Type;Amount;Amount Currency;Price;Price Currency;Fee;Fee Currency;Total;Total Currency;" +
+                "Description;Status;First balance after;First balance after Currency;Second balance after;" +
+                "Second balance after Currency",
+            new ExchangeParseDetail(
+                () -> new DefaultUnivocityExchangeSpecificParser(CoinmateBeanV1.class, DELIMITER_SEMICOLON),
+                SupportedExchange.COINMATE
+            )
+        );
+        EXCHANGE_PARSE_DETAILS.put(
+            "ID;Date;Type;Amount;Amount Currency;Price;Price Currency;Fee;Fee Currency;Total;Total Currency;" +
                 "Description;Status;First balance after;First balance after Currency;Second balance after;" +
                 "Second balance after Currency",
             new ExchangeParseDetail(
