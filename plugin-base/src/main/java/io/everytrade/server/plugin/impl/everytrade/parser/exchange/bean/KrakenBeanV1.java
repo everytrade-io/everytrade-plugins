@@ -69,7 +69,10 @@ public class KrakenBeanV1 extends ExchangeBean {
     }
 
     @Parsed(field = "time")
-    @Convert(conversionClass=DateTimeConverterWithSecondsFraction.class, args="yyyy-MM-dd HH:mm:ss")
+    @Convert(
+        conversionClass=DateTimeConverterWithSecondsFraction.class,
+        args={"yyyy-MM-dd HH:mm:ss", "M/d/yy h:mm a"}
+        )
     public void setTime(Instant time) {
         this.time = time;
     }

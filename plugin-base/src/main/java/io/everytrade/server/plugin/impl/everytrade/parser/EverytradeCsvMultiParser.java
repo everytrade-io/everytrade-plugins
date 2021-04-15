@@ -317,6 +317,14 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 SupportedExchange.KRAKEN
             )
         );
+
+        EXCHANGE_PARSE_DETAILS.put(
+            "txid,ordertxid,pair,time,type,ordertype,price,cost,fee,vol,misc,ledgers",
+            new ExchangeParseDetail(
+                () -> new DefaultUnivocityExchangeSpecificParser(KrakenBeanV1.class),
+                SupportedExchange.KRAKEN
+            )
+        );
         EXCHANGE_PARSE_DETAILS.put(
             "\"txid\",\"ordertxid\",\"pair\",\"time\",\"type\",\"ordertype\",\"price\",\"cost\",\"fee\",\"vol\"," +
                 "\"margin\",\"misc\",\"ledgers\"",
