@@ -1,5 +1,6 @@
 package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
+import com.univocity.parsers.common.DataValidationException;
 import com.univocity.parsers.conversions.Conversion;
 
 import java.time.Instant;
@@ -8,36 +9,78 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
 public class DateTimeConverterWithSecondsFraction implements Conversion<String, Instant> {
 
-    private final DateTimeFormatter dateTimeFormatter;
+    private final List<DateTimeFormatter> dateTimeFormatters = new ArrayList<>();
 
     public DateTimeConverterWithSecondsFraction(String... patterns) {
         Objects.requireNonNull(patterns);
-        if (patterns.length != 1) {
-            throw new IllegalArgumentException("One pattern must be set.");
+        for (String pattern : patterns) {
+            if (pattern.endsWith("s")) {
+                dateTimeFormatters.add(
+                    new DateTimeFormatterBuilder()
+                        .append(DateTimeFormatter.ofPattern(pattern))
+                        .appendFraction(ChronoField.NANO_OF_SECOND, 0, 4, true)
+                        .toFormatter(Locale.US)
+                );
+            } else {
+                dateTimeFormatters.add(
+                    new DateTimeFormatterBuilder()
+                        .append(DateTimeFormatter.ofPattern(pattern))
+                        .toFormatter(Locale.US)
+                );
+            }
         }
-        if (!patterns[0].endsWith("s")) {
-            throw new IllegalArgumentException("Pattern must end with seconds (i.e. s or ss)");
-        }
-        dateTimeFormatter = new DateTimeFormatterBuilder()
-            .append(DateTimeFormatter.ofPattern(patterns[0]))
-            .appendFraction(ChronoField.NANO_OF_SECOND, 0, 4, true)
-            .toFormatter(Locale.US);
+
     }
 
     @Override
     public Instant execute(String input) {
-        LocalDateTime localDateTime = LocalDateTime.parse(input, dateTimeFormatter);
-        return localDateTime.toInstant(ZoneOffset.UTC);
+        Instant result = null;
+        int errorCounter = 0;
+        for (DateTimeFormatter dateTimeFormatter : dateTimeFormatters) {
+            try {
+                LocalDateTime localDateTime = LocalDateTime.parse(input, dateTimeFormatter);
+                result = localDateTime.toInstant(ZoneOffset.UTC);
+            } catch (Exception e) {
+                errorCounter++;
+            }
+        }
+        if (errorCounter + 1 != dateTimeFormatters.size()) {
+            throw new DataValidationException(String.format(
+                "Exactly one datetime pattern has to match for value '%s'. Found %d patterns.",
+                input,
+                dateTimeFormatters.size() - errorCounter
+            ));
+        }
+        return result;
     }
 
     @Override
     public String revert(Instant input) {
         LocalDateTime localDateTime = LocalDateTime.ofInstant(input, ZoneOffset.UTC);
-        return dateTimeFormatter.format(localDateTime);
+
+        String result = null;
+        int errorCounter = 0;
+        for (DateTimeFormatter dateTimeFormatter : dateTimeFormatters) {
+            try {
+                result = dateTimeFormatter.format(localDateTime);
+            } catch (Exception e) {
+                errorCounter++;
+            }
+        }
+        if (errorCounter + 1 != dateTimeFormatters.size()) {
+            throw new DataValidationException(String.format(
+                "Exactly one datetime pattern has to match for value '%s'. Found %d patterns.",
+                input,
+                dateTimeFormatters.size() - errorCounter
+            ));
+        }
+        return result;
     }
 }
