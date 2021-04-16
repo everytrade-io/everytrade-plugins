@@ -29,7 +29,7 @@ public class BuySellImportedTransactionBean extends ImportedTransactionBean{
         );
 
         Objects.requireNonNull(this.baseQuantity = baseQuantity);
-        Objects.requireNonNull(this.unitPrice = unitPrice);
+        this.unitPrice = unitPrice;
     }
 
     public BigDecimal getBaseQuantity() {

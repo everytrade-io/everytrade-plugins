@@ -33,7 +33,9 @@ public class EveryTradePlugin implements IPlugin {
             BitmexConnector.DESCRIPTOR,
             OkexConnector.DESCRIPTOR,
             HuobiConnector.DESCRIPTOR,
-            CoinbaseConnector.DESCRIPTOR
+            CoinbaseConnector.DESCRIPTOR,
+            BlockchainBtcConnector.DESCRIPTOR,
+            BlockchainLtcConnector.DESCRIPTOR
         ).stream()
             .collect(Collectors.toMap(ConnectorDescriptor::getId, it -> it));
 
@@ -96,6 +98,12 @@ public class EveryTradePlugin implements IPlugin {
         }
         if (connectorId.equals(CoinbaseConnector.DESCRIPTOR.getId())) {
             return new CoinbaseConnector(parameters);
+        }
+        if (connectorId.equals(BlockchainBtcConnector.DESCRIPTOR.getId())) {
+            return new BlockchainBtcConnector(parameters);
+        }
+        if (connectorId.equals(BlockchainLtcConnector.DESCRIPTOR.getId())) {
+            return new BlockchainLtcConnector(parameters);
         }
         return null;
     }
