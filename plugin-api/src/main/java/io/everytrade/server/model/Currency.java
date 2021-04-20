@@ -167,10 +167,14 @@ public enum Currency {
     }
 
     public static Set<Currency> getFiatsExcept(Currency exception) {
+        return getFiatsExcept(Set.of(exception));
+    }
+
+    public static Set<Currency> getFiatsExcept(Set<Currency> exceptions) {
         return Arrays
             .stream(values())
             .filter(Currency::isFiat)
-            .filter(it -> !exception.equals(it))
+            .filter(it -> !exceptions.contains(it))
             .collect(Collectors.toCollection(() -> EnumSet.noneOf(Currency.class)));
     }
 }
