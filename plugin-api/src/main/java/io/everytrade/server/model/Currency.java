@@ -166,6 +166,10 @@ public enum Currency {
             .collect(Collectors.toList());
     }
 
+    public static Set<Currency> getFiatsExcept(Currency exception) {
+        return getFiatsExcept(Set.of(exception));
+    }
+
     public static Set<Currency> getFiatsExcept(Set<Currency> exceptions) {
         return Arrays
             .stream(values())
