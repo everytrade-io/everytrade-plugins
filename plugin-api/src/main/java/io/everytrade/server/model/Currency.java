@@ -16,7 +16,7 @@ public enum Currency {
     GBP(true, Instant.parse("1971-08-01T00:00:00Z"), "British pound"),
     AUD(true, Instant.parse("1966-02-14T00:00:00Z"), "Australian dollar"),
     HKD(true, Instant.parse("1937-01-01T00:00:00Z"), "Hong Kong dollar"),
-    RON(true, Instant.parse("2005-01-01T00:00:00Z"), "Romanian New Leu"),
+    RON(true, Instant.parse("2005-07-01T00:00:00Z"), "Romanian New Leu"),
     DOP(true, Instant.parse("1844-01-01T00:00:00Z"), "Dominican peso"),
 
     USDT(false, Instant.parse("2015-07-01T00:00:00Z"), "Tether"),
@@ -167,10 +167,14 @@ public enum Currency {
     }
 
     public static Set<Currency> getFiatsExcept(Currency exception) {
+        return getFiatsExcept(Set.of(exception));
+    }
+
+    public static Set<Currency> getFiatsExcept(Set<Currency> exceptions) {
         return Arrays
             .stream(values())
             .filter(Currency::isFiat)
-            .filter(it -> !exception.equals(it))
+            .filter(it -> !exceptions.contains(it))
             .collect(Collectors.toCollection(() -> EnumSet.noneOf(Currency.class)));
     }
 }
