@@ -26,7 +26,7 @@ public class BlockchainBtcConnector implements IConnector {
     private static final ConnectorParameterDescriptor PARAMETER_FIAT_CURRENCY =
         new ConnectorParameterDescriptor(
             "fiatCurrency",
-            ConnectorParameterType.STRING,
+            ConnectorParameterType.FIAT_LIST,
             "Fiat currency",
             ""
         );
