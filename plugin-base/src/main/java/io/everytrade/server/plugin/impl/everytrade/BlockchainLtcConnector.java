@@ -17,9 +17,9 @@ public class BlockchainLtcConnector implements IConnector {
 
     private static final ConnectorParameterDescriptor PARAMETER_ADDRESS =
         new ConnectorParameterDescriptor(
-            "address",
+            "ltubKey",
             ConnectorParameterType.STRING,
-            "Wallet address",
+            "Ltub key",
             ""
         );
 
@@ -48,7 +48,7 @@ public class BlockchainLtcConnector implements IConnector {
     );
 
     private static final String CRYPTO_CURRENCY = "LTC";
-    private final String address;
+    private final String ltubKey;
     private final String fiatCurrency;
     private final String isWithFee;
 
@@ -60,8 +60,15 @@ public class BlockchainLtcConnector implements IConnector {
         );
     }
 
-    public BlockchainLtcConnector(String address, String fiatCurrency, String isWithFee) {
-        Objects.requireNonNull(this.address = address);
+    public BlockchainLtcConnector(String ltubKey, String fiatCurrency, String isWithFee) {
+        Objects.requireNonNull(this.ltubKey = ltubKey);
+        if (ltubKey.startsWith(BlockchainDownloader.LTUB_PREFIX)) {
+            throw new IllegalArgumentException(String.format(
+                "Incorrect value of Ltub key '%s' It should starts with '%s'.",
+                ConnectorUtils.truncate(ltubKey, BlockchainDownloader.TRUNCATE_LIMIT),
+                BlockchainDownloader.LTUB_PREFIX
+            ));
+        }
         Objects.requireNonNull(this.fiatCurrency = fiatCurrency);
         Objects.requireNonNull(this.isWithFee = isWithFee);
     }
@@ -77,7 +84,7 @@ public class BlockchainLtcConnector implements IConnector {
         final BlockchainDownloader blockchainDownloader
             = new BlockchainDownloader(lastTransactionUid, CRYPTO_CURRENCY, fiatCurrency, isWithFee);
 
-        return blockchainDownloader.download(address);
+        return blockchainDownloader.download(ltubKey);
     }
 
     @Override

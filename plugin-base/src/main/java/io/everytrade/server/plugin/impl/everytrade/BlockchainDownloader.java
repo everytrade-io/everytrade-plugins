@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class BlockchainDownloader {
+    public static final int TRUNCATE_LIMIT = 10;
     private final Client client;
     private final String lastTransactionUid;
     private final long lastTxTimestamp;
@@ -25,8 +26,8 @@ public class BlockchainDownloader {
     private final String fiatCurrency;
     private final String cryptoCurrency;
     private final boolean isWithFee;
-    private static final String XPUB_PREFIX = "xpub";
-    private static final String LTUB_PREFIX = "Ltub";
+    public static final String XPUB_PREFIX = "xpub";
+    public static final String LTUB_PREFIX = "Ltub";
     private static final String COLON_SYMBOL = ":";
     private static final String PIPE_SYMBOL = "|";
     private static final String COIN_SERVER_URL = "https://coin.cz";
@@ -61,25 +62,25 @@ public class BlockchainDownloader {
         }
     }
 
-    public DownloadResult download(String address) {
-        if (address.startsWith(XPUB_PREFIX) || address.startsWith(LTUB_PREFIX)) {
+    public DownloadResult download(String source) {
+        if (source.startsWith(XPUB_PREFIX) || source.startsWith(LTUB_PREFIX)) {
             final Collection<AddressInfo> addressInfos
-                = client.getAddressesInfoFromXpub(address, Integer.MAX_VALUE);
+                = client.getAddressesInfoFromXpub(source, Integer.MAX_VALUE);
             if (addressInfos == null) {
                 throw new IllegalArgumentException(String.format(
                     "No addresses info found for crypto '%s' and key '%s'",
                     cryptoCurrency,
-                    truncate(address)
+                    ConnectorUtils.truncate(source, TRUNCATE_LIMIT)
                 ));
             }
             return getTransactionsFromAddressInfos(addressInfos);
         } else {
-            final AddressInfo addressInfo = client.getAddressInfo(address, Integer.MAX_VALUE);
+            final AddressInfo addressInfo = client.getAddressInfo(source, Integer.MAX_VALUE);
             if (addressInfo == null) {
                 throw new IllegalArgumentException(String.format(
-                    "No address info found for crypto '%s' and address '%s'",
+                    "No source info found for crypto '%s' and source '%s'",
                     cryptoCurrency,
-                    truncate(address)
+                    ConnectorUtils.truncate(source, TRUNCATE_LIMIT)
                 ));
             }
             return getTransactionsFromAddressInfos(List.of(addressInfo));
@@ -126,12 +127,4 @@ public class BlockchainDownloader {
         return newLastTxTimestamp + COLON_SYMBOL + newLastTxHashes;
     }
 
-    private String truncate(String input) {
-        int limit = 10;
-        if (input == null || input.length() <= limit) {
-            return input;
-        } else {
-            return input.substring(0, limit) + "...";
-        }
-    }
 }

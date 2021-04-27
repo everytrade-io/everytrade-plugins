@@ -59,4 +59,15 @@ public class ConnectorUtils {
         }
         return -1;
     }
+
+    public static String truncate(String input, int limit) {
+        if (limit < 1) {
+            throw new IllegalArgumentException(String.format("Truncation limit '%d' is less then 1.", limit));
+        }
+        if (input == null || input.length() <= limit) {
+            return input;
+        } else {
+            return input.substring(0, limit) + "...";
+        }
+    }
 }

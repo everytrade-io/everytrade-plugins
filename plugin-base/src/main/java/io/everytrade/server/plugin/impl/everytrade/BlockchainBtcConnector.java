@@ -17,9 +17,9 @@ public class BlockchainBtcConnector implements IConnector {
 
     private static final ConnectorParameterDescriptor PARAMETER_ADDRESS =
         new ConnectorParameterDescriptor(
-            "address",
+            "source",
             ConnectorParameterType.STRING,
-            "Wallet address / xpub",
+            "Wallet address / xpub key",
             ""
         );
 
@@ -48,7 +48,7 @@ public class BlockchainBtcConnector implements IConnector {
     );
 
     private static final String CRYPTO_CURRENCY = "BTC";
-    private final String address;
+    private final String source;
     private final String fiatCurrency;
     private final String isWithFee;
 
@@ -60,8 +60,8 @@ public class BlockchainBtcConnector implements IConnector {
         );
     }
 
-    public BlockchainBtcConnector(String address, String fiatCurrency, String isWithFee) {
-        Objects.requireNonNull(this.address = address);
+    public BlockchainBtcConnector(String source, String fiatCurrency, String isWithFee) {
+        Objects.requireNonNull(this.source = source);
         Objects.requireNonNull(this.fiatCurrency = fiatCurrency);
         Objects.requireNonNull(this.isWithFee = isWithFee);
     }
@@ -77,7 +77,7 @@ public class BlockchainBtcConnector implements IConnector {
         final BlockchainDownloader blockchainDownloader
             = new BlockchainDownloader(lastTransactionUid, CRYPTO_CURRENCY, fiatCurrency, isWithFee);
 
-        return blockchainDownloader.download(address);
+        return blockchainDownloader.download(source);
     }
 
     @Override
