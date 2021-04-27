@@ -21,7 +21,30 @@ public class FeeRebateImportedTransactionBean extends ImportedTransactionBean {
         BigDecimal feeRebate,
         Currency feeRebateCurrency
     ) {
-        super(uid, executed, base, quote, action);
+        this(
+            uid,
+            executed,
+            base,
+            quote,
+            action,
+            feeRebate,
+            feeRebateCurrency,
+            null
+        );
+    }
+
+    public FeeRebateImportedTransactionBean(
+        String uid,
+        Instant executed,
+        Currency base,
+        Currency quote,
+        TransactionType action,
+        BigDecimal feeRebate,
+        Currency feeRebateCurrency,
+        String note
+
+    ) {
+        super(uid, executed, base, quote, action, note);
         Objects.requireNonNull(this.feeRebate = feeRebate);
         Objects.requireNonNull(this.feeRebateCurrency = feeRebateCurrency);
     }

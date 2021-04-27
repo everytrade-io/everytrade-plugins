@@ -63,7 +63,8 @@ class GeneralBytesBeanV2Test {
                 Currency.CZK,
                 TransactionType.BUY,
                 new BigDecimal("0.107841"),
-                new BigDecimal("1854.5822089929")
+                new BigDecimal("1854.5822089929"),
+                "R"
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -73,7 +74,8 @@ class GeneralBytesBeanV2Test {
                     Currency.CZK,
                     TransactionType.FEE,
                     new BigDecimal("0.0053"),
-                    Currency.LTC
+                    Currency.LTC,
+                    "R"
                 )
             ),
             0
@@ -94,7 +96,8 @@ class GeneralBytesBeanV2Test {
                 Currency.CZK,
                 TransactionType.SELL,
                 new BigDecimal("0.04595383"),
-                new BigDecimal("2176.0971827593")
+                new BigDecimal("2176.0971827593"),
+                "R"
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -104,7 +107,8 @@ class GeneralBytesBeanV2Test {
                     Currency.CZK,
                     TransactionType.FEE,
                     new BigDecimal("0.0001"),
-                    Currency.LTC
+                    Currency.LTC,
+                    "R"
                 )
             ),
             0
@@ -125,7 +129,8 @@ class GeneralBytesBeanV2Test {
                 Currency.CZK,
                 TransactionType.SELL,
                 new BigDecimal("0.04595383"),
-                new BigDecimal("2176.0971827593")
+                new BigDecimal("2176.0971827593"),
+                "R"
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -135,7 +140,8 @@ class GeneralBytesBeanV2Test {
                     Currency.CZK,
                     TransactionType.FEE,
                     new BigDecimal("0.0001"),
-                    Currency.LTC
+                    Currency.LTC,
+                    "R"
                 )
             ),
             0
@@ -156,7 +162,8 @@ class GeneralBytesBeanV2Test {
                 Currency.CZK,
                 TransactionType.SELL,
                 new BigDecimal("0.04595383"),
-                new BigDecimal("2176.0971827593")
+                new BigDecimal("2176.0971827593"),
+                "R"
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -166,7 +173,8 @@ class GeneralBytesBeanV2Test {
                     Currency.CZK,
                     TransactionType.FEE,
                     new BigDecimal("0.0001"),
-                    Currency.LTC
+                    Currency.LTC,
+                    "R"
                 )
             ),
             0

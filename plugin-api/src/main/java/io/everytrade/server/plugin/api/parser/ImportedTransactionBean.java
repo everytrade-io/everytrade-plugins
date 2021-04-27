@@ -17,19 +17,22 @@ public abstract class ImportedTransactionBean {
     private final Currency quote;
     private final TransactionType action;
     private final Instant imported = Instant.now();
+    private final String note;
 
-    public ImportedTransactionBean(
+    protected ImportedTransactionBean(
         String uid,
         Instant executed,
         Currency base,
         Currency quote,
-        TransactionType action
+        TransactionType action,
+        String note
     ) {
         this.uid = uid; //TODO: fix NULL uids with synthetic ones, otherwise API import might fail
         Objects.requireNonNull(this.executed = executed);
         Objects.requireNonNull(this.base = base);
         Objects.requireNonNull(this.quote = quote);
         Objects.requireNonNull(this.action = action);
+        this.note = note;
     }
 
     public Logger getLog() {
@@ -60,6 +63,10 @@ public abstract class ImportedTransactionBean {
         return imported;
     }
 
+    public String getNote() {
+        return note;
+    }
+
     @Override
     public String toString() {
         return this.getClass().getSimpleName() + "{" +
@@ -68,6 +75,7 @@ public abstract class ImportedTransactionBean {
             ", base=" + base +
             ", quote=" + quote +
             ", action=" + action +
+            ", note=" + note +
             '}';
     }
 }

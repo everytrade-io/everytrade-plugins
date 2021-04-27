@@ -109,8 +109,8 @@ public class GeneralBytesBeanV1 extends ExchangeBean {
                 cashCurrency,               //quote
                 type,                       //action
                 cryptoAmount,               //base quantity
-                evalUnitPrice(cashAmount, cryptoAmount)  //unit price
-
+                evalUnitPrice(cashAmount, cryptoAmount),//unit price
+                remoteTransactionId         //note
             ),
             List.of()
         );
