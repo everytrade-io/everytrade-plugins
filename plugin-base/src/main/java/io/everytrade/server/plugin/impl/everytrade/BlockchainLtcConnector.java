@@ -26,7 +26,7 @@ public class BlockchainLtcConnector implements IConnector {
     private static final ConnectorParameterDescriptor PARAMETER_FIAT_CURRENCY =
         new ConnectorParameterDescriptor(
             "fiatCurrency",
-            ConnectorParameterType.STRING,
+            ConnectorParameterType.FIAT_CURRENCY,
             "Fiat currency",
             ""
         );
@@ -34,7 +34,7 @@ public class BlockchainLtcConnector implements IConnector {
     private static final ConnectorParameterDescriptor PARAMETER_IS_WITH_FEE =
         new ConnectorParameterDescriptor(
             "isWithFee",
-            ConnectorParameterType.STRING,
+            ConnectorParameterType.BOOLEAN,
             "With fee transactions",
             ""
         );
