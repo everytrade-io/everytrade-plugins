@@ -2,7 +2,6 @@ package io.everytrade.server.parser.exchange;
 
 import com.generalbytes.bitrafael.client.Client;
 import com.generalbytes.bitrafael.tools.transaction.Transaction;
-import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.model.TransactionType;
@@ -36,7 +35,7 @@ public class BlockchainApiTransactionBean {
         type = transaction.isDirectionSend() ? TransactionType.SELL : TransactionType.BUY;
         this.base = Currency.valueOf(base.toUpperCase());
         this.quote = Currency.valueOf(quote.toUpperCase());
-        this.price = null; // It will be added by importing to ET database
+        this.price = null; // it will be automatically added from the market in everytrade.
         feeCurrency = this.base;
         originalAmount = Client.satoshisToBigDecimal(transaction.getAmount()).abs();
         feeAmount = Client.satoshisToBigDecimal(transaction.getFee()).abs();
