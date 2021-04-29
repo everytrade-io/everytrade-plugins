@@ -24,7 +24,8 @@ public enum SupportedExchange {
     BITMEX("BitMEX", "bitmex"),
     BITFLYER("bitFlyer", "bitflyer"),
     OKEX("OKEX", "okex"),
-    COINBASE("Coinbase", "coinbase");
+    COINBASE("Coinbase", "coinbase"),
+    BLOCKCHAIN("Blockchain", "blockchain");
 
     private final String displayName;
     private final String internalId;
