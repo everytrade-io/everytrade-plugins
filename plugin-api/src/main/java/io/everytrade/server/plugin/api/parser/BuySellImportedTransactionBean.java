@@ -53,7 +53,7 @@ public class BuySellImportedTransactionBean extends ImportedTransactionBean{
         );
 
         Objects.requireNonNull(this.baseQuantity = baseQuantity);
-        Objects.requireNonNull(this.unitPrice = unitPrice);
+        this.unitPrice = unitPrice; // if is null it will be automatically added from the market in everytrade.
     }
 
     public BigDecimal getBaseQuantity() {
