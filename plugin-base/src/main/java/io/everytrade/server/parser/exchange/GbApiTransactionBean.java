@@ -148,7 +148,8 @@ public class GbApiTransactionBean {
                     quoteCurrency,
                     TransactionType.FEE,
                     expense,
-                    Currency.valueOf(expenseCurrency)
+                    Currency.valueOf(expenseCurrency),
+                    getRemoteUid()
                 )
             );
         }
@@ -161,7 +162,8 @@ public class GbApiTransactionBean {
                 quoteCurrency,
                 TransactionType.valueOf(action),
                 quantity,
-                volume.divide(quantity, 10, RoundingMode.HALF_UP)
+                volume.divide(quantity, 10, RoundingMode.HALF_UP),
+                getRemoteUid()
             ),
             related,
             isIgnoredFee ? 1 : 0
@@ -192,5 +194,16 @@ public class GbApiTransactionBean {
             ", expenseCurrency=" + expenseCurrency +
             ", status=" + status +
             '}';
+    }
+
+    private String getRemoteUid() {
+        if (uid == null) {
+            return null;
+        }
+        final String[] split = uid.split("-");
+        if (split.length != 2) {
+            return null;
+        }
+        return split[1];
     }
 }

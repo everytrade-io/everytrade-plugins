@@ -64,6 +64,7 @@ public class ParserTestUtils {
         assertEquals(expected.getAction(), actual.getAction());
         assertEquals(0, expected.getBaseQuantity().compareTo(actual.getBaseQuantity()));
         assertEquals(0, expected.getUnitPrice().compareTo(actual.getUnitPrice()));
+        assertEquals(expected.getNote(), actual.getNote());
     }
 
     public static void checkEqualRelated(
@@ -80,6 +81,7 @@ public class ParserTestUtils {
         assertEquals(expected.getAction(), actual.getAction());
         assertEquals(0, expected.getFeeRebate().compareTo(actual.getFeeRebate()));
         assertEquals(expected.getFeeRebateCurrency(), actual.getFeeRebateCurrency());
+        assertEquals(expected.getNote(), actual.getNote());
     }
 
 

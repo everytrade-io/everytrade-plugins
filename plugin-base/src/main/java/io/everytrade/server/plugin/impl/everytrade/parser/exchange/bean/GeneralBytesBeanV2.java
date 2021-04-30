@@ -130,7 +130,8 @@ public class GeneralBytesBeanV2 extends ExchangeBean {
                     cashCurrency,
                     TransactionType.FEE,
                     expense.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
-                    expenseCurrency
+                    expenseCurrency,
+                    remoteTransactionId      //note
                 )
             );
         }
@@ -143,8 +144,8 @@ public class GeneralBytesBeanV2 extends ExchangeBean {
                 cashCurrency,               //quote
                 type,                       //action
                 cryptoAmount,               //base quantity
-                evalUnitPrice(cashAmount, cryptoAmount)  //unit price
-
+                evalUnitPrice(cashAmount, cryptoAmount), //unit price
+                remoteTransactionId         //note
             ),
             related,
             isIgnoredFee ? 1 : 0

@@ -20,12 +20,36 @@ public class BuySellImportedTransactionBean extends ImportedTransactionBean{
         BigDecimal baseQuantity,
         BigDecimal unitPrice
     ) {
+        this(
+            uid,
+            executed,
+            base,
+            quote,
+            action,
+            baseQuantity,
+            unitPrice,
+            null
+        );
+    }
+
+    public BuySellImportedTransactionBean(
+        String uid,
+        Instant executed,
+        Currency base,
+        Currency quote,
+        TransactionType action,
+        BigDecimal baseQuantity,
+        BigDecimal unitPrice,
+        String note
+
+    ) {
         super(
             uid,
             executed,
             base,
             quote,
-            action
+            action,
+            note
         );
 
         Objects.requireNonNull(this.baseQuantity = baseQuantity);

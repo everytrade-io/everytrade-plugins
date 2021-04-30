@@ -59,7 +59,8 @@ class GeneralBytesBeanV1Test {
                 Currency.CZK,
                 TransactionType.SELL,
                 new BigDecimal("0.031637"),
-                new BigDecimal("158042.7979896956")
+                new BigDecimal("158042.7979896956"),
+                "R"
             ),
             List.of(),
             0
@@ -80,7 +81,8 @@ class GeneralBytesBeanV1Test {
                 Currency.CZK,
                 TransactionType.BUY,
                 new BigDecimal("0.052674"),
-                new BigDecimal("151877.5866651479")
+                new BigDecimal("151877.5866651479"),
+                "R"
             ),
             List.of()
         );
@@ -101,7 +103,8 @@ class GeneralBytesBeanV1Test {
                 Currency.CZK,
                 TransactionType.BUY,
                 new BigDecimal("0.052674"),
-                new BigDecimal("151877.5866651479")
+                new BigDecimal("151877.5866651479"),
+                "R"
             ),
             List.of()
         );
@@ -121,7 +124,8 @@ class GeneralBytesBeanV1Test {
                 Currency.CZK,
                 TransactionType.BUY,
                 new BigDecimal("0.052674"),
-                new BigDecimal("151877.5866651479")
+                new BigDecimal("151877.5866651479"),
+                "R"
             ),
             List.of()
         );
