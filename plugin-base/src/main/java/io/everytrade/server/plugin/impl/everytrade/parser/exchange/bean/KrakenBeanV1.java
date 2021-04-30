@@ -32,21 +32,24 @@ public class KrakenBeanV1 extends ExchangeBean {
     private BigDecimal cost;
     private BigDecimal fee;
     private BigDecimal vol;
-    private static final Map<String, Currency> CURRENCIES = new HashMap<>() {};
-    static {
-        CURRENCIES.put("XXBT", Currency.BTC);
-        CURRENCIES.put("XETH", Currency.ETH);
-        CURRENCIES.put("XLTC", Currency.LTC);
-        CURRENCIES.put("BCH", Currency.BCH);
-        CURRENCIES.put("XXRP", Currency.XRP);
-        CURRENCIES.put("XXMR", Currency.XMR);
-        CURRENCIES.put("DASH", Currency.DASH);
-        CURRENCIES.put("DAI", Currency.DAI);
+    private static final Map<String, Currency> CURRENCY_SHORT_CODES = new HashMap<>();
+    private static final Map<String, Currency> CURRENCY_LONG_CODES = new HashMap<>();
 
-        CURRENCIES.put("ZCZK", Currency.CZK);
-        CURRENCIES.put("ZUSD", Currency.USD);
-        CURRENCIES.put("ZEUR", Currency.EUR);
-        CURRENCIES.put("ZCAD", Currency.CAD);
+    static {
+        CURRENCY_SHORT_CODES.put("XBT", Currency.BTC);
+        CURRENCY_LONG_CODES.put("XXBT", Currency.BTC);
+
+        for (Currency value : Currency.values()) {
+            if (value.equals(Currency.BTC)) {
+                continue;
+            }
+            CURRENCY_SHORT_CODES.put(value.name(), value);
+            if (value.isFiat()) {
+                CURRENCY_LONG_CODES.put("Z" + value.name(), value);
+            } else {
+                CURRENCY_LONG_CODES.put("X" + value.name(), value);
+            }
+        }
     }
 
     @Parsed(field = "txid")
@@ -56,16 +59,14 @@ public class KrakenBeanV1 extends ExchangeBean {
 
     @Parsed(field = "pair")
     public void setPair(String pair) {
-        String mBase = findStarts(pair);
-        String mQuote = findEnds(pair);
+        String mBase = findCurrencyCode(pair, true);
+        String mQuote = findCurrencyCode(pair, false);
         if (!pair.equals(mBase.concat(mQuote))) {
             throw new DataValidationException(String.format("Can not parse pair %s.", pair));
         }
-        if (!CURRENCIES.containsKey(mBase) || !CURRENCIES.containsKey(mQuote)) {
-            throw new DataValidationException(String.format("Unknown pair base(%s) or pair quote(%s).", mBase, mQuote));
-        }
-        this.pairBase = CURRENCIES.get(mBase);
-        this.pairQuote = CURRENCIES.get(mQuote);
+
+        this.pairBase = findCurrencyByCode(mBase);
+        this.pairQuote = findCurrencyByCode(mQuote);
     }
 
     @Parsed(field = "time")
@@ -134,39 +135,64 @@ public class KrakenBeanV1 extends ExchangeBean {
         );
     }
 
-    private String findStarts(String value) {
-        List<String> matchedCurrencies = CURRENCIES
+    private String findCurrencyCode(String pairCode, boolean isFindingBase) {
+        List<String> matchedShortCodes = CURRENCY_SHORT_CODES
             .keySet()
             .stream()
-            .filter(value::startsWith)
+            .filter(prefix -> isFindingBase ? pairCode.startsWith(prefix) : pairCode.endsWith(prefix))
             .collect(Collectors.toList());
-        switch (matchedCurrencies.size()) {
-            case 0:
-                throw new DataValidationException(String.format("Unknown base currency %s.", value));
-            case 1:
-                return matchedCurrencies.get(0);
-            default:
-                throw new IllegalStateException(
-                    String.format("Found more (%d) than one base currencies.", matchedCurrencies.size())
-                );
+        List<String> matchedLongCodes = CURRENCY_LONG_CODES
+            .keySet()
+            .stream()
+            .filter(prefix -> isFindingBase ? pairCode.startsWith(prefix) : pairCode.endsWith(prefix))
+            .collect(Collectors.toList());
+
+        final boolean foundBothCodes = matchedShortCodes.size() == 1 && matchedLongCodes.size() == 1;
+        final boolean foundLongCode = matchedLongCodes.size() == 1 && matchedShortCodes.isEmpty();
+        final boolean foundShortCode = matchedShortCodes.size() == 1 && matchedLongCodes.isEmpty();
+
+        if (foundBothCodes) {
+            final String matchedShortCode = matchedShortCodes.get(0);
+            final String matchedLongCode = matchedLongCodes.get(0);
+            final boolean foundCurrenciesMatch =
+                CURRENCY_SHORT_CODES.get(matchedShortCode).equals(CURRENCY_LONG_CODES.get(matchedLongCode));
+            if (foundCurrenciesMatch) {
+                return matchedLongCode;
+            } else {
+                throw new DataValidationException(String.format(
+                    "Found different %s currency codes (%s,%s) in pair code %s.",
+                    isFindingBase ? "base" : "quote",
+                    matchedShortCode,
+                    matchedLongCode,
+                    pairCode
+                ));
+            }
         }
+
+        if (foundLongCode) {
+            return matchedLongCodes.get(0);
+        }
+
+        if (foundShortCode)
+            return matchedShortCodes.get(0);
+
+        throw new DataValidationException(String.format(
+            "Unknown %s currency code in pair code %s.",
+            isFindingBase ? "base" : "quote",
+            pairCode
+        ));
     }
 
-    private String findEnds(String value) {
-        List<String> matchedCurrencies = CURRENCIES
-            .keySet()
-            .stream()
-            .filter(value::endsWith)
-            .collect(Collectors.toList());
-        switch (matchedCurrencies.size()) {
-            case 0:
-                throw new DataValidationException(String.format("Unknown quote currency %s.", value));
-            case 1:
-                return matchedCurrencies.get(0);
-            default:
-                throw new IllegalStateException(
-                    String.format("Found more (%d) than one quote currencies.", matchedCurrencies.size())
-                );
+    private Currency findCurrencyByCode(String code) {
+        final Currency currencyLong = CURRENCY_LONG_CODES.get(code);
+        if (currencyLong != null) {
+            return currencyLong;
         }
+        final Currency currencyShort = CURRENCY_SHORT_CODES.get(code);
+        if (currencyShort != null) {
+            return currencyShort;
+        }
+
+        throw new IllegalStateException(String.format("Currency not found for code %s.", code));
     }
 }
