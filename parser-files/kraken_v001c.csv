@@ -1,0 +1,3 @@
+txid,ordertxid,pair,time,type,ordertype,price,cost,fee,vol,ledgers
+TG-1,O1,XXBTZUSD,12/24/19 3:04 AM,buy,limit,3587.1,13.98969,0.03637,0.0039,0,,"LP-1"
+TF-2,O2,XXBTZUSD,12/25/19 1:05 AM,sell,limit,3589.6,14.96863,0.03892,0.00417,0,,"LG-2"

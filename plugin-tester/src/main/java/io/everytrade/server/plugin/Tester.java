@@ -37,7 +37,7 @@ import java.util.Properties;
 
 public class Tester {
     public static final String TEMPLATE_FILE_SUFFIX = ".template";
-    private static final String EMULATED_EVERYTRADE_VERSION = "20210303";
+    private static final String EMULATED_EVERYTRADE_VERSION = "20210427";
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     private final Path workDir;
     private final Path pluginDir;
