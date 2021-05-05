@@ -28,8 +28,16 @@ public class BlockchainApiTransactionBean {
     private final BigDecimal originalAmount;
     private final BigDecimal price;
     private final BigDecimal feeAmount;
+    private final boolean importFeesFromDeposits;
+    private final boolean importFeesFromWithdrawals;
 
-    public BlockchainApiTransactionBean(Transaction transaction, String base, String quote) {
+    public BlockchainApiTransactionBean(
+        Transaction transaction,
+        String base,
+        String quote,
+        boolean importFeesFromDeposits,
+        boolean importFeesFromWithdrawals
+    ) {
         id = transaction.getTxHash();
         timestamp =  Instant.ofEpochMilli(transaction.getTimestamp());
         type = transaction.isDirectionSend() ? TransactionType.SELL : TransactionType.BUY;
@@ -39,9 +47,11 @@ public class BlockchainApiTransactionBean {
         feeCurrency = this.base;
         originalAmount = Client.satoshisToBigDecimal(transaction.getAmount()).abs();
         feeAmount = Client.satoshisToBigDecimal(transaction.getFee()).abs();
+        this.importFeesFromDeposits = importFeesFromDeposits;
+        this.importFeesFromWithdrawals = importFeesFromWithdrawals;
     }
 
-    public TransactionCluster toTransactionCluster(boolean isWithFee) {
+    public TransactionCluster toTransactionCluster() {
         try {
             new CurrencyPair(base, quote);
         } catch (CurrencyPair.FiatCryptoCombinationException e) {
@@ -51,10 +61,13 @@ public class BlockchainApiTransactionBean {
         if (ParserUtils.equalsToZero(originalAmount)) {
             throw new IllegalArgumentException("Crypto amount can't be zero.");
         }
+        final boolean withFee =
+            (importFeesFromDeposits && TransactionType.BUY.equals(type))
+                || (importFeesFromWithdrawals && TransactionType.SELL.equals(type));
 
-        final boolean isIgnoredFee = !(base.equals(feeCurrency) || quote.equals(feeCurrency));
+        final boolean ignoredFee = !(base.equals(feeCurrency) || quote.equals(feeCurrency));
         List<ImportedTransactionBean> related;
-        if (ParserUtils.equalsToZero(feeAmount) || isIgnoredFee || !isWithFee) {
+        if (ParserUtils.equalsToZero(feeAmount) || ignoredFee || !withFee) {
             related = Collections.emptyList();
         } else {
             related = List.of(new FeeRebateImportedTransactionBean(
@@ -80,7 +93,7 @@ public class BlockchainApiTransactionBean {
                 price
             ),
             related,
-            isIgnoredFee ? 1 : 0
+            ignoredFee ? 1 : 0
         );
     }
 
@@ -96,6 +109,8 @@ public class BlockchainApiTransactionBean {
             ", originalAmount=" + originalAmount +
             ", price=" + price +
             ", feeAmount=" + feeAmount +
+            ", importFeesFromDeposits=" + importFeesFromDeposits +
+            ", importFeesFromWithdrawals=" + importFeesFromWithdrawals +
             '}';
     }
 }

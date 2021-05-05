@@ -31,11 +31,35 @@ public class BlockchainBtcConnector implements IConnector {
             ""
         );
 
-    private static final ConnectorParameterDescriptor PARAMETER_IS_WITH_FEE =
+    private static final ConnectorParameterDescriptor PARAMETER_IMPORT_DEPOSITS_AS_BUYS =
         new ConnectorParameterDescriptor(
-            "isWithFee",
+            "importDepositsAsBuys",
             ConnectorParameterType.BOOLEAN,
-            "With fee transactions",
+            "Import deposits as BUY transactions",
+            ""
+        );
+
+    private static final ConnectorParameterDescriptor PARAMETER_IMPORT_WITHDRAWALS_AS_SELLS =
+        new ConnectorParameterDescriptor(
+            "importWithdrawalsAsSells",
+            ConnectorParameterType.BOOLEAN,
+            "Import withdrawals as SELL transactions",
+            ""
+        );
+
+    private static final ConnectorParameterDescriptor PARAMETER_IMPORT_FEES_FROM_DEPOSITS =
+        new ConnectorParameterDescriptor(
+            "importFeesFromDeposits",
+            ConnectorParameterType.BOOLEAN,
+            "Import deposit mining fee as BUY FEE",
+            ""
+        );
+
+    private static final ConnectorParameterDescriptor PARAMETER_IMPORT_FEES_FROM_WITHDRAWALS =
+        new ConnectorParameterDescriptor(
+            "importFeesFromWithdrawals",
+            ConnectorParameterType.BOOLEAN,
+            "Import withdrawal mining fee as SELL FEE",
             ""
         );
 
@@ -44,26 +68,49 @@ public class BlockchainBtcConnector implements IConnector {
         "Blockchain BTC Connector",
         "",
         SupportedExchange.BLOCKCHAIN.getInternalId(),
-        List.of(PARAMETER_ADDRESS, PARAMETER_FIAT_CURRENCY, PARAMETER_IS_WITH_FEE)
+        List.of(
+            PARAMETER_ADDRESS,
+            PARAMETER_FIAT_CURRENCY,
+            PARAMETER_IMPORT_DEPOSITS_AS_BUYS,
+            PARAMETER_IMPORT_WITHDRAWALS_AS_SELLS,
+            PARAMETER_IMPORT_FEES_FROM_DEPOSITS,
+            PARAMETER_IMPORT_FEES_FROM_WITHDRAWALS
+        )
     );
 
     private static final String CRYPTO_CURRENCY = "BTC";
     private final String source;
     private final String fiatCurrency;
-    private final String isWithFee;
+    private final String importDepositsAsBuys;
+    private final String importWithdrawalsAsSells;
+    private final String importFeesFromDeposits;
+    private final String importFeesFromWithdrawals;
 
     public BlockchainBtcConnector(Map<String, String> parameters) {
         this(
             parameters.get(PARAMETER_ADDRESS.getId()),
             parameters.get(PARAMETER_FIAT_CURRENCY.getId()),
-            parameters.get(PARAMETER_IS_WITH_FEE.getId())
+            parameters.get(PARAMETER_IMPORT_DEPOSITS_AS_BUYS.getId()),
+            parameters.get(PARAMETER_IMPORT_WITHDRAWALS_AS_SELLS.getId()),
+            parameters.get(PARAMETER_IMPORT_FEES_FROM_DEPOSITS.getId()),
+            parameters.get(PARAMETER_IMPORT_FEES_FROM_WITHDRAWALS.getId())
         );
     }
 
-    public BlockchainBtcConnector(String source, String fiatCurrency, String isWithFee) {
+    public BlockchainBtcConnector(
+        String source,
+        String fiatCurrency,
+        String importDepositsAsBuys,
+        String isImportSell,
+        String importFeesFromDeposits,
+        String importFeesFromWithdrawals
+    ) {
         Objects.requireNonNull(this.source = source);
         Objects.requireNonNull(this.fiatCurrency = fiatCurrency);
-        Objects.requireNonNull(this.isWithFee = isWithFee);
+        Objects.requireNonNull(this.importDepositsAsBuys = importDepositsAsBuys);
+        Objects.requireNonNull(this.importWithdrawalsAsSells = isImportSell);
+        Objects.requireNonNull(this.importFeesFromDeposits = importFeesFromDeposits);
+        Objects.requireNonNull(this.importFeesFromWithdrawals = importFeesFromWithdrawals);
     }
 
     @Override
@@ -75,7 +122,15 @@ public class BlockchainBtcConnector implements IConnector {
     public DownloadResult getTransactions(String lastTransactionUid) {
 
         final BlockchainDownloader blockchainDownloader
-            = new BlockchainDownloader(lastTransactionUid, CRYPTO_CURRENCY, fiatCurrency, isWithFee);
+            = new BlockchainDownloader(
+            lastTransactionUid,
+            CRYPTO_CURRENCY,
+            fiatCurrency,
+            importDepositsAsBuys,
+            importWithdrawalsAsSells,
+            importFeesFromDeposits,
+            importFeesFromWithdrawals
+        );
 
         return blockchainDownloader.download(source);
     }
