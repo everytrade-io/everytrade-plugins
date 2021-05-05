@@ -108,13 +108,13 @@ public class BlockchainDownloader {
             for (TxInfo txInfo : txInfos) {
                 final Transaction transaction = Transaction.buildTransaction(txInfo, addressInfo.getAddress());
                 final long timestamp = transaction.getTimestamp();
-                final boolean isNewTimeStamp = timestamp >= lastTxTimestamp;
-                final boolean isNewHash = !lastTxHashes.contains(transaction.getTxHash());
-                final boolean isConfirmed = transaction.getConfirmations() >= MIN_COINFIRMATIONS;
-                final boolean isTypeFiltered = (!transaction.isDirectionSend() && importDepositsAsBuys)
+                final boolean newTimeStamp = timestamp >= lastTxTimestamp;
+                final boolean newHash = !lastTxHashes.contains(transaction.getTxHash());
+                final boolean confirmed = transaction.getConfirmations() >= MIN_COINFIRMATIONS;
+                final boolean typeFiltered = (!transaction.isDirectionSend() && importDepositsAsBuys)
                     || (transaction.isDirectionSend() && importWithdrawalsAsSells);
 
-                if (isConfirmed && isNewTimeStamp && isNewHash && isTypeFiltered) {
+                if (confirmed && newTimeStamp && newHash && typeFiltered) {
                     transactions.add(transaction);
                     if (timestamp > newLastTxTimestamp) {
                         newLastTxTimestamp = timestamp;
