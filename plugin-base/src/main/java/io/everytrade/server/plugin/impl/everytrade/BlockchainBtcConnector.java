@@ -31,33 +31,33 @@ public class BlockchainBtcConnector implements IConnector {
             ""
         );
 
-    private static final ConnectorParameterDescriptor PARAMETER_IS_IMPORT_BUY =
+    private static final ConnectorParameterDescriptor PARAMETER_IMPORT_DEPOSITS_AS_BUYS =
         new ConnectorParameterDescriptor(
-            "isImportBuy",
+            "importDepositsAsBuys",
             ConnectorParameterType.BOOLEAN,
             "Import deposits as BUY transactions",
             ""
         );
 
-    private static final ConnectorParameterDescriptor PARAMETER_IS_IMPORT_SELL =
+    private static final ConnectorParameterDescriptor PARAMETER_IMPORT_WITHDRAWALS_AS_SELLS =
         new ConnectorParameterDescriptor(
-            "isImportSell",
+            "importWithdrawalsAsSells",
             ConnectorParameterType.BOOLEAN,
             "Import withdrawals as SELL transactions",
             ""
         );
 
-    private static final ConnectorParameterDescriptor PARAMETER_IS_BUY_WITH_FEE =
+    private static final ConnectorParameterDescriptor PARAMETER_IMPORT_FEES_FROM_DEPOSITS =
         new ConnectorParameterDescriptor(
-            "isBuyWithFee",
+            "importFeesFromDeposits",
             ConnectorParameterType.BOOLEAN,
             "Import deposit mining fee as BUY FEE",
             ""
         );
 
-    private static final ConnectorParameterDescriptor PARAMETER_IS_SELL_WITH_FEE =
+    private static final ConnectorParameterDescriptor PARAMETER_IMPORT_FEES_FROM_WITHDRAWALS =
         new ConnectorParameterDescriptor(
-            "isSellWithFee",
+            "importFeesFromWithdrawals",
             ConnectorParameterType.BOOLEAN,
             "Import withdrawal mining fee as SELL FEE",
             ""
@@ -71,46 +71,46 @@ public class BlockchainBtcConnector implements IConnector {
         List.of(
             PARAMETER_ADDRESS,
             PARAMETER_FIAT_CURRENCY,
-            PARAMETER_IS_IMPORT_BUY,
-            PARAMETER_IS_IMPORT_SELL,
-            PARAMETER_IS_BUY_WITH_FEE,
-            PARAMETER_IS_SELL_WITH_FEE
+            PARAMETER_IMPORT_DEPOSITS_AS_BUYS,
+            PARAMETER_IMPORT_WITHDRAWALS_AS_SELLS,
+            PARAMETER_IMPORT_FEES_FROM_DEPOSITS,
+            PARAMETER_IMPORT_FEES_FROM_WITHDRAWALS
         )
     );
 
     private static final String CRYPTO_CURRENCY = "BTC";
     private final String source;
     private final String fiatCurrency;
-    private final String isImportBuy;
-    private final String isImportSell;
-    private final String isBuyWithFee;
-    private final String isSellWithFee;
+    private final String importDepositsAsBuys;
+    private final String importWithdrawalsAsSells;
+    private final String importFeesFromDeposits;
+    private final String importFeesFromWithdrawals;
 
     public BlockchainBtcConnector(Map<String, String> parameters) {
         this(
             parameters.get(PARAMETER_ADDRESS.getId()),
             parameters.get(PARAMETER_FIAT_CURRENCY.getId()),
-            parameters.get(PARAMETER_IS_IMPORT_BUY.getId()),
-            parameters.get(PARAMETER_IS_IMPORT_SELL.getId()),
-            parameters.get(PARAMETER_IS_BUY_WITH_FEE.getId()),
-            parameters.get(PARAMETER_IS_SELL_WITH_FEE.getId())
+            parameters.get(PARAMETER_IMPORT_DEPOSITS_AS_BUYS.getId()),
+            parameters.get(PARAMETER_IMPORT_WITHDRAWALS_AS_SELLS.getId()),
+            parameters.get(PARAMETER_IMPORT_FEES_FROM_DEPOSITS.getId()),
+            parameters.get(PARAMETER_IMPORT_FEES_FROM_WITHDRAWALS.getId())
         );
     }
 
     public BlockchainBtcConnector(
         String source,
         String fiatCurrency,
-        String isImportBuy,
+        String importDepositsAsBuys,
         String isImportSell,
-        String isBuyWithFee,
-        String isSellWithFee
+        String importFeesFromDeposits,
+        String importFeesFromWithdrawals
     ) {
         Objects.requireNonNull(this.source = source);
         Objects.requireNonNull(this.fiatCurrency = fiatCurrency);
-        Objects.requireNonNull(this.isImportBuy = isImportBuy);
-        Objects.requireNonNull(this.isImportSell = isImportSell);
-        Objects.requireNonNull(this.isBuyWithFee = isBuyWithFee);
-        Objects.requireNonNull(this.isSellWithFee = isSellWithFee);
+        Objects.requireNonNull(this.importDepositsAsBuys = importDepositsAsBuys);
+        Objects.requireNonNull(this.importWithdrawalsAsSells = isImportSell);
+        Objects.requireNonNull(this.importFeesFromDeposits = importFeesFromDeposits);
+        Objects.requireNonNull(this.importFeesFromWithdrawals = importFeesFromWithdrawals);
     }
 
     @Override
@@ -126,10 +126,10 @@ public class BlockchainBtcConnector implements IConnector {
             lastTransactionUid,
             CRYPTO_CURRENCY,
             fiatCurrency,
-            isImportBuy,
-            isImportSell,
-            isBuyWithFee,
-            isSellWithFee
+            importDepositsAsBuys,
+            importWithdrawalsAsSells,
+            importFeesFromDeposits,
+            importFeesFromWithdrawals
         );
 
         return blockchainDownloader.download(source);

@@ -22,8 +22,8 @@ public class BlockchainConnectorParser {
         List<Transaction> transactions,
         String base,
         String quote,
-        boolean isBuyWithFee,
-        boolean isSellWithFee
+        boolean importFeesFromDeposits,
+        boolean importFeesFromWithdrawals
     ) {
         final List<TransactionCluster> transactionClusters = new ArrayList<>();
         final List<ParsingProblem> parsingProblems = new ArrayList<>();
@@ -33,9 +33,11 @@ public class BlockchainConnectorParser {
                 BlockchainApiTransactionBean blockchainApiTransactionBean = new BlockchainApiTransactionBean(
                     transaction,
                     base,
-                    quote
+                    quote,
+                    importFeesFromDeposits,
+                    importFeesFromWithdrawals
                 );
-                transactionClusters.add(blockchainApiTransactionBean.toTransactionCluster(isBuyWithFee, isSellWithFee));
+                transactionClusters.add(blockchainApiTransactionBean.toTransactionCluster());
             } catch (Exception e) {
                 LOG.error("Error converting to BlockchainApiTransactionBean: {}", e.getMessage());
                 LOG.debug("Exception by converting to BlockchainApiTransactionBean.", e);
