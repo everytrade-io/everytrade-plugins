@@ -41,7 +41,7 @@ public class BlockchainApiTransactionBean {
         feeAmount = Client.satoshisToBigDecimal(transaction.getFee()).abs();
     }
 
-    public TransactionCluster toTransactionCluster(boolean isWithFee) {
+    public TransactionCluster toTransactionCluster(boolean isBuyWithFee, boolean isSellWithFee) {
         try {
             new CurrencyPair(base, quote);
         } catch (CurrencyPair.FiatCryptoCombinationException e) {
@@ -51,6 +51,9 @@ public class BlockchainApiTransactionBean {
         if (ParserUtils.equalsToZero(originalAmount)) {
             throw new IllegalArgumentException("Crypto amount can't be zero.");
         }
+        final boolean isWithFee =
+            (isBuyWithFee && TransactionType.BUY.equals(type))
+                || (isSellWithFee && TransactionType.SELL.equals(type));
 
         final boolean isIgnoredFee = !(base.equals(feeCurrency) || quote.equals(feeCurrency));
         List<ImportedTransactionBean> related;

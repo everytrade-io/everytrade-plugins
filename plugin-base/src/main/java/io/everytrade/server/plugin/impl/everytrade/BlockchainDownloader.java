@@ -25,7 +25,10 @@ public class BlockchainDownloader {
     private final Set<String> lastTxHashes;
     private final String fiatCurrency;
     private final String cryptoCurrency;
-    private final boolean isWithFee;
+    private final boolean isImportBuy;
+    private final boolean isImportSell;
+    private final boolean isBuyWithFee;
+    private final boolean isSellWithFee;
     public static final String XPUB_PREFIX = "xpub";
     public static final String LTUB_PREFIX = "Ltub";
     private static final String COLON_SYMBOL = ":";
@@ -38,7 +41,10 @@ public class BlockchainDownloader {
         String lastTransactionUid,
         String cryptoCurrency,
         String fiatCurrency,
-        String isWithFee
+        String isImportBuy,
+        String isImportSell,
+        String isBuyWithFee,
+        String isSellWithFee
     ) {
         Objects.requireNonNull(cryptoCurrency);
         if (!SUPPORTED_CRYPTO.contains(Currency.valueOf(cryptoCurrency))) {
@@ -46,8 +52,15 @@ public class BlockchainDownloader {
         }
         this.cryptoCurrency = cryptoCurrency;
         Objects.requireNonNull(this.fiatCurrency = fiatCurrency);
-        Objects.requireNonNull(isWithFee);
-        this.isWithFee = Boolean.parseBoolean(isWithFee);
+        Objects.requireNonNull(isImportBuy);
+        this.isImportBuy = Boolean.parseBoolean(isImportBuy);
+        Objects.requireNonNull(isImportSell);
+        this.isImportSell = Boolean.parseBoolean(isImportSell);
+        Objects.requireNonNull(isBuyWithFee);
+        this.isBuyWithFee = Boolean.parseBoolean(isBuyWithFee);
+        Objects.requireNonNull(isSellWithFee);
+        this.isSellWithFee = Boolean.parseBoolean(isSellWithFee);
+
         this.lastTransactionUid = lastTransactionUid;
         client = new Client(COIN_SERVER_URL, this.cryptoCurrency);
         if (lastTransactionUid == null) {
@@ -98,8 +111,10 @@ public class BlockchainDownloader {
                 final boolean isNewTimeStamp = timestamp >= lastTxTimestamp;
                 final boolean isNewHash = !lastTxHashes.contains(transaction.getTxHash());
                 final boolean isConfirmed = transaction.getConfirmations() >= MIN_COINFIRMATIONS;
+                final boolean isTypeFiltered = (!transaction.isDirectionSend() && isImportBuy)
+                    || (transaction.isDirectionSend() && isImportSell);
 
-                if (isConfirmed && isNewTimeStamp && isNewHash) {
+                if (isConfirmed && isNewTimeStamp && isNewHash && isTypeFiltered) {
                     transactions.add(transaction);
                     if (timestamp > newLastTxTimestamp) {
                         newLastTxTimestamp = timestamp;
@@ -108,8 +123,13 @@ public class BlockchainDownloader {
             }
         }
 
-        final ParseResult parseResult
-            = BlockchainConnectorParser.getParseResult(transactions, cryptoCurrency, fiatCurrency, isWithFee);
+        final ParseResult parseResult = BlockchainConnectorParser.getParseResult(
+            transactions,
+            cryptoCurrency,
+            fiatCurrency,
+            isBuyWithFee,
+            isSellWithFee
+        );
         final String newLastTransactionUid = getNewLastTransactionId(newLastTxTimestamp, transactions);
         return new DownloadResult(parseResult, newLastTransactionUid);
     }

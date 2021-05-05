@@ -31,11 +31,35 @@ public class BlockchainBtcConnector implements IConnector {
             ""
         );
 
-    private static final ConnectorParameterDescriptor PARAMETER_IS_WITH_FEE =
+    private static final ConnectorParameterDescriptor PARAMETER_IS_IMPORT_BUY =
         new ConnectorParameterDescriptor(
-            "isWithFee",
+            "isImportBuy",
             ConnectorParameterType.BOOLEAN,
-            "With fee transactions",
+            "Import deposits as BUY transactions",
+            ""
+        );
+
+    private static final ConnectorParameterDescriptor PARAMETER_IS_IMPORT_SELL =
+        new ConnectorParameterDescriptor(
+            "isImportSell",
+            ConnectorParameterType.BOOLEAN,
+            "Import withdrawals as SELL transactions",
+            ""
+        );
+
+    private static final ConnectorParameterDescriptor PARAMETER_IS_BUY_WITH_FEE =
+        new ConnectorParameterDescriptor(
+            "isBuyWithFee",
+            ConnectorParameterType.BOOLEAN,
+            "Import deposit mining fee as BUY FEE",
+            ""
+        );
+
+    private static final ConnectorParameterDescriptor PARAMETER_IS_SELL_WITH_FEE =
+        new ConnectorParameterDescriptor(
+            "isSellWithFee",
+            ConnectorParameterType.BOOLEAN,
+            "Import withdrawal mining fee as SELL FEE",
             ""
         );
 
@@ -44,26 +68,49 @@ public class BlockchainBtcConnector implements IConnector {
         "Blockchain BTC Connector",
         "",
         SupportedExchange.BLOCKCHAIN.getInternalId(),
-        List.of(PARAMETER_ADDRESS, PARAMETER_FIAT_CURRENCY, PARAMETER_IS_WITH_FEE)
+        List.of(
+            PARAMETER_ADDRESS,
+            PARAMETER_FIAT_CURRENCY,
+            PARAMETER_IS_IMPORT_BUY,
+            PARAMETER_IS_IMPORT_SELL,
+            PARAMETER_IS_BUY_WITH_FEE,
+            PARAMETER_IS_SELL_WITH_FEE
+        )
     );
 
     private static final String CRYPTO_CURRENCY = "BTC";
     private final String source;
     private final String fiatCurrency;
-    private final String isWithFee;
+    private final String isImportBuy;
+    private final String isImportSell;
+    private final String isBuyWithFee;
+    private final String isSellWithFee;
 
     public BlockchainBtcConnector(Map<String, String> parameters) {
         this(
             parameters.get(PARAMETER_ADDRESS.getId()),
             parameters.get(PARAMETER_FIAT_CURRENCY.getId()),
-            parameters.get(PARAMETER_IS_WITH_FEE.getId())
+            parameters.get(PARAMETER_IS_IMPORT_BUY.getId()),
+            parameters.get(PARAMETER_IS_IMPORT_SELL.getId()),
+            parameters.get(PARAMETER_IS_BUY_WITH_FEE.getId()),
+            parameters.get(PARAMETER_IS_SELL_WITH_FEE.getId())
         );
     }
 
-    public BlockchainBtcConnector(String source, String fiatCurrency, String isWithFee) {
+    public BlockchainBtcConnector(
+        String source,
+        String fiatCurrency,
+        String isImportBuy,
+        String isImportSell,
+        String isBuyWithFee,
+        String isSellWithFee
+    ) {
         Objects.requireNonNull(this.source = source);
         Objects.requireNonNull(this.fiatCurrency = fiatCurrency);
-        Objects.requireNonNull(this.isWithFee = isWithFee);
+        Objects.requireNonNull(this.isImportBuy = isImportBuy);
+        Objects.requireNonNull(this.isImportSell = isImportSell);
+        Objects.requireNonNull(this.isBuyWithFee = isBuyWithFee);
+        Objects.requireNonNull(this.isSellWithFee = isSellWithFee);
     }
 
     @Override
@@ -75,7 +122,15 @@ public class BlockchainBtcConnector implements IConnector {
     public DownloadResult getTransactions(String lastTransactionUid) {
 
         final BlockchainDownloader blockchainDownloader
-            = new BlockchainDownloader(lastTransactionUid, CRYPTO_CURRENCY, fiatCurrency, isWithFee);
+            = new BlockchainDownloader(
+            lastTransactionUid,
+            CRYPTO_CURRENCY,
+            fiatCurrency,
+            isImportBuy,
+            isImportSell,
+            isBuyWithFee,
+            isSellWithFee
+        );
 
         return blockchainDownloader.download(source);
     }
