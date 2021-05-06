@@ -64,7 +64,7 @@ public class BlockchainDownloader {
         if (!correctParamsCombination) {
             throw new IllegalArgumentException(
                 String.format("Incorrect params combination, at least importDepositsAsBuys (%s) or " +
-                "importWithdrawalsAsSells (%s) must to be set to true.",
+                "importWithdrawalsAsSells (%s) must be set to true.",
                     importDepositsAsBuys,
                     importWithdrawalsAsSells
                 ));
