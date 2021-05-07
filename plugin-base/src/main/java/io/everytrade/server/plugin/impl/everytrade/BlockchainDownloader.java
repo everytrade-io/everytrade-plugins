@@ -60,6 +60,15 @@ public class BlockchainDownloader {
         this.importFeesFromDeposits = Boolean.parseBoolean(importFeesFromDeposits);
         Objects.requireNonNull(importFeesFromWithdrawals);
         this.importFeesFromWithdrawals = Boolean.parseBoolean(importFeesFromWithdrawals);
+        final boolean correctParamsCombination = this.importDepositsAsBuys || this.importWithdrawalsAsSells;
+        if (!correctParamsCombination) {
+            throw new IllegalArgumentException(
+                String.format("Incorrect params combination, at least importDepositsAsBuys (%s) or " +
+                "importWithdrawalsAsSells (%s) must be set to true.",
+                    importDepositsAsBuys,
+                    importWithdrawalsAsSells
+                ));
+        }
 
         this.lastTransactionUid = lastTransactionUid;
         client = new Client(COIN_SERVER_URL, this.cryptoCurrency);
