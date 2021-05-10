@@ -4,6 +4,7 @@ import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.SupportedExchange;
 import io.everytrade.server.plugin.api.IPlugin;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.CoinbaseExchangeSpecificParser;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.HitBtcBeanV2;
 import io.everytrade.server.plugin.utils.HeaderTemplateFinder;
 import io.everytrade.server.plugin.api.parser.ICsvParser;
 import io.everytrade.server.plugin.api.parser.ParseResult;
@@ -288,21 +289,36 @@ public class EverytradeCsvMultiParser implements ICsvParser {
         );
         //
         EXCHANGE_PARSE_DETAILS.put(
-            "\"Date (UTC)\",\"Instrument\",\"Trade ID\",\"Order ID\",\"Side\",\"Quantity\",\"Price\",\"Volume\"," +
-                "\"Fee\",\"Rebate\",\"Total\"",
+            "^\"Date \\(.*\\)\",\"Instrument\",\"Trade ID\",\"Order ID\",\"Side\",\"Quantity\",\"Price\",\"Volume\"," +
+                "\"Fee\",\"Rebate\",\"Total\"$",
             new ExchangeParseDetail(
                 () -> new DefaultUnivocityExchangeSpecificParser(HitBtcBeanV1.class),
                 SupportedExchange.HITBTC
             )
         );
         EXCHANGE_PARSE_DETAILS.put(
-            "\"Date (+01)\",\"Instrument\",\"Trade ID\",\"Order ID\",\"Side\",\"Quantity\",\"Price\",\"Volume\"," +
-                "\"Fee\",\"Rebate\",\"Total\"",
+            "^\"Email\",\"Date \\(.*\\)\",\"Instrument\",\"Trade ID\",\"Order ID\",\"Side\",\"Quantity\"," +
+                "\"Price\",\"Volume\",\"Fee\",\"Rebate\",\"Total\",\"Taker\"$",
+            new ExchangeParseDetail(
+                () -> new DefaultUnivocityExchangeSpecificParser(HitBtcBeanV2.class),
+                SupportedExchange.HITBTC
+            )
+        );
+        EXCHANGE_PARSE_DETAILS.put(
+            "^Date \\(.*\\),Instrument,Trade ID,Order ID,Side,Quantity,Price,Volume,Fee,Rebate,Total$",
             new ExchangeParseDetail(
                 () -> new DefaultUnivocityExchangeSpecificParser(HitBtcBeanV1.class),
                 SupportedExchange.HITBTC
             )
         );
+        EXCHANGE_PARSE_DETAILS.put(
+            "^Email,Date \\(.*\\),Instrument,Trade ID,Order ID,Side,Quantity,Price,Volume,Fee,Rebate,Total,Taker$",
+            new ExchangeParseDetail(
+                () -> new DefaultUnivocityExchangeSpecificParser(HitBtcBeanV2.class),
+                SupportedExchange.HITBTC
+            )
+        );
+
         EXCHANGE_PARSE_DETAILS.put(
             "\uFEFF\"Time\",\"Type\",\"Pair\",\"Side\",\"Price\",\"Amount\",\"Total\",\"Fee\"",
             new ExchangeParseDetail(
