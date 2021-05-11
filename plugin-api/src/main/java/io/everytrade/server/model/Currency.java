@@ -64,7 +64,7 @@ public enum Currency {
     SXP(false, Instant.parse("2019-08-22T00:00:00Z"), "Swipe"),
     REN(false, Instant.parse("2018-03-08T00:00:00Z"), "Ren"),
     ANKR(false, Instant.parse("2019-03-07T00:00:00Z"), "Ankr"),
-    GRT(false, Instant.parse("2020-04-07T00:00:00Z"), "Golden Ratio Token"),
+    GRT(false, Instant.parse("2020-10-28T00:00:00Z"), "The Graph"),
     SNX(false, Instant.parse("2018-02-28T00:00:00Z"), "Synthetix Network Token"),
     TROY(false, Instant.parse("2019-04-29T00:00:00Z"), "TROYA COIN"),
     DIA(false, Instant.parse("2020-09-23T00:00:00Z"), "DIA"),
