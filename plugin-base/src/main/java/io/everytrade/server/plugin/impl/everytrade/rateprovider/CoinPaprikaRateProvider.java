@@ -97,7 +97,7 @@ public final class CoinPaprikaRateProvider implements IRateProvider {
         COIN_IDS_BY_CURRENCY.put(Currency.SXP, "sxp-swipe");
         COIN_IDS_BY_CURRENCY.put(Currency.REN, "ren-republic-protocol");
         COIN_IDS_BY_CURRENCY.put(Currency.ANKR, "ankr-ankr-network");
-        COIN_IDS_BY_CURRENCY.put(Currency.GRT, "grt-golden-ratio-token");
+        COIN_IDS_BY_CURRENCY.put(Currency.GRT, "grt-the-graph");
         COIN_IDS_BY_CURRENCY.put(Currency.SNX, "snx-synthetix-network-token");
         COIN_IDS_BY_CURRENCY.put(Currency.TROY, "troy-troya-coin");
         COIN_IDS_BY_CURRENCY.put(Currency.DIA, "dia-dia");
@@ -205,7 +205,7 @@ public final class CoinPaprikaRateProvider implements IRateProvider {
         LISTING_START_BY_CURRENCY.put(Currency.SXP, Instant.parse("2019-08-26T23:15:00Z"));
         LISTING_START_BY_CURRENCY.put(Currency.REN, Instant.parse("2018-03-08T09:00:00Z"));
         LISTING_START_BY_CURRENCY.put(Currency.ANKR, Instant.parse("2019-03-07T12:45:00Z"));
-        LISTING_START_BY_CURRENCY.put(Currency.GRT, Instant.parse("2020-05-16T05:15:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency.GRT, Instant.parse("2021-02-13T14:00:00Z"));
         LISTING_START_BY_CURRENCY.put(Currency.SNX, Instant.parse("2018-03-29T05:00:00Z"));
         LISTING_START_BY_CURRENCY.put(Currency.TROY, Instant.parse("2019-05-06T18:00:00Z"));
         LISTING_START_BY_CURRENCY.put(Currency.DIA, Instant.parse("2020-09-23T11:30:00Z"));
