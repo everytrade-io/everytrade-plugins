@@ -4,7 +4,10 @@ import org.knowm.xchange.binance.service.BinanceTradeHistoryParams;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.trade.UserTrade;
 import org.knowm.xchange.service.trade.TradeService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -14,12 +17,14 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class BinanceDownloader {
-    //org.knowm.xchange.binance.BinanceResilience - 1200 request / 1 minute --> 10 user in 1 minute will be enough
-    private static final int MAX_REQUEST_COUNT = 120;
+    //org.knowm.xchange.binance.BinanceResilience - 1200 request per IP / 1 minute --> 20 req / 1 sec
+    private static final int MAX_REQUEST_COUNT = 15; //max is 20
+    private final Duration MIN_TIME_BETWEEN_REQUESTS = Duration.ofMillis(1000 / MAX_REQUEST_COUNT);
     private static final int TX_PER_REQUEST = 1000;
     private final Map<String, String> currencyPairLastIds;
     private final TradeService tradeService;
     private final BinanceTradeHistoryParams tradeHistoryParams;
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     public BinanceDownloader(TradeService tradeService, String lastTransactionId) {
         Objects.requireNonNull(this.tradeService = tradeService);
@@ -46,6 +51,7 @@ public class BinanceDownloader {
             tradeHistoryParams.setStartId(lastDownloadedTx);
 
             while (sentRequests < MAX_REQUEST_COUNT) {
+                sleepBetweenRequests();
                 final List<UserTrade> userTradesBlock;
                 try {
                     userTradesBlock = tradeService.getTradeHistory(tradeHistoryParams).getUserTrades();
@@ -70,6 +76,15 @@ public class BinanceDownloader {
             currencyPairLastIds.put(pair.toString(), lastDownloadedTx);
         }
         return userTrades;
+    }
+
+    private void sleepBetweenRequests() {
+        try {
+            Thread.sleep(MIN_TIME_BETWEEN_REQUESTS.toMillis());
+        } catch (InterruptedException e) {
+            log.warn("Sleep between binance API requests interrupted: {}", e.getMessage());
+            Thread.currentThread().interrupt();
+        }
     }
 
     public String getLastTransactionId() {
