@@ -14,12 +14,17 @@ import org.knowm.xchange.ExchangeSpecification;
 import org.knowm.xchange.binance.BinanceExchange;
 import org.knowm.xchange.dto.trade.UserTrade;
 import org.knowm.xchange.service.trade.TradeService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 public class BinanceConnector implements IConnector {
+    private static final Object LOCK = new Object();
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
+    private static int INSTANCE_COUNTER = 0;
 
     private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "binanceApiConnector";
 
@@ -72,17 +77,23 @@ public class BinanceConnector implements IConnector {
 
     @Override
     public DownloadResult getTransactions(String lastTransactionId) {
-        final ExchangeSpecification exSpec = new BinanceExchange().getDefaultExchangeSpecification();
-        exSpec.setApiKey(apiKey);
-        exSpec.setSecretKey(apiSecret);
-        final Exchange exchange = ExchangeFactory.INSTANCE.createExchange(exSpec);
-        final TradeService tradeService = exchange.getTradeService();
-        final BinanceDownloader binanceDownloader = new BinanceDownloader(tradeService, lastTransactionId);
+        synchronized (LOCK) {
+            log.info(
+                "Binance connector instance #{} entered into synchronized transactions download.",
+                ++INSTANCE_COUNTER
+            );
+            final ExchangeSpecification exSpec = new BinanceExchange().getDefaultExchangeSpecification();
+            exSpec.setApiKey(apiKey);
+            exSpec.setSecretKey(apiSecret);
+            final Exchange exchange = ExchangeFactory.INSTANCE.createExchange(exSpec);
+            final TradeService tradeService = exchange.getTradeService();
+            final BinanceDownloader binanceDownloader = new BinanceDownloader(tradeService, lastTransactionId);
 
-        List<UserTrade> userTrades = binanceDownloader.download(currencyPairs);
-        final ParseResult parseResult = XChangeConnectorParser.getParseResult(userTrades, SupportedExchange.BINANCE);
+            List<UserTrade> userTrades = binanceDownloader.download(currencyPairs);
+            final ParseResult parseResult = XChangeConnectorParser.getParseResult(userTrades, SupportedExchange.BINANCE);
 
-        return new DownloadResult(parseResult, binanceDownloader.getLastTransactionId());
+            return new DownloadResult(parseResult, binanceDownloader.getLastTransactionId());
+        }
     }
 
     @Override
