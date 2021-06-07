@@ -14,8 +14,6 @@ import org.knowm.xchange.ExchangeSpecification;
 import org.knowm.xchange.binance.BinanceExchange;
 import org.knowm.xchange.dto.trade.UserTrade;
 import org.knowm.xchange.service.trade.TradeService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
