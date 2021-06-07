@@ -23,8 +23,6 @@ import java.util.Objects;
 
 public class BinanceConnector implements IConnector {
     private static final Object LOCK = new Object();
-    private final Logger log = LoggerFactory.getLogger(this.getClass());
-    private static int INSTANCE_COUNTER = 0;
 
     private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "binanceApiConnector";
 
@@ -78,10 +76,6 @@ public class BinanceConnector implements IConnector {
     @Override
     public DownloadResult getTransactions(String lastTransactionId) {
         synchronized (LOCK) {
-            log.info(
-                "Binance connector instance #{} entered into synchronized transactions download.",
-                ++INSTANCE_COUNTER
-            );
             final ExchangeSpecification exSpec = new BinanceExchange().getDefaultExchangeSpecification();
             exSpec.setApiKey(apiKey);
             exSpec.setSecretKey(apiSecret);
