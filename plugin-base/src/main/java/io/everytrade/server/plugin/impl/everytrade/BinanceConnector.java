@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Objects;
 
 public class BinanceConnector implements IConnector {
+    private static final Object LOCK = new Object();
 
     private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "binanceApiConnector";
 
@@ -72,17 +73,19 @@ public class BinanceConnector implements IConnector {
 
     @Override
     public DownloadResult getTransactions(String lastTransactionId) {
-        final ExchangeSpecification exSpec = new BinanceExchange().getDefaultExchangeSpecification();
-        exSpec.setApiKey(apiKey);
-        exSpec.setSecretKey(apiSecret);
-        final Exchange exchange = ExchangeFactory.INSTANCE.createExchange(exSpec);
-        final TradeService tradeService = exchange.getTradeService();
-        final BinanceDownloader binanceDownloader = new BinanceDownloader(tradeService, lastTransactionId);
+        synchronized (LOCK) {
+            final ExchangeSpecification exSpec = new BinanceExchange().getDefaultExchangeSpecification();
+            exSpec.setApiKey(apiKey);
+            exSpec.setSecretKey(apiSecret);
+            final Exchange exchange = ExchangeFactory.INSTANCE.createExchange(exSpec);
+            final TradeService tradeService = exchange.getTradeService();
+            final BinanceDownloader binanceDownloader = new BinanceDownloader(tradeService, lastTransactionId);
 
-        List<UserTrade> userTrades = binanceDownloader.download(currencyPairs);
-        final ParseResult parseResult = XChangeConnectorParser.getParseResult(userTrades, SupportedExchange.BINANCE);
+            List<UserTrade> userTrades = binanceDownloader.download(currencyPairs);
+            final ParseResult parseResult = XChangeConnectorParser.getParseResult(userTrades, SupportedExchange.BINANCE);
 
-        return new DownloadResult(parseResult, binanceDownloader.getLastTransactionId());
+            return new DownloadResult(parseResult, binanceDownloader.getLastTransactionId());
+        }
     }
 
     @Override
