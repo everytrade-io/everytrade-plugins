@@ -173,8 +173,9 @@ public class KrakenBeanV1 extends ExchangeBean {
             return matchedLongCodes.get(0);
         }
 
-        if (foundShortCode)
+        if (foundShortCode) {
             return matchedShortCodes.get(0);
+        }
 
         throw new DataValidationException(String.format(
             "Unknown %s currency code in pair code %s.",
