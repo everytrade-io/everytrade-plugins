@@ -17,10 +17,10 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class BinanceDownloader {
-    //org.knowm.xchange.binance.BinanceResilience - 1200 request per IP / 1 minute --> 20 req / 1 sec
-    private static final int MAX_REQUEST_COUNT = 15; //max is 20
-    private final Duration MIN_TIME_BETWEEN_REQUESTS = Duration.ofMillis(1000 / MAX_REQUEST_COUNT);
-    private static final int TX_PER_REQUEST = 1000;
+    //org.knowm.xchange.binance.BinanceResilience - 240 request per IP / 1 minute --> 4 req / 1 sec
+    private static final int MAX_REQUEST_COUNT = 20; // max 10000 txs per cycle
+    private final Duration MIN_TIME_BETWEEN_REQUESTS = Duration.ofMillis(250);
+    private static final int TX_PER_REQUEST = 500;
     private final Map<String, String> currencyPairLastIds;
     private final TradeService tradeService;
     private final BinanceTradeHistoryParams tradeHistoryParams;
