@@ -38,9 +38,9 @@ public class PaxfulBeanV1 extends ExchangeBean {
 
     @Parsed(field = "fiat_currency")
     public void setFiatCurrency(String value) {
-        fiatCurrency = Currency.valueOf(value);
+        fiatCurrency = Currency.fromCode(value);
         if (!fiatCurrency.isFiat()) {
-            throw new DataValidationException(UNSUPPORTED_QUOTE_CURRENCY.concat(fiatCurrency.name()));
+            throw new DataValidationException(UNSUPPORTED_QUOTE_CURRENCY.concat(fiatCurrency.code()));
         }
     }
 

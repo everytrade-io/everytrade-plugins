@@ -37,12 +37,12 @@ public class CoinsquareBeanV1 extends ExchangeBean {
 
     @Parsed(field = "currency")
     public void setCurrency(String value) {
-        currenncy = Currency.valueOf(value);
+        currenncy = Currency.fromCode(value);
     }
 
     @Parsed(field = "base_currency")
     public void setBaseCurrency(String value) {
-        baseCurrenncy = Currency.valueOf(value);
+        baseCurrenncy = Currency.fromCode(value);
     }
 
     @Parsed(field = "amount")

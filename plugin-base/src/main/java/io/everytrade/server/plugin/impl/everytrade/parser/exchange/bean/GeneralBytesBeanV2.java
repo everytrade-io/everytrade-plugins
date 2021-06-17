@@ -72,7 +72,7 @@ public class GeneralBytesBeanV2 extends ExchangeBean {
 
     @Parsed(field = "Cash Currency")
     public void setCashCurrency(String cur) {
-        cashCurrency = Currency.valueOf(cur);
+        cashCurrency = Currency.fromCode(cur);
     }
 
     @Parsed(field = "Crypto Amount", defaultNullRead = "0")
@@ -88,7 +88,7 @@ public class GeneralBytesBeanV2 extends ExchangeBean {
         if ("LBTC".equalsIgnoreCase(cryptoCurrency)) { //BTC Lightening
             this.cryptoCurrency = Currency.BTC;
         } else {
-            this.cryptoCurrency = Currency.valueOf(cryptoCurrency);
+            this.cryptoCurrency = Currency.fromCode(cryptoCurrency);
         }
     }
 
@@ -111,7 +111,7 @@ public class GeneralBytesBeanV2 extends ExchangeBean {
 
     @Parsed(field = "Expense Currency")
     public void setExpenseCurrency(String value) {
-        expenseCurrency = Currency.valueOf(value);
+        expenseCurrency = Currency.fromCode(value);
     }
 
     @Override

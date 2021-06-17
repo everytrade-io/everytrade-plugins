@@ -40,8 +40,8 @@ public class EveryTradeBeanV2 extends ExchangeBean {
     @Parsed(field = "SYMBOL")
     public void setSymbol(String symbol) {
         String[] symbolParts = symbol.split("/");
-        symbolBase = Currency.valueOf(symbolParts[0]);
-        symbolQuote = Currency.valueOf(symbolParts[1]);
+        symbolBase = Currency.fromCode(symbolParts[0]);
+        symbolQuote = Currency.fromCode(symbolParts[1]);
     }
 
     @Parsed(field = "ACTION")

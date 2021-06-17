@@ -37,7 +37,7 @@ public class OkexApiTransactionBean {
         FAST_CURRENCY_PAIRS = new HashMap<>();
         for (CurrencyPair currencyPair : CurrencyPair.getTradeablePairs()) {
             FAST_CURRENCY_PAIRS.put(
-                String.format("%s-%s", currencyPair.getBase().name(), currencyPair.getQuote().name()), currencyPair
+                String.format("%s-%s", currencyPair.getBase().code(), currencyPair.getQuote().code()), currencyPair
             );
         }
     }
@@ -52,7 +52,7 @@ public class OkexApiTransactionBean {
         side = TransactionType.valueOf(orderInfo.getSide().toUpperCase());
         instrumentIdBase = toCurrencyPair(orderInfo.getInstrument_id()).getBase();
         instrumentIdQuote = toCurrencyPair(orderInfo.getInstrument_id()).getQuote();
-        feeCurrency = Currency.valueOf(orderInfo.getFee_currency());
+        feeCurrency = Currency.fromCode(orderInfo.getFee_currency());
         filledSize = new BigDecimal(orderInfo.getFilled_size());
         priceAvg = new BigDecimal(orderInfo.getPrice_avg());
         fee = new BigDecimal(orderInfo.getFee());

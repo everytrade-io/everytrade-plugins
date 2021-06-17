@@ -105,7 +105,7 @@ public class Tester {
     }
 
     private void testRateProviders(IPlugin plugin) {
-        final Instant now = Instant.parse("2020-12-23T00:00:00Z");
+        final Instant now = Instant.parse("2021-02-21T00:00:00Z");
         final List<RateProviderDescriptor> providerDescriptors = plugin.allRateProviderDescriptors();
         for (RateProviderDescriptor rateProviderDescriptor : providerDescriptors) {
             log.info("rateProviderDescriptor = " + rateProviderDescriptor);

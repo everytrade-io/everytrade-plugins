@@ -46,7 +46,7 @@ public class CoinbaseBeanV1 extends ExchangeBean {
 
     @Parsed(field = "Asset")
     public void setAsset(String value) {
-        asset = Currency.valueOf(value);
+        asset = Currency.fromCode(value);
     }
 
     @Parsed(field = "Quantity Transacted")

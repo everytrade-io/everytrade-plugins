@@ -41,8 +41,8 @@ public class BlockchainApiTransactionBean {
         id = transaction.getTxHash();
         timestamp =  Instant.ofEpochMilli(transaction.getTimestamp());
         type = transaction.isDirectionSend() ? TransactionType.SELL : TransactionType.BUY;
-        this.base = Currency.valueOf(base.toUpperCase());
-        this.quote = Currency.valueOf(quote.toUpperCase());
+        this.base = Currency.fromCode(base.toUpperCase());
+        this.quote = Currency.fromCode(quote.toUpperCase());
         this.price = null; // it will be automatically added from the market in everytrade.
         feeCurrency = this.base;
         originalAmount = Client.satoshisToBigDecimal(transaction.getAmount()).abs();

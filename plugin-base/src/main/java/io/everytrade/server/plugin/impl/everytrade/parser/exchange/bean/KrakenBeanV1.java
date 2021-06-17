@@ -43,11 +43,11 @@ public class KrakenBeanV1 extends ExchangeBean {
             if (value.equals(Currency.BTC)) {
                 continue;
             }
-            CURRENCY_SHORT_CODES.put(value.name(), value);
+            CURRENCY_SHORT_CODES.put(value.code(), value);
             if (value.isFiat()) {
-                CURRENCY_LONG_CODES.put("Z" + value.name(), value);
+                CURRENCY_LONG_CODES.put("Z" + value.code(), value);
             } else {
-                CURRENCY_LONG_CODES.put("X" + value.name(), value);
+                CURRENCY_LONG_CODES.put("X" + value.code(), value);
             }
         }
     }

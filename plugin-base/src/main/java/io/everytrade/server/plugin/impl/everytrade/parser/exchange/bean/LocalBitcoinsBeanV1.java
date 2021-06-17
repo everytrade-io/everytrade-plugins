@@ -73,7 +73,7 @@ public class LocalBitcoinsBeanV1 extends ExchangeBean {
 
     @Parsed(field = "currency")
     public void setCurrency(String value) {
-        currency = Currency.valueOf(value);
+        currency = Currency.fromCode(value);
         if (Currency.BTC.equals(currency)) {
             throw new DataValidationException(UNSUPPORTED_QOUTE_BTC);
 

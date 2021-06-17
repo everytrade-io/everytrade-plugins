@@ -49,8 +49,8 @@ public class OkexBeanV1 extends ExchangeBean {
     @Parsed(field = "\uFEFFPairs")
     public void setSymbol(String value) {
         final String[] pair = value.split("_");
-        pairsBase = Currency.valueOf(pair[0].toUpperCase());
-        pairsQuote = Currency.valueOf(pair[1].toUpperCase());
+        pairsBase = Currency.fromCode(pair[0].toUpperCase());
+        pairsQuote = Currency.fromCode(pair[1].toUpperCase());
     }
 
     @Parsed(field = "\uFEFFAmount", defaultNullRead = "0")
@@ -66,19 +66,19 @@ public class OkexBeanV1 extends ExchangeBean {
     @Parsed(field = "\uFEFFTotal")
     public void setTotalCurrency(String value) {
         final String[] split = value.split(" ");
-        totalCurrency = Currency.valueOf(split[1]);
+        totalCurrency = Currency.fromCode(split[1]);
     }
 
     @Parsed(field = "\uFEFFFee")
     public void setFee(String value) {
         final String[] split = value.split(" ");
         fee = new BigDecimal(split[0]);
-        feeCurrency = Currency.valueOf(split[1].toUpperCase());
+        feeCurrency = Currency.fromCode(split[1].toUpperCase());
     }
 
     @Parsed(field = "\uFEFFunit\r")
     public void setUnit(String value) {
-        unit = Currency.valueOf(value);
+        unit = Currency.fromCode(value);
     }
 
     @Override

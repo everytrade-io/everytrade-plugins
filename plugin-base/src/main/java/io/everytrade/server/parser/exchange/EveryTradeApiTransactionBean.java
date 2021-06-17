@@ -107,15 +107,15 @@ public class EveryTradeApiTransactionBean {
     }
 
     public TransactionCluster  toTransactionCluster() {
-        final Currency base = Currency.valueOf(Objects.requireNonNull(this.base));
-        final Currency quote = Currency.valueOf(Objects.requireNonNull(this.quote));
+        final Currency base = Currency.fromCode(Objects.requireNonNull(this.base));
+        final Currency quote = Currency.fromCode(Objects.requireNonNull(this.quote));
         try {
             new CurrencyPair(base, quote);
         } catch (CurrencyPair.FiatCryptoCombinationException e) {
             throw new DataValidationException(e.getMessage());
         }
 
-        final Currency parsedFeeCurrency = Currency.valueOf(Objects.requireNonNull(feeCurrency));
+        final Currency parsedFeeCurrency = Currency.fromCode(Objects.requireNonNull(feeCurrency));
         final List<ImportedTransactionBean> related;
         final boolean ignoredFee;
         if (parsedFeeCurrency == base || parsedFeeCurrency == quote) {

@@ -119,11 +119,11 @@ public class XChangeApiTransactionBean {
 
     private Currency convert(org.knowm.xchange.currency.Currency currency) {
         try {
-            return Currency.valueOf(currency.getCurrencyCode());
+            return Currency.fromCode(currency.getCurrencyCode());
         } catch (IllegalArgumentException e) {
             final org.knowm.xchange.currency.Currency currencyConverted =
                 org.knowm.xchange.currency.Currency.getInstance(currency.getCurrencyCode()).getCommonlyUsedCurrency();
-            return Currency.valueOf(currencyConverted.getCurrencyCode());
+            return Currency.fromCode(currencyConverted.getCurrencyCode());
         }
     }
 }

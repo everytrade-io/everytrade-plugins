@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -125,22 +126,33 @@ public enum Currency {
     PAXG(false, Instant.parse("2019-09-26T00:00:00Z"), "PAX Gold"),
     CAKE(false, Instant.parse("2021-01-30T00:00:00Z"), "PancakeSwap"),
     BAL(false, Instant.parse("2020-06-24T00:00:00Z"), "Balancer"),
-    BEAM(false, Instant.parse("2019-01-18T00:00:00Z"), "Beam");
+    BEAM(false, Instant.parse("2019-01-18T00:00:00Z"), "Beam"),
+    _1INCH("1INCH",false, Instant.parse("2021-01-14T00:00:00Z"), "1inch");
 
+    private final String code;
     private final int decimalDigits;
     private final boolean fiat;
     private final Instant introduction;
     private final String description;
 
     Currency(boolean fiat, Instant introduction, String description) {
-        this(fiat ? 2 : 6, fiat, introduction, description);
+        this(null, fiat ? 2 : 6, fiat, introduction, description);
     }
 
-    Currency(int decimalDigits, boolean fiat, Instant introduction, String description) {
+    Currency(String code, boolean fiat, Instant introduction, String description) {
+        this(code, fiat ? 2 : 6, fiat, introduction, description);
+    }
+
+    Currency(String code, int decimalDigits, boolean fiat, Instant introduction, String description) {
         this.decimalDigits = decimalDigits;
         this.fiat = fiat;
         this.introduction = introduction;
         this.description = description;
+        this.code = code == null ? name() : code;
+    }
+
+    public String code() {
+        return code;
     }
 
     public int getDecimalDigits() {
@@ -176,5 +188,15 @@ public enum Currency {
             .filter(Currency::isFiat)
             .filter(it -> !exceptions.contains(it))
             .collect(Collectors.toCollection(() -> EnumSet.noneOf(Currency.class)));
+    }
+
+    public static Currency fromCode(String code) {
+        Objects.requireNonNull(code, "code is null");
+        for (Currency c : values()) {
+            if (code.equals(c.code())) {
+                return c;
+            }
+        }
+        throw new IllegalArgumentException("No enum constant " + Currency.class.getCanonicalName() + "." + code);
     }
 }
