@@ -133,7 +133,7 @@ public enum Currency {
     private final String description;
 
     Currency(boolean fiat, Instant introduction, String description) {
-        this(fiat ? 2 : 6, fiat, introduction, description);
+        this(fiat ? 2 : 8, fiat, introduction, description);
     }
 
     Currency(int decimalDigits, boolean fiat, Instant introduction, String description) {
