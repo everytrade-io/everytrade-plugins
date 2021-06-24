@@ -268,7 +268,7 @@ public final class CoinPaprikaRateProvider implements IRateProvider {
         LISTING_START_BY_CURRENCY.put(Currency.CAKE, Instant.parse("2021-02-05T14:50:00Z"));
         LISTING_START_BY_CURRENCY.put(Currency.BAL, Instant.parse("2020-09-01T13:30:00Z"));
         LISTING_START_BY_CURRENCY.put(Currency.BEAM, Instant.parse("2019-01-18T01:20:00Z"));
-        LISTING_START_BY_CURRENCY.put(Currency._1INCH, Instant.parse("2021-01-14T12:00:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency._1INCH, Instant.parse("2021-01-14T13:45:00Z"));
 
         SUPPORTED_QUOTES.add(Currency.USD);
         SUPPORTED_QUOTES.add(Currency.BTC);

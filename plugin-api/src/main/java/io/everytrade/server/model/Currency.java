@@ -127,7 +127,7 @@ public enum Currency {
     CAKE(false, Instant.parse("2021-01-30T00:00:00Z"), "PancakeSwap"),
     BAL(false, Instant.parse("2020-06-24T00:00:00Z"), "Balancer"),
     BEAM(false, Instant.parse("2019-01-18T00:00:00Z"), "Beam"),
-    _1INCH("1INCH",false, Instant.parse("2021-01-14T00:00:00Z"), "1inch");
+    _1INCH("1INCH",false, Instant.parse("2020-12-25T00:00:00Z"), "1inch");
 
     private final String code;
     private final int decimalDigits;
