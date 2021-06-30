@@ -39,8 +39,8 @@ public class PoloniexBeanV1 extends ExchangeBean {
     @Parsed(field = "Market")
     public void setMarket(String value) {
         final String[] values = value.split("/");
-        marketBase = Currency.valueOf(values[0]);
-        marketQuote = Currency.valueOf(values[1]);
+        marketBase = Currency.fromCode(values[0]);
+        marketQuote = Currency.fromCode(values[1]);
     }
 
     @Parsed(field = "Category")

@@ -64,7 +64,7 @@ public class CoinmateBeanV2 extends ExchangeBean {
 
     @Parsed(field = "Currency Amount")
     public void setCurrencyAmount(String curr) {
-        currencyAmount = Currency.valueOf(curr);
+        currencyAmount = Currency.fromCode(curr);
     }
 
     @Parsed(field = "Price", defaultNullRead = "0")
@@ -74,7 +74,7 @@ public class CoinmateBeanV2 extends ExchangeBean {
 
     @Parsed(field = "Currency Price")
     public void setCurrencyPrice(String curr) {
-        currencyPrice = Currency.valueOf(curr);
+        currencyPrice = Currency.fromCode(curr);
     }
 
     @Parsed(field = "Fee", defaultNullRead = "0")
@@ -84,7 +84,7 @@ public class CoinmateBeanV2 extends ExchangeBean {
 
     @Parsed(field = "Currency Fee")
     public void setFeeCurrency(String curr) {
-        auxCurrencyFee = Currency.valueOf(curr);
+        auxCurrencyFee = Currency.fromCode(curr);
     }
 
     @Parsed(field = "Status")

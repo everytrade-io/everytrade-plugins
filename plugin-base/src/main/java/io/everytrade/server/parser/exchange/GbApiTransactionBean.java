@@ -129,8 +129,8 @@ public class GbApiTransactionBean {
     }
 
     public TransactionCluster toTransactionCluster() {
-        final Currency baseCurrency = Currency.valueOf(base);
-        final Currency quoteCurrency = Currency.valueOf(quote);
+        final Currency baseCurrency = Currency.fromCode(base);
+        final Currency quoteCurrency = Currency.fromCode(quote);
         try {
             new CurrencyPair(baseCurrency, quoteCurrency);
         } catch (CurrencyPair.FiatCryptoCombinationException e) {
@@ -148,7 +148,7 @@ public class GbApiTransactionBean {
                     quoteCurrency,
                     TransactionType.FEE,
                     expense,
-                    Currency.valueOf(expenseCurrency),
+                    Currency.fromCode(expenseCurrency),
                     getRemoteUid()
                 )
             );

@@ -47,7 +47,7 @@ public class BlockchainDownloader {
         String importFeesFromWithdrawals
     ) {
         Objects.requireNonNull(cryptoCurrency);
-        if (!SUPPORTED_CRYPTO.contains(Currency.valueOf(cryptoCurrency))) {
+        if (!SUPPORTED_CRYPTO.contains(Currency.fromCode(cryptoCurrency))) {
             throw new IllegalArgumentException(String.format("Unsupported crypto currency %s.", cryptoCurrency));
         }
         this.cryptoCurrency = cryptoCurrency;

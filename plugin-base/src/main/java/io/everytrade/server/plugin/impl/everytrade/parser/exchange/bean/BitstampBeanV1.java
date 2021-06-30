@@ -42,7 +42,7 @@ public class BitstampBeanV1 extends ExchangeBean {
     public void setAmount(String amount) {
         String[] amountParts = amount.split(" ");
         String mBase = amountParts[1];
-        amountCurrency = Currency.valueOf(mBase);
+        amountCurrency = Currency.fromCode(mBase);
         if (amountParts[0].isEmpty()) {
             throw new DataValidationException("BaseQuantity can not be null or empty.");
         }
@@ -56,7 +56,7 @@ public class BitstampBeanV1 extends ExchangeBean {
     @Parsed(field = "Value")
     public void setValue(String value) {
         String[] valueParts = value.split(" ");
-        valueCurrency = Currency.valueOf(valueParts[1]);
+        valueCurrency = Currency.fromCode(valueParts[1]);
         if (valueParts[0].isEmpty()) {
             this.value = BigDecimal.ZERO;
         } else {
@@ -66,7 +66,7 @@ public class BitstampBeanV1 extends ExchangeBean {
 
     @Parsed(field = "Rate")
     public void setRate(String rate) {
-        rateCurrency = Currency.valueOf(rate.split(" ")[1]);
+        rateCurrency = Currency.fromCode(rate.split(" ")[1]);
     }
 
     @Parsed(field = "Fee")
@@ -77,7 +77,7 @@ public class BitstampBeanV1 extends ExchangeBean {
         } else {
             this.fee = new BigDecimal(feeParts[0]);
         }
-        feeCurrency = Currency.valueOf(feeParts[1]);
+        feeCurrency = Currency.fromCode(feeParts[1]);
     }
 
     @Parsed(field = "Sub Type")

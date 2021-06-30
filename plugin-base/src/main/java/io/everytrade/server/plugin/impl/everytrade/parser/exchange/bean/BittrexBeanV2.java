@@ -44,8 +44,8 @@ public class BittrexBeanV2 extends ExchangeBean {
         String[] exchangeParts = exchange.split("-");
         String mQuote = exchangeParts[0];
         String mBase = exchangeParts[1];
-        exchangeQuote = Currency.valueOf(mQuote);
-        exchangeBase = Currency.valueOf(mBase);
+        exchangeQuote = Currency.fromCode(mQuote);
+        exchangeBase = Currency.fromCode(mBase);
     }
 
     @Parsed(field = "OrderType")

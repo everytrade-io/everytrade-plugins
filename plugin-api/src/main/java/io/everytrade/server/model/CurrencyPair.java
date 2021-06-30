@@ -24,7 +24,7 @@ public final class CurrencyPair implements Comparable<CurrencyPair>{
 
 
     public CurrencyPair(String base, String quote) {
-        this(Currency.valueOf(base), Currency.valueOf(quote));
+        this(Currency.fromCode(base), Currency.fromCode(quote));
     }
 
     public CurrencyPair(Currency base, Currency quote) {

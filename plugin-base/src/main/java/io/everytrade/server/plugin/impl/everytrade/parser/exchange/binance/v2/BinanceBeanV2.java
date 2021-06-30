@@ -40,7 +40,7 @@ public class BinanceBeanV2 extends ExchangeBean {
 
     static {
         getTradeablePairs().forEach(t -> fastCurrencyPair.put(
-            String.format("%s%s", t.getBase().name(), t.getQuote().name()), t)
+            String.format("%s%s", t.getBase().code(), t.getQuote().code()), t)
         );
     }
 
@@ -119,7 +119,7 @@ public class BinanceBeanV2 extends ExchangeBean {
     private Currency findEnds(String value) {
         List<Currency> matchedCurrencies = Arrays
             .stream(Currency.values())
-            .filter(currency -> value.endsWith(currency.name()))
+            .filter(currency -> value.endsWith(currency.code()))
             .collect(Collectors.toList());
         if (matchedCurrencies.size() == 1) {
             return matchedCurrencies.get(0);

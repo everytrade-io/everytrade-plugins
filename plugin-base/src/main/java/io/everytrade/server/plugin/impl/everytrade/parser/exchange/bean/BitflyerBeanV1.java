@@ -49,7 +49,7 @@ public class BitflyerBeanV1 extends ExchangeBean {
 
     @Parsed(field = "Currency 1")
     public void setCurrency1(String value) {
-        this.currency1 = Currency.valueOf(value);
+        this.currency1 = Currency.fromCode(value);
     }
 
     @Parsed(field = "Amount (Currency 1)", defaultNullRead = "0")
@@ -67,7 +67,7 @@ public class BitflyerBeanV1 extends ExchangeBean {
 
     @Parsed(field = "Currency 2")
     public void setCurrency2(String value) {
-        this.currency2 = Currency.valueOf(value);
+        this.currency2 = Currency.fromCode(value);
     }
 
     @Parsed(field = "Order ID")

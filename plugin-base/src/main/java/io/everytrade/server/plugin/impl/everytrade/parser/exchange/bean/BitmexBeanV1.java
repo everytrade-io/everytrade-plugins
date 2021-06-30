@@ -60,7 +60,7 @@ public class BitmexBeanV1 extends ExchangeBean {
         String mappedPair;
         String replaceBase = findStarts(value);
         if (replaceBase != null) {
-            mappedPair = value.replaceFirst(replaceBase, CURRENCIES.get(replaceBase).name());
+            mappedPair = value.replaceFirst(replaceBase, CURRENCIES.get(replaceBase).code());
         } else {
             mappedPair = value;
         }

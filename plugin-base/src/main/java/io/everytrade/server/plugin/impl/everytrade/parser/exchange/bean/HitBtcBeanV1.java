@@ -40,8 +40,8 @@ public class HitBtcBeanV1 extends ExchangeBean {
     @Parsed(field = "Instrument")
     public void setInstrument(String instrument) {
         String[] instrumentParts = instrument.split("/");
-        instrumentBase = Currency.valueOf(instrumentParts[0]);
-        instrumentQuote = Currency.valueOf(instrumentParts[1]);
+        instrumentBase = Currency.fromCode(instrumentParts[0]);
+        instrumentQuote = Currency.fromCode(instrumentParts[1]);
     }
 
     @Parsed(field = "Trade ID")

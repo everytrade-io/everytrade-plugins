@@ -49,8 +49,8 @@ public class HuobiBeanV1 extends ExchangeBean {
     @Parsed(field = "Pair")
     public void setPair(String value) {
         final String[] values = value.split("/");
-        pairBase = Currency.valueOf(values[0]);
-        pairQuote = Currency.valueOf(values[1]);
+        pairBase = Currency.fromCode(values[0]);
+        pairQuote = Currency.fromCode(values[1]);
     }
 
     @Parsed(field = "Side")
@@ -127,7 +127,7 @@ public class HuobiBeanV1 extends ExchangeBean {
     private Currency findEnds(String value) {
         List<Currency> matchedCurrencies = Arrays
             .stream(Currency.values())
-            .filter(currency -> value.endsWith(currency.name()))
+            .filter(currency -> value.endsWith(currency.code()))
             .collect(Collectors.toList());
         if (matchedCurrencies.size() == 1) {
             return matchedCurrencies.get(0);

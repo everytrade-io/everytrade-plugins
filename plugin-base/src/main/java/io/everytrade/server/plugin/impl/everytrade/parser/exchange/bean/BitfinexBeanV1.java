@@ -41,8 +41,8 @@ public class BitfinexBeanV1 extends ExchangeBean {
     @Parsed(field = "PAIR")
     public void setPair(String value) {
         final String[] values = value.split("/");
-        pairBase = Currency.valueOf(values[0]);
-        pairQuote = Currency.valueOf(values[1]);
+        pairBase = Currency.fromCode(values[0]);
+        pairQuote = Currency.fromCode(values[1]);
     }
 
     @Parsed(field = "AMOUNT")
@@ -69,7 +69,7 @@ public class BitfinexBeanV1 extends ExchangeBean {
     @Parsed(field = "FEE CURRENCY")
     public void setFeeCurrency(String value) {
         try {
-            feeCurrency = Currency.valueOf(value);
+            feeCurrency = Currency.fromCode(value);
         } catch (IllegalArgumentException e) {
             feeCurrency = null;
         }

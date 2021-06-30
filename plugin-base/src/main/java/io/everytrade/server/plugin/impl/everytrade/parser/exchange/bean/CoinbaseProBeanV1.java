@@ -51,8 +51,8 @@ public class CoinbaseProBeanV1 extends ExchangeBean {
     @Parsed(field = "product")
     public void setProduct(String value) {
         final String[] split = value.split("-");
-        productBase = Currency.valueOf(split[0]);
-        productQuote = Currency.valueOf(split[1]);
+        productBase = Currency.fromCode(split[0]);
+        productQuote = Currency.fromCode(split[1]);
     }
 
     @Parsed(field = "side")
@@ -73,7 +73,7 @@ public class CoinbaseProBeanV1 extends ExchangeBean {
 
     @Parsed(field = "size unit")
     public void setSizeUnit(String value) {
-        sizeUnit = Currency.valueOf(value);
+        sizeUnit = Currency.fromCode(value);
     }
 
     @Parsed(field = "price")
@@ -90,7 +90,7 @@ public class CoinbaseProBeanV1 extends ExchangeBean {
 
     @Parsed(field = "price/fee/total unit")
     public void setPriceFeeTotalUnit(String value) {
-        setPriceFeeTotalUnit = Currency.valueOf(value);
+        setPriceFeeTotalUnit = Currency.fromCode(value);
     }
 
     @Override
@@ -98,14 +98,14 @@ public class CoinbaseProBeanV1 extends ExchangeBean {
         if (!sizeUnit.equals(productBase)) {
             throw new DataValidationException(String.format(
                 BASE_DIFFERS_FROM_UNIT_SIZE,
-                productBase.name(), sizeUnit.name()
+                productBase.code(), sizeUnit.code()
             ));
         }
 
         if (!setPriceFeeTotalUnit.equals(productQuote)) {
             throw new DataValidationException(String.format(
                 QUOTE_DIFFERS_FROM_PRICE_FEE_TOTAL_UNIT,
-                productQuote.name(), setPriceFeeTotalUnit.name())
+                productQuote.code(), setPriceFeeTotalUnit.code())
             );
         }
         validateCurrencyPair(productBase, productQuote);

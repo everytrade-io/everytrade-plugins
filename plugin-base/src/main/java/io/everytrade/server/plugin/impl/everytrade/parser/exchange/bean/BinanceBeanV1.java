@@ -86,7 +86,7 @@ public class BinanceBeanV1 extends ExchangeBean {
     @Parsed(field = "Fee Coin")
     public void setFeeCurrency(String value) {
         try {
-            feeCoin = Currency.valueOf(value);
+            feeCoin = Currency.fromCode(value);
         } catch (IllegalArgumentException e) {
             feeCoin = null;
         }

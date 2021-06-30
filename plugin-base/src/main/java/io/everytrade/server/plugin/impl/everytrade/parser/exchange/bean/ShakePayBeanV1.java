@@ -56,7 +56,7 @@ public class ShakePayBeanV1 extends ExchangeBean {
 
     @Parsed(field = "Debit Currency")
     public void setDebitCurrency(String debitCurrency) {
-        this.debitCurrency = Currency.valueOf(debitCurrency);
+        this.debitCurrency = Currency.fromCode(debitCurrency);
     }
 
     @Parsed(field = "Amount Credited")
@@ -67,7 +67,7 @@ public class ShakePayBeanV1 extends ExchangeBean {
 
     @Parsed(field = "Credit Currency")
     public void setCreditCurrency(String creditCurrency) {
-        this.creditCurrency = Currency.valueOf(creditCurrency);
+        this.creditCurrency = Currency.fromCode(creditCurrency);
     }
 
 

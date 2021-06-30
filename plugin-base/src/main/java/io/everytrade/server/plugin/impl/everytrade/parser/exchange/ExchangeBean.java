@@ -78,9 +78,9 @@ public abstract class ExchangeBean implements IImportableBean {
         } else {
             throw new DataValidationException(
                 UNSUPPORTED_CURRENCY_PAIR
-                    .concat(fromCurrency.name())
+                    .concat(fromCurrency.code())
                     .concat("/")
-                    .concat(toCurrency.name())
+                    .concat(toCurrency.code())
             );
         }
     }

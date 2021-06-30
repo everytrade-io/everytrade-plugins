@@ -40,8 +40,8 @@ public class Rate {
     ) {
         this(
             value,
-            Currency.valueOf(base),
-            Currency.valueOf(quote),
+            Currency.fromCode(base),
+            Currency.fromCode(quote),
             validityStartIncl,
             validityEndExcl,
             sourceType,
