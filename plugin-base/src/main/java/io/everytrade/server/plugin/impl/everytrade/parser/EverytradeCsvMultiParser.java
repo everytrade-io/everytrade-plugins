@@ -5,6 +5,7 @@ import io.everytrade.server.model.SupportedExchange;
 import io.everytrade.server.plugin.api.IPlugin;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.CoinbaseExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.HitBtcBeanV2;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.PoloniexBeanV2;
 import io.everytrade.server.plugin.utils.HeaderTemplateFinder;
 import io.everytrade.server.plugin.api.parser.ICsvParser;
 import io.everytrade.server.plugin.api.parser.ParseResult;
@@ -384,6 +385,13 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             "Date,Market,Category,Type,Price,Amount,Total,Fee,Order Number,Base Total Less Fee,Quote Total Less Fee",
             new ExchangeParseDetail(
                 () -> new DefaultUnivocityExchangeSpecificParser(PoloniexBeanV1.class),
+                SupportedExchange.POLONIEX
+            )
+        );
+        EXCHANGE_PARSE_DETAILS.put(
+            "Date,Market,Category,Type,Price,Amount,Total,Fee,Order Number,Base Total Less Fee,Quote Total Less Fee,Fee Currency,Fee Total",
+            new ExchangeParseDetail(
+                () -> new DefaultUnivocityExchangeSpecificParser(PoloniexBeanV2.class),
                 SupportedExchange.POLONIEX
             )
         );
