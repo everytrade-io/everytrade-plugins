@@ -20,6 +20,7 @@ public abstract class ExchangeBean implements IImportableBean {
     public static final String IGNORED_CHARS_IN_NUMBER = "[,\\s\\$]";
     public static final String FEE_UID_PART = "-fee";
     public static final String REBATE_UID_PART = "-rebate";
+    public static final String ILLEGAL_NEGATIVE_VALUES = "Illegal negative value(s) at index(es): ";
     private List<String> rowValues;
     private long rowNumber;
 
@@ -63,7 +64,7 @@ public abstract class ExchangeBean implements IImportableBean {
         }
         if (!negativeValues.isEmpty()) {
             throw new DataValidationException(
-                String.format("Illegal negative value(s) at index(es): %s", negativeValues)
+                String.format(ILLEGAL_NEGATIVE_VALUES + "%s", negativeValues)
             );
         }
     }
