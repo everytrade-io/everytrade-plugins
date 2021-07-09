@@ -46,8 +46,8 @@ class PoloniexBeanV2Test {
                 Currency.BTC,
                 Currency.USDT,
                 TransactionType.BUY,
-                new BigDecimal("0.5671584"),
-                new BigDecimal("9353.0776336734")
+                new BigDecimal("0.56673303"),
+                new BigDecimal("9360.0977267727")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -56,7 +56,7 @@ class PoloniexBeanV2Test {
                     Currency.BTC,
                     Currency.USDT,
                     TransactionType.FEE,
-                    new BigDecimal("0.0004253688"),
+                    new BigDecimal("0.00042537"),
                     Currency.BTC
                 )
             ),
@@ -78,7 +78,7 @@ class PoloniexBeanV2Test {
                 Currency.USDT,
                 TransactionType.SELL,
                 new BigDecimal("0.32647158"),
-                new BigDecimal("8955")
+                new BigDecimal("8948.2837499975")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -87,7 +87,7 @@ class PoloniexBeanV2Test {
                     Currency.BTC,
                     Currency.USDT,
                     TransactionType.FEE,
-                    new BigDecimal("2.1926647492"),
+                    new BigDecimal("2.19266475"),
                     Currency.USDT
                 )
             ),
@@ -116,10 +116,10 @@ class PoloniexBeanV2Test {
 
     @Test
     void testNegativeValues() {
-        final String row = "2020-01-27 20:39:14,BTC/USDT,Exchange,Sell,8955,-0.32647158,-2923.5529989,-0.075%," +
+        final String row = "2020-01-27 20:39:14,BTC/USDT,Exchange,Sell,8955,-0.32647158,-2923.5529989,0.075%," +
             "436733958991,2921.36033415,-0.32647158,USDT,2.19266474\n";
         final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
         final String error = parsingProblem.getMessage();
-        assertTrue(error.contains(ILLEGAL_NEGATIVE_VALUES.concat("[0, 1, 2]")));
+        assertTrue(error.contains(ILLEGAL_NEGATIVE_VALUES.concat("[0, 1]")));
     }
 }
