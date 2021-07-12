@@ -411,6 +411,14 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 SupportedExchange.COINBASE
             )
         );
+        EXCHANGE_PARSE_DETAILS.put(
+            "^\"Timestamp\",\"Transaction Type\",\"Asset\",\"Quantity Transacted\",\"[A-Z]{3} Spot Price at Transaction\",\"[A-Z]{3} " +
+                "Subtotal\",\"[A-Z]{3} Total \\(inclusive of fees\\)\",\"[A-Z]{3} Fees\",\"Notes\"$",
+            new ExchangeParseDetail(
+                CoinbaseExchangeSpecificParser::new,
+                SupportedExchange.COINBASE
+            )
+        );
     }
 
     public static final ParserDescriptor DESCRIPTOR = new ParserDescriptor(
