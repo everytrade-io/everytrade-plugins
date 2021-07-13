@@ -23,6 +23,7 @@ import java.util.List;
 public class PoloniexBeanV2 extends ExchangeBean {
     public static final String UNSUPPORTED_CATEGORY = "Unsupported category ";
     public static final String EXCHANGE_CATEGORY = "Exchange";
+    public static final String UNSUPPORTED_FEE_CURRENCY = "Unsupported fee currency ";
     private Instant date;
     private Currency marketBase;
     private Currency marketQuote;
@@ -94,20 +95,37 @@ public class PoloniexBeanV2 extends ExchangeBean {
         validateCurrencyPair(marketBase, marketQuote);
         validatePositivity(amount,total);
 
-        final BigDecimal feeValue;
-        if (feeCurrency.equals(marketBase)) {
-            feeValue = amount.subtract(quoteTotalLessFee.abs());
-        } else if (feeCurrency.equals(marketQuote)) {
-            feeValue = total.subtract(baseTotalLessFee.abs());
-        } else {
-            throw new DataValidationException(String.format(
-                "Fee currency '%s' differs from  base currency '%s' and quote currency '%s'.",
-                feeCurrency,
-                marketBase,
-                marketQuote
+        final BigDecimal totalPrice;
+        final BigDecimal fee;
+        if (TransactionType.BUY.equals(type)) {
+            totalPrice = total;
+            if (feeCurrency.equals(marketBase)) {
+                fee = amount.subtract(quoteTotalLessFee.abs());
+            } else {
+                throw new DataValidationException(String.format(
+                    UNSUPPORTED_FEE_CURRENCY + "'%s' for BUY transaction on pair '%s/%s'.",
+                    feeCurrency,
+                    marketBase,
+                    marketQuote
                 ));
+            }
+        } else if (TransactionType.SELL.equals(type)) {
+            totalPrice = baseTotalLessFee.abs();
+            if (feeCurrency.equals(marketQuote)) {
+                fee = total.subtract(baseTotalLessFee.abs());
+            } else {
+                throw new DataValidationException(String.format(
+                    UNSUPPORTED_FEE_CURRENCY + "'%s' for SELL transaction on pair '%s/%s'.",
+                    feeCurrency,
+                    marketBase,
+                    marketQuote
+                ));
+            }
+        } else {
+            throw new DataValidationException(String.format("Unsupported transaction type '%s'.", type));
         }
-        validatePositivity(feeValue);
+
+        validatePositivity(totalPrice, fee);
 
         return new TransactionCluster(
             new BuySellImportedTransactionBean(
@@ -116,8 +134,8 @@ public class PoloniexBeanV2 extends ExchangeBean {
                 marketBase,              //base
                 marketQuote,             //quote
                 type,                    //action
-                quoteTotalLessFee.abs(), //base quantity
-                evalUnitPrice(baseTotalLessFee.abs(), quoteTotalLessFee.abs()) //unit price
+                amount,                  //base quantity
+                evalUnitPrice(totalPrice, amount) //unit price
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -126,7 +144,7 @@ public class PoloniexBeanV2 extends ExchangeBean {
                     marketBase,
                     marketQuote,
                     TransactionType.FEE,
-                    feeValue,
+                    fee,
                     feeCurrency
                 )
             )
