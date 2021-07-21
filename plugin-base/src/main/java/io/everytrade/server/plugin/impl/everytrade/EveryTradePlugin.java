@@ -35,7 +35,8 @@ public class EveryTradePlugin implements IPlugin {
             HuobiConnector.DESCRIPTOR,
             CoinbaseConnector.DESCRIPTOR,
             BlockchainBtcConnector.DESCRIPTOR,
-            BlockchainLtcConnector.DESCRIPTOR
+            BlockchainLtcConnector.DESCRIPTOR,
+            BlockchainEthConnector.DESCRIPTOR
         ).stream()
             .collect(Collectors.toMap(ConnectorDescriptor::getId, it -> it));
 
@@ -104,6 +105,9 @@ public class EveryTradePlugin implements IPlugin {
         }
         if (connectorId.equals(BlockchainLtcConnector.DESCRIPTOR.getId())) {
             return new BlockchainLtcConnector(parameters);
+        }
+        if (connectorId.equals(BlockchainEthConnector.DESCRIPTOR.getId())) {
+            return new BlockchainEthConnector(parameters);
         }
         return null;
     }
