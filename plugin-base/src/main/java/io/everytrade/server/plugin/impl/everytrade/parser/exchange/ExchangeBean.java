@@ -93,9 +93,6 @@ public abstract class ExchangeBean implements IImportableBean {
         } catch (IllegalArgumentException e) {
             throw new DataIgnoredException(UNSUPPORTED_TRANSACTION_TYPE.concat(value));
         }
-        if (!type.equals(TransactionType.BUY) && !type.equals(TransactionType.SELL)) {
-            throw new DataIgnoredException(UNSUPPORTED_TRANSACTION_TYPE.concat(value));
-        }
         return type;
     }
 

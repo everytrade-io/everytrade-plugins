@@ -51,6 +51,17 @@ public class ParserTestUtils {
         assertEquals(expected.getIgnoredFeeTransactionCount(), actual.getIgnoredFeeTransactionCount());
     }
 
+    public static void checkEqualUnrelated(TransactionCluster expected, TransactionCluster actual) {
+        assertNotNull(expected);
+        assertNotNull(actual);
+        checkEqualRelated(
+            (FeeRebateImportedTransactionBean) expected.getMain(),
+            (FeeRebateImportedTransactionBean) actual.getMain()
+        );
+        assertEquals(expected.getRelated().size(), actual.getRelated().size());
+        assertEquals(expected.getIgnoredFeeTransactionCount(), actual.getIgnoredFeeTransactionCount());
+    }
+
     public static void checkEqualMain(
         BuySellImportedTransactionBean expected,
         BuySellImportedTransactionBean actual

@@ -4,6 +4,7 @@ import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.SupportedExchange;
 import io.everytrade.server.plugin.api.IPlugin;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.CoinbaseExchangeSpecificParser;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.EveryTradeBeanV3;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.HitBtcBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.PoloniexBeanV2;
 import io.everytrade.server.plugin.utils.HeaderTemplateFinder;
@@ -221,6 +222,13 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             )
         );
         EXCHANGE_PARSE_DETAILS.put(
+            "UID;DATE;SYMBOL;ACTION;QUANTY;PRICE;FEE;FEE_CURRENCY;REBATE;REBATE_CURRENCY",
+            new ExchangeParseDetail(
+                () -> new DefaultUnivocityExchangeSpecificParser(EveryTradeBeanV3.class, DELIMITER_SEMICOLON),
+                SupportedExchange.EVERYTRADE
+            )
+        );
+        EXCHANGE_PARSE_DETAILS.put(
             "UID,DATE,SYMBOL,ACTION,QUANTY,PRICE,FEE",
             new ExchangeParseDetail(
                 () -> new DefaultUnivocityExchangeSpecificParser(EveryTradeBeanV1.class, DELIMITER_COMMA),
@@ -231,6 +239,13 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             "UID,DATE,SYMBOL,ACTION,QUANTY,VOLUME,FEE",
             new ExchangeParseDetail(
                 () -> new DefaultUnivocityExchangeSpecificParser(EveryTradeBeanV2.class, DELIMITER_COMMA),
+                SupportedExchange.EVERYTRADE
+            )
+        );
+        EXCHANGE_PARSE_DETAILS.put(
+            "UID,DATE,SYMBOL,ACTION,QUANTY,PRICE,FEE,FEE_CURRENCY,REBATE,REBATE_CURRENCY",
+            new ExchangeParseDetail(
+                () -> new DefaultUnivocityExchangeSpecificParser(EveryTradeBeanV3.class, DELIMITER_COMMA),
                 SupportedExchange.EVERYTRADE
             )
         );
