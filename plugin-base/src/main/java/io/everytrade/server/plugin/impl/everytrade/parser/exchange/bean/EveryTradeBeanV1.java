@@ -9,10 +9,12 @@ import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -77,19 +79,25 @@ public class EveryTradeBeanV1 extends ExchangeBean {
             quantity,           //base quantity
             price              //unit price
         );
+        List<ImportedTransactionBean> related;
+        if (ParserUtils.equalsToZero(fee)) {
+            related = Collections.emptyList();
+        } else {
+            related = List.of(
+                new FeeRebateImportedTransactionBean(
+                    uid + FEE_UID_PART,
+                    date,
+                    symbolBase,
+                    symbolQuote,
+                    TransactionType.FEE,
+                    fee,
+                    symbolQuote
+                )
+            );
+        }
         return new TransactionCluster(
             buySell,
-            List.of(
-               new FeeRebateImportedTransactionBean(
-                   uid + FEE_UID_PART,
-                   date,
-                   symbolBase,
-                   symbolQuote,
-                   TransactionType.FEE,
-                   fee,
-                   symbolQuote
-               )
-            )
+            related
         );
     }
 }
