@@ -7,11 +7,14 @@ import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -68,6 +71,21 @@ public class EveryTradeBeanV2 extends ExchangeBean {
     public TransactionCluster toTransactionCluster() {
         validateCurrencyPair(symbolBase, symbolQuote);
 
+        List<ImportedTransactionBean> related;
+        if (ParserUtils.equalsToZero(fee)) {
+            related = Collections.emptyList();
+        } else {
+            related = List.of(new FeeRebateImportedTransactionBean(
+                    uid + FEE_UID_PART,
+                    date,
+                    symbolBase,
+                    symbolQuote,
+                    TransactionType.FEE,
+                    fee,
+                    symbolQuote
+                )
+            );
+        }
         return new TransactionCluster(
             new BuySellImportedTransactionBean(
                 uid,
@@ -78,16 +96,7 @@ public class EveryTradeBeanV2 extends ExchangeBean {
                 quantity,
                 evalUnitPrice(volume, quantity)
             ),
-            List.of(new FeeRebateImportedTransactionBean(
-                    uid + FEE_UID_PART,
-                    date,
-                    symbolBase,
-                    symbolQuote,
-                    TransactionType.FEE,
-                    fee,
-                    symbolQuote
-                )
-            )
-        );
+            related
+            );
     }
 }

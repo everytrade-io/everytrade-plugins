@@ -113,17 +113,7 @@ class EveryTradeBeanV1Test {
                 new BigDecimal("0.066506"),
                 new BigDecimal("210507.322647581")
             ),
-            List.of(
-                new FeeRebateImportedTransactionBean(
-                    "1-fee",
-                    Instant.parse("2019-09-01T14:43:18Z"),
-                    Currency.BTC,
-                    Currency.CZK,
-                    TransactionType.FEE,
-                    new BigDecimal("0"),
-                    Currency.CZK
-                )
-            ),
+            List.of(),
             0
         );
         ParserTestUtils.checkEqual(expected, acual);
