@@ -45,7 +45,8 @@ public class BlockchainEthDownloader {
         String importFeesFromDeposits,
         String importFeesFromWithdrawals
     ) {
-        Objects.requireNonNull(this.address = address);
+        Objects.requireNonNull(address);
+        this.address = address.toLowerCase();
         Objects.requireNonNull(this.apiKeyToken = apiKeyToken);
         this.lastTransactionUid = lastTransactionUid;
         Objects.requireNonNull(this.fiatCurrency = fiatCurrency);
