@@ -4,6 +4,7 @@ import com.okcoin.commons.okex.open.api.bean.spot.result.OrderInfo;
 import com.okcoin.commons.okex.open.api.config.APIConfiguration;
 import com.okcoin.commons.okex.open.api.service.spot.SpotOrderAPIServive;
 import com.okcoin.commons.okex.open.api.service.spot.impl.SpotOrderApiServiceImpl;
+import io.everytrade.server.UiKey;
 import io.everytrade.server.model.SupportedExchange;
 import io.everytrade.server.plugin.api.IPlugin;
 import io.everytrade.server.plugin.api.connector.ConnectorDescriptor;
@@ -39,15 +40,15 @@ public class OkexConnector implements IConnector {
     private static final ConnectorParameterDescriptor PARAMETER_PASS_PHRASE =
         new ConnectorParameterDescriptor(
             "passPhrase",
-            ConnectorParameterType.STRING,
-            "Passphrase",
+            ConnectorParameterType.SECRET,
+            UiKey.CONNECTION_PASSPHRASE,
             ""
         );
     private static final ConnectorParameterDescriptor PARAMETER_CURRENCY_PAIRS =
         new ConnectorParameterDescriptor(
             "currencyPairs",
             ConnectorParameterType.STRING,
-            "Trade currency pairs (e.g. LTC/USDT,XRP/USD)",
+            UiKey.CONNECTION_CURRENCY_PAIRS_DESC,
             ""
         );
 
