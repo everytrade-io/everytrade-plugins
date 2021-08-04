@@ -1,5 +1,6 @@
 package io.everytrade.server.plugin.impl.everytrade;
 
+import io.everytrade.server.UiKey;
 import io.everytrade.server.model.SupportedExchange;
 import io.everytrade.server.plugin.api.IPlugin;
 import io.everytrade.server.plugin.api.connector.ConnectorDescriptor;
@@ -43,14 +44,14 @@ public class HuobiConnector implements IConnector {
         new ConnectorParameterDescriptor(
             "currencyPairs",
             ConnectorParameterType.STRING,
-            "Trade currency pairs (e.g. LTC/USDT,LTC/BTC)",
+            UiKey.CONNECTION_CURRENCY_PAIRS_DESC,
             ""
         );
 
     public static final ConnectorDescriptor DESCRIPTOR = new ConnectorDescriptor(
         ID,
         "Huobi Connector",
-        "Only order-limit is supported.",
+        " api_connection.connector_note.huobi",
         SupportedExchange.HUOBI.getInternalId(),
         List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET, PARAMETER_CURRENCY_PAIRS)
     );

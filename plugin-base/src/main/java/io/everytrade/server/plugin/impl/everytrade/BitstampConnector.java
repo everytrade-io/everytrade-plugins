@@ -1,5 +1,6 @@
 package io.everytrade.server.plugin.impl.everytrade;
 
+import io.everytrade.server.UiKey;
 import io.everytrade.server.plugin.api.connector.ConnectorParameterType;
 import io.everytrade.server.model.SupportedExchange;
 import io.everytrade.server.plugin.api.parser.ParseResult;
@@ -33,7 +34,7 @@ public class BitstampConnector implements IConnector {
         new ConnectorParameterDescriptor(
             "username",
             ConnectorParameterType.STRING,
-            "User Name",
+            UiKey.CONNECTION_USER_NAME,
             ""
         );
 

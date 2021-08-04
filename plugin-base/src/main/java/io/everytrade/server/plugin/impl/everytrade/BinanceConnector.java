@@ -1,5 +1,6 @@
 package io.everytrade.server.plugin.impl.everytrade;
 
+import io.everytrade.server.UiKey;
 import io.everytrade.server.model.SupportedExchange;
 import io.everytrade.server.plugin.api.IPlugin;
 import io.everytrade.server.plugin.api.connector.ConnectorDescriptor;
@@ -44,7 +45,7 @@ public class BinanceConnector implements IConnector {
         new ConnectorParameterDescriptor(
             "currencyPairs",
             ConnectorParameterType.STRING,
-            "Trade currency pairs (e.g. BTC/USDT,LTC/ETH)",
+            UiKey.CONNECTION_CURRENCY_PAIRS_DESC,
             ""
         );
 
