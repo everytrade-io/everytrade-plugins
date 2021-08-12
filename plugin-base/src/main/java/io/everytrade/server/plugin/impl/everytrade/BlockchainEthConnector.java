@@ -1,5 +1,6 @@
 package io.everytrade.server.plugin.impl.everytrade;
 
+import io.everytrade.server.UiKey;
 import io.everytrade.server.model.SupportedExchange;
 import io.everytrade.server.plugin.api.IPlugin;
 import io.everytrade.server.plugin.api.connector.ConnectorDescriptor;
@@ -19,7 +20,7 @@ public class BlockchainEthConnector implements IConnector {
         new ConnectorParameterDescriptor(
             "address",
             ConnectorParameterType.STRING,
-            "Address",
+            UiKey.CONNECTION_WALLET_ADDR,
             ""
         );
 
@@ -35,7 +36,7 @@ public class BlockchainEthConnector implements IConnector {
         new ConnectorParameterDescriptor(
             "fiatCurrency",
             ConnectorParameterType.FIAT_CURRENCY,
-            "Fiat currency",
+            UiKey.CONNECTION_FIAT_CURRENCY,
             ""
         );
 
@@ -43,7 +44,7 @@ public class BlockchainEthConnector implements IConnector {
         new ConnectorParameterDescriptor(
             "importDepositsAsBuys",
             ConnectorParameterType.BOOLEAN,
-            "Import deposits as BUY transactions",
+            UiKey.CONNECTION_DEPOSITS_AS_BUY_OPT,
             ""
         );
 
@@ -51,7 +52,7 @@ public class BlockchainEthConnector implements IConnector {
         new ConnectorParameterDescriptor(
             "importWithdrawalsAsSells",
             ConnectorParameterType.BOOLEAN,
-            "Import withdrawals as SELL transactions",
+            UiKey.CONNECTION_WITHDRAWAL_AS_SELL_OPT,
             ""
         );
 
@@ -59,7 +60,7 @@ public class BlockchainEthConnector implements IConnector {
         new ConnectorParameterDescriptor(
             "importFeesFromDeposits",
             ConnectorParameterType.BOOLEAN,
-            "Import deposit mining fee as BUY FEE",
+            UiKey.CONNECTION_DEPOSIT_MINING_FEE_AS_BUY_OPT,
             ""
         );
 
@@ -67,7 +68,7 @@ public class BlockchainEthConnector implements IConnector {
         new ConnectorParameterDescriptor(
             "importFeesFromWithdrawals",
             ConnectorParameterType.BOOLEAN,
-            "Import withdrawal mining fee as SELL FEE",
+            UiKey.CONNECTION_WITHDRAWAL_MINING_FEE_AS_SELL_OPT,
             ""
         );
 

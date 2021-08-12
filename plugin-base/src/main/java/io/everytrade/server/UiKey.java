@@ -4,6 +4,7 @@ public class UiKey {
 
     public static final String CONNECTION_CURRENCY_PAIRS_DESC = "api_connection.currency_pairs";
     public static final String CONNECTION_USER_NAME = "api_connection.user_name";
+    public static final String CONNECTION_WALLET_ADDR = "api_connection.wallet_address";
     public static final String CONNECTION_WALLET_ADDR_XPUB_KEY = "api_connection.wallet_address_xpub";
     public static final String CONNECTION_FIAT_CURRENCY = "api_connection.fiat_currency";
     public static final String CONNECTION_DEPOSITS_AS_BUY_OPT = "api_connection.deposits_as_buy_tx";
