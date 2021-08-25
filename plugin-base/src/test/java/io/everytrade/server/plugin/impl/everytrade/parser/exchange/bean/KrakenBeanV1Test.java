@@ -107,11 +107,11 @@ class KrakenBeanV1Test {
 
     @Test
     void testUnknownExchangePair() {
-        final String row = "TTT,OI,XXBTUSD,2019-07-29 17:04:41.51,buy," +
+        final String row = "TTT,OI,XXBCUSD,2019-07-29 17:04:41.51,buy," +
             "limit,9480.3,18.9606,0.0493,0.002,0,,\"LX,JX\"\n";
         final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
         final String error = parsingProblem.getMessage();
-        assertTrue(error.contains("Unable to set value 'XXBTUSD'"));
+        assertTrue(error.contains("Unable to set value 'XXBCUSD'"));
     }
 
     @Test
