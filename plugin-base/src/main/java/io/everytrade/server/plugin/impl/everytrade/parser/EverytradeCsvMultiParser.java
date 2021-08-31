@@ -297,6 +297,17 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 "Cash Currency;Crypto Amount;Crypto Currency;Used Discount;Actual Discount (%);Destination Address;" +
                 "Related Remote Transaction Id;Identity;Status;Phone Number;Transaction Detail;Transaction Note;" +
                 "Rate Incl. Fee;Rate Without Fee;Fixed Transaction Fee;Expected Profit Percent Setting;" +
+                "Expected Profit Value;Crypto Setting Name;Transaction Scoring Result;",
+            new ExchangeParseDetail(
+                () -> new DefaultUnivocityExchangeSpecificParser(GeneralBytesBeanV2.class, DELIMITER_SEMICOLON),
+                SupportedExchange.GENERAL_BYTES
+            )
+        );
+        EXCHANGE_PARSE_DETAILS.put(
+            "Terminal SN;Server Time;Terminal Time;Local Transaction Id;Remote Transaction Id;Type;Cash Amount;" +
+                "Cash Currency;Crypto Amount;Crypto Currency;Used Discount;Actual Discount (%);Destination Address;" +
+                "Related Remote Transaction Id;Identity;Status;Phone Number;Transaction Detail;Transaction Note;" +
+                "Rate Incl. Fee;Rate Without Fee;Fixed Transaction Fee;Expected Profit Percent Setting;" +
                 "Expected Profit Value;Crypto Setting Name;Transaction Scoring Result;Expense;Expense Currency;",
             new ExchangeParseDetail(
                 () -> new DefaultUnivocityExchangeSpecificParser(GeneralBytesBeanV2.class, DELIMITER_SEMICOLON),
