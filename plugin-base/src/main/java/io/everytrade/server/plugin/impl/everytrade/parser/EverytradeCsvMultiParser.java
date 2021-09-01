@@ -299,7 +299,7 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 "Rate Incl. Fee;Rate Without Fee;Fixed Transaction Fee;Expected Profit Percent Setting;" +
                 "Expected Profit Value;Crypto Setting Name;Transaction Scoring Result;",
             new ExchangeParseDetail(
-                () -> new DefaultUnivocityExchangeSpecificParser(GeneralBytesBeanV2.class, DELIMITER_SEMICOLON),
+                () -> new DefaultUnivocityExchangeSpecificParser(GeneralBytesBeanV1.class, DELIMITER_SEMICOLON),
                 SupportedExchange.GENERAL_BYTES
             )
         );
