@@ -38,7 +38,7 @@ public class GbConnector implements IConnector {
     private final ParamsDigest signer;
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    private static final int MAX_FETCH_SIZE = 1_000;
+    private static final int MAX_FETCH_SIZE = 10_000;
     private static final String ID = GbPlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "GBConnector";
 
     private static final ConnectorParameterDescriptor PARAMETER_API_SECRET =
@@ -102,14 +102,12 @@ public class GbConnector implements IConnector {
 
     @Override
     public DownloadResult getTransactions(String lastTransactionId) {
-        final GbApiDto data =
-            api.getTransactions(apiKey, signer, lastTransactionId, MAX_FETCH_SIZE);
-
-        final List<GbApiTransactionBean> transactions
-            = Objects.requireNonNullElse(data.getTransactions(), new ArrayList<>());
-
         final List<TransactionCluster> importedClusters = new ArrayList<>();
         final List<ParsingProblem> parsingProblems = new ArrayList<>();
+
+        final GbApiDto data = api.getTransactions(apiKey, signer, lastTransactionId, MAX_FETCH_SIZE);
+        final List<GbApiTransactionBean> transactions = Objects.requireNonNullElse(data.getTransactions(), new ArrayList<>());
+
         long transactionCount = 0;
         String lastDownloadedTxUid = lastTransactionId;
         for (GbApiTransactionBean transaction : transactions) {
