@@ -38,7 +38,7 @@ public class GbConnector implements IConnector {
     private final ParamsDigest signer;
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    private static final int MAX_FETCH_SIZE = 10_000;
+    private static final int MAX_FETCH_SIZE = 5_000;
     private static final String ID = GbPlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "GBConnector";
 
     private static final ConnectorParameterDescriptor PARAMETER_API_SECRET =
