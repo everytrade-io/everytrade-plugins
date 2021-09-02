@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.List;
 
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
+import static io.everytrade.server.plugin.impl.generalbytes.GbPlugin.parseGbCurrency;
 
 @JsonFormat(shape = JsonFormat.Shape.ARRAY)
 @JsonPropertyOrder(
@@ -129,8 +130,8 @@ public class GbApiTransactionBean {
     }
 
     public TransactionCluster toTransactionCluster() {
-        final Currency baseCurrency = Currency.fromCode(base);
-        final Currency quoteCurrency = Currency.fromCode(quote);
+        final Currency baseCurrency = parseGbCurrency(base);
+        final Currency quoteCurrency = parseGbCurrency(quote);
         try {
             new CurrencyPair(baseCurrency, quoteCurrency);
         } catch (CurrencyPair.FiatCryptoCombinationException e) {

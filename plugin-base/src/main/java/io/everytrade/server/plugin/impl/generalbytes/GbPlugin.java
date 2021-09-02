@@ -1,12 +1,13 @@
 package io.everytrade.server.plugin.impl.generalbytes;
 
+import io.everytrade.server.model.Currency;
 import io.everytrade.server.plugin.api.IPlugin;
-import io.everytrade.server.plugin.api.rateprovider.RateProviderDescriptor;
 import io.everytrade.server.plugin.api.connector.ConnectorDescriptor;
 import io.everytrade.server.plugin.api.connector.IConnector;
 import io.everytrade.server.plugin.api.parser.ICsvParser;
 import io.everytrade.server.plugin.api.parser.ParserDescriptor;
 import io.everytrade.server.plugin.api.rateprovider.IRateProvider;
+import io.everytrade.server.plugin.api.rateprovider.RateProviderDescriptor;
 import org.pf4j.Extension;
 
 import java.util.Collections;
@@ -65,5 +66,13 @@ public class GbPlugin implements IPlugin {
     @Override
     public IRateProvider createRateProviderInstance(String providerId) {
         return null;
+    }
+
+    public static Currency parseGbCurrency(String currency) {
+        if ("LBTC".equalsIgnoreCase(currency)) { //BTC Lightening
+            return Currency.BTC;
+        } else {
+            return Currency.fromCode(currency);
+        }
     }
 }
