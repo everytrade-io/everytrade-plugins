@@ -15,6 +15,9 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+
+import static io.everytrade.server.plugin.impl.generalbytes.GbPlugin.parseGbCurrency;
+
 @Headers(sequence = {"Server Time","Local Transaction Id","Remote Transaction Id","Type","Cash Amount","Cash Currency",
     "Crypto Amount","Crypto Currency","Status"}, extract = true)
 public class GeneralBytesBeanV1 extends ExchangeBean {
@@ -65,7 +68,7 @@ public class GeneralBytesBeanV1 extends ExchangeBean {
 
     @Parsed(field = "Cash Currency")
     public void setCashCurrency(String cur) {
-        cashCurrency = Currency.fromCode(cur);
+        cashCurrency = parseGbCurrency(cur);
     }
 
     @Parsed(field = "Crypto Amount", defaultNullRead = "0")
@@ -78,11 +81,7 @@ public class GeneralBytesBeanV1 extends ExchangeBean {
 
     @Parsed(field = "Crypto Currency")
     public void setCryptoCurrency(String cryptoCurrency) {
-        if ("LBTC".equalsIgnoreCase(cryptoCurrency)) { //BTC Lightening
-            this.cryptoCurrency = Currency.BTC;
-        } else {
-            this.cryptoCurrency = Currency.fromCode(cryptoCurrency);
-        }
+        this.cryptoCurrency = parseGbCurrency(cryptoCurrency);
     }
 
     @Parsed(field = "Status")

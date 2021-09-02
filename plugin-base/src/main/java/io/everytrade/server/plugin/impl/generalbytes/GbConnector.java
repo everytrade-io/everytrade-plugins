@@ -73,8 +73,6 @@ public class GbConnector implements IConnector {
         List.of(PARAMETER_URL, PARAMETER_API_KEY, PARAMETER_API_SECRET)
     );
 
-
-
     public GbConnector(Map<String, String> parameters) {
         this(
             parameters.get(PARAMETER_URL.getId()),
