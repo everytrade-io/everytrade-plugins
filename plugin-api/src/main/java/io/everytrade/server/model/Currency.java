@@ -128,7 +128,9 @@ public enum Currency {
     BAL(false, Instant.parse("2020-06-24T00:00:00Z"), "Balancer"),
     BEAM(false, Instant.parse("2019-01-18T00:00:00Z"), "Beam"),
     _1INCH("1INCH",false, Instant.parse("2020-12-25T00:00:00Z"), "1inch"),
-    VTC("VTC",false, Instant.parse("2014-01-08T00:00:00Z"), "Vertcoin");
+    VTC(false, Instant.parse("2014-01-08T00:00:00Z"), "Vertcoin"),
+    ERG(false, Instant.parse("2017-07-02T00:00:00Z"), "Ergo"),
+    LUNA(false, Instant.parse("2019-08-01T00:00:00Z"), "Terra");
 
     private final String code;
     private final int decimalDigits;
