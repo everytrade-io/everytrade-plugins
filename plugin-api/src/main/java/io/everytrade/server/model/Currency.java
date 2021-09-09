@@ -130,7 +130,8 @@ public enum Currency {
     _1INCH("1INCH",false, Instant.parse("2020-12-25T00:00:00Z"), "1inch"),
     VTC(false, Instant.parse("2014-01-08T00:00:00Z"), "Vertcoin"),
     ERG(false, Instant.parse("2017-07-02T00:00:00Z"), "Ergo"),
-    LUNA(false, Instant.parse("2019-08-01T00:00:00Z"), "Terra");
+    LUNA(false, Instant.parse("2019-08-01T00:00:00Z"), "Terra"),
+    CLO(false, Instant.parse("2018-03-05T00:00:00Z"), "Callisto Network");
 
     private final String code;
     private final int decimalDigits;

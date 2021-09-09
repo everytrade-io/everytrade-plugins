@@ -163,6 +163,8 @@ public final class CoinPaprikaRateProvider implements IRateProvider {
         COIN_IDS_BY_CURRENCY.put(Currency.VTC, "vtc-vertcoin");
         COIN_IDS_BY_CURRENCY.put(Currency.ERG, "efyt-ergo");
         COIN_IDS_BY_CURRENCY.put(Currency.LUNA, "luna-terra");
+        COIN_IDS_BY_CURRENCY.put(Currency.CLO, "clo-callisto-network");
+
 
         LISTING_START_BY_CURRENCY.put(Currency.BTC, Instant.parse("2013-04-28T18:45:00Z"));
         LISTING_START_BY_CURRENCY.put(Currency.ETH, Instant.parse("2015-08-07T14:45:00Z"));
@@ -275,6 +277,7 @@ public final class CoinPaprikaRateProvider implements IRateProvider {
         LISTING_START_BY_CURRENCY.put(Currency.VTC, Instant.parse("2014-01-20T13:45:00Z"));
         LISTING_START_BY_CURRENCY.put(Currency.ERG, Instant.parse("2017-07-06T13:45:00Z"));
         LISTING_START_BY_CURRENCY.put(Currency.LUNA, Instant.parse("2019-08-01T13:45:00Z"));
+        LISTING_START_BY_CURRENCY.put(Currency.CLO, Instant.parse("2018-05-17T18:45:00Z"));
 
         SUPPORTED_QUOTES.add(Currency.USD);
         SUPPORTED_QUOTES.add(Currency.BTC);
