@@ -7,7 +7,6 @@ public class TransactionCluster {
     private final List<ImportedTransactionBean> related;
     private final int ignoredFeeTransactionCount;
 
-
     public TransactionCluster(ImportedTransactionBean main, List<ImportedTransactionBean> related) {
         this(main, related, 0);
     }
