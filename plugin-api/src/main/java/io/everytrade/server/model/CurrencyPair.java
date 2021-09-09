@@ -141,7 +141,6 @@ public final class CurrencyPair implements Comparable<CurrencyPair>{
                 String.format("%s - fiat (%s) to crypto (%s): ", INVALID_CURRENCY_PAIR, base, quote)
             );
         }
-
     }
 
     private static boolean isUnsupportedCryptoPairs(Currency base, Currency quote) {

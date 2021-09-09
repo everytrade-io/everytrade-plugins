@@ -7,6 +7,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.CoinbaseExcha
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.EveryTradeBeanV3;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.HitBtcBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.PoloniexBeanV2;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v3.BinanceExchangeSpecificParserV3;
 import io.everytrade.server.plugin.utils.HeaderTemplateFinder;
 import io.everytrade.server.plugin.api.parser.ICsvParser;
 import io.everytrade.server.plugin.api.parser.ParseResult;
@@ -88,6 +89,13 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             "Date(UTC),Pair,Type,Order Price,Order Amount,AvgTrading Price,Filled,Total,status",
             new ExchangeParseDetail(
                 BinanceExchangeSpecificParser::new,
+                SupportedExchange.BINANCE
+            )
+        );
+        EXCHANGE_PARSE_DETAILS.put(
+            "Date(UTC),Pair,Side,Price,Executed,Amount,Fee",
+            new ExchangeParseDetail(
+                BinanceExchangeSpecificParserV3::new,
                 SupportedExchange.BINANCE
             )
         );

@@ -1,6 +1,5 @@
-package io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v2;
+package io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v3;
 
-import com.univocity.parsers.annotations.Headers;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.CurrencyPair;
@@ -10,7 +9,6 @@ import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
-import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
@@ -24,10 +22,8 @@ import java.util.stream.Collectors;
 
 import static io.everytrade.server.model.CurrencyPair.getTradeablePairs;
 
-@Headers(sequence = {"Pair", "Type", "Filled", "Total", "Fee", "status"}, extract = true)
-public class BinanceBeanV2 extends ExchangeBean {
-    private static final String STATUS_FILLED = "Filled";
-    private static final String STATUS_PARTIAL_FILL = "Partial Fill";
+public class BinanceBeanV3 extends ExchangeBean {
+
     private static Map<String, CurrencyPair> fastCurrencyPair = new HashMap<>();
 
     private Instant date;
@@ -45,18 +41,14 @@ public class BinanceBeanV2 extends ExchangeBean {
         );
     }
 
-    public BinanceBeanV2(
+    public BinanceBeanV3(
         String date,
         String pair,
         String type,
         String filled,
         String total,
-        String fee,
-        String status
+        String fee
     ) {
-        if (!(STATUS_FILLED.equals(status) || STATUS_PARTIAL_FILL.equals(status))) {
-            throw new DataIgnoredException(UNSUPPORTED_STATUS_TYPE.concat(status));
-        }
         this.date = ParserUtils.parse("yyyy-MM-dd HH:mm:ss", date);
         final CurrencyPair currencyPair = fastCurrencyPair.get(pair);
         if (currencyPair == null) {
@@ -65,8 +57,8 @@ public class BinanceBeanV2 extends ExchangeBean {
         pairBase = currencyPair.getBase();
         pairQuote = currencyPair.getQuote();
         this.type = detectTransactionType(type);
-        this.filled = new BigDecimal(filled.replaceAll(IGNORED_CHARS_IN_NUMBER, ""));
-        this.total = new BigDecimal(total.replaceAll(IGNORED_CHARS_IN_NUMBER, ""));
+        this.filled = new BigDecimal(filled.replaceAll("[A-Z,\\s$]", ""));
+        this.total = new BigDecimal(total.replaceAll("[A-Z,\\s$]", ""));
         feeCurrency = findEnds(fee);
         if (feeCurrency != null) {
             final String feeValue = fee.replaceAll("[A-Z,\\s$]", "");
