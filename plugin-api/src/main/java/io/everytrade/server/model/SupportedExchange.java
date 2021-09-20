@@ -7,7 +7,7 @@ import java.util.Optional;
 public enum SupportedExchange {
     BITSTAMP("Bitstamp", "bitstamp"),
     BITTREX("Bittrex", "bittrex"),
-    GENERAL_BYTES("General Bytes", "generalbytes"),
+    GENERAL_BYTES("General Bytes CAS", "generalbytes"),
     KRAKEN("Kraken", "kraken"),
     EVERYTRADE("EveryTrade", "everytrade"),
     COINMATE("CoinMate", "coinmate"),
@@ -25,7 +25,10 @@ public enum SupportedExchange {
     BITFLYER("bitFlyer", "bitflyer"),
     OKEX("OKEX", "okex"),
     COINBASE("Coinbase", "coinbase"),
-    BLOCKCHAIN("Blockchain", "blockchain");
+    BLOCKCHAINBTC("Blockchain BTC", "blockchainbtc"),
+    BLOCKCHAINETH("Blockchain ETH", "blockchaineth"),
+    BLOCKCHAINLTC("Blockchain LTC", "blockchainltc"),
+    ;
 
     private final String displayName;
     private final String internalId;

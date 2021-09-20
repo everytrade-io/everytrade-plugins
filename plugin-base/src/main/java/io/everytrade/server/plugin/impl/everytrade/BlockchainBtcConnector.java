@@ -68,7 +68,7 @@ public class BlockchainBtcConnector implements IConnector {
         ID,
         "Blockchain BTC Connector",
         "",
-        SupportedExchange.BLOCKCHAIN.getInternalId(),
+        SupportedExchange.BLOCKCHAINBTC.getInternalId(),
         List.of(
             PARAMETER_ADDRESS,
             PARAMETER_FIAT_CURRENCY,

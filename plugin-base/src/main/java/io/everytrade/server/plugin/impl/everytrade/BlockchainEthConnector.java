@@ -76,7 +76,7 @@ public class BlockchainEthConnector implements IConnector {
         ID,
         "Blockchain ETH Connector",
         "",
-        SupportedExchange.BLOCKCHAIN.getInternalId(),
+        SupportedExchange.BLOCKCHAINETH.getInternalId(),
         List.of(
             PARAMETER_ADDRESS,
             PARAMETER_API_KEY_TOKEN,
