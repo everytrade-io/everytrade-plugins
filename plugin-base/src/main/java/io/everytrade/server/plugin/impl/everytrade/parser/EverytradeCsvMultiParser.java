@@ -93,6 +93,13 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             )
         );
         EXCHANGE_PARSE_DETAILS.put(
+            "\uFEFFDate(UTC),Pair,Side,Price,Executed,Amount,Fee",
+            new ExchangeParseDetail(
+                BinanceExchangeSpecificParserV3::new,
+                SupportedExchange.BINANCE
+            )
+        );
+        EXCHANGE_PARSE_DETAILS.put(
             "Date(UTC),Pair,Side,Price,Executed,Amount,Fee",
             new ExchangeParseDetail(
                 BinanceExchangeSpecificParserV3::new,
