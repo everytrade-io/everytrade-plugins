@@ -1,4 +1,4 @@
-package io.everytrade.server.plugin.impl.everytrade;
+package io.everytrade.server.plugin.impl.everytrade.etherscan;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
