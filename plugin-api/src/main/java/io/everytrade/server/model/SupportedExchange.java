@@ -28,6 +28,8 @@ public enum SupportedExchange {
     BLOCKCHAINBTC("Blockchain BTC", "blockchainbtc"),
     BLOCKCHAINETH("Blockchain ETH", "blockchaineth"),
     BLOCKCHAINLTC("Blockchain LTC", "blockchainltc"),
+    DVCHAIN("DV Chain", "dvchain"),
+    AQUANOW("Aquanow", "aquanow"),
     ;
 
     private final String displayName;
