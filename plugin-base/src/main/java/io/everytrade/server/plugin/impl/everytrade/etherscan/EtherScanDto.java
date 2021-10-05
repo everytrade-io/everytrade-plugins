@@ -1,4 +1,4 @@
-package io.everytrade.server.plugin.impl.everytrade;
+package io.everytrade.server.plugin.impl.everytrade.etherscan;
 
 public class EtherScanDto<T> {
     private String status;
