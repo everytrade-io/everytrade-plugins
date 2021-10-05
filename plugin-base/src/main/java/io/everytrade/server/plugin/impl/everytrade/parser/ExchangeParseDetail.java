@@ -11,7 +11,6 @@ public class ExchangeParseDetail {
     private final SupportedExchange supportedExchange;
 
     public ExchangeParseDetail(
-
         Supplier<IExchangeSpecificParser> exchangeSpecificParser,
         SupportedExchange supportedExchange
     ) {
