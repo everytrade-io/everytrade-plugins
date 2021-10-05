@@ -24,14 +24,6 @@ public class BlockchainEthConnector implements IConnector {
             ""
         );
 
-    private static final ConnectorParameterDescriptor PARAMETER_API_KEY_TOKEN =
-        new ConnectorParameterDescriptor(
-            "apiKeyToken",
-            ConnectorParameterType.STRING,
-            "API Key Token",
-            ""
-        );
-
     private static final ConnectorParameterDescriptor PARAMETER_FIAT_CURRENCY =
         new ConnectorParameterDescriptor(
             "fiatCurrency",
@@ -79,7 +71,6 @@ public class BlockchainEthConnector implements IConnector {
         SupportedExchange.BLOCKCHAINETH.getInternalId(),
         List.of(
             PARAMETER_ADDRESS,
-            PARAMETER_API_KEY_TOKEN,
             PARAMETER_FIAT_CURRENCY,
             PARAMETER_IMPORT_DEPOSITS_AS_BUYS,
             PARAMETER_IMPORT_WITHDRAWALS_AS_SELLS,
@@ -87,6 +78,8 @@ public class BlockchainEthConnector implements IConnector {
             PARAMETER_IMPORT_FEES_FROM_WITHDRAWALS
         )
     );
+
+    private static final String ETHERSCAN_API_KEY_PARAM = "apiKeyToken";
 
     private final String address;
     private final String apiKeyToken;
@@ -99,13 +92,12 @@ public class BlockchainEthConnector implements IConnector {
     public BlockchainEthConnector(Map<String, String> parameters) {
         this(
             parameters.get(PARAMETER_ADDRESS.getId()),
-            parameters.get(PARAMETER_API_KEY_TOKEN.getId()),
+            parameters.get(ETHERSCAN_API_KEY_PARAM),
             parameters.get(PARAMETER_FIAT_CURRENCY.getId()),
             parameters.get(PARAMETER_IMPORT_DEPOSITS_AS_BUYS.getId()),
             parameters.get(PARAMETER_IMPORT_WITHDRAWALS_AS_SELLS.getId()),
             parameters.get(PARAMETER_IMPORT_FEES_FROM_DEPOSITS.getId()),
             parameters.get(PARAMETER_IMPORT_FEES_FROM_WITHDRAWALS.getId())
-
         );
     }
 
@@ -145,7 +137,6 @@ public class BlockchainEthConnector implements IConnector {
                 importFeesFromDeposits,
                 importFeesFromWithdrawals
             );
-
             return blockchainEthDownloader.download();
         }
     }
