@@ -4,6 +4,8 @@ import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.SupportedExchange;
 import io.everytrade.server.plugin.api.IPlugin;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.CoinbaseExchangeSpecificParser;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.AquanowBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.DVChainBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.EveryTradeBeanV3;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.HitBtcBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.PoloniexBeanV2;
@@ -458,6 +460,24 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             new ExchangeParseDetail(
                 CoinbaseExchangeSpecificParser::new,
                 SupportedExchange.COINBASE
+            )
+        );
+
+        EXCHANGE_PARSE_DETAILS.put(
+            "\"Trade Date\",\"Status\",\"Pair\",\"Average Price\",\"Limit Price\",\"Strategy\",\"Side\",\"Amount\",\"Order Type\"," +
+                "\"Fill %\",\"Filled\",\"Remaining\",\"Total\",\"Fee\",\"Parent Order\",\"Message\",\"Username Ref\"",
+            new ExchangeParseDetail(
+                () -> new DefaultUnivocityExchangeSpecificParser(AquanowBeanV1.class),
+                SupportedExchange.AQUANOW
+            )
+        );
+
+        EXCHANGE_PARSE_DETAILS.put(
+            "\"asset\",\"counterasset\",\"price\",\"quantity\",\"side\",\"status\",\"limitprice\",\"batchid\",\"createdat\"," +
+                "\"filledat\",\"ordertype\"",
+            new ExchangeParseDetail(
+                () -> new DefaultUnivocityExchangeSpecificParser(DVChainBeanV1.class),
+                SupportedExchange.DVCHAIN
             )
         );
     }
