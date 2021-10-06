@@ -66,8 +66,7 @@ class BitflyerBeanV1Test {
                     new BigDecimal("0.4"),
                     Currency.USD
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -96,8 +95,7 @@ class BitflyerBeanV1Test {
                     new BigDecimal("0.2"),
                     Currency.USD
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
     }

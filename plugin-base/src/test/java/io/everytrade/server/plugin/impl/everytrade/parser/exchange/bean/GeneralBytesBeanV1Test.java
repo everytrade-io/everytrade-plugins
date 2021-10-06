@@ -62,8 +62,7 @@ class GeneralBytesBeanV1Test {
                 new BigDecimal("158042.7979896956"),
                 "R"
             ),
-            List.of(),
-            0
+            List.of()
         );
         ParserTestUtils.checkEqual(expected, actual);
     }

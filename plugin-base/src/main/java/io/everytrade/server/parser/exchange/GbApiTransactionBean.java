@@ -38,6 +38,9 @@ import static io.everytrade.server.plugin.impl.generalbytes.GbPlugin.parseGbCurr
     }
 )
 public class GbApiTransactionBean {
+
+    private static final String WITHDRAW_ACTION = "WITHDRAW";
+
     private String uid;
     private Instant timestamp;
     private String base;
@@ -155,7 +158,7 @@ public class GbApiTransactionBean {
             );
         }
 
-        return new TransactionCluster(
+        TransactionCluster cluster = new TransactionCluster(
             new BuySellImportedTransactionBean(
                 uid,
                 timestamp,
@@ -166,19 +169,37 @@ public class GbApiTransactionBean {
                 volume.divide(quantity, 10, RoundingMode.HALF_UP),
                 getRemoteUid()
             ),
-            related,
-            isIgnoredFee ? 1 : 0
+            related
         );
+        if (isIgnoredFee) {
+            cluster.setIgnoredFee(1, "Fee " + expenseCurrency + " currency is neither base or quote");
+        }
+        return cluster;
     }
 
     public boolean isImportable() {
-        return status == null || isImportable(status);
+        return (status == null || isImportable(status)) && isActionImportable();
+    }
+
+    public boolean isActionImportable() {
+        return action != null && !WITHDRAW_ACTION.equals(action);
     }
 
     public static boolean isImportable(String status) {
         return status.startsWith("COMPLETED") ||
             status.contains("PAYMENT ARRIVED") ||
             status.contains("ERROR (EXCHANGE PURCHASE)");
+    }
+
+    public boolean isIgnored() {
+        return !isActionImportable();
+    }
+
+    public String getIgnoreReason() {
+        if (WITHDRAW_ACTION.equals(action)) {
+            return WITHDRAW_ACTION + " TRANSATION";
+        }
+        return null;
     }
 
     @Override

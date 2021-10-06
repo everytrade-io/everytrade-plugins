@@ -136,7 +136,7 @@ public class EveryTradeApiTransactionBean {
             ignoredFee = true;
         }
 
-        return new TransactionCluster(
+         TransactionCluster cluster = new TransactionCluster(
             new BuySellImportedTransactionBean(
                 uid,
                 timestamp,
@@ -146,9 +146,12 @@ public class EveryTradeApiTransactionBean {
                 quantity,
                 volume.divide(quantity, 10, RoundingMode.HALF_UP) //unit price
             ),
-            related,
-            ignoredFee ? 1 : 0
+            related
         );
+        if (ignoredFee) {
+            cluster.setIgnoredFee(1, "Fee " + feeCurrency + " currency is neither base or quote");
+        }
+        return cluster;
     }
 
     @Override

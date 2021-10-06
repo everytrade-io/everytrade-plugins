@@ -69,8 +69,7 @@ class CoinmateBeanV1Test {
                     new BigDecimal("0.03443649"),
                     Currency.EUR
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -100,8 +99,7 @@ class CoinmateBeanV1Test {
                     new BigDecimal("0.03443649"),
                     Currency.EUR
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
     }

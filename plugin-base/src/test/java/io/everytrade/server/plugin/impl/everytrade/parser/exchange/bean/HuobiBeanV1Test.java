@@ -61,8 +61,7 @@ class HuobiBeanV1Test {
                     new BigDecimal("0.00178800"),
                     Currency.LTC
                 )
-            ),
-            0
+            )
         );
 
         ParserTestUtils.checkEqual(expected, actual);
@@ -92,8 +91,7 @@ class HuobiBeanV1Test {
                     new BigDecimal("0.00178800"),
                     Currency.BTC
                 )
-            ),
-            0
+            )
         );
 
         ParserTestUtils.checkEqual(expected, actual);
@@ -124,8 +122,7 @@ class HuobiBeanV1Test {
                     new BigDecimal("0.00000888"),
                     Currency.BTC
                 )
-            ),
-            0
+            )
         );
 
         ParserTestUtils.checkEqual(expected, actual);
@@ -155,8 +152,7 @@ class HuobiBeanV1Test {
                     new BigDecimal("0.00000888"),
                     Currency.LTC
                 )
-            ),
-            0
+            )
         );
 
         ParserTestUtils.checkEqual(expected, actual);
@@ -193,10 +189,9 @@ class HuobiBeanV1Test {
                 new BigDecimal("0.8940"),
                 new BigDecimal("0.0059284116")
             ),
-            Collections.emptyList(),
-            1
+            Collections.emptyList()
         );
-
+        expected.setIgnoredFee(1, "");
         ParserTestUtils.checkEqual(expected, actual);
     }
 

@@ -134,7 +134,7 @@ public class GeneralBytesBeanV2 extends ExchangeBean {
             );
         }
 
-        return new TransactionCluster(
+        TransactionCluster cluster = new TransactionCluster(
             new BuySellImportedTransactionBean(
                 localTransactionId.concat("-").concat(remoteTransactionId),   //uuid
                 serverTime,                 //executed
@@ -145,8 +145,14 @@ public class GeneralBytesBeanV2 extends ExchangeBean {
                 evalUnitPrice(cashAmount, cryptoAmount), //unit price
                 remoteTransactionId         //note
             ),
-            related,
-            isIgnoredFee ? 1 : 0
+            related
         );
+        if (isIgnoredFee) {
+            cluster.setIgnoredFee(
+                1,
+                "Fee " + (expenseCurrency != null ? expenseCurrency.code() : "null") + " currency is neither base or quote"
+            );
+        }
+        return cluster;
     }
 }

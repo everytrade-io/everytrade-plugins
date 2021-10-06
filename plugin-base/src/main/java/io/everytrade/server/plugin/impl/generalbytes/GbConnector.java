@@ -115,6 +115,10 @@ public class GbConnector implements IConnector {
                     importedClusters.add(cluster);
                     transactionCount += 1 + cluster.getRelated().size();
                     lastDownloadedTxUid = transaction.getUid();
+                } else if (transaction.isIgnored()) {
+                    parsingProblems.add(
+                        new ParsingProblem(transaction.toString(), transaction.getIgnoreReason(), ParsingProblemType.PARSED_ROW_IGNORED)
+                    );
                 }
             } catch (Exception e) {
                 log.error("Error converting to ImportedTransactionBean: {}", e.getMessage());

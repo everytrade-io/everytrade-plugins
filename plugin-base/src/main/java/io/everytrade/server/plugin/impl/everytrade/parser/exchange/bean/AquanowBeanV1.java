@@ -129,8 +129,7 @@ public class AquanowBeanV1  extends ExchangeBean {
                 amount.setScale(ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE),
                 price
             ),
-            related,
-            0
+            related
         );
     }
 }

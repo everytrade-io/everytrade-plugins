@@ -44,8 +44,7 @@ class CoinsquareBeanV1Test {
                 new BigDecimal("0.12823291"),
                 new BigDecimal("13061.0776905866")
             ),
-            Collections.emptyList(),
-            0
+            Collections.emptyList()
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -64,8 +63,7 @@ class CoinsquareBeanV1Test {
                 new BigDecimal("0.12823291"),
                 new BigDecimal("13061.0776905866")
             ),
-            Collections.emptyList(),
-            0
+            Collections.emptyList()
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -84,8 +82,7 @@ class CoinsquareBeanV1Test {
                 new BigDecimal("0.24064597"),
                 new BigDecimal("9439.8422712003")
             ),
-            Collections.emptyList(),
-            0
+            Collections.emptyList()
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -104,8 +101,7 @@ class CoinsquareBeanV1Test {
                 new BigDecimal("0.24064597"),
                 new BigDecimal("9439.8422712003")
             ),
-            Collections.emptyList(),
-            0
+            Collections.emptyList()
         );
         ParserTestUtils.checkEqual(expected, actual);
     }

@@ -5,20 +5,17 @@ import java.util.List;
 public class TransactionCluster {
     private final ImportedTransactionBean main;
     private final List<ImportedTransactionBean> related;
-    private final int ignoredFeeTransactionCount;
+    private int ignoredFeeTransactionCount = 0;
+    private String ignoredFeeReason;
 
     public TransactionCluster(ImportedTransactionBean main, List<ImportedTransactionBean> related) {
-        this(main, related, 0);
-    }
-
-    public TransactionCluster(
-        ImportedTransactionBean main,
-        List<ImportedTransactionBean> related,
-        int ignoredFeeTransactionCount
-    ) {
         this.main = main;
         this.related = related;
-        this.ignoredFeeTransactionCount = ignoredFeeTransactionCount;
+    }
+
+    public void setIgnoredFee(int count, String reason) {
+        this.ignoredFeeTransactionCount = count;
+        this.ignoredFeeReason = reason;
     }
 
     public ImportedTransactionBean getMain() {
@@ -31,5 +28,9 @@ public class TransactionCluster {
 
     public int getIgnoredFeeTransactionCount() {
         return ignoredFeeTransactionCount;
+    }
+
+    public String getIgnoredFeeReason() {
+        return ignoredFeeReason;
     }
 }

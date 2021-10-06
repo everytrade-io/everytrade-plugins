@@ -95,8 +95,7 @@ public class DVChainBeanV1 extends ExchangeBean {
                 amount.setScale(ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE),
                 price
             ),
-            emptyList(),
-            0
+            emptyList()
         );
     }
 }

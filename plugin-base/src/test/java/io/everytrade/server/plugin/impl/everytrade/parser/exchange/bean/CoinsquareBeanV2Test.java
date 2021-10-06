@@ -43,8 +43,7 @@ class CoinsquareBeanV2Test {
                 new BigDecimal("0.16625219"),
                 new BigDecimal("12029.9167186910")
             ),
-            Collections.emptyList(),
-            0
+            Collections.emptyList()
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -63,8 +62,7 @@ class CoinsquareBeanV2Test {
                 new BigDecimal("0.11040202"),
                 new BigDecimal("8684.2613930434")
             ),
-            Collections.emptyList(),
-            0
+            Collections.emptyList()
         );
         ParserTestUtils.checkEqual(expected, actual);
     }

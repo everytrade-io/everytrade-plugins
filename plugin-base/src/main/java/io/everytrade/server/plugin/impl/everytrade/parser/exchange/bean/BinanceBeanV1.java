@@ -118,7 +118,7 @@ public class BinanceBeanV1 extends ExchangeBean {
             );
         }
 
-        return new TransactionCluster(
+        TransactionCluster cluster = new TransactionCluster(
             new BuySellImportedTransactionBean(
                 null,
                 date,
@@ -128,8 +128,11 @@ public class BinanceBeanV1 extends ExchangeBean {
                 amount.setScale(ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE),
                 evalUnitPrice(total, amount)
             ),
-            related,
-            isIncorrectFeeCoin ? 1 : 0
+            related
         );
+        if (isIncorrectFeeCoin) {
+            cluster.setIgnoredFee(1, "Fee " + (feeCoin != null ? feeCoin.code() : "null") + " currency is neither base or quote");
+        }
+        return cluster;
     }
 }

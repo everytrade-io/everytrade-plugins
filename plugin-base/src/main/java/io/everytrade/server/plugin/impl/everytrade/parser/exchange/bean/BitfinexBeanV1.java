@@ -117,7 +117,7 @@ public class BitfinexBeanV1 extends ExchangeBean {
             );
         }
 
-        return new TransactionCluster(
+        TransactionCluster cluster = new TransactionCluster(
             new BuySellImportedTransactionBean(
                 uid,
                 dateConverted,
@@ -127,8 +127,11 @@ public class BitfinexBeanV1 extends ExchangeBean {
                 amount.abs().setScale(ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE),
                 price.setScale(ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE)
             ),
-            related,
-            isIncorrectFeeCurr ? 1 : 0
+            related
         );
+        if (isIncorrectFeeCurr) {
+            cluster.setIgnoredFee(1, "Fee " + (feeCurrency != null ? feeCurrency.code() : "null") + " currency is neither base or quote");
+        }
+        return cluster;
     }
 }

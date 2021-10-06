@@ -58,8 +58,7 @@ class BitfinexBeanV1Test {
                     new BigDecimal("0.00002097"),
                     Currency.BTC
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -88,8 +87,7 @@ class BitfinexBeanV1Test {
                     new BigDecimal("0.00002097"),
                     Currency.BTC
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -118,8 +116,7 @@ class BitfinexBeanV1Test {
                     new BigDecimal("0.00002097"),
                     Currency.USD
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -149,8 +146,7 @@ class BitfinexBeanV1Test {
                     new BigDecimal("0.1750793"),
                     Currency.USD
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -179,8 +175,7 @@ class BitfinexBeanV1Test {
                     new BigDecimal("0.000000123"),
                     Currency.BTC
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -208,9 +203,9 @@ class BitfinexBeanV1Test {
                 new BigDecimal("0.01048537"),
                 new BigDecimal("9212.82428")
             ),
-           Collections.emptyList(),
-            1
+           Collections.emptyList()
         );
+        expected.setIgnoredFee(1, "");
         ParserTestUtils.checkEqual(expected, actual);
     }
 
@@ -248,8 +243,7 @@ class BitfinexBeanV1Test {
                     new BigDecimal("0.00002097"),
                     Currency.BTC
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -279,8 +273,7 @@ class BitfinexBeanV1Test {
                     new BigDecimal("0.00002097"),
                     Currency.BTC
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
     }

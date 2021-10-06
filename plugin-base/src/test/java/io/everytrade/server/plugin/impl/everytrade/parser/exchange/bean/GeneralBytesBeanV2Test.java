@@ -77,8 +77,7 @@ class GeneralBytesBeanV2Test {
                     Currency.LTC,
                     "R"
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -110,8 +109,7 @@ class GeneralBytesBeanV2Test {
                     Currency.LTC,
                     "R"
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -143,8 +141,7 @@ class GeneralBytesBeanV2Test {
                     Currency.LTC,
                     "R"
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -176,8 +173,7 @@ class GeneralBytesBeanV2Test {
                     Currency.LTC,
                     "R"
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
     }

@@ -49,8 +49,7 @@ class PaxfulBeanV1Test {
                 new BigDecimal("0.03544758"),
                 new BigDecimal("8463.2011550577")
             ),
-            Collections.emptyList(),
-            0
+            Collections.emptyList()
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -70,8 +69,7 @@ class PaxfulBeanV1Test {
                 new BigDecimal("0.07126192"),
                 new BigDecimal("7016.3700332520")
             ),
-            Collections.emptyList(),
-            0
+            Collections.emptyList()
         );
         ParserTestUtils.checkEqual(expected, actual);
     }

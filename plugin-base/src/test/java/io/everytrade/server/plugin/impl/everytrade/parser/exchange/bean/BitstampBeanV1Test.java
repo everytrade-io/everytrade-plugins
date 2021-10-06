@@ -57,8 +57,7 @@ class BitstampBeanV1Test {
                     new BigDecimal("0.00990595"),
                     Currency.USD
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
     }

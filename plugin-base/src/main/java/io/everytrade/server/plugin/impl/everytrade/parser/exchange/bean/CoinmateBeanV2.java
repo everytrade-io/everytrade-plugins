@@ -115,7 +115,7 @@ public class CoinmateBeanV2 extends ExchangeBean {
             );
         }
 
-        return new TransactionCluster(
+        TransactionCluster cluster = new TransactionCluster(
             new BuySellImportedTransactionBean(
                 transactionId,             //uuid
                 date,           //executed
@@ -125,8 +125,14 @@ public class CoinmateBeanV2 extends ExchangeBean {
                 amount,         //base quantity
                 price          //unit price
             ),
-            related,
-            ignoredFee ? 1 : 0
+            related
         );
+        if (ignoredFee) {
+            cluster.setIgnoredFee(
+                1,
+                "Fee " + (auxCurrencyFee != null ? auxCurrencyFee.code() : "null") + " currency is neither base or quote"
+            );
+        }
+        return cluster;
     }
 }

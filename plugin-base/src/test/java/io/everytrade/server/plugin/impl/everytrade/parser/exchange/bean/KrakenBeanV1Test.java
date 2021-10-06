@@ -67,8 +67,7 @@ class KrakenBeanV1Test {
                     new BigDecimal("0.0493"),
                     Currency.USD
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
 
@@ -99,8 +98,7 @@ class KrakenBeanV1Test {
                     new BigDecimal("0.0493"),
                     Currency.USD
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -139,8 +137,7 @@ class KrakenBeanV1Test {
                     new BigDecimal("0.0493"),
                     Currency.USD
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
 
