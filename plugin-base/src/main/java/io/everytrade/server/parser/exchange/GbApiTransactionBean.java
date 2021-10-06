@@ -38,6 +38,9 @@ import static io.everytrade.server.plugin.impl.generalbytes.GbPlugin.parseGbCurr
     }
 )
 public class GbApiTransactionBean {
+
+    private static final String WITHDRAW_ACTION = "WITHDRAW";
+
     private String uid;
     private Instant timestamp;
     private String base;
@@ -172,13 +175,28 @@ public class GbApiTransactionBean {
     }
 
     public boolean isImportable() {
-        return status == null || isImportable(status);
+        return (status == null || isImportable(status)) && isActionImportable();
+    }
+
+    public boolean isActionImportable() {
+        return action != null && !WITHDRAW_ACTION.equals(action);
     }
 
     public static boolean isImportable(String status) {
         return status.startsWith("COMPLETED") ||
             status.contains("PAYMENT ARRIVED") ||
             status.contains("ERROR (EXCHANGE PURCHASE)");
+    }
+
+    public boolean isIgnored() {
+        return !isActionImportable();
+    }
+
+    public String getIgnoreReason() {
+        if (WITHDRAW_ACTION.equals(action)) {
+            return WITHDRAW_ACTION + " TRANSATION";
+        }
+        return null;
     }
 
     @Override
