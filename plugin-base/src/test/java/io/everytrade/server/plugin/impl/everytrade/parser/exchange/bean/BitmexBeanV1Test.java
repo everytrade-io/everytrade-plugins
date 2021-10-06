@@ -68,8 +68,7 @@ class BitmexBeanV1Test {
                     new BigDecimal("0.00001505"),
                     Currency.USD
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
     }

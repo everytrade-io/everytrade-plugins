@@ -158,7 +158,7 @@ public class GbApiTransactionBean {
             );
         }
 
-        return new TransactionCluster(
+        TransactionCluster cluster = new TransactionCluster(
             new BuySellImportedTransactionBean(
                 uid,
                 timestamp,
@@ -169,9 +169,12 @@ public class GbApiTransactionBean {
                 volume.divide(quantity, 10, RoundingMode.HALF_UP),
                 getRemoteUid()
             ),
-            related,
-            isIgnoredFee ? 1 : 0
+            related
         );
+        if (isIgnoredFee) {
+            cluster.setIgnoredFee(1, "Fee " + expenseCurrency + " currency is neither base or quote");
+        }
+        return cluster;
     }
 
     public boolean isImportable() {

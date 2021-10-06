@@ -53,8 +53,7 @@ class EveryTradeBeanV3Test {
                 new BigDecimal("0.066506"),
                 new BigDecimal("210507.3226")
             ),
-            List.of(),
-            0
+            List.of()
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -83,8 +82,7 @@ class EveryTradeBeanV3Test {
                     new BigDecimal("140"),
                     Currency.CZK
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -113,8 +111,7 @@ class EveryTradeBeanV3Test {
                     new BigDecimal("0.001"),
                     Currency.BTC
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -133,8 +130,7 @@ class EveryTradeBeanV3Test {
                 new BigDecimal("0.066306"),
                 new BigDecimal("8736.534094")
             ),
-            List.of(),
-            0
+            List.of()
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -161,8 +157,7 @@ class EveryTradeBeanV3Test {
                 TransactionType.REBATE,
                 new BigDecimal("5.7"),
                 Currency.EUR
-            )),
-            0
+            ))
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -189,8 +184,7 @@ class EveryTradeBeanV3Test {
                 TransactionType.REBATE,
                 new BigDecimal("0.001"),
                 Currency.BTC
-            )),
-            0
+            ))
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -285,8 +279,7 @@ class EveryTradeBeanV3Test {
                 new BigDecimal("0.066506"),
                 new BigDecimal("210507.3226")
             ),
-            List.of(),
-            0
+            List.of()
         );
         ParserTestUtils.checkEqual(expected, actual);
     }

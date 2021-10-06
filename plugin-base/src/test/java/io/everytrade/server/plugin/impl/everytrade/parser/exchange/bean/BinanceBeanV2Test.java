@@ -54,9 +54,9 @@ class BinanceBeanV2Test {
                 new BigDecimal("0.041600"),
                 new BigDecimal("6236.39")
             ),
-           Collections.emptyList(),
-            1
+           Collections.emptyList()
         );
+        expected.setIgnoredFee(1, null);
         ParserTestUtils.checkEqual(expected, actual);
     }
 
@@ -88,8 +88,7 @@ class BinanceBeanV2Test {
                     new BigDecimal("0.0001612653"),
                     Currency.BTC
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -122,8 +121,7 @@ class BinanceBeanV2Test {
                     new BigDecimal("0.1612653"),
                     Currency.USDT
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -146,9 +144,9 @@ class BinanceBeanV2Test {
                 new BigDecimal("0.041600"),
                 new BigDecimal("6236.39")
             ),
-            Collections.emptyList(),
-            1
+            Collections.emptyList()
         );
+        expected.setIgnoredFee(1, "");
         ParserTestUtils.checkEqual(expected, actual);
     }
 
@@ -179,8 +177,7 @@ class BinanceBeanV2Test {
                     new BigDecimal("0.001612653"),
                     Currency.BTC
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -213,8 +210,7 @@ class BinanceBeanV2Test {
                     new BigDecimal("0.1612653"),
                     Currency.USDT
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
     }

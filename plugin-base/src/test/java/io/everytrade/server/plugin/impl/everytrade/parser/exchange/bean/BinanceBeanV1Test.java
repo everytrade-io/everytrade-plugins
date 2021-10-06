@@ -58,8 +58,7 @@ class BinanceBeanV1Test {
                     new BigDecimal("0.00161"),
                     Currency.LTC
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -88,8 +87,7 @@ class BinanceBeanV1Test {
                     new BigDecimal("0.00161"),
                     Currency.BTC
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -118,8 +116,7 @@ class BinanceBeanV1Test {
                     new BigDecimal("0.00001289"),
                     Currency.BTC
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -148,8 +145,7 @@ class BinanceBeanV1Test {
                     new BigDecimal("0.00001289"),
                     Currency.LTC
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -177,9 +173,9 @@ class BinanceBeanV1Test {
                 new BigDecimal("1.61"),
                 new BigDecimal("0.0073930000")
             ),
-           Collections.emptyList(),
-            1
+           Collections.emptyList()
         );
+        expected.setIgnoredFee(1, null);
         ParserTestUtils.checkEqual(expected, actual);
     }
 

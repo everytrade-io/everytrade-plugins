@@ -70,8 +70,7 @@ class HitBtcBeanV2Test {
                     new BigDecimal("0.00523827"),
                     Currency.USD
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -102,8 +101,7 @@ class HitBtcBeanV2Test {
                     new BigDecimal("0.00523827"),
                     Currency.USD
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
     }

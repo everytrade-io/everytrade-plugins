@@ -47,8 +47,7 @@ class PoloniexBeanV1Test {
                 new BigDecimal("1.97419154"),
                 new BigDecimal("0.0060729822")
             ),
-            Collections.emptyList(),
-            0
+            Collections.emptyList()
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -68,8 +67,7 @@ class PoloniexBeanV1Test {
                 new BigDecimal("1.97827088"),
                 new BigDecimal("0.0060604592")
             ),
-            Collections.emptyList(),
-            0
+            Collections.emptyList()
         );
         ParserTestUtils.checkEqual(expected, actual);
     }

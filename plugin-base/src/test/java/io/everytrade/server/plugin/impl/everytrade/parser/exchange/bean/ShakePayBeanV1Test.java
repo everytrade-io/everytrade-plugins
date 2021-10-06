@@ -46,8 +46,7 @@ class ShakePayBeanV1Test {
                 new BigDecimal("0.09172307"),
                 new BigDecimal("10902.3825739806")
             ),
-            Collections.emptyList(),
-            0
+            Collections.emptyList()
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -66,8 +65,7 @@ class ShakePayBeanV1Test {
                 new BigDecimal("0.09172307"),
                 new BigDecimal("10902.3825739806")
             ),
-            Collections.emptyList(),
-            0
+            Collections.emptyList()
         );
         ParserTestUtils.checkEqual(expected, actual);
     }

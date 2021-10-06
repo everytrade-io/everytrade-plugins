@@ -74,7 +74,7 @@ public class XChangeApiTransactionBean {
             );
         }
 
-        return new TransactionCluster(
+        TransactionCluster cluster = new TransactionCluster(
             new BuySellImportedTransactionBean(
                 id,
                 timestamp,
@@ -84,9 +84,12 @@ public class XChangeApiTransactionBean {
                 originalAmount,
                 price
             ),
-            related,
-            isIgnoredFee ? 1 : 0
+            related
         );
+        if (isIgnoredFee) {
+            cluster.setIgnoredFee(1, "Fee " + (feeCurrency != null ? feeCurrency.code() : "null") + " currency is not base or quote");
+        }
+        return cluster;
     }
 
     @Override

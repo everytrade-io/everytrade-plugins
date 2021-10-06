@@ -67,8 +67,7 @@ class OkexBeanV1Test {
                     new BigDecimal("0.1574646087"),
                     Currency.LTC
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -98,8 +97,7 @@ class OkexBeanV1Test {
                     new BigDecimal("0.158170378905"),
                     Currency.USDT
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
     }

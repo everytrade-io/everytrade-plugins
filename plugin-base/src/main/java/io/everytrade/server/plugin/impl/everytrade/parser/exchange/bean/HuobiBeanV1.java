@@ -109,7 +109,7 @@ public class HuobiBeanV1 extends ExchangeBean {
         final BigDecimal unitPrice = evalUnitPrice(quoteVolume, baseQuantity);
         validatePositivity(baseQuantity, quoteVolume, unitPrice);
 
-        return new TransactionCluster(
+        TransactionCluster cluster = new TransactionCluster(
             new BuySellImportedTransactionBean(
                 null,
                 time,
@@ -119,9 +119,12 @@ public class HuobiBeanV1 extends ExchangeBean {
                 baseQuantity,
                 unitPrice
             ),
-            related,
-            isIncorrectFeeCoin ? 1 : 0
+            related
         );
+        if (isIncorrectFeeCoin) {
+            cluster.setIgnoredFee(1, "Fee " + (feeCurrency != null ? feeCurrency.code() : "null") + " currency is neither base or quote");
+        }
+        return cluster;
     }
 
     private Currency findEnds(String value) {

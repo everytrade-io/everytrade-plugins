@@ -79,8 +79,7 @@ class CoinbaseBeanV1Test {
                     new BigDecimal("4.40"),
                     Currency.EUR
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -110,8 +109,7 @@ class CoinbaseBeanV1Test {
                     new BigDecimal("3.58"),
                     Currency.EUR
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
     }

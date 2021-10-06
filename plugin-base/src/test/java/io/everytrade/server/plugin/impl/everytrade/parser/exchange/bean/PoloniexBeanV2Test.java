@@ -60,8 +60,7 @@ class PoloniexBeanV2Test {
                     new BigDecimal("0.00042537"),
                     Currency.BTC
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -91,8 +90,7 @@ class PoloniexBeanV2Test {
                     new BigDecimal("2.19266475"),
                     Currency.USDT
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
     }

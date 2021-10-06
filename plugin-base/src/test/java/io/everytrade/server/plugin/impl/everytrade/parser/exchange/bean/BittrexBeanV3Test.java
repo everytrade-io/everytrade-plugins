@@ -69,8 +69,7 @@ class BittrexBeanV3Test {
                     new BigDecimal("0.0570894"),
                     Currency.USD
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -100,8 +99,7 @@ class BittrexBeanV3Test {
                     new BigDecimal("0.05686182"),
                     Currency.USD
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, actual);
     }

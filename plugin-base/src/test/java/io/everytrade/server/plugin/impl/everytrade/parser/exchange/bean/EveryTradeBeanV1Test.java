@@ -63,8 +63,7 @@ class EveryTradeBeanV1Test {
                     new BigDecimal("0.1"),
                     Currency.CZK
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, acual);
     }
@@ -93,8 +92,7 @@ class EveryTradeBeanV1Test {
                     new BigDecimal("0.1"),
                     Currency.CZK
                 )
-            ),
-            0
+            )
         );
         ParserTestUtils.checkEqual(expected, acual);
     }
@@ -113,8 +111,7 @@ class EveryTradeBeanV1Test {
                 new BigDecimal("0.066506"),
                 new BigDecimal("210507.322647581")
             ),
-            List.of(),
-            0
+            List.of()
         );
         ParserTestUtils.checkEqual(expected, acual);
     }

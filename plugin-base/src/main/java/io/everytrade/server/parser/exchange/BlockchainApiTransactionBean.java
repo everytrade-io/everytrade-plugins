@@ -82,7 +82,7 @@ public class BlockchainApiTransactionBean {
             );
         }
 
-        return new TransactionCluster(
+        TransactionCluster cluster = new TransactionCluster(
             new BuySellImportedTransactionBean(
                 id,
                 timestamp,
@@ -92,9 +92,12 @@ public class BlockchainApiTransactionBean {
                 originalAmount,
                 price
             ),
-            related,
-            ignoredFee ? 1 : 0
+            related
         );
+        if (ignoredFee) {
+            cluster.setIgnoredFee(1, "Fee " + (feeCurrency != null ? feeCurrency.code() : "null") + " currency is not base or quote");
+        }
+        return cluster;
     }
 
     @Override

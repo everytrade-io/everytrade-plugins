@@ -49,8 +49,7 @@ class LocalBitcoinsV1Test {
                 new BigDecimal("0.66801349"),
                 new BigDecimal("7484.8787859060")
             ),
-            Collections.emptyList(),
-            0
+            Collections.emptyList()
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -70,8 +69,7 @@ class LocalBitcoinsV1Test {
                 new BigDecimal("5000"),
                 new BigDecimal("0.0001336027")
             ),
-            Collections.emptyList(),
-            0
+            Collections.emptyList()
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -91,8 +89,7 @@ class LocalBitcoinsV1Test {
                 new BigDecimal("0.01515238"),
                 new BigDecimal("8249.5291168780")
             ),
-            Collections.emptyList(),
-            0
+            Collections.emptyList()
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
