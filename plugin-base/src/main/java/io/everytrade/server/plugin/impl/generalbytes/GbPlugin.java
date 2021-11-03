@@ -69,7 +69,7 @@ public class GbPlugin implements IPlugin {
     }
 
     public static Currency parseGbCurrency(String currency) {
-        if ("LBTC".equalsIgnoreCase(currency)) { //BTC Lightening
+        if ("LBTC".equalsIgnoreCase(currency)) { //BTC Lightning
             return Currency.BTC;
         } else {
             return Currency.fromCode(currency);

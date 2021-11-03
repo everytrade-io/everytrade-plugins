@@ -19,6 +19,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 public class BlockchainEthDownloader {
     //maximum rate limit of up to 5 calls per sec/IP https://info.etherscan.com/api-return-errors/
@@ -61,15 +64,6 @@ public class BlockchainEthDownloader {
         this.importFeesFromDeposits = Boolean.parseBoolean(importFeesFromDeposits);
         Objects.requireNonNull(importFeesFromWithdrawals);
         this.importFeesFromWithdrawals = Boolean.parseBoolean(importFeesFromWithdrawals);
-        final boolean correctParamsCombination = this.importDepositsAsBuys || this.importWithdrawalsAsSells;
-        if (!correctParamsCombination) {
-            throw new IllegalArgumentException(
-                String.format("Incorrect params combination, at least importDepositsAsBuys (%s) or " +
-                        "importWithdrawalsAsSells (%s) must be set to true.",
-                    importDepositsAsBuys,
-                    importWithdrawalsAsSells
-                ));
-        }
     }
 
     public DownloadResult download() {
@@ -94,9 +88,11 @@ public class BlockchainEthDownloader {
                 transactionDtos = downloadTransactions(api, lastCompletelyDownloadedBlock, latestBlockWithAllConfirmedTxs);
             }
         }
-        final List<EtherScanTransactionDto> filteredTransactionDtos = filterBuySellTransaction(transactionDtos);
 
-        return new DownloadResult(parseTransactions(filteredTransactionDtos), String.valueOf(latestBlockWithAllConfirmedTxs));
+        return new DownloadResult(
+            parseTransactions(filterTxs(transactionDtos)),
+            String.valueOf(latestBlockWithAllConfirmedTxs)
+        );
     }
 
     private long downloadLastBlock(EtherScanV1API api) {
@@ -156,23 +152,17 @@ public class BlockchainEthDownloader {
         }
     }
 
-    private List<EtherScanTransactionDto> filterBuySellTransaction(List<EtherScanTransactionDto> transactionDtos) {
-        final List<EtherScanTransactionDto> result = new ArrayList<>();
-        for (EtherScanTransactionDto transactionDto : transactionDtos) {
-            final boolean contract = transactionDto.getTo().isEmpty() || transactionDto.getFrom().isEmpty();
-            final boolean selfTransfer = transactionDto.getTo().equals(address) && transactionDto.getFrom().equals(address);
-            final boolean buyTransaction = !contract && !selfTransfer && transactionDto.getTo().equals(address);
-            final boolean sellTransaction = !contract && !selfTransfer && transactionDto.getFrom().equals(address);
-            if ((importDepositsAsBuys && buyTransaction) || (importWithdrawalsAsSells && sellTransaction)) {
-                result.add(transactionDto);
-            }
-        }
-        return result;
+    private List<EtherScanTransactionDto> filterTxs(List<EtherScanTransactionDto> transactionDtos) {
+        return transactionDtos.stream()
+            .filter(tx -> {
+                final boolean contract = tx.getTo().isEmpty() || tx.getFrom().isEmpty();
+                final boolean selfTransfer = tx.getTo().equals(address) && tx.getFrom().equals(address);
+                return !contract && !selfTransfer;
+            })
+            .collect(toList());
     }
 
-    private ParseResult parseTransactions(
-        List<EtherScanTransactionDto> transactionDtos
-    ) {
+    private ParseResult parseTransactions(List<EtherScanTransactionDto> transactionDtos) {
         final List<TransactionCluster> transactionClusters = new ArrayList<>();
         final List<ParsingProblem> parsingProblems = new ArrayList<>();
 
@@ -182,6 +172,8 @@ public class BlockchainEthDownloader {
                     transactionDto,
                     address,
                     fiatCurrency,
+                    importDepositsAsBuys,
+                    importWithdrawalsAsSells,
                     importFeesFromDeposits,
                     importFeesFromWithdrawals
                 );

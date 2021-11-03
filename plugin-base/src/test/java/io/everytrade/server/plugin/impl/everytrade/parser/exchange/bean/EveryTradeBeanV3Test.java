@@ -294,9 +294,10 @@ class EveryTradeBeanV3Test {
 
     @Test
     void testIgnoredTransactionType() {
-        final String row = "1;2021-07-27 14:43:18;BTC/CZK;WITHDRAW;0.066506;210507.3226;;;;\n";
+        // test wrong unsupported tx type
+        final String row = "1;2021-07-27 14:43:18;BTC/CZK;WITHDRAWZ;0.066506;210507.3226;;;;\n";
         final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
-        assertTrue(parsingProblem.getMessage().contains(ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE.concat("WITHDRAW"))
+        assertTrue(parsingProblem.getMessage().contains(ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE.concat("WITHDRAWZ"))
         );
     }
 

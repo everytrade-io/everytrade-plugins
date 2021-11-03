@@ -1,52 +1,72 @@
 package io.everytrade.server.parser.exchange;
 
 import com.generalbytes.bitrafael.client.Client;
+import com.generalbytes.bitrafael.server.api.dto.InputInfo;
+import com.generalbytes.bitrafael.server.api.dto.OutputInfo;
 import com.generalbytes.bitrafael.tools.transaction.Transaction;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.DepositWithdrawalImportedTransaction;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
+import lombok.AccessLevel;
+import lombok.ToString;
+import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 
+import static io.everytrade.server.model.TransactionType.BUY;
+import static io.everytrade.server.model.TransactionType.DEPOSIT;
+import static io.everytrade.server.model.TransactionType.SELL;
+import static io.everytrade.server.model.TransactionType.WITHDRAW;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 
+@ToString
+@FieldDefaults(makeFinal=true, level= AccessLevel.PRIVATE)
 public class BlockchainApiTransactionBean {
-    private final String id;
-    private final Instant timestamp;
-    private final TransactionType type;
-    private final Currency base;
-    private final Currency quote;
-    private final Currency feeCurrency;
-    private final BigDecimal originalAmount;
-    private final BigDecimal price;
-    private final BigDecimal feeAmount;
-    private final boolean importFeesFromDeposits;
-    private final boolean importFeesFromWithdrawals;
+    String id;
+    Instant timestamp;
+    TransactionType type;
+    Currency base;
+    Currency quote;
+    Currency feeCurrency;
+    BigDecimal originalAmount;
+    BigDecimal price;
+    BigDecimal feeAmount;
+    String address;
+    boolean importDepositsAsBuys;
+    boolean importWithdrawalsAsSells;
+    boolean importFeesFromDeposits;
+    boolean importFeesFromWithdrawals;
 
     public BlockchainApiTransactionBean(
         Transaction transaction,
         String base,
         String quote,
+        boolean importDepositsAsBuys,
+        boolean importWithdrawalsAsSells,
         boolean importFeesFromDeposits,
         boolean importFeesFromWithdrawals
     ) {
-        id = transaction.getTxHash();
-        timestamp =  Instant.ofEpochMilli(transaction.getTimestamp());
-        type = transaction.isDirectionSend() ? TransactionType.SELL : TransactionType.BUY;
+        this.id = transaction.getTxHash();
+        this.timestamp =  Instant.ofEpochMilli(transaction.getTimestamp());
+        this.type = resolveTxType(transaction);
         this.base = Currency.fromCode(base.toUpperCase());
         this.quote = Currency.fromCode(quote.toUpperCase());
         this.price = null; // it will be automatically added from the market in everytrade.
-        feeCurrency = this.base;
-        originalAmount = Client.satoshisToBigDecimal(transaction.getAmount()).abs();
-        feeAmount = Client.satoshisToBigDecimal(transaction.getFee()).abs();
+        this.feeCurrency = this.base;
+        this.originalAmount = Client.satoshisToBigDecimal(transaction.getAmount()).abs();
+        this.feeAmount = Client.satoshisToBigDecimal(transaction.getFee()).abs();
+        this.address = oppositeAddress(transaction);
+        this.importDepositsAsBuys = importDepositsAsBuys;
+        this.importWithdrawalsAsSells = importWithdrawalsAsSells;
         this.importFeesFromDeposits = importFeesFromDeposits;
         this.importFeesFromWithdrawals = importFeesFromWithdrawals;
     }
@@ -63,7 +83,7 @@ public class BlockchainApiTransactionBean {
         }
         final boolean withFee =
             (importFeesFromDeposits && TransactionType.BUY.equals(type))
-                || (importFeesFromWithdrawals && TransactionType.SELL.equals(type));
+                || (importFeesFromWithdrawals && SELL.equals(type));
 
         final boolean ignoredFee = !(base.equals(feeCurrency) || quote.equals(feeCurrency));
         List<ImportedTransactionBean> related;
@@ -82,8 +102,24 @@ public class BlockchainApiTransactionBean {
             );
         }
 
-        TransactionCluster cluster = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+        var cluster = new TransactionCluster(createTx(), related);
+        if (ignoredFee) {
+            cluster.setIgnoredFee(1, "Fee " + (feeCurrency != null ? feeCurrency.code() : "null") + " currency is not base or quote");
+        }
+        return cluster;
+    }
+
+    private TransactionType resolveTxType(Transaction t) {
+        if (t.isDirectionSend()) {
+            return importWithdrawalsAsSells ? SELL : WITHDRAW;
+        } else {
+            return importDepositsAsBuys ? BUY : DEPOSIT;
+        }
+    }
+
+    private ImportedTransactionBean createTx() {
+        if (type == BUY || type == SELL) {
+            return new BuySellImportedTransactionBean(
                 id,
                 timestamp,
                 base,
@@ -91,29 +127,38 @@ public class BlockchainApiTransactionBean {
                 type,
                 originalAmount,
                 price
-            ),
-            related
-        );
-        if (ignoredFee) {
-            cluster.setIgnoredFee(1, "Fee " + (feeCurrency != null ? feeCurrency.code() : "null") + " currency is not base or quote");
+            );
+        } else if (type == DEPOSIT || type == WITHDRAW) {
+            return new DepositWithdrawalImportedTransaction(
+                id,
+                timestamp,
+                base,
+                quote,
+                type,
+                originalAmount,
+                address
+            );
+        } else {
+            throw new IllegalArgumentException("Unsupported tx type " + type);
         }
-        return cluster;
     }
 
-    @Override
-    public String toString() {
-        return "BlockchainApiTransactionBean{" +
-            "id='" + id + '\'' +
-            ", timestamp=" + timestamp +
-            ", type=" + type +
-            ", base=" + base +
-            ", quote=" + quote +
-            ", feeCurrency=" + feeCurrency +
-            ", originalAmount=" + originalAmount +
-            ", price=" + price +
-            ", feeAmount=" + feeAmount +
-            ", importFeesFromDeposits=" + importFeesFromDeposits +
-            ", importFeesFromWithdrawals=" + importFeesFromWithdrawals +
-            '}';
+    private String oppositeAddress(Transaction t) {
+        if (type != DEPOSIT && type != WITHDRAW) {
+            return null;
+        }
+        for (InputInfo in : t.getInputInfos()) {
+            for (OutputInfo out : t.getOutputInfos()) {
+                if (in.getAddress().equals(out.getAddress())) {
+                    continue;
+                }
+                if (type == WITHDRAW) {
+                    return out.getAddress();
+                } else {
+                    return in.getAddress();
+                }
+            }
+        }
+        return null;
     }
 }

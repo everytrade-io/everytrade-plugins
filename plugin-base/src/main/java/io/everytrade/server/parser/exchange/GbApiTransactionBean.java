@@ -7,10 +7,13 @@ import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.DepositWithdrawalImportedTransaction;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -21,6 +24,7 @@ import java.util.List;
 
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 import static io.everytrade.server.plugin.impl.generalbytes.GbPlugin.parseGbCurrency;
+import static java.util.Collections.emptyList;
 
 @JsonFormat(shape = JsonFormat.Shape.ARRAY)
 @JsonPropertyOrder(
@@ -37,6 +41,8 @@ import static io.everytrade.server.plugin.impl.generalbytes.GbPlugin.parseGbCurr
         "status"
     }
 )
+@Data
+@NoArgsConstructor
 public class GbApiTransactionBean {
 
     private static final String WITHDRAW_ACTION = "WITHDRAW";
@@ -52,84 +58,8 @@ public class GbApiTransactionBean {
     private String expenseCurrency;
     private String status;
 
-    public void setUid(String uid) {
-        this.uid = uid;
-    }
-
     public void setTimestamp(Date timestamp) {
         this.timestamp = timestamp.toInstant();
-    }
-
-    public void setBase(String symbol) {
-        base = symbol;
-    }
-
-    public void setQuote(String symbol) {
-        quote = symbol;
-    }
-
-    public void setAction(String action) {
-        this.action = action;
-    }
-
-    public void setQuantity(BigDecimal quantity) {
-        this.quantity = quantity;
-    }
-
-    public void setVolume(BigDecimal volume) {
-        this.volume = volume;
-    }
-
-    public void setExpense(BigDecimal expense) {
-        this.expense = expense;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public void setExpenseCurrency(String expenseCurrency) {
-        this.expenseCurrency = expenseCurrency;
-    }
-
-    public String getUid() {
-        return uid;
-    }
-
-    public Instant getTimestamp() {
-        return timestamp;
-    }
-
-    public String getBase() {
-        return base;
-    }
-
-    public String getQuote() {
-        return quote;
-    }
-
-    public String getAction() {
-        return action;
-    }
-
-    public BigDecimal getQuantity() {
-        return quantity;
-    }
-
-    public BigDecimal getVolume() {
-        return volume;
-    }
-
-    public BigDecimal getExpense() {
-        return expense;
-    }
-
-    public String getExpenseCurrency() {
-        return expenseCurrency;
-    }
-
-    public String getStatus() {
-        return status;
     }
 
     public TransactionCluster toTransactionCluster() {
