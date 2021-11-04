@@ -14,10 +14,9 @@ public enum TransactionType {
     ;
 
     private final int code;
-    private static final Map<Integer, TransactionType> BY_CODE;
+    private static final Map<Integer, TransactionType> BY_CODE = new HashMap<>();
 
     static {
-        BY_CODE = new HashMap<>();
         for (TransactionType value : values()) {
             final TransactionType previousMapping = BY_CODE.put(value.code, value);
             if (previousMapping != null) {
@@ -42,5 +41,13 @@ public enum TransactionType {
             throw new IllegalArgumentException(String.format("Unrecognized transaction type code: %d.", code));
         }
         return transactionType;
+    }
+
+    public boolean isBuyOrSell() {
+        return this == BUY || this == SELL;
+    }
+
+    public boolean isDepositOrWithdraw() {
+        return this == DEPOSIT || this == WITHDRAW;
     }
 }

@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static java.util.Collections.emptyList;
+
 public class CoinmateConnector implements IConnector {
 
     private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "coinmateApiConnector";
@@ -92,7 +94,7 @@ public class CoinmateConnector implements IConnector {
             ? lastTransactionId
             : userTrades.get(userTrades.size() - 1).getId();
 
-        final ParseResult parseResult = XChangeConnectorParser.getParseResult(userTrades, SupportedExchange.COINMATE);
+        final ParseResult parseResult = new XChangeConnectorParser().getParseResult(userTrades, emptyList());
 
         return new DownloadResult(parseResult, actualLastTransactionId);
     }

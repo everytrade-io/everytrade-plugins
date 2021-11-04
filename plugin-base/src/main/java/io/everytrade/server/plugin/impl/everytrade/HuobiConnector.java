@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static java.util.Collections.emptyList;
+
 public class HuobiConnector implements IConnector {
 
     private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "huobiApiConnector";
@@ -81,7 +83,7 @@ public class HuobiConnector implements IConnector {
         final HuobiDownloader huobiDownloader = new HuobiDownloader(tradeService, lastTransactionId);
 
         List<UserTrade> userTrades = huobiDownloader.download(currencyPairs);
-        final ParseResult parseResult = XChangeConnectorParser.getParseResult(userTrades, SupportedExchange.BINANCE);
+        final ParseResult parseResult = new XChangeConnectorParser().getParseResult(userTrades, emptyList());
 
         return new DownloadResult(parseResult, huobiDownloader.getLastTransactionId());
     }

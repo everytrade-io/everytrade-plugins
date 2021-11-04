@@ -1,14 +1,14 @@
 package io.everytrade.server.plugin.impl.everytrade;
 
 import io.everytrade.server.UiKey;
-import io.everytrade.server.plugin.api.connector.ConnectorParameterType;
 import io.everytrade.server.model.SupportedExchange;
-import io.everytrade.server.plugin.api.parser.ParseResult;
-import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.IPlugin;
 import io.everytrade.server.plugin.api.connector.ConnectorDescriptor;
 import io.everytrade.server.plugin.api.connector.ConnectorParameterDescriptor;
+import io.everytrade.server.plugin.api.connector.ConnectorParameterType;
+import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.connector.IConnector;
+import io.everytrade.server.plugin.api.parser.ParseResult;
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.ExchangeFactory;
 import org.knowm.xchange.ExchangeSpecification;
@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
+import static java.util.Collections.emptyList;
 
 public class BitstampConnector implements IConnector {
 
@@ -92,7 +94,7 @@ public class BitstampConnector implements IConnector {
             ? lastTransactionId
             : userTrades.get(userTrades.size() - 1).getId();
 
-        final ParseResult parseResult = XChangeConnectorParser.getParseResult(userTrades, SupportedExchange.BITSTAMP);
+        final ParseResult parseResult = new XChangeConnectorParser().getParseResult(userTrades, emptyList());
 
         return new DownloadResult(parseResult, lastTransactionIdNew);
     }

@@ -23,6 +23,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.emptyList;
+
 public class CoinbaseConnector implements IConnector {
     private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "coinbaseApiConnector";
     private static final SupportedExchange SUPPORTED_EXCHANGE = SupportedExchange.COINBASE;
@@ -81,7 +83,7 @@ public class CoinbaseConnector implements IConnector {
         final CoinbaseDownloader coinbaseDownloader
             = new CoinbaseDownloader(tradeService, lastTransactionId, walletIds);
         final List<UserTrade> userTrades = coinbaseDownloader.download();
-        final ParseResult parseResult = XChangeConnectorParser.getParseResult(userTrades, SUPPORTED_EXCHANGE);
+        final ParseResult parseResult = new XChangeConnectorParser().getParseResult(userTrades, emptyList());
 
         return new DownloadResult(parseResult, coinbaseDownloader.getLastTransactionId());
     }

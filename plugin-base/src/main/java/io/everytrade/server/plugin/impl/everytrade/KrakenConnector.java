@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static java.util.Collections.emptyList;
+
 public class KrakenConnector implements IConnector {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     // According Kraken rules https://support.kraken.com/hc/en-us/articles/206548367-What-are-the-API-rate-limits-
@@ -96,8 +98,10 @@ public class KrakenConnector implements IConnector {
             ++sentRequests;
         }
 
-        return new DownloadResult(XChangeConnectorParser.getParseResult(userTrades, SupportedExchange.KRAKEN),
-            downloadState.toLastDownloadedTxUid());
+        return new DownloadResult(
+            new XChangeConnectorParser().getParseResult(userTrades, emptyList()),
+            downloadState.toLastDownloadedTxUid()
+        );
     }
 
     private List<UserTrade> download(TradeService tradeService, boolean firstDownload, KrakenDownloadState state) {

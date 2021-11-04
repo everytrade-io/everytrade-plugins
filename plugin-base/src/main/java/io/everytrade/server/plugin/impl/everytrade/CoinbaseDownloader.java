@@ -79,7 +79,6 @@ public class CoinbaseDownloader {
 
                 userTrades.addAll(buysTradeHistoryBlock);
                 lastBuyId = buysTradeHistoryBlock.get(0).getId();
-
             }
 
             while (sentRequests < MAX_REQUEST_COUNT) {
@@ -87,8 +86,7 @@ public class CoinbaseDownloader {
                 tradeHistoryParams.setStartId(lastSellId);
                 final List<UserTrade> sellsTradeHistoryBlock;
                 try {
-                    sellsTradeHistoryBlock
-                        = tradeService.getSellTradeHistory(tradeHistoryParams, walletId).getUserTrades();
+                    sellsTradeHistoryBlock = tradeService.getSellTradeHistory(tradeHistoryParams, walletId).getUserTrades();
                 } catch (IOException e) {
                     throw new IllegalStateException("Download sells history failed.", e);
                 }

@@ -20,6 +20,7 @@ import org.knowm.xchange.service.trade.params.TradeHistoryParamsSorted;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,7 @@ import java.util.regex.Pattern;
 
 import static io.everytrade.server.plugin.impl.everytrade.ConnectorUtils.findDuplicate;
 import static io.everytrade.server.plugin.impl.everytrade.ConnectorUtils.occurrenceCount;
+import static java.util.Collections.emptyList;
 
 public class BitfinexConnector implements IConnector {
 
@@ -95,7 +97,7 @@ public class BitfinexConnector implements IConnector {
             actualLastTransactionId = lastTransactionId;
         }
 
-        final ParseResult parseResult = XChangeConnectorParser.getParseResult(userTrades, SupportedExchange.BITFINEX);
+        final ParseResult parseResult = new XChangeConnectorParser().getParseResult(userTrades, emptyList());
 
         return new DownloadResult(parseResult, actualLastTransactionId);
     }

@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static io.everytrade.server.plugin.impl.everytrade.ConnectorUtils.findDuplicate;
+import static java.util.Collections.emptyList;
 
 public class BittrexConnector implements IConnector {
     private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "bittrexApiConnector";
@@ -76,7 +77,7 @@ public class BittrexConnector implements IConnector {
             ? lastTransactionId
             : userTrades.get(userTrades.size() - 1).getId();
 
-        final ParseResult parseResult = XChangeConnectorParser.getParseResult(userTrades, SupportedExchange.BITTREX);
+        final ParseResult parseResult = new XChangeConnectorParser().getParseResult(userTrades, emptyList());
 
         return new DownloadResult(parseResult, actualLastTransactionId);
     }

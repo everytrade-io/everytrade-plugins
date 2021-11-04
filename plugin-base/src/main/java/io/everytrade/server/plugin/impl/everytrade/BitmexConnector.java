@@ -17,7 +17,6 @@ import org.knowm.xchange.dto.trade.UserTrade;
 import org.knowm.xchange.service.trade.TradeService;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +25,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static io.everytrade.server.plugin.impl.everytrade.ConnectorUtils.findDuplicate;
+import static java.util.Collections.emptyList;
 
 public class BitmexConnector implements IConnector {
     private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "bitmexApiConnector";
@@ -94,7 +94,7 @@ public class BitmexConnector implements IConnector {
             actualLastTransactionId = lastTransactionId;
         }
 
-        final ParseResult parseResult = XChangeConnectorParser.getParseResult(userTrades, SupportedExchange.BITMEX);
+        final ParseResult parseResult = new XChangeConnectorParser().getParseResult(userTrades, emptyList());
 
         return new DownloadResult(parseResult, actualLastTransactionId);
     }
@@ -182,5 +182,4 @@ public class BitmexConnector implements IConnector {
             this.id = id;
         }
     }
-
 }
