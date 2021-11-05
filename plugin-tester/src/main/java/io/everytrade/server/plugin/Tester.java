@@ -167,7 +167,7 @@ public class Tester {
             printResult(downloadResult);
 
             //follow-up connection
-            printResult(connector.getTransactions(downloadResult.getLastDownloadedTransactionId()));
+            printResult(connector.getTransactions(downloadResult.getDownloadStateData()));
         }
     }
 
@@ -225,8 +225,8 @@ public class Tester {
     private void printResult(DownloadResult downloadResult) {
         final ParseResult parseResult = downloadResult.getParseResult();
         printResult(parseResult);
-        final String lastDownloadedTransactionId = downloadResult.getLastDownloadedTransactionId();
-        log.info("lastDownloadedTransactionId = " + lastDownloadedTransactionId);
+        final String downloadStateData = downloadResult.getDownloadStateData();
+        log.info("downloadStateData = {}", downloadStateData);
     }
 
     private void printResult(ParseResult parseResult) {

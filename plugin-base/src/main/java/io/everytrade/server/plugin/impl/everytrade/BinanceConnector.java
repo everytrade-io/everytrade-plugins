@@ -75,10 +75,13 @@ public class BinanceConnector implements IConnector {
         synchronized (LOCK) {
             var binanceDownloader = new BinanceDownloader(apiKey, apiSecret, lastTransactionId);
 
-            List<UserTrade> userTrades = binanceDownloader.downloadTrades(currencyPairs, MAX_DOWNLOADED_TXS);
-            List<FundingRecord> fundings = binanceDownloader.downloadDepositsAndWithdrawals(MAX_DOWNLOADED_TXS - userTrades.size());
+            List<FundingRecord> funding = binanceDownloader.downloadDepositsAndWithdrawals(MAX_DOWNLOADED_TXS);
+            List<UserTrade> userTrades = binanceDownloader.downloadTrades(currencyPairs, MAX_DOWNLOADED_TXS - funding.size());
 
-            return new DownloadResult(parser.getParseResult(userTrades, fundings), binanceDownloader.getLastTransactionId());
+            return DownloadResult.builder()
+                .parseResult(parser.getParseResult(userTrades, funding))
+                .downloadStateData(binanceDownloader.serializeState())
+                .build();
         }
     }
 

@@ -1,66 +1,34 @@
 package io.everytrade.server.plugin.impl.everytrade;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
-import static io.everytrade.server.plugin.impl.everytrade.ConnectorUtils.occurrenceCount;
+import static lombok.AccessLevel.PRIVATE;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@FieldDefaults(level = PRIVATE)
 public class KrakenDownloadState {
-    public static final int MAX_LENGTH_DOWNLOADED_TXUID = 255;
-    private String lastContinuousTxUid;
-    private String firstTxUidAfterGap;
-    private String lastTxUidAfterGap;
 
-    private static final String TX_ID_SEPARATOR = ":";
-    private static final Pattern SPLIT_PATTERN = Pattern.compile(
-        String.format("^([^%s]*)%s([^%s]*)%s([^%s]*)$",
-            TX_ID_SEPARATOR,
-            TX_ID_SEPARATOR,
-            TX_ID_SEPARATOR,
-            TX_ID_SEPARATOR,
-            TX_ID_SEPARATOR
-        )
-    );
+    private static final int MAX_LENGTH_DOWNLOADED_TXUID = 255;
+    private static final String SERIALIZATION_SEPARATOR = ":";
 
-    public KrakenDownloadState(
-        String lastContinuousTxUid,
-        String firstTxUidAfterGap,
-        String lastTxUidAfterGap
-    ) {
-        this.lastContinuousTxUid = lastContinuousTxUid;
-        this.firstTxUidAfterGap = firstTxUidAfterGap;
-        this.lastTxUidAfterGap = lastTxUidAfterGap;
-    }
+    String tradeLastContinuousTxUid;
+    String tradeFirstTxUidAfterGap;
+    String tradeLastTxUidAfterGap;
+    Long fundingOffset;
 
-    public String getLastContinuousTxUid() {
-        return lastContinuousTxUid;
-    }
-
-    public String getFirstTxUidAfterGap() {
-        return firstTxUidAfterGap;
-    }
-
-    public String getLastTxUidAfterGap() {
-        return lastTxUidAfterGap;
-    }
-
-    public void setLastContinuousTxUid(String lastContinuousTxUid) {
-        this.lastContinuousTxUid = lastContinuousTxUid;
-    }
-
-    public void setFirstTxUidAfterGap(String firstTxUidAfterGap) {
-        this.firstTxUidAfterGap = firstTxUidAfterGap;
-    }
-
-    public void setLastTxUidAfterGap(String lastTxUidAfterGap) {
-        this.lastTxUidAfterGap = lastTxUidAfterGap;
-    }
-
-    public String toLastDownloadedTxUid() {
+    public String serialize() {
         final String result = new StringBuilder()
-            .append(lastContinuousTxUid == null ? "" : lastContinuousTxUid).append(TX_ID_SEPARATOR)
-            .append(firstTxUidAfterGap == null ? "" : firstTxUidAfterGap).append(TX_ID_SEPARATOR)
-            .append(lastTxUidAfterGap == null ? "" : lastTxUidAfterGap).toString();
+            .append(tradeLastContinuousTxUid == null ? "" : tradeLastContinuousTxUid).append(SERIALIZATION_SEPARATOR)
+            .append(tradeFirstTxUidAfterGap == null ? "" : tradeFirstTxUidAfterGap).append(SERIALIZATION_SEPARATOR)
+            .append(tradeLastTxUidAfterGap == null ? "" : tradeLastTxUidAfterGap).append(SERIALIZATION_SEPARATOR)
+            .append(fundingOffset == null ? "" :  fundingOffset)
+            .toString();
+
         if (result.length() > MAX_LENGTH_DOWNLOADED_TXUID) {
             throw new IllegalStateException(
                 String.format(
@@ -73,27 +41,26 @@ public class KrakenDownloadState {
         return result;
     }
 
-    public static KrakenDownloadState parseFrom(String lastTransactionUid) {
-        if (lastTransactionUid == null) {
-            return new KrakenDownloadState(null, null, null);
+    public static KrakenDownloadState deserialize(String downloadState) {
+        if (downloadState == null) {
+            return new KrakenDownloadState();
         }
 
-        Matcher matcher = SPLIT_PATTERN.matcher(lastTransactionUid);
-        if (!matcher.find()) {
-            throw new IllegalArgumentException(
-                String.format("Illegal value of lastTransactionUid '%s'.", lastTransactionUid)
-            );
-        }
+        String[] splitValues = downloadState.split(SERIALIZATION_SEPARATOR);
 
+        String fundingOffsetStr = getGroupValueOrNull(splitValues, 4);
         return new KrakenDownloadState(
-            getGroupValueOrNull(matcher, 1),
-            getGroupValueOrNull(matcher, 2),
-            getGroupValueOrNull(matcher, 3)
+            getGroupValueOrNull(splitValues, 1),
+            getGroupValueOrNull(splitValues, 2),
+            getGroupValueOrNull(splitValues, 3),
+            fundingOffsetStr == null ? null : Long.valueOf(fundingOffsetStr)
         );
     }
 
-    private static String getGroupValueOrNull(Matcher matcher, int group) {
-        final String part = matcher.group(group);
-        return part.isEmpty() ? null : part;
+    private static String getGroupValueOrNull(String[] values, int group) {
+        if (values.length < group) {
+            return null;
+        }
+        return values[group - 1];
     }
 }
