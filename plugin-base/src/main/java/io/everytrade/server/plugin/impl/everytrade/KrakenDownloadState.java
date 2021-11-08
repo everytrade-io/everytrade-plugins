@@ -57,6 +57,14 @@ public class KrakenDownloadState {
         );
     }
 
+    public void addToFundingOffset(Long amountToAdd) {
+        if (fundingOffset == null) {
+            fundingOffset = amountToAdd;
+        } else {
+            fundingOffset += amountToAdd;
+        }
+    }
+
     private static String getGroupValueOrNull(String[] values, int group) {
         if (values.length < group) {
             return null;

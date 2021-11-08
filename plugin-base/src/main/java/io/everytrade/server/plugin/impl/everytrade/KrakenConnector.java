@@ -36,6 +36,7 @@ public class KrakenConnector implements IConnector {
     // According Kraken rules https://support.kraken.com/hc/en-us/articles/206548367-What-are-the-API-rate-limits-
     private static final int MAX_TRADE_REQUESTS_COUNT = 7;
     private static final int MAX_FUNDING_REQUESTS_COUNT = 14;
+    private static final int FUNDING_MAX_RESPONSE_SIZE = 50;
 
     private static final ConnectorParameterDescriptor PARAMETER_API_SECRET =
         new ConnectorParameterDescriptor(
@@ -102,7 +103,7 @@ public class KrakenConnector implements IConnector {
         sentRequests = 0;
         while (sentRequests < MAX_FUNDING_REQUESTS_COUNT) {
             final List<FundingRecord> downloadResult = downloadDepositsAndWithdrawals(firstDownload, downloadState);
-            if (downloadResult.isEmpty()) {
+            if (downloadResult.size() < FUNDING_MAX_RESPONSE_SIZE) {
                 break;
             }
             funding.addAll(downloadResult);
@@ -182,8 +183,7 @@ public class KrakenConnector implements IConnector {
             LOG.info("No transactions in Kraken user history.");
             return emptyList();
         }
-
-        // TODO set offset
+        state.addToFundingOffset((long) downloadedBlock.size());
 
         return downloadedBlock;
     }
