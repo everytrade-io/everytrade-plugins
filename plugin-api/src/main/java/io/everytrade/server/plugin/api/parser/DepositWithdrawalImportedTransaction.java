@@ -25,16 +25,7 @@ public class DepositWithdrawalImportedTransaction extends ImportedTransactionBea
         BigDecimal volume,
         String address
     ) {
-        this(
-            uid,
-            executed,
-            base,
-            quote,
-            action,
-            volume,
-            null,
-            address
-        );
+        this(uid, executed, base, quote, action, volume, null, address);
     }
 
     public DepositWithdrawalImportedTransaction(
