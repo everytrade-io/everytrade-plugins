@@ -66,6 +66,13 @@ public class KrakenDownloadState {
         }
     }
 
+    public boolean hasEmptyState() {
+        return tradeLastContinuousTxUid == null &&
+            tradeFirstTxUidAfterGap == null &&
+            tradeLastTxUidAfterGap == null &&
+            fundingOffset == null;
+    }
+
     private static String getGroupValueOrNull(String[] values, int group) {
         if (values.length < group) {
             return null;

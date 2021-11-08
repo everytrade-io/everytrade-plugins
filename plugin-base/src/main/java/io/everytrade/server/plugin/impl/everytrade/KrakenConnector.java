@@ -86,7 +86,7 @@ public class KrakenConnector implements IConnector {
     @Override
     public DownloadResult getTransactions(String downloadStateStr) {
         KrakenDownloadState downloadState = KrakenDownloadState.deserialize(downloadStateStr);
-        final boolean firstDownload = downloadState.getTradeLastContinuousTxUid() == null;
+        final boolean firstDownload = downloadState.hasEmptyState();
 
         final List<UserTrade> userTrades = new ArrayList<>();
         final List<FundingRecord> funding = new ArrayList<>();
@@ -111,7 +111,7 @@ public class KrakenConnector implements IConnector {
         }
 
         return new DownloadResult(
-            new XChangeConnectorParser().getParseResult(userTrades, emptyList()),
+            new XChangeConnectorParser().getParseResult(userTrades, funding),
             downloadState.serialize()
         );
     }
