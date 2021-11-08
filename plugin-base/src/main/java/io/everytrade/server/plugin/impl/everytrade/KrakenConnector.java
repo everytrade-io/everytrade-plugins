@@ -137,7 +137,7 @@ public class KrakenConnector implements IConnector {
         }
 
         if (downloadedBlock.isEmpty()) {
-            LOG.info("No transactions in Kraken user history.");
+            LOG.debug("No funding in kraken.");
             return emptyList();
         }
 

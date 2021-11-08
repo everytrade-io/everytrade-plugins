@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static java.time.temporal.ChronoUnit.DAYS;
+import static java.util.stream.Collectors.joining;
 import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.lang.StringUtils.isEmpty;
 
@@ -128,7 +129,8 @@ public class BinanceDownloader {
         // PAIR=TRADE_ID:PAIR2=TRADE_ID2[..]|LAST_FUNDING_DATE
         return currencyPairLastIds.keySet().stream()
             .map(key -> key + "=" + currencyPairLastIds.get(key))
-            .collect(Collectors.joining(":")) + STATE_SEPARATOR + lastFundingDownloadedTimestamp.getTime();
+            .collect(joining(":")) + STATE_SEPARATOR
+            + (lastFundingDownloadedTimestamp == null ? "" : lastFundingDownloadedTimestamp.getTime());
     }
 
     // deserialize last downloaded IDs and timestamps to be able to continue where left off
