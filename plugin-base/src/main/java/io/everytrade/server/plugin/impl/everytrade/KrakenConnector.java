@@ -103,11 +103,11 @@ public class KrakenConnector implements IConnector {
         sentRequests = 0;
         while (sentRequests < MAX_FUNDING_REQUESTS_COUNT) {
             final List<FundingRecord> downloadResult = downloadDepositsAndWithdrawals(firstDownload, downloadState);
+            funding.addAll(downloadResult);
+            ++sentRequests;
             if (downloadResult.size() < FUNDING_MAX_RESPONSE_SIZE) {
                 break;
             }
-            funding.addAll(downloadResult);
-            ++sentRequests;
         }
 
         return new DownloadResult(

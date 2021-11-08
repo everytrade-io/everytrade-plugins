@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 import static lombok.AccessLevel.PRIVATE;
+import static org.apache.commons.lang.StringUtils.isEmpty;
 
 @Data
 @NoArgsConstructor
@@ -69,6 +70,7 @@ public class KrakenDownloadState {
         if (values.length < group) {
             return null;
         }
-        return values[group - 1];
+        var val = values[group - 1];
+        return isEmpty(val) ? null : val;
     }
 }
