@@ -106,10 +106,11 @@ public class BinanceDownloader {
             if (!response.isEmpty() && response.get(0).getDate().equals(lastFundingDownloadedTimestamp)) {
                 response.remove(0);
             }
+            result.addAll(response);
+
             if (response.size() < FUNDING_PER_REQUEST) {
                 break;
             }
-            result.addAll(response);
             lastFundingDownloadedTimestamp = response.get(response.size() - 1).getDate();
         }
         return result;

@@ -84,9 +84,4 @@ public class BinanceConnector implements IConnector {
                 .build();
         }
     }
-
-    @Override
-    public void close() {
-        //AutoCloseable
-    }
 }

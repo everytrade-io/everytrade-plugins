@@ -21,7 +21,7 @@ import java.time.Instant;
 import java.util.List;
 
 import static io.everytrade.server.model.TransactionType.FEE;
-import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.equalsToZero;
+import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 import static java.util.Collections.emptyList;
 
@@ -86,7 +86,7 @@ public class XChangeApiTransaction {
 
         final boolean isIgnoredFee = !(base.equals(feeCurrency) || quote.equals(feeCurrency));
         List<ImportedTransactionBean> related;
-        if (equalsToZero(feeAmount) || isIgnoredFee) {
+        if (nullOrZero(feeAmount) || isIgnoredFee) {
             related = emptyList();
         } else {
             related = List.of(new FeeRebateImportedTransactionBean(
