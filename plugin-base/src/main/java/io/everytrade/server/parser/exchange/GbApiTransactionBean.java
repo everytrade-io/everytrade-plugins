@@ -7,11 +7,11 @@ import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.DepositWithdrawalImportedTransaction;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
+import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -23,8 +23,8 @@ import java.util.Date;
 import java.util.List;
 
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE;
 import static io.everytrade.server.plugin.impl.generalbytes.GbPlugin.parseGbCurrency;
-import static java.util.Collections.emptyList;
 
 @JsonFormat(shape = JsonFormat.Shape.ARRAY)
 @JsonPropertyOrder(
@@ -94,7 +94,7 @@ public class GbApiTransactionBean {
                 timestamp,
                 baseCurrency,
                 quoteCurrency,
-                TransactionType.valueOf(action),
+                actionToTransactionType(),
                 quantity,
                 volume.divide(quantity, 10, RoundingMode.HALF_UP),
                 getRemoteUid()
@@ -158,5 +158,14 @@ public class GbApiTransactionBean {
         }
         return split[1];
     }
-}
 
+    private TransactionType actionToTransactionType() {
+        if ("SELL".equals(action)) {
+            return TransactionType.BUY;
+        } else if("BUY".equals(action)) {
+            return TransactionType.SELL;
+        } else {
+            throw new DataIgnoredException(UNSUPPORTED_TRANSACTION_TYPE.concat(action));
+        }
+    }
+}
