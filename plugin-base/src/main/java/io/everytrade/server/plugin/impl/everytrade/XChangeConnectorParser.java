@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
-import static io.everytrade.server.model.TransactionType.WITHDRAW;
+import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static java.util.stream.Collectors.toList;
 
 public class XChangeConnectorParser {
@@ -100,7 +100,7 @@ public class XChangeConnectorParser {
                 XChangeApiTransaction xchangeApiTransaction = XChangeApiTransaction.builder()
                     .id(w.getId())
                     .timestamp(w.getCompletedAt().toInstant())
-                    .type(WITHDRAW)
+                    .type(WITHDRAWAL)
                     .base(currency)
                     .quote(null)
                     .originalAmount(w.getQuantity())

@@ -107,8 +107,8 @@ public class XChangeApiTransaction {
         TransactionCluster cluster;
         if (type.isBuyOrSell()) {
             cluster = createBuySellTx(related);
-        } else if (type.isDepositOrWithdraw()) {
-            cluster = createDepositWithdrawTx(related);
+        } else if (type.isDepositOrWithdrawal()) {
+            cluster = createDepositWithdrawalTx(related);
         } else {
             throw new DataValidationException("Unsupported type " + type.name());
         }
@@ -119,7 +119,7 @@ public class XChangeApiTransaction {
         return cluster;
     }
 
-    private TransactionCluster createDepositWithdrawTx(List<ImportedTransactionBean> related) {
+    private TransactionCluster createDepositWithdrawalTx(List<ImportedTransactionBean> related) {
         return new TransactionCluster(
             new DepositWithdrawalImportedTransaction(
                 id,
@@ -162,7 +162,7 @@ public class XChangeApiTransaction {
     private static TransactionType fundingTypeToTxType(FundingRecord.Type type) {
         switch (type) {
             case WITHDRAWAL:
-                return TransactionType.WITHDRAW;
+                return TransactionType.WITHDRAWAL;
             case DEPOSIT:
                 return TransactionType.DEPOSIT;
             default:

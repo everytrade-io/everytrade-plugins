@@ -20,7 +20,7 @@ import static io.everytrade.server.model.Currency.USD;
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.SELL;
-import static io.everytrade.server.model.TransactionType.WITHDRAW;
+import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.test.TestUtils.findOneCluster;
 import static io.everytrade.server.test.TestUtils.fundingRecord;
 import static io.everytrade.server.test.TestUtils.userTrade;
@@ -38,7 +38,7 @@ class HuobiConnectorTest {
     private static final String ADDRESS = "addrs0";
 
     @Test
-    void testBuySellDepositWithdraw() {
+    void testBuySellDepositWithdrawal() {
         List<UserTrade> trades = new ArrayList<>();
         Date tradeDate = new Date(now().minus(177, DAYS).toEpochMilli());
 
@@ -47,7 +47,7 @@ class HuobiConnectorTest {
 
         List<FundingRecord> records = new ArrayList<>();
         records.add(fundingRecord(DEPOSIT, TEN, BTC, ONE, ADDRESS));
-        records.add(fundingRecord(WITHDRAW, TEN, BTC, ONE, ADDRESS));
+        records.add(fundingRecord(WITHDRAWAL, TEN, BTC, ONE, ADDRESS));
 
         var connector = new HuobiConnector(new HuobiExchangeMock(trades, records), "BTC/USD");
         var result = connector.getTransactions(null);
@@ -58,7 +58,7 @@ class HuobiConnectorTest {
 
         assertTx(findOneCluster(result, BUY), TEN);
         assertTx(findOneCluster(result, SELL), ONE);
-        assertTx(findOneCluster(result, WITHDRAW), TEN);
+        assertTx(findOneCluster(result, WITHDRAWAL), TEN);
         assertTx(findOneCluster(result, DEPOSIT), TEN);
     }
 
@@ -74,10 +74,10 @@ class HuobiConnectorTest {
         assertNull(cluster.getIgnoredFeeReason());
         assertEquals(0, cluster.getIgnoredFeeTransactionCount());
 
-        if (type.isDepositOrWithdraw()) {
-            var depositWithdraw = (DepositWithdrawalImportedTransaction) tx;
-            assertEquals(volume, depositWithdraw.getVolume());
-            assertNotNull(depositWithdraw.getAddress());
+        if (type.isDepositOrWithdrawal()) {
+            var depositWithdrawal = (DepositWithdrawalImportedTransaction) tx;
+            assertEquals(volume, depositWithdrawal.getVolume());
+            assertNotNull(depositWithdrawal.getAddress());
         } else if (type.isBuyOrSell()) {
             var buySell  = (BuySellImportedTransactionBean) cluster.getMain();
             assertEquals(volume, buySell.getBaseQuantity());

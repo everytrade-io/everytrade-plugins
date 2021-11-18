@@ -205,13 +205,13 @@ public class CoinbaseDownloader {
         String lastBuyId;
         String lastSellId;
         String lastDepositId;
-        String lastWithdrawId;
+        String lastWithdrawalId;
 
-        public WalletState(String lastBuyId, String lastSellId, String lastDepositId, String lastWithdrawId) {
+        public WalletState(String lastBuyId, String lastSellId, String lastDepositId, String lastWithdrawalId) {
             this.lastBuyId = DASH_SYMBOL.equals(lastBuyId) ? null : lastBuyId;
             this.lastSellId = DASH_SYMBOL.equals(lastSellId) ? null : lastSellId;
-            this.lastDepositId = DASH_SYMBOL.equals(lastBuyId) ? null : lastDepositId;
-            this.lastWithdrawId = DASH_SYMBOL.equals(lastSellId) ? null : lastWithdrawId;
+            this.lastDepositId = DASH_SYMBOL.equals(lastDepositId) ? null : lastDepositId;
+            this.lastWithdrawalId = DASH_SYMBOL.equals(lastWithdrawalId) ? null : lastWithdrawalId;
         }
     }
 }

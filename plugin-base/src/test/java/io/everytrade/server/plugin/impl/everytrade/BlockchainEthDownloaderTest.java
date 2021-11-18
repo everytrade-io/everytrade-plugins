@@ -22,7 +22,7 @@ import static io.everytrade.server.test.TestUtils.findOneCluster;
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.SELL;
-import static io.everytrade.server.model.TransactionType.WITHDRAW;
+import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static java.util.Collections.emptyList;
@@ -125,11 +125,11 @@ class BlockchainEthDownloaderTest {
 
         var depositCluster = findOneCluster(result, DEPOSIT);
         assertEquals(0, depositCluster.getRelated().size());
-        assertDepositWithdraw(depositCluster, DEPOSIT, TEN);
+        assertDepositWithdrawal(depositCluster, DEPOSIT, TEN);
 
-        var withdrawCluster = findOneCluster(result, WITHDRAW);
-        assertEquals(0, withdrawCluster.getRelated().size());
-        assertDepositWithdraw(withdrawCluster, WITHDRAW, ONE);
+        var withdrawalCluster = findOneCluster(result, WITHDRAWAL);
+        assertEquals(0, withdrawalCluster.getRelated().size());
+        assertDepositWithdrawal(withdrawalCluster, WITHDRAWAL, ONE);
     }
 
     @Test
@@ -154,15 +154,15 @@ class BlockchainEthDownloaderTest {
         DownloadResult result = downloader.download();
 
         var depositCluster = findOneCluster(result, DEPOSIT);
-        assertDepositWithdraw(depositCluster, DEPOSIT, TEN);
+        assertDepositWithdrawal(depositCluster, DEPOSIT, TEN);
         assertFees(depositCluster);
 
-        var withdrawCluster = findOneCluster(result, WITHDRAW);
-        assertDepositWithdraw(withdrawCluster, WITHDRAW, ONE);
-        assertFees(withdrawCluster);
+        var withdrawalCluster = findOneCluster(result, WITHDRAWAL);
+        assertDepositWithdrawal(withdrawalCluster, WITHDRAWAL, ONE);
+        assertFees(withdrawalCluster);
     }
 
-    private void assertDepositWithdraw(TransactionCluster cluster, TransactionType type, BigDecimal volume) {
+    private void assertDepositWithdrawal(TransactionCluster cluster, TransactionType type, BigDecimal volume) {
         assertEquals(0, cluster.getIgnoredFeeTransactionCount());
         assertNull(cluster.getIgnoredFeeReason());
         var tx = (DepositWithdrawalImportedTransaction) cluster.getMain();

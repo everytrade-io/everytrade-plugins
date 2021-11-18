@@ -25,7 +25,7 @@ import java.util.List;
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.SELL;
-import static io.everytrade.server.model.TransactionType.WITHDRAW;
+import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 
 @ToString
@@ -111,7 +111,7 @@ public class BlockchainApiTransactionBean {
 
     private TransactionType resolveTxType(Transaction t) {
         if (t.isDirectionSend()) {
-            return importWithdrawalsAsSells ? SELL : WITHDRAW;
+            return importWithdrawalsAsSells ? SELL : WITHDRAWAL;
         } else {
             return importDepositsAsBuys ? BUY : DEPOSIT;
         }
@@ -128,7 +128,7 @@ public class BlockchainApiTransactionBean {
                 originalAmount,
                 price
             );
-        } else if (type == DEPOSIT || type == WITHDRAW) {
+        } else if (type == DEPOSIT || type == WITHDRAWAL) {
             return new DepositWithdrawalImportedTransaction(
                 id,
                 timestamp,
@@ -144,7 +144,7 @@ public class BlockchainApiTransactionBean {
     }
 
     private String oppositeAddress(Transaction t) {
-        if (type != DEPOSIT && type != WITHDRAW) {
+        if (type != DEPOSIT && type != WITHDRAWAL) {
             return null;
         }
         for (InputInfo in : t.getInputInfos()) {
@@ -152,7 +152,7 @@ public class BlockchainApiTransactionBean {
                 if (in.getAddress().equals(out.getAddress())) {
                     continue;
                 }
-                if (type == WITHDRAW) {
+                if (type == WITHDRAWAL) {
                     return out.getAddress();
                 } else {
                     return in.getAddress();

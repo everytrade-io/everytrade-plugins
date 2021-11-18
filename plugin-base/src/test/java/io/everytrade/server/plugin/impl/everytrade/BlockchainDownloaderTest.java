@@ -17,19 +17,18 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.util.List;
 
-import static io.everytrade.server.test.TestUtils.bigDecimalEquals;
-import static io.everytrade.server.test.TestUtils.findOneCluster;
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.SELL;
-import static io.everytrade.server.model.TransactionType.WITHDRAW;
+import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
+import static io.everytrade.server.test.TestUtils.bigDecimalEquals;
+import static io.everytrade.server.test.TestUtils.findOneCluster;
 import static java.time.Instant.now;
 import static java.util.Collections.emptySet;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -127,11 +126,11 @@ class BlockchainDownloaderTest {
 
         var depositCluster = findOneCluster(result, DEPOSIT);
         assertEquals(0, depositCluster.getRelated().size());
-        assertDepositWithdraw(depositCluster, DEPOSIT, new BigDecimal("0.009999"));
+        assertDepositWithdrawal(depositCluster, DEPOSIT, new BigDecimal("0.009999"));
 
-        var withdrawCluster = findOneCluster(result, WITHDRAW);
-        assertEquals(0, withdrawCluster.getRelated().size());
-        assertDepositWithdraw(withdrawCluster, WITHDRAW, new BigDecimal("0.000999"));
+        var withdrawalCluster = findOneCluster(result, WITHDRAWAL);
+        assertEquals(0, withdrawalCluster.getRelated().size());
+        assertDepositWithdrawal(withdrawalCluster, WITHDRAWAL, new BigDecimal("0.000999"));
     }
 
     @Test
@@ -158,14 +157,14 @@ class BlockchainDownloaderTest {
 
         var depositCluster = findOneCluster(result, DEPOSIT);
         assertEquals(0, depositCluster.getRelated().size());
-        assertDepositWithdraw(depositCluster, DEPOSIT, new BigDecimal("0.009999"));
+        assertDepositWithdrawal(depositCluster, DEPOSIT, new BigDecimal("0.009999"));
 
-        var withdrawCluster = findOneCluster(result, WITHDRAW);
-        assertEquals(0, withdrawCluster.getRelated().size());
-        assertDepositWithdraw(withdrawCluster, WITHDRAW, new BigDecimal("0.000999"));
+        var withdrawalCluster = findOneCluster(result, WITHDRAWAL);
+        assertEquals(0, withdrawalCluster.getRelated().size());
+        assertDepositWithdrawal(withdrawalCluster, WITHDRAWAL, new BigDecimal("0.000999"));
     }
 
-    private void assertDepositWithdraw(TransactionCluster cluster, TransactionType type, BigDecimal volume) {
+    private void assertDepositWithdrawal(TransactionCluster cluster, TransactionType type, BigDecimal volume) {
         assertEquals(0, cluster.getIgnoredFeeTransactionCount());
         assertNull(cluster.getIgnoredFeeReason());
         var tx = (DepositWithdrawalImportedTransaction) cluster.getMain();

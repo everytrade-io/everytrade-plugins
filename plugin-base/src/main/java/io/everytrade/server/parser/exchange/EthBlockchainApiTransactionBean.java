@@ -19,7 +19,7 @@ import java.util.List;
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.SELL;
-import static io.everytrade.server.model.TransactionType.WITHDRAW;
+import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.equalsToZero;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 import static java.util.Collections.emptyList;
@@ -51,7 +51,7 @@ public class EthBlockchainApiTransactionBean {
         id = transactionDto.getHash();
         timestamp =  Instant.ofEpochSecond(transactionDto.getTimeStamp());
         if (address.equals(transactionDto.getFrom())) {
-            type = importWithdrawalsAsSells ? SELL : WITHDRAW;
+            type = importWithdrawalsAsSells ? SELL : WITHDRAWAL;
             relatedAddress = transactionDto.getTo();
         } else if (address.equals(transactionDto.getTo())) {
             type = importDepositsAsBuys ? BUY : DEPOSIT;
@@ -91,7 +91,7 @@ public class EthBlockchainApiTransactionBean {
         }
 
         final boolean withFee = (List.of(BUY, DEPOSIT).contains(type) && importFeesFromDeposits)
-            || (importFeesFromWithdrawals && List.of(SELL, WITHDRAW).contains(type));
+            || (importFeesFromWithdrawals && List.of(SELL, WITHDRAWAL).contains(type));
 
         List<ImportedTransactionBean> related;
         if (equalsToZero(feeAmount) || !withFee) {
@@ -121,7 +121,7 @@ public class EthBlockchainApiTransactionBean {
                 baseAmount,
                 unitPrice
             );
-        } else if (type == DEPOSIT || type == WITHDRAW) {
+        } else if (type == DEPOSIT || type == WITHDRAWAL) {
             return new DepositWithdrawalImportedTransaction(
                 id,
                 timestamp,

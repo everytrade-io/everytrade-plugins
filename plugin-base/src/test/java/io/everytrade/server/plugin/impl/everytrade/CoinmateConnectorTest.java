@@ -5,7 +5,6 @@ import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.DepositWithdrawalImportedTransaction;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
-import io.everytrade.server.test.mock.BitmexExchangeMock;
 import io.everytrade.server.test.mock.CoinmateExchangeMock;
 import org.junit.jupiter.api.Test;
 import org.knowm.xchange.dto.account.FundingRecord;
@@ -19,7 +18,7 @@ import static io.everytrade.server.model.Currency.USD;
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.SELL;
-import static io.everytrade.server.model.TransactionType.WITHDRAW;
+import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.test.TestUtils.findOneCluster;
 import static io.everytrade.server.test.TestUtils.fundingRecord;
 import static io.everytrade.server.test.TestUtils.userTrade;
@@ -35,7 +34,7 @@ class CoinmateConnectorTest {
     private static final String ADDRESS = "addrs0";
 
     @Test
-    void testBuySellDepositWithdraw() {
+    void testBuySellDepositWithdrawal() {
         List<UserTrade> trades = List.of(
             userTrade(BUY, TEN, PAIR, new BigDecimal("10000"), TEN, USD),
             userTrade(SELL, ONE, PAIR, new BigDecimal("20000"), TEN, USD)
@@ -43,7 +42,7 @@ class CoinmateConnectorTest {
 
         List<FundingRecord> records = List.of(
             fundingRecord(DEPOSIT, TEN, BTC, ONE, ADDRESS),
-            fundingRecord(WITHDRAW, TEN, BTC, ONE, ADDRESS)
+            fundingRecord(WITHDRAWAL, TEN, BTC, ONE, ADDRESS)
         );
 
         var connector = new CoinmateConnector(new CoinmateExchangeMock(trades, records));
@@ -55,7 +54,7 @@ class CoinmateConnectorTest {
 
         assertTx(findOneCluster(result, BUY), TEN);
         assertTx(findOneCluster(result, SELL), ONE);
-        assertTx(findOneCluster(result, WITHDRAW), TEN);
+        assertTx(findOneCluster(result, WITHDRAWAL), TEN);
         assertTx(findOneCluster(result, DEPOSIT), TEN);
     }
 
@@ -71,10 +70,10 @@ class CoinmateConnectorTest {
         assertNull(cluster.getIgnoredFeeReason());
         assertEquals(0, cluster.getIgnoredFeeTransactionCount());
 
-        if (type.isDepositOrWithdraw()) {
-            var depositWithdraw = (DepositWithdrawalImportedTransaction) tx;
-            assertEquals(volume, depositWithdraw.getVolume());
-            assertNotNull(depositWithdraw.getAddress());
+        if (type.isDepositOrWithdrawal()) {
+            var depositWithdrawal = (DepositWithdrawalImportedTransaction) tx;
+            assertEquals(volume, depositWithdrawal.getVolume());
+            assertNotNull(depositWithdrawal.getAddress());
         } else if (type.isBuyOrSell()) {
             var buySell  = (BuySellImportedTransactionBean) cluster.getMain();
             assertEquals(volume, buySell.getBaseQuantity());

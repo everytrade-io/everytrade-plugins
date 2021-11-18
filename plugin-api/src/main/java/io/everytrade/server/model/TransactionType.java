@@ -10,7 +10,7 @@ public enum TransactionType {
     FEE(4),
     REBATE(5),
     DEPOSIT(6),
-    WITHDRAW(7)
+    WITHDRAWAL(7)
     ;
 
     private final int code;
@@ -47,7 +47,7 @@ public enum TransactionType {
         return this == BUY || this == SELL;
     }
 
-    public boolean isDepositOrWithdraw() {
-        return this == DEPOSIT || this == WITHDRAW;
+    public boolean isDepositOrWithdrawal() {
+        return this == DEPOSIT || this == WITHDRAWAL;
     }
 }

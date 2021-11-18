@@ -21,7 +21,7 @@ import static io.everytrade.server.model.Currency.USD;
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.SELL;
-import static io.everytrade.server.model.TransactionType.WITHDRAW;
+import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,7 +34,7 @@ class KrakenConnectorTest {
     private static final String ADDRESS = "addrs0";
 
     @Test
-    void testBuySellDepositWithdraw() {
+    void testBuySellDepositWithdrawal() {
         List<UserTrade> trades = List.of(
             userTrade(BUY, TEN, PAIR, new BigDecimal("10000"), TEN, USD),
             userTrade(SELL, ONE, PAIR, new BigDecimal("20000"), TEN, USD)
@@ -42,7 +42,7 @@ class KrakenConnectorTest {
 
         List<FundingRecord> records = List.of(
             fundingRecord(DEPOSIT, TEN, BTC, ONE, ADDRESS),
-            fundingRecord(WITHDRAW, TEN, BTC, ONE, ADDRESS)
+            fundingRecord(WITHDRAWAL, TEN, BTC, ONE, ADDRESS)
         );
 
         var connector = new KrakenConnector(new KrakenExchangeMock(trades, records));
@@ -54,7 +54,7 @@ class KrakenConnectorTest {
 
         assertTx(findOneCluster(result, BUY), TEN);
         assertTx(findOneCluster(result, SELL), ONE);
-        assertTx(findOneCluster(result, WITHDRAW), TEN);
+        assertTx(findOneCluster(result, WITHDRAWAL), TEN);
         assertTx(findOneCluster(result, DEPOSIT), TEN);
     }
 
@@ -70,10 +70,10 @@ class KrakenConnectorTest {
         assertNull(cluster.getIgnoredFeeReason());
         assertEquals(0, cluster.getIgnoredFeeTransactionCount());
 
-        if (type.isDepositOrWithdraw()) {
-            var depositWithdraw = (DepositWithdrawalImportedTransaction) tx;
-            assertEquals(volume, depositWithdraw.getVolume());
-            assertNotNull(depositWithdraw.getAddress());
+        if (type.isDepositOrWithdrawal()) {
+            var depositWithdrawal = (DepositWithdrawalImportedTransaction) tx;
+            assertEquals(volume, depositWithdrawal.getVolume());
+            assertNotNull(depositWithdrawal.getAddress());
         } else if (type.isBuyOrSell()) {
             var buySell  = (BuySellImportedTransactionBean) cluster.getMain();
             assertEquals(volume, buySell.getBaseQuantity());
