@@ -16,6 +16,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static java.util.Comparator.comparing;
+import static org.apache.commons.lang.StringUtils.isEmpty;
+
 public class BinanceDownloader {
     //org.knowm.xchange.binance.BinanceResilience - 240 request per IP / 1 minute --> 4 req / 1 sec
     private static final int MAX_REQUEST_COUNT = 20; // max 10000 txs per cycle
@@ -34,6 +37,7 @@ public class BinanceDownloader {
             currencyPairLastIds = new HashMap<>();
         } else {
             currencyPairLastIds = Arrays.stream(lastTransactionId.split(":"))
+                .filter(split -> !split.endsWith("=") && !split.endsWith("=null"))
                 .map(entry -> entry.split("="))
                 .collect(Collectors.toMap(entry -> entry[0], entry -> entry[1]));
         }
@@ -48,7 +52,8 @@ public class BinanceDownloader {
         for (CurrencyPair pair : pairs) {
             tradeHistoryParams.setCurrencyPair(pair);
             String lastDownloadedTx = currencyPairLastIds.get(pair.toString());
-            tradeHistoryParams.setStartId(lastDownloadedTx);
+            // binance api hack - start download from tradeId=0, because we can only page trades from lowest ids to newest
+            tradeHistoryParams.setStartId(isEmpty(lastDownloadedTx) ? "0" : lastDownloadedTx);
 
             while (sentRequests < MAX_REQUEST_COUNT) {
                 sleepBetweenRequests();
@@ -69,7 +74,7 @@ public class BinanceDownloader {
                     break;
                 }
                 userTrades.addAll(userTradesBlock);
-                lastDownloadedTx = userTradesBlock.get(userTradesBlock.size() - 1).getId();
+                lastDownloadedTx = userTradesBlock.stream().max(comparing(UserTrade::getId)).get().getId();
                 tradeHistoryParams.setStartId(lastDownloadedTx);
                 ++sentRequests;
             }
@@ -89,6 +94,7 @@ public class BinanceDownloader {
 
     public String getLastTransactionId() {
         return currencyPairLastIds.keySet().stream()
+            .filter(key -> currencyPairLastIds.get(key) != null)
             .map(key -> key + "=" + currencyPairLastIds.get(key))
             .collect(Collectors.joining(":"));
     }
