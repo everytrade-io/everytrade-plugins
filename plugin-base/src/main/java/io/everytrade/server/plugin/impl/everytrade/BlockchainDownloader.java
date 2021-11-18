@@ -7,6 +7,9 @@ import com.generalbytes.bitrafael.tools.transaction.Transaction;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.parser.ParseResult;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,27 +20,31 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static lombok.AccessLevel.PRIVATE;
+
+@AllArgsConstructor
+@FieldDefaults(makeFinal = true, level = PRIVATE)
 public class BlockchainDownloader {
 
-    public static final int TRUNCATE_LIMIT = 10;
-    public static final String XPUB_PREFIX = "xpub";
-    public static final String LTUB_PREFIX = "Ltub";
+    private static final int TRUNCATE_LIMIT = 10;
+    private static final String XPUB_PREFIX = "xpub";
+    private static final String LTUB_PREFIX = "Ltub";
     private static final String COLON_SYMBOL = ":";
     private static final String PIPE_SYMBOL = "|";
     private static final String COIN_SERVER_URL = "https://coin.cz";
     private static final int MIN_COINFIRMATIONS = 6;
     private static final Set<Currency> SUPPORTED_CRYPTO = Set.of(Currency.BTC, Currency.LTC);
 
-    private final Client client;
-    private final String lastTransactionUid;
-    private final long lastTxTimestamp;
-    private final Set<String> lastTxHashes;
-    private final String fiatCurrency;
-    private final String cryptoCurrency;
-    private final boolean importDepositsAsBuys;
-    private final boolean importWithdrawalsAsSells;
-    private final boolean importFeesFromDeposits;
-    private final boolean importFeesFromWithdrawals;
+    Client client;
+    String lastTransactionUid;
+    long lastTxTimestamp;
+    Set<String> lastTxHashes;
+    String fiatCurrency;
+    String cryptoCurrency;
+    boolean importDepositsAsBuys;
+    boolean importWithdrawalsAsSells;
+    boolean importFeesFromDeposits;
+    boolean importFeesFromWithdrawals;
 
     public BlockchainDownloader(
         String lastTransactionUid,

@@ -1,64 +1,57 @@
 package io.everytrade.server.plugin.impl.everytrade;
 
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
+import lombok.experimental.FieldDefaults;
+import org.knowm.xchange.Exchange;
 import org.knowm.xchange.currency.CurrencyPair;
+import org.knowm.xchange.dto.account.FundingRecord;
 import org.knowm.xchange.dto.trade.UserTrade;
+import org.knowm.xchange.huobi.service.HuobiFundingHistoryParams;
 import org.knowm.xchange.huobi.service.HuobiTradeHistoryParams;
-import org.knowm.xchange.service.trade.TradeService;
 
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
+import static io.everytrade.server.plugin.impl.everytrade.ConnectorUtils.findDuplicateFunding;
+import static java.util.Comparator.comparing;
+import static lombok.AccessLevel.PRIVATE;
+
+@AllArgsConstructor
+@FieldDefaults(makeFinal = true, level = PRIVATE)
 public class HuobiDownloader {
     // huobiapi.github.io/docs/spot/v1/en/#overview-2 --> 10 requests per API_KEY per second
     // 200 ms = 50% API_KEY capacity
     private static final Duration SLEEP_BETWEEN_REQUESTS = Duration.ofMillis(200);
     // txs count in request = 100, max 5 sec, 2.500 txs per cycle --> 25 requests
     private static final int MAX_REQUEST_COUNT = 25;
-    public static final int MAX_LAST_TX_ID_LENGTH = 255;
-    private final Map<String, HuobiDownloadState> currencyPairDownloadStates;
-    private final TradeService tradeService;
-    private final HuobiTradeHistoryParams tradeHistoryParams;
+    private static final String FUNDING_STATE_KEY = "funding";
 
-    public HuobiDownloader(TradeService tradeService, String lastTransactionId) {
-        Objects.requireNonNull(this.tradeService = tradeService);
-        tradeHistoryParams = (HuobiTradeHistoryParams) tradeService.createTradeHistoryParams();
-        if (lastTransactionId == null) {
-            currencyPairDownloadStates = new HashMap<>();
-        } else {
-            currencyPairDownloadStates = Arrays.stream(lastTransactionId.split("\\|"))
-                .map(entry -> entry.split("="))
-                .collect(Collectors.toMap(entry -> entry[0], entry -> HuobiDownloadState.parseFrom(entry[1])));
-        }
-    }
+    @NonNull
+    Exchange exchange;
 
-    public List<UserTrade> download(String currencyPairs) {
+    public List<UserTrade> downloadTrades(String currencyPairs, Map<String, HuobiDownloadState> state) {
         final List<CurrencyPair> pairs = ConnectorUtils.toCurrencyPairs(currencyPairs);
         final List<UserTrade> userTrades = new ArrayList<>();
         int sentRequests = 0;
+
+        var tradeService = exchange.getTradeService();
+        var params = (HuobiTradeHistoryParams) tradeService.createTradeHistoryParams();
         for (CurrencyPair pair : pairs) {
-            tradeHistoryParams.setCurrencyPair(pair);
-            final HuobiDownloadState downloadState
-                = currencyPairDownloadStates.getOrDefault(pair.toString(), HuobiDownloadState.parseFrom(null));
+            params.setCurrencyPair(pair);
+            final HuobiDownloadState downloadState = state.getOrDefault(pair.toString(), HuobiDownloadState.parseFrom(null));
 
             while (sentRequests < MAX_REQUEST_COUNT) {
-                try {
-                    Thread.sleep(SLEEP_BETWEEN_REQUESTS.toMillis());
-                } catch (InterruptedException e) {
-                    throw new IllegalStateException("User trade history download sleep interrupted.", e);
-                }
-                tradeHistoryParams.setStartTime(downloadState.getWindowStart());
-                tradeHistoryParams.setEndTime(downloadState.getWindowEnd());
-                tradeHistoryParams.setStartId(downloadState.getFirstTxIdAfterGap());
+                waitBetweenRequests();
+                params.setStartTime(downloadState.getWindowStart());
+                params.setEndTime(downloadState.getWindowEnd());
+                params.setStartId(downloadState.getFirstTxIdAfterGap());
 
                 final List<UserTrade> userTradesBlock;
                 try {
-                    userTradesBlock = tradeService.getTradeHistory(tradeHistoryParams).getUserTrades();
+                    userTradesBlock = tradeService.getTradeHistory(params).getUserTrades();
                 } catch (Exception e) {
                     throw new IllegalStateException("User trade history download failed. ", e);
                 }
@@ -70,9 +63,41 @@ public class HuobiDownloader {
                 }
                 ++sentRequests;
             }
-            currencyPairDownloadStates.put(pair.toString(), downloadState);
+            state.put(pair.toString(), downloadState);
         }
         return userTrades;
+    }
+
+    public List<FundingRecord> downloadFunding(Map<String, HuobiDownloadState> state) {
+        final List<FundingRecord> result = new ArrayList<>();
+        int sentRequests = 0;
+        var fundingState = state.getOrDefault(FUNDING_STATE_KEY, HuobiDownloadState.parseFrom(null));
+
+        var accountService = exchange.getAccountService();
+        var params = (HuobiFundingHistoryParams) accountService.createFundingHistoryParams();
+
+        for (FundingRecord.Type type : FundingRecord.Type.values()) {
+            while (sentRequests < MAX_REQUEST_COUNT) {
+                waitBetweenRequests();
+                params.setType(type);
+                params.setStartId(fundingState.getFirstTxIdAfterGap());
+
+                final List<FundingRecord> fundingBlock;
+                try {
+                    fundingBlock = accountService.getFundingHistory(params);
+                } catch (Exception e) {
+                    throw new IllegalStateException("User funding history download failed. ", e);
+                }
+                var fundingToAdd = getFundingToAddAndUpdateState(fundingBlock, fundingState);
+                result.addAll(fundingToAdd);
+                if (fundingState.isEnd()) {
+                    break;
+                }
+                ++sentRequests;
+            }
+        }
+        state.put(FUNDING_STATE_KEY, fundingState);
+        return result;
     }
 
 
@@ -128,20 +153,56 @@ public class HuobiDownloader {
         if (!downloadState.isGap()) {
             downloadState.setLastTxIdAfterGap(lastTxIdToAdd);
         }
-
         return userTradesToAdd;
     }
 
-    public String getLastTransactionId() {
-        String result = currencyPairDownloadStates.keySet().stream()
-            .map(key -> key + "=" + currencyPairDownloadStates.get(key).toString())
-            .collect(Collectors.joining("|"));
-        if (result.length() > MAX_LAST_TX_ID_LENGTH) {
-            throw new IllegalStateException(String.format(
-                "Last transaction ID's size '%d' is over limit.", result.length()
-            ));
+    private List<FundingRecord> getFundingToAddAndUpdateState(List<FundingRecord> fundingBlock, HuobiDownloadState downloadState) {
+        //Sort ASC BY ID, because of xchange sorts by Date...is not unique
+        fundingBlock.sort(comparing(FundingRecord::getInternalId));
+
+        final boolean isLastTxInBlockDuplicate = !fundingBlock.isEmpty()
+            && fundingBlock.get(fundingBlock.size() - 1).getInternalId().equals(downloadState.getFirstTxIdAfterGap());
+
+        var fundingToAdd = isLastTxInBlockDuplicate ? fundingBlock.subList(0, fundingBlock.size() - 1) : fundingBlock;
+
+        if (fundingToAdd.isEmpty()) {
+            downloadState.closeGap();
+            downloadState.moveToNextWindow();
+            return List.of();
         }
-        return result;
+
+        final String lastTxIdToAdd = fundingToAdd.get(fundingToAdd.size() - 1).getInternalId();
+        final String firstTxIdToAdd = fundingToAdd.get(0).getInternalId();
+
+        if (downloadState.isFirstDownloadInWindow()) {
+            if (!downloadState.isGap()) {
+                downloadState.setLastTxIdAfterGap(lastTxIdToAdd);
+            }
+            downloadState.setFirstTxIdAfterGap(firstTxIdToAdd);
+            return fundingToAdd;
+        }
+
+        final int duplicateIndex = findDuplicateFunding(downloadState.getLastContinuousTxId(), fundingToAdd);
+        final boolean isDownloadedTxsInWindowContinuous = duplicateIndex > -1;
+        if (isDownloadedTxsInWindowContinuous) {
+            if (downloadState.isGap()) {
+                downloadState.closeGap();
+            } else {
+                downloadState.setLastContinuousTxId(lastTxIdToAdd);
+            }
+            downloadState.moveToNextWindow();
+            if (fundingToAdd.size() == 1) {
+                return List.of();
+            } else {
+                return fundingToAdd.subList(duplicateIndex + 1, fundingToAdd.size());
+            }
+        }
+
+        downloadState.setFirstTxIdAfterGap(firstTxIdToAdd);
+        if (!downloadState.isGap()) {
+            downloadState.setLastTxIdAfterGap(lastTxIdToAdd);
+        }
+        return fundingToAdd;
     }
 
     private int compare(UserTrade tradeA, UserTrade tradeB) {
@@ -158,4 +219,11 @@ public class HuobiDownloader {
         return -1;
     }
 
+    private void waitBetweenRequests() {
+        try {
+            Thread.sleep(SLEEP_BETWEEN_REQUESTS.toMillis());
+        } catch (InterruptedException e) {
+            throw new IllegalStateException("User funding history download sleep interrupted.", e);
+        }
+    }
 }

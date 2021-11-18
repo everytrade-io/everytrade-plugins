@@ -8,6 +8,7 @@ import io.everytrade.server.plugin.api.connector.ConnectorParameterType;
 import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.connector.IConnector;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.ExchangeFactory;
@@ -28,6 +29,7 @@ import java.util.Map;
 import static java.util.Collections.emptyList;
 import static lombok.AccessLevel.PRIVATE;
 
+@RequiredArgsConstructor
 @FieldDefaults(makeFinal = true, level = PRIVATE)
 public class KrakenConnector implements IConnector {
     private static final Logger LOG = LoggerFactory.getLogger(KrakenConnector.class);

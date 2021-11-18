@@ -1,5 +1,7 @@
 package io.everytrade.server.plugin.impl.everytrade;
 
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.ExchangeFactory;
@@ -28,6 +30,7 @@ import static java.util.stream.Collectors.joining;
 import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.lang.StringUtils.isEmpty;
 
+@RequiredArgsConstructor
 @FieldDefaults(level = PRIVATE)
 public class BinanceDownloader {
 
@@ -41,11 +44,10 @@ public class BinanceDownloader {
 
     Map<String, String> currencyPairLastIds = new HashMap<>();
     Date lastFundingDownloadedTimestamp = null;
-
     final Exchange exchange;
 
-    public BinanceDownloader(String apiKey, String apiSecret, String downloadState) {
-        this.exchange = ExchangeFactory.INSTANCE.createExchange(createExchangeSpec(apiKey, apiSecret));
+    public BinanceDownloader(Exchange exchange, String downloadState) {
+        this.exchange = exchange;
         deserializeState(downloadState);
     }
 
@@ -147,12 +149,5 @@ public class BinanceDownloader {
         if (array.length > 1) {
             this.lastFundingDownloadedTimestamp = new Date(Long.parseLong(array[1]));
         }
-    }
-
-    private ExchangeSpecification createExchangeSpec(String apiKey, String apiSecret) {
-        ExchangeSpecification exSpec = new BinanceExchange().getDefaultExchangeSpecification();
-        exSpec.setApiKey(apiKey);
-        exSpec.setSecretKey(apiSecret);
-        return exSpec;
     }
 }

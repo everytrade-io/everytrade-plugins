@@ -5,9 +5,9 @@ import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigDecimal;
 import java.util.Date;
 
+import static io.everytrade.server.test.TestUtils.bigDecimalEquals;
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.SELL;
@@ -67,10 +67,6 @@ class GbApiTransactionBeanTest {
         assertEquals("UID-fee", fee.getUid());
         assertEquals(dto.getTimestamp(), fee.getExecuted());
         bigDecimalEquals(dto.getExpense(), fee.getFeeRebate());
-    }
-
-    private void bigDecimalEquals(BigDecimal expected, BigDecimal actual) {
-        assertTrue(expected.compareTo(actual) == 0);
     }
 
     private GbApiTransactionBean tx(String action) {

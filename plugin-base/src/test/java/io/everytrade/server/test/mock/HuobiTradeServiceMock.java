@@ -1,4 +1,4 @@
-package io.everytrade.server.plugin.impl.everytrade;
+package io.everytrade.server.test.mock;
 
 import org.knowm.xchange.dto.marketdata.Trades;
 import org.knowm.xchange.dto.trade.UserTrade;

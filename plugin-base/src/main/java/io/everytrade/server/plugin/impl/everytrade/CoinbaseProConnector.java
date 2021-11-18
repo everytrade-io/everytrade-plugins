@@ -90,8 +90,8 @@ public class CoinbaseProConnector implements IConnector {
         exSpec.setSecretKey(apiSecret);
         exSpec.setExchangeSpecificParametersItem("passphrase", passPhrase);
         final Exchange exchange = ExchangeFactory.INSTANCE.createExchange(exSpec);
-        final TradeService tradeService = exchange.getTradeService();
-        final CoinbaseProDownloader coinbaseProDownloader = new CoinbaseProDownloader(tradeService, lastTransactionId);
+
+        final CoinbaseProDownloader coinbaseProDownloader = new CoinbaseProDownloader(exchange, lastTransactionId);
         final List<UserTrade> userTrades = coinbaseProDownloader.download(currencyPairs);
         final ParseResult parseResult = new XChangeConnectorParser().getParseResult(userTrades, emptyList());
 

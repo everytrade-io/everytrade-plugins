@@ -55,6 +55,10 @@ public class BlockchainApiTransactionBean {
         boolean importFeesFromDeposits,
         boolean importFeesFromWithdrawals
     ) {
+        this.importDepositsAsBuys = importDepositsAsBuys;
+        this.importWithdrawalsAsSells = importWithdrawalsAsSells;
+        this.importFeesFromDeposits = importFeesFromDeposits;
+        this.importFeesFromWithdrawals = importFeesFromWithdrawals;
         this.id = transaction.getTxHash();
         this.timestamp =  Instant.ofEpochMilli(transaction.getTimestamp());
         this.type = resolveTxType(transaction);
@@ -65,10 +69,6 @@ public class BlockchainApiTransactionBean {
         this.originalAmount = Client.satoshisToBigDecimal(transaction.getAmount()).abs();
         this.feeAmount = Client.satoshisToBigDecimal(transaction.getFee()).abs();
         this.address = oppositeAddress(transaction);
-        this.importDepositsAsBuys = importDepositsAsBuys;
-        this.importWithdrawalsAsSells = importWithdrawalsAsSells;
-        this.importFeesFromDeposits = importFeesFromDeposits;
-        this.importFeesFromWithdrawals = importFeesFromWithdrawals;
     }
 
     public TransactionCluster toTransactionCluster() {

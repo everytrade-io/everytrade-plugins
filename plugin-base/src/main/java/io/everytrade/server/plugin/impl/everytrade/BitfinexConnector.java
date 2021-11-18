@@ -7,39 +7,45 @@ import io.everytrade.server.plugin.api.connector.ConnectorParameterDescriptor;
 import io.everytrade.server.plugin.api.connector.ConnectorParameterType;
 import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.connector.IConnector;
-import io.everytrade.server.plugin.api.parser.ParseResult;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.ExchangeFactory;
-import org.knowm.xchange.ExchangeSpecification;
 import org.knowm.xchange.bitfinex.BitfinexExchange;
+import org.knowm.xchange.bitfinex.service.BitfinexAccountService;
 import org.knowm.xchange.bitfinex.service.BitfinexTradeService;
+import org.knowm.xchange.dto.account.FundingRecord;
 import org.knowm.xchange.dto.trade.UserTrade;
+import org.knowm.xchange.service.account.AccountService;
 import org.knowm.xchange.service.trade.TradeService;
 import org.knowm.xchange.service.trade.params.TradeHistoryParamsSorted;
 
 import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static io.everytrade.server.plugin.impl.everytrade.ConnectorUtils.findDuplicate;
+import static io.everytrade.server.plugin.impl.everytrade.ConnectorUtils.findDuplicateFunding;
+import static io.everytrade.server.plugin.impl.everytrade.ConnectorUtils.findDuplicateTransaction;
 import static io.everytrade.server.plugin.impl.everytrade.ConnectorUtils.occurrenceCount;
-import static java.util.Collections.emptyList;
+import static lombok.AccessLevel.PRIVATE;
+import static org.springframework.util.StringUtils.isEmpty;
 
+@AllArgsConstructor
+@FieldDefaults(makeFinal = true, level = PRIVATE)
 public class BitfinexConnector implements IConnector {
 
     private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "bitfinexApiConnector";
     //https://docs.bitfinex.com/reference#rest-public-trades - 30 request / 1 minute, than 60 s no resp.
     private static final int MAX_REQUEST_COUNT = 5;
     private static final int TX_PER_REQUEST = 1000;
-    private static final String TX_SPLITER = "|";
-    private static final Pattern SPLIT_PATTERN = Pattern.compile(String.format("(.*)\\%s(.*)", TX_SPLITER));
 
     private static final ConnectorParameterDescriptor PARAMETER_API_SECRET =
         new ConnectorParameterDescriptor(
@@ -65,12 +71,13 @@ public class BitfinexConnector implements IConnector {
         List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET)
     );
 
-    private final String apiKey;
-    private final String apiSecret;
+    Exchange exchange;
 
     public BitfinexConnector(Map<String, String> parameters) {
-        Objects.requireNonNull(this.apiKey = parameters.get(PARAMETER_API_KEY.getId()));
-        Objects.requireNonNull(this.apiSecret = parameters.get(PARAMETER_API_SECRET.getId()));
+        var spec = new BitfinexExchange().getDefaultExchangeSpecification();
+        spec.setApiKey(parameters.get(PARAMETER_API_KEY.getId()));
+        spec.setSecretKey(parameters.get(PARAMETER_API_SECRET.getId()));
+        this.exchange = ExchangeFactory.INSTANCE.createExchange(spec);
     }
 
     @Override
@@ -79,48 +86,25 @@ public class BitfinexConnector implements IConnector {
     }
 
     @Override
-    public DownloadResult getTransactions(String lastTransactionId) {
-        final ExchangeSpecification exSpec = new BitfinexExchange().getDefaultExchangeSpecification();
-        exSpec.setApiKey(apiKey);
-        exSpec.setSecretKey(apiSecret);
-        final Exchange exchange = ExchangeFactory.INSTANCE.createExchange(exSpec);
-        final TradeService tradeService = exchange.getTradeService();
+    public DownloadResult getTransactions(String lastDownloadState) {
+        var downloadState = DownloadState.deserialize(lastDownloadState);
 
-        final List<UserTrade> userTrades = download(tradeService, lastTransactionId);
-
-        final String actualLastTransactionId;
-        if (!userTrades.isEmpty()) {
-            final UserTrade userTrade = userTrades.get(userTrades.size() - 1);
-            final String timeStamp = userTrade.getTimestamp().toInstant().toString();
-            actualLastTransactionId = String.format("%s%s%s", timeStamp, TX_SPLITER, userTrade.getId());
-        } else {
-            actualLastTransactionId = lastTransactionId;
-        }
-
-        final ParseResult parseResult = new XChangeConnectorParser().getParseResult(userTrades, emptyList());
-
-        return new DownloadResult(parseResult, actualLastTransactionId);
+        List<UserTrade> userTrades = downloadTrades(downloadState);
+        List<FundingRecord> funding = downloadFunding(downloadState);
+        return new DownloadResult(new XChangeConnectorParser().getParseResult(userTrades, funding), downloadState.serialize());
     }
 
-    @Override
-    public void close() {
-        //AutoCloseable
-    }
-
-    private List<UserTrade> download(
-        TradeService tradeService,
-        String lastTransactionUid
-    ) {
-        final BitfinexTradeService.BitfinexTradeHistoryParams tradeHistoryParams
-            = (BitfinexTradeService.BitfinexTradeHistoryParams) tradeService.createTradeHistoryParams();
+    private List<UserTrade> downloadTrades(DownloadState downloadState) {
+        TradeService tradeService = exchange.getTradeService();
+        var tradeHistoryParams = (BitfinexTradeService.BitfinexTradeHistoryParams) tradeService.createTradeHistoryParams();
         tradeHistoryParams.setLimit(TX_PER_REQUEST);
         tradeHistoryParams.setOrder(TradeHistoryParamsSorted.Order.asc);
+
         final List<UserTrade> userTrades = new ArrayList<>();
-        TransactionIdentifier lastBlockDownloadedTx = parseFrom(lastTransactionUid);
 
         int sentRequests = 0;
         while (sentRequests < MAX_REQUEST_COUNT) {
-            tradeHistoryParams.setStartTime(lastBlockDownloadedTx.date);
+            tradeHistoryParams.setStartTime(downloadState.lastTxId.date);
             final List<UserTrade> userTradesBlock;
             try {
                 userTradesBlock = tradeService.getTradeHistory(tradeHistoryParams).getUserTrades();
@@ -128,7 +112,7 @@ public class BitfinexConnector implements IConnector {
                 throw new IllegalStateException("User trade history download failed. ", e);
             }
             final List<UserTrade> userTradesToAdd;
-            final int duplicateTxIndex = findDuplicate(lastBlockDownloadedTx.id, userTradesBlock);
+            final int duplicateTxIndex = findDuplicateTransaction(downloadState.lastTxId.id, userTradesBlock);
             if (duplicateTxIndex > -1) {
                 if (duplicateTxIndex < userTradesBlock.size() - 1) {
                     userTradesToAdd = userTradesBlock.subList(duplicateTxIndex + 1, userTradesBlock.size());
@@ -144,50 +128,129 @@ public class BitfinexConnector implements IConnector {
             }
 
             final UserTrade userTradeLast = userTradesToAdd.get(userTradesToAdd.size() - 1);
-            lastBlockDownloadedTx = new TransactionIdentifier(userTradeLast.getTimestamp(), userTradeLast.getId());
+            downloadState.setLastTxId(new TransactionIdentifier(userTradeLast.getTimestamp(), userTradeLast.getId()));
 
             userTrades.addAll(userTradesToAdd);
             ++sentRequests;
         }
-
         return userTrades;
     }
 
-    private TransactionIdentifier parseFrom(String lastTransactionUid) {
-        if (lastTransactionUid == null) {
-            return new TransactionIdentifier(Date.from(Instant.EPOCH), null);
+    private List<FundingRecord> downloadFunding(DownloadState downloadState) {
+        AccountService accountService = exchange.getAccountService();
+        var params = (BitfinexAccountService.BitfinexFundingHistoryParams) accountService.createFundingHistoryParams();
+        params.setLimit(TX_PER_REQUEST);
+
+        final List<FundingRecord> fundingRecords = new ArrayList<>();
+
+        int sentRequests = 0;
+        while (sentRequests < MAX_REQUEST_COUNT) {
+            params.setStartTime(downloadState.lastTxId.date);
+            final List<FundingRecord> fundingBlock;
+            try {
+                fundingBlock = accountService.getFundingHistory(params);
+            } catch (IOException e) {
+                throw new IllegalStateException("User trade history download failed. ", e);
+            }
+            final List<FundingRecord> fundingToAdd;
+            final int duplicateTxIndex = findDuplicateFunding(downloadState.lastTxId.id, fundingBlock);
+            if (duplicateTxIndex > -1) {
+                if (duplicateTxIndex < fundingBlock.size() - 1) {
+                    fundingToAdd = fundingBlock.subList(duplicateTxIndex + 1, fundingBlock.size());
+                } else {
+                    fundingToAdd = List.of();
+                }
+            } else {
+                fundingToAdd = fundingBlock;
+            }
+
+            if (fundingToAdd.isEmpty()) {
+                break;
+            }
+
+            final FundingRecord lastFunding = fundingToAdd.get(fundingToAdd.size() - 1);
+            downloadState.setLastFundingId(new TransactionIdentifier(lastFunding.getDate(), lastFunding.getInternalId()));
+
+            fundingRecords.addAll(fundingToAdd);
+            ++sentRequests;
         }
-        Matcher matcher = SPLIT_PATTERN.matcher(lastTransactionUid);
-        if (occurrenceCount(lastTransactionUid, TX_SPLITER) != 1 || !matcher.find()) {
-            throw new IllegalArgumentException(
-                String.format("Illegal value of lastTransactionUid '%s'.", lastTransactionUid)
-            );
+        return fundingRecords;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @FieldDefaults(level = PRIVATE)
+    private static class TransactionIdentifier {
+        private static final String TX_SPLITER = "|";
+        private static final Pattern SPLIT_PATTERN = Pattern.compile(String.format("(.*)\\%s(.*)", TX_SPLITER));
+
+        Date date;
+        String id;
+
+        public String serialize() {
+            return String.format("%s%s%s", date.toInstant().toString(), TX_SPLITER, id);
         }
-        final String date = matcher.group(1);
-        try {
-            return new TransactionIdentifier(
-                Date.from(Instant.parse(date)),
-                matcher.group(2)
-            );
-        } catch (Exception e) {
-            throw new IllegalArgumentException(
-                String.format(
-                    "Illegal value of date part '%s' of lastTransactionUid '%s'.",
-                    date,
-                    lastTransactionUid
-                ),
-                e
-            );
+
+        public static TransactionIdentifier parseFrom(String lastTransactionUid) {
+            if (lastTransactionUid == null) {
+                return new TransactionIdentifier(Date.from(Instant.EPOCH), null);
+            }
+            Matcher matcher = SPLIT_PATTERN.matcher(lastTransactionUid);
+            if (occurrenceCount(lastTransactionUid, TX_SPLITER) != 1 || !matcher.find()) {
+                throw new IllegalArgumentException(
+                    String.format("Illegal value of lastTransactionUid '%s'.", lastTransactionUid)
+                );
+            }
+            final String date = matcher.group(1);
+            try {
+                return new TransactionIdentifier(
+                    Date.from(Instant.parse(date)),
+                    matcher.group(2)
+                );
+            } catch (Exception e) {
+                throw new IllegalArgumentException(
+                    String.format(
+                        "Illegal value of date part '%s' of lastTransactionUid '%s'.",
+                        date,
+                        lastTransactionUid
+                    ),
+                    e
+                );
+            }
         }
     }
 
-    private static class TransactionIdentifier {
-        private final Date date;
-        private final String id;
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @FieldDefaults(level = PRIVATE)
+    private static class DownloadState {
+        private static final String SEPARATOR = "=";
 
-        public TransactionIdentifier(Date date, String id) {
-            this.date = date;
-            this.id = id;
+        @Builder.Default
+        TransactionIdentifier lastTxId = new TransactionIdentifier();
+        @Builder.Default
+        TransactionIdentifier lastFundingId = new TransactionIdentifier();
+
+        public static DownloadState deserialize(String state) {
+            if (isEmpty(state)) {
+                return new DownloadState();
+            }
+            var strArray = state.split(SEPARATOR);
+            return DownloadState.builder()
+                .lastTxId(TransactionIdentifier.parseFrom(strArray[0]))
+                .lastFundingId(strArray.length > 1 ? TransactionIdentifier.parseFrom(strArray[1]) : new TransactionIdentifier())
+                .build();
+        }
+
+        public String serialize() {
+            return
+                (lastTxId == null ? "" : lastTxId.serialize()) +
+                    SEPARATOR +
+                    (lastFundingId == null ? "" : lastFundingId.serialize());
         }
     }
 }

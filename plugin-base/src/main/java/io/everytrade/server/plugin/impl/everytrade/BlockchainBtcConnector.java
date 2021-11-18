@@ -121,9 +121,7 @@ public class BlockchainBtcConnector implements IConnector {
 
     @Override
     public DownloadResult getTransactions(String lastTransactionUid) {
-
-        final BlockchainDownloader blockchainDownloader
-            = new BlockchainDownloader(
+        final BlockchainDownloader blockchainDownloader = new BlockchainDownloader(
             lastTransactionUid,
             CRYPTO_CURRENCY,
             fiatCurrency,
@@ -132,12 +130,6 @@ public class BlockchainBtcConnector implements IConnector {
             importFeesFromDeposits,
             importFeesFromWithdrawals
         );
-
         return blockchainDownloader.download(source);
-    }
-
-    @Override
-    public void close() {
-        //AutoCloseable
     }
 }
