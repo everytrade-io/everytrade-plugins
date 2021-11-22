@@ -75,6 +75,38 @@ class CoinmateBeanV1Test {
     }
 
     @Test
+    void testCorrectParsingRawTransactionWithCzechHeader() {
+        var czechHeader = "ID;Datum;Účet;Typ;Částka;Částka měny;Cena;Cena měny;Poplatek;Poplatek měny;Celkem;Celkem měny;Popisek;Status;" +
+            "První zůstatek po;První zůstatek po měně;Druhý zůstatek po;Druhý zůstatek po měně\n";
+        var row = "7722246;2021-03-21 18:54:15;M;QUICK_BUY;0.01574751;BTC;1265612.25778996;CZK;69.75584587;CZK;-19999.99753154;CZK;;OK;" +
+            "0.01574751;BTC;0.00591488;CZK\n";
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(czechHeader + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new BuySellImportedTransactionBean(
+                "7722246",
+                Instant.parse("2021-03-21T18:54:15Z"),
+                Currency.BTC,
+                Currency.CZK,
+                TransactionType.BUY,
+                new BigDecimal("0.01574751"),
+                new BigDecimal("1265612.25778996")
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    "7722246" + FEE_UID_PART,
+                    Instant.parse("2021-03-21T18:54:15Z"),
+                    Currency.BTC,
+                    Currency.CZK,
+                    TransactionType.FEE,
+                    new BigDecimal("69.75584587"),
+                    Currency.CZK
+                )
+            )
+        );
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
     void testCorrectParsingRawTransactionAnotherAction() {
         final String row = "4;2019-08-30 05:05:24;QUICK_BUY;0.0019;BTC;8630.7;EUR;0.03443649;EUR;16.43276649;" +
             "EUR;;OK\n";

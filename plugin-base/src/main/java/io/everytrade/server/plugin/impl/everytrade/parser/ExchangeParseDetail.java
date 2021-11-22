@@ -1,28 +1,28 @@
 package io.everytrade.server.plugin.impl.everytrade.parser;
 
 import io.everytrade.server.model.SupportedExchange;
+import io.everytrade.server.plugin.csv.CsvHeader;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.IExchangeSpecificParser;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
+import java.util.List;
 import java.util.function.Supplier;
 
+@Value
+@AllArgsConstructor
+@Builder
 public class ExchangeParseDetail {
 
-    private final Supplier<IExchangeSpecificParser> parserFactory;
-    private final SupportedExchange supportedExchange;
+    @NonNull
+    List<CsvHeader> headers;
 
-    public ExchangeParseDetail(
-        Supplier<IExchangeSpecificParser> exchangeSpecificParser,
-        SupportedExchange supportedExchange
-    ) {
-        this.parserFactory = exchangeSpecificParser;
-        this.supportedExchange = supportedExchange;
-    }
+    @NonNull
+    Supplier<IExchangeSpecificParser> parserFactory;
 
-    public Supplier<IExchangeSpecificParser> getParserFactory() {
-        return parserFactory;
-    }
-
-    public SupportedExchange getSupportedExchange() {
-        return supportedExchange;
-    }
+    @NonNull
+    SupportedExchange supportedExchange;
 }
+

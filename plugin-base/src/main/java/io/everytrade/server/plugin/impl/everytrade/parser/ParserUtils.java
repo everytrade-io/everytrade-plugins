@@ -24,4 +24,8 @@ public class ParserUtils {
     public static boolean equalsToZero(BigDecimal number) {
         return number.compareTo(BigDecimal.ZERO) == 0;
     }
+
+    public static boolean nullOrZero(BigDecimal number) {
+        return number == null || equalsToZero(number);
+    }
 }

@@ -21,14 +21,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 class BinanceBeanV2Test {
-    public static final String HEADER_CORRECT
-        = "Date(UTC);Pair;Type;Order Price;Order Amount;AvgTrading Price;Filled;Total;status\n";
-
+    public static final String HEADER_CORRECT = "Date(UTC);Pair;Type;Order Price;Order Amount;AvgTrading Price;Filled;Total;status\n";
 
     @Test
     void testWrongHeader() {
-        final String headerWrong = "Date(UTC);Pair;Type;OrdeX Price;Order Amount;AvgTrading Price;Filled;" +
-            "Total;status\n";
+        final String headerWrong = "Date(UTC);Pair;Type;OrdeX Price;Order Amount;AvgTrading Price;Filled;Total;status\n";
         try {
             ParserTestUtils.testParsing(headerWrong);
             fail("No expected exception has been thrown.");
@@ -147,6 +144,42 @@ class BinanceBeanV2Test {
             Collections.emptyList()
         );
         expected.setIgnoredFee(1, "");
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
+    void testCorrectParsingRawTransactionSellType2() {
+        var header = "Date(UTC);orderId;clientOrderId;Pair;Type;Order Price;Order Amount;AvgTrading Price;Filled;Total;status;Strategy " +
+            "Id;Strategy Type\n";
+        var row0 = "1.11.2021 6:01;8,38977E+18;web_T8XLoZ0jvfoUUMECz9pT;ETHUSDT;SELL;0.00000000;0.07100000;4225.14000;0.07100000;299" +
+            ".98494000;FILLED;-;\n";
+        var row1 = ";Date(UTC);Trading Price;Filled;Total;Fee;;;;;;;\n";
+        var row2 = ";1.11.2021 6:01;4225.14000000;0.07100000;299.9849400000000000;0.11999397USDT;;;;;;;\n";
+
+        final TransactionCluster actual
+            = ParserTestUtils.getTransactionCluster(header + row0 + row1 + row2);
+        final TransactionCluster expected = new TransactionCluster(
+            new BuySellImportedTransactionBean(
+                null,
+                Instant.parse("2021-11-01T06:01:00Z"),
+                Currency.ETH,
+                Currency.USDT,
+                TransactionType.SELL,
+                new BigDecimal("0.071"),
+                new BigDecimal("4225.14")
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    null,
+                    Instant.parse("2021-11-01T06:01:00Z"),
+                    Currency.ETH,
+                    Currency.USDT,
+                    TransactionType.FEE,
+                    new BigDecimal("0.11999397"),
+                    Currency.USDT
+                )
+            )
+        );
         ParserTestUtils.checkEqual(expected, actual);
     }
 

@@ -12,6 +12,8 @@ import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -26,6 +28,7 @@ import static io.everytrade.server.model.CurrencyPair.getTradeablePairs;
 
 @Headers(sequence = {"Pair", "Type", "Filled", "Total", "Fee", "status"}, extract = true)
 public class BinanceBeanV2 extends ExchangeBean {
+    private static final Logger LOG = LoggerFactory.getLogger(BinanceBeanV2.class);
     private static final String STATUS_FILLED = "Filled";
     private static final String STATUS_PARTIAL_FILL = "Partial Fill";
     private static Map<String, CurrencyPair> fastCurrencyPair = new HashMap<>();
@@ -54,10 +57,10 @@ public class BinanceBeanV2 extends ExchangeBean {
         String fee,
         String status
     ) {
-        if (!(STATUS_FILLED.equals(status) || STATUS_PARTIAL_FILL.equals(status))) {
+        if (!(STATUS_FILLED.equalsIgnoreCase(status) || STATUS_PARTIAL_FILL.equalsIgnoreCase(status))) {
             throw new DataIgnoredException(UNSUPPORTED_STATUS_TYPE.concat(status));
         }
-        this.date = ParserUtils.parse("yyyy-MM-dd HH:mm:ss", date);
+        this.date = parseDate(date);
         final CurrencyPair currencyPair = fastCurrencyPair.get(pair);
         if (currencyPair == null) {
             throw new DataValidationException(UNSUPPORTED_CURRENCY_PAIR.concat(pair));
@@ -129,5 +132,20 @@ public class BinanceBeanV2 extends ExchangeBean {
             return matchedCurrencies.get(0);
         }
         return null;
+    }
+
+    private Instant parseDate(String str) {
+        var patterns = List.of(
+            "yyyy-MM-dd HH:mm:ss",
+            "d.M.yyyy H:mm"
+        );
+        for (String pattern : patterns) {
+            try {
+                return ParserUtils.parse(pattern, str);
+            } catch (Exception e) {
+                LOG.debug("Cannot parse date string", e);
+            }
+        }
+        throw new IllegalArgumentException("Cannot parse date: " + str);
     }
 }
