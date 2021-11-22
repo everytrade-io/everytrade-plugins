@@ -414,6 +414,10 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 CsvHeader
                     .of("Timestamp", "Transaction Type", "Asset", "Quantity Transacted", "^[A-Z]{3} Spot Price at Transaction$",
                         "^[A-Z]{3} Subtotal$", "^[A-Z]{3} Total \\(inclusive of fees\\)$", "^[A-Z]{3} Fees$", "Notes")
+                    .withSeparator(DELIMITER_COMMA),
+                CsvHeader
+                    .of("Timestamp", "Transaction Type", "Asset", "Quantity Transacted", "Spot Price at Transaction",
+                        "Subtotal", "Total (inclusive of fees)", "Fees", "Notes")
                     .withSeparator(DELIMITER_COMMA)
             ))
             .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(CoinbaseBeanV1.class))

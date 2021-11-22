@@ -298,7 +298,9 @@ class EverytradeCsvMultiParserTest {
                 "Timestamp,Transaction Type,Asset,Quantity Transacted,EUR Spot Price at Transaction,EUR " +
                     "Subtotal,EUR Total (inclusive of fees),EUR Fees,Notes",
                 "\"Timestamp\",\"Transaction Type\",\"Asset\",\"Quantity Transacted\",\"EUR Spot Price at Transaction\",\"EUR " +
-                    "Subtotal\",\"EUR Total (inclusive of fees)\",\"EUR Fees\",\"Notes\""
+                    "Subtotal\",\"EUR Total (inclusive of fees)\",\"EUR Fees\",\"Notes\"",
+                "Timestamp,Transaction Type,Asset,Quantity Transacted,Spot Price Currency,Spot Price at Transaction,Subtotal," +
+                    "Total (inclusive of fees),Fees,Notes"
             ),
             COINBASE
         );
