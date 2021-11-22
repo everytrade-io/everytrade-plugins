@@ -128,7 +128,9 @@ class EverytradeCsvMultiParserTest {
                     "Status;First balance after;First balance after Currency;Second balance after;Second balance after Currency",
                 "?Transaction id;Date;Email;Name;Type;Type detail;Currency amount;Amount;Currency price;Price;" +
                     "Currency fee;Fee;Currency total;Total;Description;Status;Currency first balance after;" +
-                    "First balance after;Currency second balance after;Second balance after"
+                    "First balance after;Currency second balance after;Second balance after",
+                "ID;Datum;Účet;Typ;Částka;Částka měny;Cena;Cena měny;Poplatek;Poplatek měny;Celkem;Celkem měny;Popisek;Status;" +
+                    "První zůstatek po;První zůstatek po měně;Druhý zůstatek po;Druhý zůstatek po měně"
             ),
             COINMATE
         );
