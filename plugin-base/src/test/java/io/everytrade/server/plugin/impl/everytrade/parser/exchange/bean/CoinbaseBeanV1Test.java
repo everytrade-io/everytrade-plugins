@@ -84,6 +84,38 @@ class CoinbaseBeanV1Test {
     }
 
     @Test
+    void testCorrectParsingRawTransactionBuy2() {
+        var header = "Timestamp,Transaction Type,Asset,Quantity Transacted,Spot Price Currency,Spot Price at Transaction,Subtotal,Total " +
+            "(inclusive of fees),Fees,Notes\n";
+        var row = "2017-12-22T08:28:33Z,Buy,BTC,0.01748102,CZK,283252.24,4951.54,5149.00,197.46,\"Bought 0.01748102 BTC for Kč5,149.00 " +
+            "CZK\"\n";
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(header + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new BuySellImportedTransactionBean(
+                null,
+                Instant.parse("2017-12-22T08:28:33Z"),
+                Currency.BTC,
+                Currency.CZK,
+                TransactionType.BUY,
+                new BigDecimal("0.01748102"),
+                new BigDecimal("283252.3502633142")
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    null,
+                    Instant.parse("2017-12-22T08:28:33Z"),
+                    Currency.BTC,
+                    Currency.CZK,
+                    TransactionType.FEE,
+                    new BigDecimal("197.46"),
+                    Currency.CZK
+                )
+            )
+        );
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
     void testCorrectParsingRawTransactionSell() {
         final String row = "2020-03-09T05:17:11Z,Sell,BTC,0.03517833,6831.48,240.32,236.74," +
             "3.58,Sold 0.03517833 BTC for €236.74 EUR";

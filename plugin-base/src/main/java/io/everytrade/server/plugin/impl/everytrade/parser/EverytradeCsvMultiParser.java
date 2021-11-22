@@ -24,6 +24,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.Bitstamp
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexBeanV3;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseProBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinmateBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinmateBeanV2;
@@ -95,29 +96,19 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             "Date(UTC)", "Pair", "Type", "Order Price", "Order Amount", "AvgTrading Price", "Filled", "Total", "status"
         );
 
-        EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
-            .headers(List.of(binanceHeader1))
-            .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(BinanceBeanV1.class, DELIMITER_SEMICOLON))
-            .supportedExchange(BINANCE)
-            .build());
+        DELIMITERS.forEach(delimiter -> {
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(binanceHeader1.withSeparator(delimiter)))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(BinanceBeanV1.class, delimiter))
+                .supportedExchange(BINANCE)
+                .build());
 
-        EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
-            .headers(List.of(binanceHeader1.withSeparator(DELIMITER_COMMA)))
-            .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(BinanceBeanV1.class))
-            .supportedExchange(BINANCE)
-            .build());
-
-        EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
-            .headers(List.of(binanceHeader2))
-            .parserFactory(() -> new BinanceExchangeSpecificParser(DELIMITER_SEMICOLON))
-            .supportedExchange(BINANCE)
-            .build());
-
-        EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
-            .headers(List.of(binanceHeader2.withSeparator(DELIMITER_COMMA)))
-            .parserFactory(BinanceExchangeSpecificParser::new)
-            .supportedExchange(BINANCE)
-            .build());
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(binanceHeader2.withSeparator(delimiter)))
+                .parserFactory(() -> new BinanceExchangeSpecificParser(delimiter))
+                .supportedExchange(BINANCE)
+                .build());
+        });
 
         EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
             .headers(List.of(
@@ -427,13 +418,19 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 CsvHeader
                     .of("Timestamp", "Transaction Type", "Asset", "Quantity Transacted", "^[A-Z]{3} Spot Price at Transaction$",
                         "^[A-Z]{3} Subtotal$", "^[A-Z]{3} Total \\(inclusive of fees\\)$", "^[A-Z]{3} Fees$", "Notes")
-                    .withSeparator(DELIMITER_COMMA),
+                    .withSeparator(DELIMITER_COMMA)
+            ))
+            .parserFactory(CoinbaseExchangeSpecificParser::new)
+            .supportedExchange(COINBASE)
+            .build());
+        EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+            .headers(List.of(
                 CsvHeader
                     .of("Timestamp", "Transaction Type", "Asset", "Quantity Transacted", "Spot Price at Transaction",
                         "Subtotal", "Total (inclusive of fees)", "Fees", "Notes")
                     .withSeparator(DELIMITER_COMMA)
-            ))
-            .parserFactory(CoinbaseExchangeSpecificParser::new)
+                ))
+            .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(CoinbaseBeanV1.class))
             .supportedExchange(COINBASE)
             .build());
 
