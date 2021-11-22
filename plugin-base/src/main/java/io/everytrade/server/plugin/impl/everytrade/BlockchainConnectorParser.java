@@ -22,6 +22,8 @@ public class BlockchainConnectorParser {
         List<Transaction> transactions,
         String base,
         String quote,
+        boolean importDepositsAsBuys,
+        boolean importWithdrawalsAsSells,
         boolean importFeesFromDeposits,
         boolean importFeesFromWithdrawals
     ) {
@@ -34,6 +36,8 @@ public class BlockchainConnectorParser {
                     transaction,
                     base,
                     quote,
+                    importDepositsAsBuys,
+                    importWithdrawalsAsSells,
                     importFeesFromDeposits,
                     importFeesFromWithdrawals
                 );

@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Objects;
 
-public class BuySellImportedTransactionBean extends ImportedTransactionBean{
+public class BuySellImportedTransactionBean extends ImportedTransactionBean {
     private final BigDecimal baseQuantity;
     private final BigDecimal unitPrice;
 

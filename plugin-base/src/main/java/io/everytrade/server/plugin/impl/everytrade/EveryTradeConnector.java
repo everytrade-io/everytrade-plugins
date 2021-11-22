@@ -12,6 +12,8 @@ import io.everytrade.server.plugin.api.parser.ParseResult;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.ParsingProblemType;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import lombok.NonNull;
+import lombok.experimental.FieldDefaults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import si.mazi.rescu.ParamsDigest;
@@ -22,12 +24,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class EveryTradeConnector implements IConnector {
-    private final IEveryTradeApi api;
-    private final String apiKey;
-    private final ParamsDigest signer;
-    private final Logger log = LoggerFactory.getLogger(this.getClass());
+import static lombok.AccessLevel.PRIVATE;
 
+@FieldDefaults(makeFinal = true, level = PRIVATE)
+public class EveryTradeConnector implements IConnector {
+
+    private static final Logger LOG = LoggerFactory.getLogger(EveryTradeConnector.class);
     private static final int MAX_FETCH_SIZE = 1_000;
     private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "etApiConnector";
 
@@ -72,10 +74,14 @@ public class EveryTradeConnector implements IConnector {
         );
     }
 
-    public EveryTradeConnector(String url, String apiKey, String apiSecret) {
-        api = RestProxyFactory.createProxy(IEveryTradeApi.class, url);
-        Objects.requireNonNull(this.apiKey = apiKey);
-        signer = new EveryTradeApiDigest(Objects.requireNonNull(apiSecret));
+    IEveryTradeApi api;
+    String apiKey;
+    ParamsDigest signer;
+
+    public EveryTradeConnector(@NonNull String url, @NonNull String apiKey, @NonNull String apiSecret) {
+        this.api = RestProxyFactory.createProxy(IEveryTradeApi.class, url);
+        this.apiKey = apiKey;
+        this.signer = new EveryTradeApiDigest(apiSecret);
     }
 
     @Override
@@ -85,8 +91,7 @@ public class EveryTradeConnector implements IConnector {
 
     @Override
     public DownloadResult getTransactions(String lastTransactionId) {
-        final EveryTradeApiDto data =
-            api.getTransactions(apiKey, signer, lastTransactionId, MAX_FETCH_SIZE);
+        final EveryTradeApiDto data = api.getTransactions(apiKey, signer, lastTransactionId, MAX_FETCH_SIZE);
 
         final List<EveryTradeApiTransactionBean> transactions
             = Objects.requireNonNullElse(data.getTransactions(), new ArrayList<>());
@@ -102,24 +107,24 @@ public class EveryTradeConnector implements IConnector {
                 transactionCount += 1 + cluster.getRelated().size();
                 lastDownloadedTxUid = transaction.getUid();
             } catch (Exception e) {
-                log.error(
+                LOG.error(
                     "Error converting to ImportedTransactionBean: {}: {}",
                     e.getClass().getName(),
                     e.getMessage()
                 );
-                log.debug("Exception by converting to ImportedTransactionBean.", e);
+                LOG.debug("Exception by converting to ImportedTransactionBean.", e);
                 parsingProblems.add(
                     new ParsingProblem(transaction.toString(), e.getMessage(), ParsingProblemType.ROW_PARSING_FAILED)
                 );
             }
         }
-        log.info(
+        LOG.info(
             "{} transaction cluster(s) with {} transactions parsed successfully.",
             importedClusters.size(),
             transactionCount
         );
         if (!parsingProblems.isEmpty()) {
-            log.warn("{} row(s) not parsed.", parsingProblems.size());
+            LOG.warn("{} row(s) not parsed.", parsingProblems.size());
         }
 
         return new DownloadResult(

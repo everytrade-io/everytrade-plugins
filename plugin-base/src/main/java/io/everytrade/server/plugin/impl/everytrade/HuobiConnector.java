@@ -8,18 +8,23 @@ import io.everytrade.server.plugin.api.connector.ConnectorParameterDescriptor;
 import io.everytrade.server.plugin.api.connector.ConnectorParameterType;
 import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.connector.IConnector;
-import io.everytrade.server.plugin.api.parser.ParseResult;
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
+import lombok.experimental.FieldDefaults;
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.ExchangeFactory;
 import org.knowm.xchange.ExchangeSpecification;
+import org.knowm.xchange.dto.account.FundingRecord;
 import org.knowm.xchange.dto.trade.UserTrade;
 import org.knowm.xchange.huobi.HuobiExchange;
-import org.knowm.xchange.service.trade.TradeService;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
+import static lombok.AccessLevel.PRIVATE;
+
+@AllArgsConstructor
+@FieldDefaults(makeFinal = true, level = PRIVATE)
 public class HuobiConnector implements IConnector {
 
     private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "huobiApiConnector";
@@ -56,14 +61,23 @@ public class HuobiConnector implements IConnector {
         List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET, PARAMETER_CURRENCY_PAIRS)
     );
 
-    private final String apiKey;
-    private final String apiSecret;
-    private final String currencyPairs;
+    Exchange exchange;
+    String currencyPairs;
 
     public HuobiConnector(Map<String, String> parameters) {
-        Objects.requireNonNull(this.apiKey = parameters.get(PARAMETER_API_KEY.getId()));
-        Objects.requireNonNull(this.apiSecret = parameters.get(PARAMETER_API_SECRET.getId()));
-        Objects.requireNonNull(this.currencyPairs = parameters.get(PARAMETER_CURRENCY_PAIRS.getId()));
+        this(
+            parameters.get(PARAMETER_API_KEY.getId()),
+            parameters.get(PARAMETER_API_SECRET.getId()),
+            parameters.get(PARAMETER_CURRENCY_PAIRS.getId())
+        );
+    }
+
+    public HuobiConnector(@NonNull String apiKey, @NonNull String apiSecret, @NonNull String currencyPairs) {
+        final ExchangeSpecification exSpec = new HuobiExchange().getDefaultExchangeSpecification();
+        exSpec.setApiKey(apiKey);
+        exSpec.setSecretKey(apiSecret);
+        this.exchange = ExchangeFactory.INSTANCE.createExchange(exSpec);
+        this.currencyPairs = currencyPairs;
     }
 
     @Override
@@ -72,22 +86,16 @@ public class HuobiConnector implements IConnector {
     }
 
     @Override
-    public DownloadResult getTransactions(String lastTransactionId) {
-        final ExchangeSpecification exSpec = new HuobiExchange().getDefaultExchangeSpecification();
-        exSpec.setApiKey(apiKey);
-        exSpec.setSecretKey(apiSecret);
-        final Exchange exchange = ExchangeFactory.INSTANCE.createExchange(exSpec);
-        final TradeService tradeService = exchange.getTradeService();
-        final HuobiDownloader huobiDownloader = new HuobiDownloader(tradeService, lastTransactionId);
+    public DownloadResult getTransactions(String lastState) {
+        final HuobiDownloader huobiDownloader = new HuobiDownloader(exchange);
+        Map<String, HuobiDownloadState> state = HuobiDownloadState.deserializeState(lastState);
 
-        List<UserTrade> userTrades = huobiDownloader.download(currencyPairs);
-        final ParseResult parseResult = XChangeConnectorParser.getParseResult(userTrades, SupportedExchange.BINANCE);
+        List<UserTrade> userTrades = huobiDownloader.downloadTrades(currencyPairs, state);
+        List<FundingRecord> fundingRecords = huobiDownloader.downloadFunding(state);
 
-        return new DownloadResult(parseResult, huobiDownloader.getLastTransactionId());
-    }
-
-    @Override
-    public void close() {
-        //AutoCloseable
+        return new DownloadResult(
+            new XChangeConnectorParser().getParseResult(userTrades, fundingRecords),
+            HuobiDownloadState.serializeState(state)
+        );
     }
 }

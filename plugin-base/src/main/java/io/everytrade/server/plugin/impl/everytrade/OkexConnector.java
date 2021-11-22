@@ -90,9 +90,4 @@ public class OkexConnector implements IConnector {
         final ParseResult parseResult = OkexConnectorParser.getParseResult(orderInfos);
         return new DownloadResult(parseResult, okexDownloader.getLastTransactionId());
     }
-
-    @Override
-    public void close() {
-        //AutoCloseable
-    }
 }

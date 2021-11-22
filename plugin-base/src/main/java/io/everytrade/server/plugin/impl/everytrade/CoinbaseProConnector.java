@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static java.util.Collections.emptyList;
+
 public class CoinbaseProConnector implements IConnector {
     private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "coinbaseProApiConnector";
     private static final SupportedExchange SUPPORTED_EXCHANGE = SupportedExchange.COINBASE_PRO;
@@ -88,10 +90,10 @@ public class CoinbaseProConnector implements IConnector {
         exSpec.setSecretKey(apiSecret);
         exSpec.setExchangeSpecificParametersItem("passphrase", passPhrase);
         final Exchange exchange = ExchangeFactory.INSTANCE.createExchange(exSpec);
-        final TradeService tradeService = exchange.getTradeService();
-        final CoinbaseProDownloader coinbaseProDownloader = new CoinbaseProDownloader(tradeService, lastTransactionId);
+
+        final CoinbaseProDownloader coinbaseProDownloader = new CoinbaseProDownloader(exchange, lastTransactionId);
         final List<UserTrade> userTrades = coinbaseProDownloader.download(currencyPairs);
-        final ParseResult parseResult = XChangeConnectorParser.getParseResult(userTrades, SUPPORTED_EXCHANGE);
+        final ParseResult parseResult = new XChangeConnectorParser().getParseResult(userTrades, emptyList());
 
         return new DownloadResult(parseResult, coinbaseProDownloader.getLastTransactionId());
     }

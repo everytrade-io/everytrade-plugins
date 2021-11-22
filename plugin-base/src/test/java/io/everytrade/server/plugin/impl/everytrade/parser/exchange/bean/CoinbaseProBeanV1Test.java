@@ -135,10 +135,11 @@ class CoinbaseProBeanV1Test {
 
     @Test
     void testIgnoredTransactionType() {
-        final String row = "default,1,LTC-EUR,DEPOSIT,2020-05-18T20:10:26.735Z,2.81680093,LTC,41.35,0" +
+        // test wrong unsupported tx type
+        final String row = "default,1,LTC-EUR,DEPOSITZ,2020-05-18T20:10:26.735Z,2.81680093,LTC,41.35,0" +
             ".5823735922775,115.8923448632225,BTC\n";
         final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
         final String error = parsingProblem.getMessage();
-        assertTrue(error.contains(ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE.concat("DEPOSIT")));
+        assertTrue(error.contains(ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE.concat("DEPOSITZ")));
     }
 }
