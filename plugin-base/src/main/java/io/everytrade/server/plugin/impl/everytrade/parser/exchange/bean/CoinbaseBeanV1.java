@@ -79,7 +79,7 @@ public class CoinbaseBeanV1 extends ExchangeBean {
         validateCurrencyPair(asset, quoteCurrency);
 
         List<ImportedTransactionBean> related;
-        if (ParserUtils.equalsToZero(fees)) {
+        if (ParserUtils.nullOrZero(fees)) {
             related = Collections.emptyList();
         } else {
             related = List.of(

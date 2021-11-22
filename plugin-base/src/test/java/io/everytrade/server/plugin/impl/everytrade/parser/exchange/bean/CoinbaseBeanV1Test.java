@@ -56,8 +56,7 @@ class CoinbaseBeanV1Test {
 
     @Test
     void testCorrectParsingRawTransactionBuy() {
-        final String row = "2020-09-27T18:36:58Z,Buy,BTC,0.03182812,9287.38,295.60,300.00," +
-            "4.40,Bought 0.03182812 BTC for € 300.00 EUR\n";
+        var row = "2020-09-27T18:36:58Z,Buy,BTC,0.03182812,9287.38,295.60,300.00,4.40,Bought 0.03182812 BTC for € 300.00 EUR\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
             new BuySellImportedTransactionBean(

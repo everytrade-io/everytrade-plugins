@@ -12,6 +12,7 @@ import io.everytrade.server.plugin.csv.CsvHeader;
 import io.everytrade.server.plugin.impl.everytrade.EveryTradePlugin;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.UnknownHeaderException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BitfinexExchangeSpecificParser;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.CoinbaseExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.DefaultUnivocityExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.IExchangeSpecificParser;
@@ -23,7 +24,6 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.Bitstamp
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexBeanV3;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseProBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinmateBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinmateBeanV2;
@@ -31,6 +31,8 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.Coinsqua
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinsquareBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.DVChainBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.EveryTradeBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.EveryTradeBeanV2;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.EveryTradeBeanV3;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.GeneralBytesBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.GeneralBytesBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.HitBtcBeanV1;
@@ -168,10 +170,13 @@ public class EverytradeCsvMultiParser implements ICsvParser {
         /* BITTREX */
         EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
             .headers(List.of(
-                CsvHeader.of("OrderUuid", "Exchange", "Type", "Quantity", "Limit", "CommissionPaid", "Price", "Opened", "Closed")
-                    .withSeparator(DELIMITER_COMMA)
+                CsvHeader.of(
+                    "Uuid", "Exchange", "TimeStamp", "OrderType", "Limit", "Quantity", "QuantityRemaining", "Commission", "Price",
+                    "PricePerUnit", "IsConditional", "Condition", "ConditionTarget", "ImmediateOrCancel", "Closed", "TimeInForceTypeId",
+                    "TimeInForce"
+                ).withSeparator(DELIMITER_COMMA)
             ))
-            .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(BittrexBeanV1.class))
+            .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(BittrexBeanV3.class))
             .supportedExchange(BITTREX)
             .build());
 
@@ -188,13 +193,10 @@ public class EverytradeCsvMultiParser implements ICsvParser {
 
         EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
             .headers(List.of(
-                CsvHeader.of(
-                    "Uuid", "Exchange", "TimeStamp", "OrderType", "Limit", "Quantity", "QuantityRemaining", "Commission", "Price",
-                    "PricePerUnit", "IsConditional", "Condition", "ConditionTarget", "ImmediateOrCancel", "Closed", "TimeInForceTypeId",
-                    "TimeInForce"
-                ).withSeparator(DELIMITER_COMMA)
+                CsvHeader.of("OrderUuid", "Exchange", "Type", "Quantity", "Limit", "CommissionPaid", "Price", "Opened", "Closed")
+                    .withSeparator(DELIMITER_COMMA)
             ))
-            .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(BittrexBeanV3.class))
+            .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(BittrexBeanV1.class))
             .supportedExchange(BITTREX)
             .build());
 
@@ -257,32 +259,33 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             .build());
 
         /* EVERYTRADE */
-        var headers = List.of(
-            CsvHeader.of("UID", "DATE", "SYMBOL", "ACTION", "QUANTY", "PRICE", "FEE"),
-            CsvHeader.of("UID", "DATE", "SYMBOL", "ACTION", "QUANTY", "VOLUME", "FEE"),
-            CsvHeader.of("UID", "DATE", "SYMBOL", "ACTION", "QUANTY", "PRICE", "FEE", "FEE_CURRENCY", "REBATE", "REBATE_CURRENCY")
-        );
 
-        DELIMITERS.forEach(delimiter ->
-            headers.forEach(header ->
-                EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
-                    .headers(List.of(header.withSeparator(delimiter)))
-                    .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(EveryTradeBeanV1.class, delimiter))
-                    .supportedExchange(EVERYTRADE)
-                    .build())
-            ));
+        DELIMITERS.forEach(delimiter -> {
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader.of("UID", "DATE", "SYMBOL", "ACTION", "QUANTY", "PRICE", "FEE", "FEE_CURRENCY", "REBATE", "REBATE_CURRENCY")
+                        .withSeparator(delimiter)))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(EveryTradeBeanV3.class, delimiter))
+                .supportedExchange(EVERYTRADE)
+                .build());
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader.of("UID", "DATE", "SYMBOL", "ACTION", "QUANTY", "VOLUME", "FEE")
+                        .withSeparator(delimiter)))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(EveryTradeBeanV2.class, delimiter))
+                .supportedExchange(EVERYTRADE)
+                .build());
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader.of("UID", "DATE", "SYMBOL", "ACTION", "QUANTY", "PRICE", "FEE")
+                        .withSeparator(delimiter)))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(EveryTradeBeanV1.class, delimiter))
+                .supportedExchange(EVERYTRADE)
+                .build());
+        });
 
         /* GENERAL_BYTES */
         DELIMITERS.forEach(delimiter -> {
-            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
-                .headers(List.of(CsvHeader.of(
-                    "Terminal SN", "Server Time", "Terminal Time", "Local Transaction Id", "Remote Transaction Id", "Type", "Cash Amount",
-                    "Cash Currency", "Crypto Amount", "Crypto Currency", "Used Discount", "Actual Discount (%)", "Destination address",
-                    "Related Remote Transaction Id", "Identity", "Status", "Phone Number", "Transaction Detail"
-                ).withSeparator(delimiter)))
-                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(GeneralBytesBeanV1.class, delimiter))
-                .supportedExchange(GENERAL_BYTES)
-                .build());
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
                 .headers(List.of(CsvHeader.of(
                     "Terminal SN", "Server Time", "Terminal Time", "Local Transaction Id", "Remote Transaction Id", "Type", "Cash Amount",
@@ -293,19 +296,18 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(GeneralBytesBeanV2.class, delimiter))
                 .supportedExchange(GENERAL_BYTES)
                 .build());
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(CsvHeader.of(
+                    "Terminal SN", "Server Time", "Terminal Time", "Local Transaction Id", "Remote Transaction Id", "Type", "Cash Amount",
+                    "Cash Currency", "Crypto Amount", "Crypto Currency", "Used Discount", "Actual Discount (%)", "Destination address",
+                    "Related Remote Transaction Id", "Identity", "Status", "Phone Number", "Transaction Detail"
+                ).withSeparator(delimiter)))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(GeneralBytesBeanV1.class, delimiter))
+                .supportedExchange(GENERAL_BYTES)
+                .build());
         });
 
         /* HITBTC */
-        EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
-            .headers(List.of(
-                CsvHeader.of(
-                    "^Date \\(.*\\)$", "Instrument", "Trade ID", "Order ID", "Side", "Quantity", "Price", "Volume", "Fee", "Rebate", "Total"
-                ).withSeparator(DELIMITER_COMMA)
-            ))
-            .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(HitBtcBeanV1.class))
-            .supportedExchange(HITBTC)
-            .build());
-
         EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
             .headers(List.of(
                 CsvHeader.of(
@@ -314,6 +316,16 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 ).withSeparator(DELIMITER_COMMA)
             ))
             .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(HitBtcBeanV2.class))
+            .supportedExchange(HITBTC)
+            .build());
+
+        EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+            .headers(List.of(
+                CsvHeader.of(
+                    "^Date \\(.*\\)$", "Instrument", "Trade ID", "Order ID", "Side", "Quantity", "Price", "Volume", "Fee", "Rebate", "Total"
+                ).withSeparator(DELIMITER_COMMA)
+            ))
+            .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(HitBtcBeanV1.class))
             .supportedExchange(HITBTC)
             .build());
 
@@ -378,20 +390,21 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             .headers(List.of(
                 CsvHeader
                     .of("Date", "Market", "Category", "Type", "Price", "Amount", "Total", "Fee",
-                        "Order Number", "Base Total Less Fee", "Quote Total Less Fee")
-                    .withSeparator(DELIMITER_COMMA)
-            ))
-            .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(PoloniexBeanV1.class))
-            .supportedExchange(POLONIEX)
-            .build());
-        EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
-            .headers(List.of(
-                CsvHeader
-                    .of("Date", "Market", "Category", "Type", "Price", "Amount", "Total", "Fee",
                         "Order Number", "Base Total Less Fee", "Quote Total Less Fee", "Fee Currency", "Fee Total")
                     .withSeparator(DELIMITER_COMMA)
             ))
             .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(PoloniexBeanV2.class))
+            .supportedExchange(POLONIEX)
+            .build());
+
+        EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+            .headers(List.of(
+                CsvHeader
+                    .of("Date", "Market", "Category", "Type", "Price", "Amount", "Total", "Fee",
+                        "Order Number", "Base Total Less Fee", "Quote Total Less Fee")
+                    .withSeparator(DELIMITER_COMMA)
+            ))
+            .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(PoloniexBeanV1.class))
             .supportedExchange(POLONIEX)
             .build());
 
@@ -420,7 +433,7 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                         "Subtotal", "Total (inclusive of fees)", "Fees", "Notes")
                     .withSeparator(DELIMITER_COMMA)
             ))
-            .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(CoinbaseBeanV1.class))
+            .parserFactory(CoinbaseExchangeSpecificParser::new)
             .supportedExchange(COINBASE)
             .build());
 
