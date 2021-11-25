@@ -56,8 +56,7 @@ class CoinbaseBeanV1Test {
 
     @Test
     void testCorrectParsingRawTransactionBuy() {
-        final String row = "2020-09-27T18:36:58Z,Buy,BTC,0.03182812,9287.38,295.60,300.00," +
-            "4.40,Bought 0.03182812 BTC for € 300.00 EUR\n";
+        var row = "2020-09-27T18:36:58Z,Buy,BTC,0.03182812,9287.38,295.60,300.00,4.40,Bought 0.03182812 BTC for € 300.00 EUR\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
             new BuySellImportedTransactionBean(
@@ -78,6 +77,38 @@ class CoinbaseBeanV1Test {
                     TransactionType.FEE,
                     new BigDecimal("4.40"),
                     Currency.EUR
+                )
+            )
+        );
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
+    void testCorrectParsingRawTransactionBuy2() {
+        var header = "Timestamp,Transaction Type,Asset,Quantity Transacted,Spot Price Currency,Spot Price at Transaction,Subtotal,Total " +
+            "(inclusive of fees),Fees,Notes\n";
+        var row = "2017-12-22T08:28:33Z,Buy,BTC,0.01748102,CZK,283252.24,4951.54,5149.00,197.46,\"Bought 0.01748102 BTC for Kč5,149.00 " +
+            "CZK\"\n";
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(header + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new BuySellImportedTransactionBean(
+                null,
+                Instant.parse("2017-12-22T08:28:33Z"),
+                Currency.BTC,
+                Currency.CZK,
+                TransactionType.BUY,
+                new BigDecimal("0.01748102"),
+                new BigDecimal("283252.3502633142")
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    null,
+                    Instant.parse("2017-12-22T08:28:33Z"),
+                    Currency.BTC,
+                    Currency.CZK,
+                    TransactionType.FEE,
+                    new BigDecimal("197.46"),
+                    Currency.CZK
                 )
             )
         );

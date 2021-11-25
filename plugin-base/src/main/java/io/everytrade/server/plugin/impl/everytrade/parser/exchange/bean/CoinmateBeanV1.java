@@ -1,9 +1,7 @@
 package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
 import com.univocity.parsers.annotations.Format;
-import com.univocity.parsers.annotations.Headers;
 import com.univocity.parsers.annotations.Parsed;
-import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
@@ -21,8 +19,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-@Headers(sequence = {"ID", "Date", "Type", "Amount", "Amount Currency", "Price", "Price Currency", "Fee",
-    "Fee Currency", "Status"}, extract = true)
 public class CoinmateBeanV1 extends ExchangeBean {
     // auxiliary field for validation
     private Currency auxFeeCurrency;
@@ -40,13 +36,13 @@ public class CoinmateBeanV1 extends ExchangeBean {
         this.id = id;
     }
 
-    @Parsed(field = "Date")
+    @Parsed(field = {"Date", "Datum"})
     @Format(formats = {"yyyy-MM-dd HH:mm:ss", "dd.MM.yyyy HH:mm"}, options = {"locale=US", "timezone=UTC"})
     public void setDate(Date date) {
         this.date = date.toInstant();
     }
 
-    @Parsed(field = "Type")
+    @Parsed(field = {"Type", "Typ"})
     public void setType(String type) {
         if ("BUY".equals(type) || "QUICK_BUY".equals(type)) {
             this.type = TransactionType.BUY;
@@ -57,32 +53,32 @@ public class CoinmateBeanV1 extends ExchangeBean {
         }
     }
 
-    @Parsed(field = "Amount", defaultNullRead = "0")
+    @Parsed(field = {"Amount", "Částka"}, defaultNullRead = "0")
     public void setAmount(BigDecimal amount) {
         this.amount = amount.abs();
     }
 
-    @Parsed(field = "Amount Currency")
+    @Parsed(field = {"Amount Currency", "Částka měny"})
     public void setAmountCurrency(String curr) {
         amountCurrency = Currency.fromCode(curr);
     }
 
-    @Parsed(field = "Price", defaultNullRead = "0")
+    @Parsed(field = {"Price", "Cena"}, defaultNullRead = "0")
     public void setPrice(BigDecimal price) {
         this.price = price;
     }
 
-    @Parsed(field = "Price Currency")
+    @Parsed(field = {"Price Currency", "Cena měny"})
     public void setPriceCurrency(String curr) {
         priceCurrency = Currency.fromCode(curr);
     }
 
-    @Parsed(field = "Fee", defaultNullRead = "0")
+    @Parsed(field = {"Fee", "Poplatek"}, defaultNullRead = "0")
     public void setFee(BigDecimal fee) {
         this.fee = fee;
     }
 
-    @Parsed(field = "Fee Currency")
+    @Parsed(field = {"Fee Currency", "Poplatek měny"})
     public void setFeeCurrency(String curr) {
         auxFeeCurrency = Currency.fromCode(curr);
     }
@@ -93,7 +89,6 @@ public class CoinmateBeanV1 extends ExchangeBean {
             throw new DataIgnoredException(UNSUPPORTED_STATUS_TYPE.concat(status));
         }
     }
-
 
     @Override
     public TransactionCluster toTransactionCluster() {

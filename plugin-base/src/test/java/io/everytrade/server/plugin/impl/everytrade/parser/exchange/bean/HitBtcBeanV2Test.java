@@ -36,7 +36,7 @@ class HitBtcBeanV2Test {
     void testWrongHeader() {
         try {
             final String header = "\"Email\",\"Date (+01:00)\",\"Instrument\",\"Trade ID\",\"Order " +
-                "ID\",\"Side\",\"Quantity\",\"Price\",\"Volume\",\"Fee\",\"Rebate\",\"Total\"\n";
+                "ID\",\"Side\",\"Quantity\",\"Price\",\"Fee\",\"Rebate\",\"Total\"\n";
             ParserTestUtils.testParsing(header);
             fail("Expected exception has not been thrown.");
         } catch (ParsingProcessException ignored) {

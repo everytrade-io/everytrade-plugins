@@ -31,7 +31,7 @@ class EveryTradeBeanV1Test {
 
     @Test
     void testWrongHeader() {
-        final String headerWrong = "UID;DATE;SYMBOL;aCTION;QUANTY;PRICE;FEE\n";
+        final String headerWrong = "UID;DATE;SYMBOL;aACTION;QUANTY;PRICE;FEE\n";
         try {
             ParserTestUtils.testParsing(headerWrong);
             fail("No expected exception has been thrown.");

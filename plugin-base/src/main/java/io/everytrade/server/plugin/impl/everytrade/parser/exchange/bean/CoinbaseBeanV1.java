@@ -1,6 +1,5 @@
 package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
-import com.univocity.parsers.annotations.Headers;
 import com.univocity.parsers.annotations.Parsed;
 import com.univocity.parsers.annotations.Replace;
 import com.univocity.parsers.common.DataValidationException;
@@ -19,12 +18,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 
-@Headers(
-    sequence = {
-        "Timestamp", "Transaction Type", "Asset", "Quantity Transacted", "Subtotal", "Fees", "Notes"
-    },
-    extract = true
-)
+
 public class CoinbaseBeanV1 extends ExchangeBean {
     private Instant timeStamp;
     private TransactionType transactionType;
@@ -79,7 +73,7 @@ public class CoinbaseBeanV1 extends ExchangeBean {
         validateCurrencyPair(asset, quoteCurrency);
 
         List<ImportedTransactionBean> related;
-        if (ParserUtils.equalsToZero(fees)) {
+        if (ParserUtils.nullOrZero(fees)) {
             related = Collections.emptyList();
         } else {
             related = List.of(
@@ -110,12 +104,15 @@ public class CoinbaseBeanV1 extends ExchangeBean {
     }
 
     private Currency detectQuote(String note) {
-        if (note.endsWith("EUR")) {
-            return Currency.EUR;
-        } else if (note.endsWith("USD")) {
-            return Currency.USD;
-        } else {
-            throw new DataValidationException("Unsupported quote currency in 'Notes': " + note);
+        try {
+            if (note != null) {
+                var lastSpace = note.lastIndexOf(" ");
+                if (lastSpace > -1) {
+                    return Currency.fromCode(note.substring(lastSpace + 1));
+                }
+            }
+        } catch (Exception e) {
         }
+        throw new DataValidationException("Unsupported quote currency in 'Notes': " + note);
     }
 }

@@ -1,12 +1,6 @@
 package io.everytrade.server.plugin.impl.everytrade;
 
-import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import org.knowm.xchange.Exchange;
-import org.knowm.xchange.ExchangeFactory;
-import org.knowm.xchange.ExchangeSpecification;
-import org.knowm.xchange.binance.BinanceExchange;
 import org.knowm.xchange.binance.service.BinanceFundingHistoryParams;
 import org.knowm.xchange.binance.service.BinanceTradeHistoryParams;
 import org.knowm.xchange.currency.CurrencyPair;
@@ -26,12 +20,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static java.time.temporal.ChronoUnit.DAYS;
+import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.joining;
-import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.lang.StringUtils.isEmpty;
 
-@RequiredArgsConstructor
-@FieldDefaults(level = PRIVATE)
 public class BinanceDownloader {
 
     private static final Logger LOG = LoggerFactory.getLogger(BinanceDownloader.class);
@@ -61,7 +53,8 @@ public class BinanceDownloader {
         for (CurrencyPair pair : pairs) {
             params.setCurrencyPair(pair);
             String lastDownloadedTx = currencyPairLastIds.get(pair.toString());
-            params.setStartId(lastDownloadedTx);
+            // binance api hack - start download from tradeId=0, because we can only page trades from lowest ids to newest
+            params.setStartId(isEmpty(lastDownloadedTx) ? "0" : lastDownloadedTx);
 
             while (userTrades.size() + TXS_PER_REQUEST < maxCount) {
                 sleepBetweenRequests(TRADE_HISTORY_WAIT_DURATION);
@@ -78,7 +71,7 @@ public class BinanceDownloader {
                     break;
                 }
                 userTrades.addAll(userTradesBlock);
-                lastDownloadedTx = userTradesBlock.get(userTradesBlock.size() - 1).getId();
+                lastDownloadedTx = userTradesBlock.stream().max(comparing(UserTrade::getId)).get().getId();
                 params.setStartId(lastDownloadedTx);
             }
             currencyPairLastIds.put(pair.toString(), lastDownloadedTx);
@@ -131,6 +124,7 @@ public class BinanceDownloader {
     public String serializeState() {
         // PAIR=TRADE_ID:PAIR2=TRADE_ID2[..]|LAST_FUNDING_DATE
         return currencyPairLastIds.keySet().stream()
+            .filter(key -> currencyPairLastIds.get(key) != null)
             .map(key -> key + "=" + currencyPairLastIds.get(key))
             .collect(joining(":")) + STATE_SEPARATOR
             + (lastFundingDownloadedTimestamp == null ? "" : lastFundingDownloadedTimestamp.getTime());

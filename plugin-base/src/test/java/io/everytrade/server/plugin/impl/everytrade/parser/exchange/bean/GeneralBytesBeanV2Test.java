@@ -37,7 +37,7 @@ class GeneralBytesBeanV2Test {
 
     @Test
     void testWrongHeader() {
-        final String headerWrong = "Terminal SN;Server Time;Terminal Time;Local Transaction Id;" +
+        final String headerWrong = "Server Time;Terminal Time;Local Transaction Id;" +
             "Remote Transaction Id;Type;Cash Amount;Cash Currency;Crypto Amount;Crypto Currency;Used Discount;" +
             "Actual Discount (%);Destination Address;Related Remote Transaction Id;Identity;Status;Phone Number;" +
             "Transaction Detail;Transaction Note;Rate Incl. Fee;Rate Without Fee;Fixed Transaction Fee;" +

@@ -25,17 +25,14 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class BinanceExchangeSpecificParser implements IExchangeSpecificParser {
-    public static final Pattern DATE_PATTERN;
+    public static final Pattern DATE_PATTERN = Pattern.compile("^Date\\(.*\\)$");
     private static final String DEFAULT_DELIMITER = ",";
+
     private final String delimiter;
     private List<ParsingProblem> parsingProblems = List.of();
 
     enum RowType {
         HEADER, GROUP, GROUP_HEADER, GROUP_ROW
-    }
-
-    static {
-        DATE_PATTERN = Pattern.compile("^Date\\(.*\\)$");
     }
 
     public BinanceExchangeSpecificParser() {
