@@ -437,9 +437,9 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             .headers(List.of(
                 CsvHeader
                     .of("You can use this transaction report to inform your likely tax obligations. For US customers, Sells, Converts," +
-                        " and Rewards Income, and Coinbase Earn transactions are taxable events. For final tax obligations, please consult" +
-                        " your tax advisor.")
-                    .withSeparator(DELIMITER_COMMA)
+                        " and Rewards Income, and Coinbase Earn transactions are taxable events. For final tax obligations, " +
+                        "please consult your tax advisor."
+                    )
             ))
             .parserFactory(() -> SkipLineParser.builder()
                 .delegate(new DefaultUnivocityExchangeSpecificParser(CoinbaseBeanV1.class))
