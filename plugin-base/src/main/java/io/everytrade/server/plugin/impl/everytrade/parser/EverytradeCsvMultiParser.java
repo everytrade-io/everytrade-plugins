@@ -433,6 +433,21 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(CoinbaseBeanV1.class))
             .supportedExchange(COINBASE)
             .build());
+        EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+            .headers(List.of(
+                CsvHeader
+                    .of("You can use this transaction report to inform your likely tax obligations. For US customers, Sells, Converts," +
+                        " and Rewards Income, and Coinbase Earn transactions are taxable events. For final tax obligations, please consult" +
+                        " your tax advisor.")
+                    .withSeparator(DELIMITER_COMMA)
+            ))
+            .parserFactory(() -> SkipLineParser.builder()
+                .delegate(new DefaultUnivocityExchangeSpecificParser(CoinbaseBeanV1.class))
+                .linesToSkip(7)
+                .build()
+            )
+            .supportedExchange(COINBASE)
+            .build());
 
         /* AQUANOW */
         EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
