@@ -14,6 +14,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.knowm.xchange.bitfinex.service.BitfinexAdapters.log;
 
 public class CoinbaseDownloader {
@@ -33,7 +34,7 @@ public class CoinbaseDownloader {
     ) {
         Objects.requireNonNull(this.tradeService = tradeService);
         Map<String, WalletState> previousWalletStates;
-        if (lastTransactionId == null) {
+        if (isEmpty(lastTransactionId)) {
             previousWalletStates = new HashMap<>();
         } else {
             previousWalletStates = Arrays.stream(lastTransactionId.split("\\" + PIPE_SYMBOL))
