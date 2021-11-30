@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toMap;
 import static lombok.AccessLevel.PRIVATE;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.knowm.xchange.bitfinex.service.BitfinexAdapters.log;
 
 @RequiredArgsConstructor
@@ -157,7 +158,7 @@ public class CoinbaseDownloader {
         final Set<String> actualWalletIds = getWalletIds();
 
         Map<String, WalletState> previousWalletStates =
-            downloadState == null ? new HashMap<>() :
+            isEmpty(downloadState) ? new HashMap<>() :
                 Arrays.stream(downloadState.split("\\" + PIPE_SYMBOL))
                     .map(entry -> entry.split(COLON_SYMBOL))
                     .collect(toMap(

@@ -60,7 +60,7 @@ public class CoinmateBeanV1 extends ExchangeBean {
 
     @Parsed(field = {"Amount Currency", "Částka měny"})
     public void setAmountCurrency(String curr) {
-        amountCurrency = Currency.fromCode(curr);
+        amountCurrency = parseCurrency(curr);
     }
 
     @Parsed(field = {"Price", "Cena"}, defaultNullRead = "0")
@@ -70,7 +70,7 @@ public class CoinmateBeanV1 extends ExchangeBean {
 
     @Parsed(field = {"Price Currency", "Cena měny"})
     public void setPriceCurrency(String curr) {
-        priceCurrency = Currency.fromCode(curr);
+        priceCurrency = parseCurrency(curr);
     }
 
     @Parsed(field = {"Fee", "Poplatek"}, defaultNullRead = "0")
@@ -80,7 +80,7 @@ public class CoinmateBeanV1 extends ExchangeBean {
 
     @Parsed(field = {"Fee Currency", "Poplatek měny"})
     public void setFeeCurrency(String curr) {
-        auxFeeCurrency = Currency.fromCode(curr);
+        auxFeeCurrency = parseCurrency(curr);
     }
 
     @Parsed(field = "Status")
@@ -130,5 +130,15 @@ public class CoinmateBeanV1 extends ExchangeBean {
             );
         }
         return cluster;
+    }
+
+    private Currency parseCurrency(String c) {
+        if (c == null) {
+            return null;
+        }
+        if (c.startsWith("$")) {
+            c = c.substring(1);
+        }
+        return Currency.fromCode(c);
     }
 }
