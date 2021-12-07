@@ -102,9 +102,9 @@ class BitflyerBeanV1Test {
 
     @Test
     void testUnknonwExchangePair() {
-        final String row = "2020/09/29 17:55:30;LTC/USD;Buy;46.43;LTC;0.9;0;46.43;LTC;-41.79;BF-01;\n";
+        final String row = "2020/09/29 17:55:30;LTC/USD;Buy;46.43;BCH;0.9;0;46.43;LTC;-41.79;BF-01;\n";
         final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
         final String error = parsingProblem.getMessage();
-        assertTrue(error.contains("Unsupported currency pair LTC/LTC"));
+        assertTrue(error.contains("Unsupported currency pair BCH/LTC"));
     }
 }
