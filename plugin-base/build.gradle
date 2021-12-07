@@ -32,9 +32,9 @@ dependencies {
     pluginCompile "com.univocity:univocity-parsers:2.8.4"
     pluginCompile "org.knowm.xchange:xchange-kraken:$xchangeVersion"
     pluginCompile "org.knowm.xchange:xchange-binance:$xchangeVersion"
-    //TODO Change it to release version when the fix is added.
-    pluginCompile "com.github.knowm.xchange:xchange-bittrex:2d82d94d7050c90f2bc50261895e3e6f3f9aa68c"
-    pluginCompile "org.knowm.xchange:xchange-bitstamp:$xchangeVersion"
+    pluginCompile "org.knowm.xchange:xchange-bittrex:$xchangeVersion"
+    // TODO change it to release when new version is released after 5.0.12 (containing this PR https://github.com/knowm/XChange/pull/4349)
+    pluginCompile "com.github.knowm.xchange:xchange-bitstamp:0e0a2324d80a84499a92cb747526adf98564613a"
     pluginCompile "org.knowm.xchange:xchange-coinmate:$xchangeVersion"
     pluginCompile "org.knowm.xchange:xchange-bitfinex:$xchangeVersion"
     pluginCompile "org.knowm.xchange:xchange-coinbasepro:$xchangeVersion"
@@ -42,8 +42,7 @@ dependencies {
     pluginCompile "org.knowm.xchange:xchange-bitflyer:$xchangeVersion"
     pluginCompile "org.knowm.xchange:xchange-core:$xchangeVersion"
     pluginCompile "org.knowm.xchange:xchange-huobi:$xchangeVersion"
-    //TODO Change it to knowm when they accept GENERALBYTES pull-request.
-    pluginCompile "com.github.GENERALBYTESCOM.XChange:xchange-coinbase:045371c93518b63b16d44667b2035c8ee26975bf"
+    pluginCompile "org.knowm.xchange:xchange-coinbase:$xchangeVersion"
 
     pluginCompile "com.github.charvam:V3-Open-API-SDK:db22182525f075bfb8999bcdbea4a132e4d933cf"
     pluginCompile "com.github.GENERALBYTESCOM:bitrafael_public:1.0.42"
