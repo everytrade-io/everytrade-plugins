@@ -135,12 +135,13 @@ public class BinanceDownloader {
         if (isEmpty(state)) {
             return;
         }
-        String[] array = state.contains(STATE_SEPARATOR) ? state.split("\"" + STATE_SEPARATOR) : new String[]{state};
+        String[] array = state.contains(STATE_SEPARATOR) ? state.split("\\" + STATE_SEPARATOR) : new String[]{state};
 
         this.currencyPairLastIds = Arrays.stream(array[0].split(":"))
-            .filter(split -> !split.endsWith("=") && !split.endsWith("=null"))
+            .filter(split -> split.contains("=") && !split.endsWith("=") && !split.endsWith("=null"))
             .map(entry -> entry.split("="))
             .collect(Collectors.toMap(entry -> entry[0], entry -> entry[1]));
+
         if (array.length > 1) {
             this.lastFundingDownloadedTimestamp = new Date(Long.parseLong(array[1]));
         }
