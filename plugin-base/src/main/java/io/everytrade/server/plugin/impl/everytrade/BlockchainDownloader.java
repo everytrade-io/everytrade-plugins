@@ -7,6 +7,9 @@ import com.generalbytes.bitrafael.tools.transaction.Transaction;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.parser.ParseResult;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,25 +20,31 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static lombok.AccessLevel.PRIVATE;
+
+@AllArgsConstructor
+@FieldDefaults(makeFinal = true, level = PRIVATE)
 public class BlockchainDownloader {
-    public static final int TRUNCATE_LIMIT = 10;
-    private final Client client;
-    private final String lastTransactionUid;
-    private final long lastTxTimestamp;
-    private final Set<String> lastTxHashes;
-    private final String fiatCurrency;
-    private final String cryptoCurrency;
-    private final boolean importDepositsAsBuys;
-    private final boolean importWithdrawalsAsSells;
-    private final boolean importFeesFromDeposits;
-    private final boolean importFeesFromWithdrawals;
-    public static final String XPUB_PREFIX = "xpub";
-    public static final String LTUB_PREFIX = "Ltub";
+
+    private static final int TRUNCATE_LIMIT = 10;
+    private static final String XPUB_PREFIX = "xpub";
+    private static final String LTUB_PREFIX = "Ltub";
     private static final String COLON_SYMBOL = ":";
     private static final String PIPE_SYMBOL = "|";
     private static final String COIN_SERVER_URL = "https://coin.cz";
     private static final int MIN_COINFIRMATIONS = 6;
     private static final Set<Currency> SUPPORTED_CRYPTO = Set.of(Currency.BTC, Currency.LTC);
+
+    Client client;
+    String lastTransactionUid;
+    long lastTxTimestamp;
+    Set<String> lastTxHashes;
+    String fiatCurrency;
+    String cryptoCurrency;
+    boolean importDepositsAsBuys;
+    boolean importWithdrawalsAsSells;
+    boolean importFeesFromDeposits;
+    boolean importFeesFromWithdrawals;
 
     public BlockchainDownloader(
         String lastTransactionUid,
@@ -60,15 +69,6 @@ public class BlockchainDownloader {
         this.importFeesFromDeposits = Boolean.parseBoolean(importFeesFromDeposits);
         Objects.requireNonNull(importFeesFromWithdrawals);
         this.importFeesFromWithdrawals = Boolean.parseBoolean(importFeesFromWithdrawals);
-        final boolean correctParamsCombination = this.importDepositsAsBuys || this.importWithdrawalsAsSells;
-        if (!correctParamsCombination) {
-            throw new IllegalArgumentException(
-                String.format("Incorrect params combination, at least importDepositsAsBuys (%s) or " +
-                "importWithdrawalsAsSells (%s) must be set to true.",
-                    importDepositsAsBuys,
-                    importWithdrawalsAsSells
-                ));
-        }
 
         this.lastTransactionUid = lastTransactionUid;
         client = new Client(COIN_SERVER_URL, this.cryptoCurrency);
@@ -120,10 +120,8 @@ public class BlockchainDownloader {
                 final boolean newTimeStamp = timestamp >= lastTxTimestamp;
                 final boolean newHash = !lastTxHashes.contains(transaction.getTxHash());
                 final boolean confirmed = transaction.getConfirmations() >= MIN_COINFIRMATIONS;
-                final boolean typeFiltered = (!transaction.isDirectionSend() && importDepositsAsBuys)
-                    || (transaction.isDirectionSend() && importWithdrawalsAsSells);
 
-                if (confirmed && newTimeStamp && newHash && typeFiltered) {
+                if (confirmed && newTimeStamp && newHash) {
                     transactions.add(transaction);
                     if (timestamp > newLastTxTimestamp) {
                         newLastTxTimestamp = timestamp;
@@ -136,6 +134,8 @@ public class BlockchainDownloader {
             transactions,
             cryptoCurrency,
             fiatCurrency,
+            importDepositsAsBuys,
+            importWithdrawalsAsSells,
             importFeesFromDeposits,
             importFeesFromWithdrawals
         );
@@ -155,5 +155,4 @@ public class BlockchainDownloader {
 
         return newLastTxTimestamp + COLON_SYMBOL + newLastTxHashes;
     }
-
 }

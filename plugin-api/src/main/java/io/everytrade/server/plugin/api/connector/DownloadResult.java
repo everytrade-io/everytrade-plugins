@@ -1,23 +1,20 @@
 package io.everytrade.server.plugin.api.connector;
 
 import io.everytrade.server.plugin.api.parser.ParseResult;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
-import java.util.Objects;
-
+@Value
+@Builder
+@AllArgsConstructor
 public class DownloadResult {
-    private final ParseResult parseResult;
-    private final String lastDownloadedTransactionId;
 
-    public DownloadResult(ParseResult parseResult, String lastDownloadedTransactionId) {
-        Objects.requireNonNull(this.parseResult = parseResult);
-        this.lastDownloadedTransactionId = lastDownloadedTransactionId;
-    }
+    @NonNull
+    ParseResult parseResult;
 
-    public ParseResult getParseResult() {
-        return parseResult;
-    }
-
-    public String getLastDownloadedTransactionId() {
-        return lastDownloadedTransactionId;
-    }
+    /* connector should return its state after download session. This state is then provided in next download so connector can continue
+       where left off. */
+    String downloadStateData;
 }

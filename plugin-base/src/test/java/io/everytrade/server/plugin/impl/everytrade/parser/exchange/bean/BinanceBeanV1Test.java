@@ -188,9 +188,9 @@ class BinanceBeanV1Test {
 
     @Test
     void testIgnoredTransactionType() {
-        final String row = "2020-02-04 16:19:07;LTCBTC;DEPOSIT;0.007393;1.61;0.01190273;0.00161;LTC\n";
+        // test wrong unsupported tx type
+        final String row = "2020-02-04 16:19:07;LTCBTC;DEPOSITZ;0.007393;1.61;0.01190273;0.00161;LTC\n";
         final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
-        assertTrue(parsingProblem.getMessage().contains(ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE.concat("DEPOSIT"))
-        );
+        assertTrue(parsingProblem.getMessage().contains(ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE.concat("DEPOSITZ")));
     }
 }

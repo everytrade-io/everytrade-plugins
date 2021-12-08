@@ -2,6 +2,7 @@ package io.everytrade.server.plugin.impl.everytrade;
 
 import org.knowm.xchange.currency.Currency;
 import org.knowm.xchange.currency.CurrencyPair;
+import org.knowm.xchange.dto.account.FundingRecord;
 import org.knowm.xchange.dto.trade.UserTrade;
 
 import java.util.Arrays;
@@ -50,10 +51,20 @@ public class ConnectorUtils {
         return counter;
     }
 
-    public static int findDuplicate(String transactionId, List<UserTrade> userTradesBlock) {
+    public static int findDuplicateTransaction(String transactionId, List<UserTrade> userTradesBlock) {
         for (int i = 0; i < userTradesBlock.size(); i++) {
             final UserTrade userTrade = userTradesBlock.get(i);
             if (userTrade.getId().equals(transactionId)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public static int findDuplicateFunding(String transactionId, List<FundingRecord> fundingRecords) {
+        for (int i = 0; i < fundingRecords.size(); i++) {
+            final FundingRecord userTrade = fundingRecords.get(i);
+            if (userTrade.getInternalId().equals(transactionId)) {
                 return i;
             }
         }

@@ -66,7 +66,6 @@ public class OkexDownloader {
             );
             orders.addAll(pairOrders);
         }
-
         return orders;
     }
 

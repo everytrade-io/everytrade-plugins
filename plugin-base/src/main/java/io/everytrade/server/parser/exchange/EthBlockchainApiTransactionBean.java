@@ -5,19 +5,24 @@ import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.DepositWithdrawalImportedTransaction;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.etherscan.EtherScanTransactionDto;
-import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.List;
 
+import static io.everytrade.server.model.TransactionType.BUY;
+import static io.everytrade.server.model.TransactionType.DEPOSIT;
+import static io.everytrade.server.model.TransactionType.SELL;
+import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
+import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.equalsToZero;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
+import static java.util.Collections.emptyList;
 
 public class EthBlockchainApiTransactionBean {
     private static final Currency BASE = Currency.ETH;
@@ -32,20 +37,25 @@ public class EthBlockchainApiTransactionBean {
     private final BigDecimal feeAmount;
     private final boolean importFeesFromDeposits;
     private final boolean importFeesFromWithdrawals;
+    private final String relatedAddress;
 
     public EthBlockchainApiTransactionBean(
         EtherScanTransactionDto transactionDto,
         String address,
         String quote,
+        boolean importDepositsAsBuys,
+        boolean importWithdrawalsAsSells,
         boolean importFeesFromDeposits,
         boolean importFeesFromWithdrawals
     ) {
         id = transactionDto.getHash();
         timestamp =  Instant.ofEpochSecond(transactionDto.getTimeStamp());
         if (address.equals(transactionDto.getFrom())) {
-            type = TransactionType.SELL;
+            type = importWithdrawalsAsSells ? SELL : WITHDRAWAL;
+            relatedAddress = transactionDto.getTo();
         } else if (address.equals(transactionDto.getTo())) {
-            type = TransactionType.BUY;
+            type = importDepositsAsBuys ? BUY : DEPOSIT;
+            relatedAddress = transactionDto.getFrom();
         } else {
             throw new DataValidationException(
                 String.format(
@@ -69,38 +79,40 @@ public class EthBlockchainApiTransactionBean {
         this.importFeesFromWithdrawals = importFeesFromWithdrawals;
     }
 
-
     public TransactionCluster toTransactionCluster() {
         try {
             new CurrencyPair(BASE, quote);
         } catch (CurrencyPair.FiatCryptoCombinationException e) {
             throw new IllegalArgumentException(e.getMessage());
         }
-        if (ParserUtils.equalsToZero(baseAmount)) {
+
+        if (equalsToZero(baseAmount)) {
             throw new IllegalArgumentException("Crypto amount can't be zero.");
         }
-        final boolean withFee =
-            (importFeesFromDeposits && TransactionType.BUY.equals(type))
-                || (importFeesFromWithdrawals && TransactionType.SELL.equals(type));
+
+        final boolean withFee = (List.of(BUY, DEPOSIT).contains(type) && importFeesFromDeposits)
+            || (importFeesFromWithdrawals && List.of(SELL, WITHDRAWAL).contains(type));
 
         List<ImportedTransactionBean> related;
-        if (ParserUtils.equalsToZero(feeAmount) || !withFee) {
-            related = Collections.emptyList();
+        if (equalsToZero(feeAmount) || !withFee) {
+            related = emptyList();
         } else {
             related = List.of(new FeeRebateImportedTransactionBean(
-                    id + FEE_UID_PART,
-                    timestamp,
+                id + FEE_UID_PART,
+                timestamp,
                 BASE,
-                    quote,
-                    TransactionType.FEE,
-                    feeAmount,
-                    BASE
-                )
-            );
+                quote,
+                TransactionType.FEE,
+                feeAmount,
+                BASE
+            ));
         }
+        return new TransactionCluster(createMainTx(), related);
+    }
 
-        return new TransactionCluster(
-            new BuySellImportedTransactionBean(
+    private ImportedTransactionBean createMainTx() {
+        if (type == BUY || type == SELL) {
+            return new BuySellImportedTransactionBean(
                 id,
                 timestamp,
                 BASE,
@@ -108,8 +120,19 @@ public class EthBlockchainApiTransactionBean {
                 type,
                 baseAmount,
                 unitPrice
-            ),
-            related
-        );
+            );
+        } else if (type == DEPOSIT || type == WITHDRAWAL) {
+            return new DepositWithdrawalImportedTransaction(
+                id,
+                timestamp,
+                BASE,
+                quote,
+                type,
+                baseAmount,
+                relatedAddress
+            );
+        } else {
+            throw new IllegalArgumentException("Unsupported tx type " + type);
+        }
     }
 }

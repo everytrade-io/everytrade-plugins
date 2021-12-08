@@ -1,16 +1,24 @@
 package io.everytrade.server.model;
 
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.experimental.FieldDefaults;
+
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
+import static lombok.AccessLevel.PRIVATE;
+
+@Getter
+@FieldDefaults(level = PRIVATE)
 public final class CurrencyPair implements Comparable<CurrencyPair>{
 
-    private final Currency base;
-    private final Currency quote;
+    @NonNull Currency base;
+    @NonNull Currency quote;
 
     private static final Set<Currency> ALLOWED_CRYPTO_QUOTES =
         Set.of(Currency.USDT, Currency.BTC, Currency.ETH, Currency.BNB);
@@ -26,19 +34,11 @@ public final class CurrencyPair implements Comparable<CurrencyPair>{
     }
 
     public CurrencyPair(Currency base, Currency quote) {
-        Objects.requireNonNull(this.base = base);
-        Objects.requireNonNull(this.quote = quote);
+        this.base = base;
+        this.quote = quote;
         if(this.base.isFiat() && !this.quote.isFiat()) {
             throw new FiatCryptoCombinationException(this.base, this.quote);
         }
-    }
-
-    public Currency getBase() {
-        return base;
-    }
-
-    public Currency getQuote() {
-        return quote;
     }
 
     public CurrencyPair reverse() {
@@ -52,22 +52,21 @@ public final class CurrencyPair implements Comparable<CurrencyPair>{
     }
 
     public static List<CurrencyPair> getTradeablePairs() {
-        List<CurrencyPair> currencyPairs = new ArrayList<>();
+        Set<CurrencyPair> currencyPairs = new HashSet<>();
         for (Currency base : Currency.values()) {
             for (Currency quote : Currency.values()) {
-                final boolean baseIsCrypto = !base.isFiat();
-                final boolean baseQuoteDiffer = base != quote;
-                final boolean quoteIsFiat = quote.isFiat();
-                final boolean quoteIsAllowedCrypto = ALLOWED_CRYPTO_QUOTES.contains(quote);
-                final boolean quoteIsAllowed = quoteIsFiat || quoteIsAllowedCrypto;
-                final boolean isUnsupportedCryptoPair = isUnsupportedCryptoPairs(base, quote);
-                if (baseIsCrypto && baseQuoteDiffer && quoteIsAllowed && !isUnsupportedCryptoPair) {
+                var baseIsCrypto = !base.isFiat();
+                var quoteIsFiat = quote.isFiat();
+                var quoteIsAllowedCrypto = ALLOWED_CRYPTO_QUOTES.contains(quote);
+                var quoteIsAllowed = quoteIsFiat || quoteIsAllowedCrypto;
+                var isUnsupportedCryptoPair = isUnsupportedCryptoPairs(base, quote);
+                if ((baseIsCrypto && quoteIsAllowed && !isUnsupportedCryptoPair) || (base == quote)) {
                     currencyPairs.add(new CurrencyPair(base, quote));
                 }
             }
         }
         currencyPairs.addAll(getSupportedFiatPairs());
-        return currencyPairs;
+        return new ArrayList<>(currencyPairs);
     }
 
     public static List<CurrencyPair> getSupportedFiatPairs() {
@@ -100,7 +99,6 @@ public final class CurrencyPair implements Comparable<CurrencyPair>{
         return COMPARATOR.compare(this, currencyPair);
     }
 
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -130,6 +128,16 @@ public final class CurrencyPair implements Comparable<CurrencyPair>{
         return String.format("%s/%s", base, quote);
     }
 
+    private static boolean isUnsupportedCryptoPairs(Currency base, Currency quote) {
+        if (Currency.USDT.equals(base)) {
+            return Currency.BTC.equals(quote) || Currency.ETH.equals(quote) || Currency.BNB.equals(quote);
+        } else if (Currency.BTC.equals(base)) {
+            return  Currency.ETH.equals(quote) || Currency.BNB.equals(quote);
+        } else {
+            return base.equals(Currency.ETH) && quote.equals(Currency.BNB);
+        }
+    }
+
     public static class FiatCryptoCombinationException extends RuntimeException {
 
         public static final String INVALID_CURRENCY_PAIR = "Invalid currency pair";
@@ -138,16 +146,6 @@ public final class CurrencyPair implements Comparable<CurrencyPair>{
             super(
                 String.format("%s - fiat (%s) to crypto (%s): ", INVALID_CURRENCY_PAIR, base, quote)
             );
-        }
-    }
-
-    private static boolean isUnsupportedCryptoPairs(Currency base, Currency quote) {
-        if (Currency.USDT.equals(base)) {
-            return Currency.BTC.equals(quote) || Currency.ETH.equals(quote) || Currency.BNB.equals(quote);
-        } else if (Currency.BTC.equals(base)) {
-            return  Currency.ETH.equals(quote) || Currency.BNB.equals(quote);
-        } else {
-            return base.equals(Currency.ETH) && quote.equals(Currency.BNB);
         }
     }
 }

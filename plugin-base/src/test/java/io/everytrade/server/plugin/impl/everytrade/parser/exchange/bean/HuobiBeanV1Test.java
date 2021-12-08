@@ -169,10 +169,10 @@ class HuobiBeanV1Test {
 
     @Test
     void testUnknownTransactionType() {
-        final String row = "2020-03-31 21:31:24,Exchange,LTC/BTC,Deposit,0.006036,0.7362,0.0044,0.00000888LTC,\n";
+        final String row = "2020-03-31 21:31:24,Exchange,LTC/BTC,Depositz,0.006036,0.7362,0.0044,0.00000888LTC,\n";
         final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
         final String error = parsingProblem.getMessage();
-        assertTrue(error.contains(UNSUPPORTED_TRANSACTION_TYPE.concat("Deposit")));
+        assertTrue(error.contains(UNSUPPORTED_TRANSACTION_TYPE.concat("Depositz")));
     }
 
     @Test

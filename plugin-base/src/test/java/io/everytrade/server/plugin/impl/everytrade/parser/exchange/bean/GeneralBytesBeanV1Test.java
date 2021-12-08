@@ -3,7 +3,6 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
@@ -14,7 +13,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
-import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -87,7 +85,6 @@ class GeneralBytesBeanV1Test {
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
-
 
     @Test
     void testCorrectParsingRawTransactionDate_d_m_yy() {

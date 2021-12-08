@@ -117,7 +117,7 @@ class EveryTradeBeanV1Test {
     }
 
     @Test
-    void testUnknonwExchange() {
+    void testUnknownExchange() {
         final String row = "1;1.9.2019 14:43:18;XXX/CZK;BUY;0.066506;210507.322647581000;0\n";
         final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
         final String error = parsingProblem.getMessage();
@@ -126,9 +126,10 @@ class EveryTradeBeanV1Test {
 
     @Test
     void testIgnoredTransactionType() {
-        final String row = "1;1.9.2019 14:43:18;BTC/CZK;WITHDRAW;0.066506;210507.322647581000;0\n";
+        // test wrong unsupported tx type
+        final String row = "1;1.9.2019 14:43:18;BTC/CZK;WITHDRAWZ;0.066506;210507.322647581000;0\n";
         final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
-        assertTrue(parsingProblem.getMessage().contains(ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE.concat("WITHDRAW"))
+        assertTrue(parsingProblem.getMessage().contains(ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE.concat("WITHDRAWZ"))
         );
     }
 }

@@ -1,29 +1,35 @@
 package io.everytrade.server.plugin.impl.everytrade;
 
 import io.everytrade.server.UiKey;
-import io.everytrade.server.model.SupportedExchange;
 import io.everytrade.server.plugin.api.IPlugin;
 import io.everytrade.server.plugin.api.connector.ConnectorDescriptor;
 import io.everytrade.server.plugin.api.connector.ConnectorParameterDescriptor;
 import io.everytrade.server.plugin.api.connector.ConnectorParameterType;
 import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.connector.IConnector;
-import io.everytrade.server.plugin.api.parser.ParseResult;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.ExchangeFactory;
 import org.knowm.xchange.ExchangeSpecification;
 import org.knowm.xchange.binance.BinanceExchange;
+import org.knowm.xchange.dto.account.FundingRecord;
 import org.knowm.xchange.dto.trade.UserTrade;
-import org.knowm.xchange.service.trade.TradeService;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
+import static io.everytrade.server.model.SupportedExchange.BINANCE;
+import static lombok.AccessLevel.PRIVATE;
+
+@RequiredArgsConstructor
+@FieldDefaults(level = PRIVATE, makeFinal = true)
 public class BinanceConnector implements IConnector {
-    private static final Object LOCK = new Object();
 
+    private static final Object LOCK = new Object();
     private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "binanceApiConnector";
+    private static final int MAX_DOWNLOADED_TXS = 8000;
 
     private static final ConnectorParameterDescriptor PARAMETER_API_SECRET =
         new ConnectorParameterDescriptor(
@@ -53,18 +59,25 @@ public class BinanceConnector implements IConnector {
         ID,
         "Binance Connector",
         "",
-        SupportedExchange.BINANCE.getInternalId(),
+        BINANCE.getInternalId(),
         List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET, PARAMETER_CURRENCY_PAIRS)
     );
 
-    private final String apiKey;
-    private final String apiSecret;
-    private final String currencyPairs;
+    Exchange exchange;
+    XChangeConnectorParser parser;
+    String currencyPairs;
 
     public BinanceConnector(Map<String, String> parameters) {
-        Objects.requireNonNull(this.apiKey = parameters.get(PARAMETER_API_KEY.getId()));
-        Objects.requireNonNull(this.apiSecret = parameters.get(PARAMETER_API_SECRET.getId()));
-        Objects.requireNonNull(this.currencyPairs = parameters.get(PARAMETER_CURRENCY_PAIRS.getId()));
+        this(
+            parameters.get(PARAMETER_API_KEY.getId()),
+            parameters.get(PARAMETER_API_SECRET.getId()),
+            parameters.get(PARAMETER_CURRENCY_PAIRS.getId())
+        );
+    }
+    public BinanceConnector(@NonNull String apiKey, @NonNull String apiSecret, @NonNull String currencyPairs) {
+        this.exchange = ExchangeFactory.INSTANCE.createExchange(createExchangeSpec(apiKey, apiSecret));
+        this.parser = new XChangeConnectorParser();
+        this.currencyPairs = currencyPairs;
     }
 
     @Override
@@ -75,23 +88,22 @@ public class BinanceConnector implements IConnector {
     @Override
     public DownloadResult getTransactions(String lastTransactionId) {
         synchronized (LOCK) {
-            final ExchangeSpecification exSpec = new BinanceExchange().getDefaultExchangeSpecification();
-            exSpec.setApiKey(apiKey);
-            exSpec.setSecretKey(apiSecret);
-            final Exchange exchange = ExchangeFactory.INSTANCE.createExchange(exSpec);
-            final TradeService tradeService = exchange.getTradeService();
-            final BinanceDownloader binanceDownloader = new BinanceDownloader(tradeService, lastTransactionId);
+            var binanceDownloader = new BinanceDownloader(exchange, lastTransactionId);
 
-            List<UserTrade> userTrades = binanceDownloader.download(currencyPairs);
-            final ParseResult parseResult = XChangeConnectorParser.getParseResult(userTrades, SupportedExchange.BINANCE);
+            List<FundingRecord> funding = binanceDownloader.downloadDepositsAndWithdrawals(MAX_DOWNLOADED_TXS);
+            List<UserTrade> userTrades = binanceDownloader.downloadTrades(currencyPairs, MAX_DOWNLOADED_TXS - funding.size());
 
-            return new DownloadResult(parseResult, binanceDownloader.getLastTransactionId());
+            return DownloadResult.builder()
+                .parseResult(parser.getParseResult(userTrades, funding))
+                .downloadStateData(binanceDownloader.serializeState())
+                .build();
         }
     }
 
-    @Override
-    public void close() {
-        //AutoCloseable
+    private ExchangeSpecification createExchangeSpec(String apiKey, String apiSecret) {
+        ExchangeSpecification exSpec = new BinanceExchange().getDefaultExchangeSpecification();
+        exSpec.setApiKey(apiKey);
+        exSpec.setSecretKey(apiSecret);
+        return exSpec;
     }
-
 }

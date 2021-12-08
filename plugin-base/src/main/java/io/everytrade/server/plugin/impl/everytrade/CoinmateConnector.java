@@ -1,27 +1,36 @@
 package io.everytrade.server.plugin.impl.everytrade;
 
-import io.everytrade.server.plugin.api.connector.ConnectorParameterType;
 import io.everytrade.server.model.SupportedExchange;
-import io.everytrade.server.plugin.api.parser.ParseResult;
-import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.IPlugin;
 import io.everytrade.server.plugin.api.connector.ConnectorDescriptor;
 import io.everytrade.server.plugin.api.connector.ConnectorParameterDescriptor;
+import io.everytrade.server.plugin.api.connector.ConnectorParameterType;
+import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.connector.IConnector;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.experimental.FieldDefaults;
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.ExchangeFactory;
 import org.knowm.xchange.ExchangeSpecification;
 import org.knowm.xchange.coinmate.CoinmateExchange;
+import org.knowm.xchange.coinmate.service.CoinmateAccountService;
 import org.knowm.xchange.coinmate.service.CoinmateTradeService;
+import org.knowm.xchange.dto.account.FundingRecord;
 import org.knowm.xchange.dto.trade.UserTrade;
-import org.knowm.xchange.service.trade.TradeService;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
+import static lombok.AccessLevel.PRIVATE;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
+@AllArgsConstructor
+@FieldDefaults(makeFinal = true, level = PRIVATE)
 public class CoinmateConnector implements IConnector {
 
     private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "coinmateApiConnector";
@@ -62,14 +71,22 @@ public class CoinmateConnector implements IConnector {
         List.of(PARAMETER_API_USERNAME, PARAMETER_API_KEY, PARAMETER_API_SECRET)
     );
 
-    private final String apiUsername;
-    private final String apiKey;
-    private final String apiSecret;
+    Exchange exchange;
 
     public CoinmateConnector(Map<String, String> parameters) {
-        Objects.requireNonNull(this.apiUsername = parameters.get(PARAMETER_API_USERNAME.getId()));
-        Objects.requireNonNull(this.apiKey = parameters.get(PARAMETER_API_KEY.getId()));
-        Objects.requireNonNull(this.apiSecret = parameters.get(PARAMETER_API_SECRET.getId()));
+        this(
+            parameters.get(PARAMETER_API_USERNAME.getId()),
+            parameters.get(PARAMETER_API_KEY.getId()),
+            parameters.get(PARAMETER_API_SECRET.getId())
+        );
+    }
+
+    public CoinmateConnector(@NonNull String username, @NonNull String apiKey, @NonNull String secret) {
+        final ExchangeSpecification exSpec = new CoinmateExchange().getDefaultExchangeSpecification();
+        exSpec.setUserName(username);
+        exSpec.setApiKey(apiKey);
+        exSpec.setSecretKey(secret);
+        this.exchange = ExchangeFactory.INSTANCE.createExchange(exSpec);
     }
 
     @Override
@@ -78,37 +95,27 @@ public class CoinmateConnector implements IConnector {
     }
 
     @Override
-    public DownloadResult getTransactions(String lastTransactionId) {
-        final ExchangeSpecification exSpec = new CoinmateExchange().getDefaultExchangeSpecification();
-        exSpec.setUserName(apiUsername);
-        exSpec.setApiKey(apiKey);
-        exSpec.setSecretKey(apiSecret);
-        final Exchange exchange = ExchangeFactory.INSTANCE.createExchange(exSpec);
-        final TradeService tradeService = exchange.getTradeService();
+    public DownloadResult getTransactions(String stateStr) {
+        var downloadState = DownloadState.deserialize(stateStr);
 
-        List<UserTrade> userTrades = download(lastTransactionId, tradeService);
+        List<UserTrade> userTrades = downloadTrades(downloadState);
+        List<FundingRecord> fundingRecords = downloadFunding(downloadState);
 
-        final String actualLastTransactionId = userTrades.isEmpty()
-            ? lastTransactionId
-            : userTrades.get(userTrades.size() - 1).getId();
-
-        final ParseResult parseResult = XChangeConnectorParser.getParseResult(userTrades, SupportedExchange.COINMATE);
-
-        return new DownloadResult(parseResult, actualLastTransactionId);
+        return new DownloadResult(new XChangeConnectorParser().getParseResult(userTrades, fundingRecords), downloadState.serialize());
     }
 
-    private List<UserTrade> download(String lastTransactionId, TradeService tradeService) {
-        final CoinmateTradeService.CoinmateTradeHistoryHistoryParams tradeHistoryParams
-            = (CoinmateTradeService.CoinmateTradeHistoryHistoryParams) tradeService.createTradeHistoryParams();
-        tradeHistoryParams.setStartId(lastTransactionId);
-        tradeHistoryParams.setLimit(TX_PER_REQUEST);
+    private List<UserTrade> downloadTrades(DownloadState state) {
+        var tradeService = exchange.getTradeService();
+        var params = (CoinmateTradeService.CoinmateTradeHistoryHistoryParams) tradeService.createTradeHistoryParams();
+        params.setStartId(state.lastTxId);
+        params.setLimit(TX_PER_REQUEST);
 
         final List<UserTrade> userTrades = new ArrayList<>();
         int sentRequests = 0;
         while (sentRequests < MAX_REQUEST_COUNT) {
             final List<UserTrade> userTradesBlock;
             try {
-                userTradesBlock = tradeService.getTradeHistory(tradeHistoryParams).getUserTrades();
+                userTradesBlock = tradeService.getTradeHistory(params).getUserTrades();
             } catch (IOException e) {
                 throw new IllegalStateException("Download user trade history failed.", e);
             }
@@ -117,14 +124,63 @@ public class CoinmateConnector implements IConnector {
             }
             userTrades.addAll(userTradesBlock);
             final String lastDownloadedTx = userTradesBlock.get(userTradesBlock.size() - 1).getId();
-            tradeHistoryParams.setStartId(lastDownloadedTx);
+            params.setStartId(lastDownloadedTx);
+            state.setLastTxId(lastDownloadedTx);
             ++sentRequests;
         }
         return userTrades;
     }
 
-    @Override
-    public void close() {
-        //AutoCloseable
+    private List<FundingRecord> downloadFunding(DownloadState state) {
+        var accountService = exchange.getAccountService();
+        var params = (CoinmateAccountService.CoinmateFundingHistoryParams) accountService.createFundingHistoryParams();
+        params.setStartId(state.lastTxId);
+        params.setLimit(TX_PER_REQUEST);
+
+        final List<FundingRecord> funding = new ArrayList<>();
+        int sentRequests = 0;
+        while (sentRequests < MAX_REQUEST_COUNT) {
+            final List<FundingRecord> fundingBlock;
+            try {
+                fundingBlock = accountService.getFundingHistory(params);
+            } catch (IOException e) {
+                throw new IllegalStateException("Download user funding history failed.", e);
+            }
+            if (fundingBlock.isEmpty()) {
+                break;
+            }
+            funding.addAll(fundingBlock);
+            final String lastDownloadedTx = fundingBlock.get(fundingBlock.size() - 1).getInternalId();
+            params.setStartId(lastDownloadedTx);
+            state.setLastFundingId(lastDownloadedTx);
+            ++sentRequests;
+        }
+        return funding;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @FieldDefaults(level = PRIVATE)
+    private static class DownloadState {
+        private static final String SEPARATOR = "=";
+
+        String lastTxId;
+        String lastFundingId;
+
+        public static DownloadState deserialize(String state) {
+            if (isEmpty(state)) {
+                return new DownloadState();
+            }
+            var strA = state.split(SEPARATOR);
+            return new DownloadState(
+                strA[0],
+                strA.length > 1 ? strA[1] : null
+            );
+        }
+
+        public String serialize() {
+            return (lastTxId == null ? "" : lastTxId) + SEPARATOR + (lastFundingId == null ? "" : lastFundingId);
+        }
     }
 }

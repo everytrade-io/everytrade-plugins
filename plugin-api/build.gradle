@@ -16,4 +16,10 @@ tasks.withType(JavaCompile) {
 
 dependencies {
     api "org.pf4j:pf4j:$pf4jVersion"
+
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
+    testCompileOnly 'org.projectlombok:lombok:1.18.22'
 }
