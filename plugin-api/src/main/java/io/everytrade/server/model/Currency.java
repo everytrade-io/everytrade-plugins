@@ -132,14 +132,13 @@ public enum Currency {
     ERG(false, Instant.parse("2017-07-02T00:00:00Z"), "Ergo"),
     LUNA(false, Instant.parse("2019-08-01T00:00:00Z"), "Terra"),
     CLO(false, Instant.parse("2018-03-05T00:00:00Z"), "Callisto Network"),
-    ICP(false, Instant.parse("2021-05-12"), "Internet Computer"),
-    RLC(false, Instant.parse("2017-04-20"), "iExec RLC"),
-    FLOW(false, Instant.parse("2021-04-15"), "Flow"),
-    FTT(false, Instant.parse("2019-08-01"), "FTX Token"),
-    PERP(false, Instant.parse("2021-11-12"), "Perpetual Protocol"),
-    SRM(false, Instant.parse("2020-08-20"), "Serum"),
-    XEC(false, Instant.parse("2021-08-26"), "eCash"),
-    ;
+    ICP(false, Instant.parse("2021-05-12T00:00:00Z"), "Internet Computer"),
+    RLC(false, Instant.parse("2017-04-20T00:00:00Z"), "iExec RLC"),
+    FLOW(false, Instant.parse("2021-04-15T00:00:00Z"), "Flow"),
+    FTT(false, Instant.parse("2019-08-01T00:00:00Z"), "FTX Token"),
+    PERP(false, Instant.parse("2021-11-12T00:00:00Z"), "Perpetual Protocol"),
+    SRM(false, Instant.parse("2020-08-20T00:00:00Z"), "Serum"),
+    XEC(false, Instant.parse("2021-08-26T00:00:00Z"), "eCash");
 
     private final String code;
     private final int decimalDigits;
