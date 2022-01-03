@@ -8,11 +8,17 @@ import io.everytrade.server.plugin.api.connector.ConnectorParameterDescriptor;
 import io.everytrade.server.plugin.api.connector.ConnectorParameterType;
 import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.connector.IConnector;
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
+import lombok.experimental.FieldDefaults;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
+import static lombok.AccessLevel.PRIVATE;
+
+@AllArgsConstructor
+@FieldDefaults(makeFinal = true, level = PRIVATE)
 public class BlockchainLtcConnector implements IConnector {
     private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "blockchainLtcApiConnector";
 
@@ -79,13 +85,12 @@ public class BlockchainLtcConnector implements IConnector {
         )
     );
 
-    private static final String CRYPTO_CURRENCY = "LTC";
-    private final String source;
-    private final String fiatCurrency;
-    private final String importDepositsAsBuys;
-    private final String importWithdrawalsAsSells;
-    private final String importFeesFromDeposits;
-    private final String importFeesFromWithdrawals;
+    @NonNull String source;
+    @NonNull String fiatCurrency;
+    @NonNull String importDepositsAsBuys;
+    @NonNull String importWithdrawalsAsSells;
+    @NonNull String importFeesFromDeposits;
+    @NonNull String importFeesFromWithdrawals;
 
     public BlockchainLtcConnector(Map<String, String> parameters) {
         this(
@@ -98,22 +103,6 @@ public class BlockchainLtcConnector implements IConnector {
         );
     }
 
-    public BlockchainLtcConnector(
-        String source,
-        String fiatCurrency,
-        String importDepositsAsBuys,
-        String importWithdrawalsAsSells,
-        String importFeesFromDeposits,
-        String importFeesFromWithdrawals
-    ) {
-        Objects.requireNonNull(this.source = source);
-        Objects.requireNonNull(this.fiatCurrency = fiatCurrency);
-        Objects.requireNonNull(this.importDepositsAsBuys = importDepositsAsBuys);
-        Objects.requireNonNull(this.importWithdrawalsAsSells = importWithdrawalsAsSells);
-        Objects.requireNonNull(this.importFeesFromDeposits = importFeesFromDeposits);
-        Objects.requireNonNull(this.importFeesFromWithdrawals = importFeesFromWithdrawals);
-    }
-
     @Override
     public String getId() {
         return ID;
@@ -121,11 +110,9 @@ public class BlockchainLtcConnector implements IConnector {
 
     @Override
     public DownloadResult getTransactions(String lastTransactionUid) {
-
-        final BlockchainDownloader blockchainDownloader
-            = new BlockchainDownloader(
+        var blockchainDownloader = new BlockchainDownloader(
             lastTransactionUid,
-            CRYPTO_CURRENCY,
+            "LTC",
             fiatCurrency,
             importDepositsAsBuys,
             importWithdrawalsAsSells,
@@ -134,10 +121,5 @@ public class BlockchainLtcConnector implements IConnector {
         );
 
         return blockchainDownloader.download(source);
-    }
-
-    @Override
-    public void close() {
-        //AutoCloseable
     }
 }
