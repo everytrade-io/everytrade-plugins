@@ -29,6 +29,7 @@ public class BlockchainDownloader {
     private static final int TRUNCATE_LIMIT = 10;
     private static final String XPUB_PREFIX = "xpub";
     private static final String LTUB_PREFIX = "Ltub";
+    private static final String MTUB_PREFIX = "Mtub";
     private static final String COLON_SYMBOL = ":";
     private static final String PIPE_SYMBOL = "|";
     private static final String COIN_SERVER_URL = "https://coin.cz";
@@ -85,9 +86,8 @@ public class BlockchainDownloader {
     }
 
     public DownloadResult download(String source) {
-        if (source.startsWith(XPUB_PREFIX) || source.startsWith(LTUB_PREFIX)) {
-            final Collection<AddressInfo> addressInfos
-                = client.getAddressesInfoFromXpub(source, Integer.MAX_VALUE);
+        if (isXpub(source)) {
+            final Collection<AddressInfo> addressInfos = client.getAddressesInfoFromXpub(source, Integer.MAX_VALUE);
             if (addressInfos == null) {
                 throw new IllegalArgumentException(String.format(
                     "No addresses info found for crypto '%s' and key '%s'",
@@ -154,5 +154,9 @@ public class BlockchainDownloader {
         final String newLastTxHashes = String.join(PIPE_SYMBOL, newLastTxHashesSet);
 
         return newLastTxTimestamp + COLON_SYMBOL + newLastTxHashes;
+    }
+
+    private boolean isXpub(String address) {
+        return address.startsWith(XPUB_PREFIX) || address.startsWith(LTUB_PREFIX) || address.startsWith(MTUB_PREFIX);
     }
 }
