@@ -23,6 +23,7 @@ import org.knowm.xchange.dto.trade.UserTrade;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -134,7 +135,9 @@ public class CoinmateConnector implements IConnector {
     private List<FundingRecord> downloadFunding(DownloadState state) {
         var accountService = exchange.getAccountService();
         var params = (CoinmateAccountService.CoinmateFundingHistoryParams) accountService.createFundingHistoryParams();
-        params.setStartId(state.lastTxId);
+        if (state.getFundingsFrom() != null) {
+            params.setStartTime(new Date(state.getFundingsFrom()));
+        }
         params.setLimit(TX_PER_REQUEST);
 
         final List<FundingRecord> funding = new ArrayList<>();
@@ -150,9 +153,10 @@ public class CoinmateConnector implements IConnector {
                 break;
             }
             funding.addAll(fundingBlock);
-            final String lastDownloadedTx = fundingBlock.get(fundingBlock.size() - 1).getInternalId();
-            params.setStartId(lastDownloadedTx);
-            state.setLastFundingId(lastDownloadedTx);
+
+            var newStartFromMillis = fundingBlock.get(fundingBlock.size() - 1).getDate().getTime() + 1;
+            params.setStartTime(new Date(newStartFromMillis));
+            state.setFundingsFrom(newStartFromMillis);
             ++sentRequests;
         }
         return funding;
@@ -166,7 +170,7 @@ public class CoinmateConnector implements IConnector {
         private static final String SEPARATOR = "=";
 
         String lastTxId;
-        String lastFundingId;
+        Long fundingsFrom = 0L;
 
         public static DownloadState deserialize(String state) {
             if (isEmpty(state)) {
@@ -175,12 +179,12 @@ public class CoinmateConnector implements IConnector {
             var strA = state.split(SEPARATOR);
             return new DownloadState(
                 strA[0],
-                strA.length > 1 ? strA[1] : null
+                strA.length >1 ? Long.parseLong(strA[1]) : 0
             );
         }
 
         public String serialize() {
-            return (lastTxId == null ? "" : lastTxId) + SEPARATOR + (lastFundingId == null ? "" : lastFundingId);
+            return (lastTxId == null ? "" : lastTxId) + SEPARATOR + (fundingsFrom == null ? "" : fundingsFrom);
         }
     }
 }

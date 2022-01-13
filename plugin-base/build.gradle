@@ -35,7 +35,8 @@ dependencies {
     pluginCompile "org.knowm.xchange:xchange-bittrex:$xchangeVersion"
     // TODO change it to release when new version is released after 5.0.12 (containing this PR https://github.com/knowm/XChange/pull/4349)
     pluginCompile "com.github.knowm.xchange:xchange-bitstamp:0e0a2324d80a84499a92cb747526adf98564613a"
-    pluginCompile "org.knowm.xchange:xchange-coinmate:$xchangeVersion"
+    // TODO change it to release when new version is released after 5.0.12 (containing this PR https://github.com/knowm/XChange/pull/4386)
+    pluginCompile "com.github.kubacech.Xchange:xchange-coinmate:511b86b586dee69a2762a97908ad689bcc161c35"
     pluginCompile "org.knowm.xchange:xchange-bitfinex:$xchangeVersion"
     pluginCompile "org.knowm.xchange:xchange-coinbasepro:$xchangeVersion"
     pluginCompile "org.knowm.xchange:xchange-bitmex:$xchangeVersion"
