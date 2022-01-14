@@ -1,5 +1,8 @@
 package io.everytrade.server.model;
 
+import lombok.Getter;
+import lombok.experimental.FieldDefaults;
+
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -8,6 +11,10 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static lombok.AccessLevel.PRIVATE;
+
+@Getter
+@FieldDefaults(level = PRIVATE, makeFinal = true)
 public enum Currency {
     USD(true, Instant.parse("1792-04-02T00:00:00Z"), "U.S. dollar"),
     CAD(true, Instant.parse("1871-04-01T00:00:00Z"), "Canadian dollar"),
@@ -56,7 +63,7 @@ public enum Currency {
     KMD(false, Instant.parse("2016-09-14T00:00:00Z"), "Komodo"),
     DGB(false, Instant.parse("2014-01-10T00:00:00Z"), "DigiByte"),
     NEO(false, Instant.parse("2016-09-09T00:00:00Z"), "NEO"),
-    DAT(false, Instant.parse("2017-08-11T00:00:00Z"), "Datum"),
+    DAT(false, Instant.parse("2017-08-11T00:00:00Z"), Instant.parse("2021-11-30T00:00:00Z"), "Datum"),
     FUN(false, Instant.parse("2017-02-01T00:00:00Z"), "FunFair"), // token
     BAT(false, Instant.parse("2017-06-01T00:00:00Z"), "Basic Attention Token"), // token
     SPK(false, Instant.parse("2018-01-22T00:00:00Z"), "SparksPay"), // can't find exact date
@@ -65,7 +72,7 @@ public enum Currency {
     SXP(false, Instant.parse("2019-08-22T00:00:00Z"), "Swipe"),
     REN(false, Instant.parse("2018-03-08T00:00:00Z"), "Ren"),
     ANKR(false, Instant.parse("2019-03-07T00:00:00Z"), "Ankr"),
-    GRT(false, Instant.parse("2020-10-28T00:00:00Z"), "The Graph"),
+    GRT(false, Instant.parse("2021-02-13T00:00:00Z"), "The Graph"),
     SNX(false, Instant.parse("2018-02-28T00:00:00Z"), "Synthetix Network Token"),
     TROY(false, Instant.parse("2019-04-29T00:00:00Z"), "TROYA COIN"),
     DIA(false, Instant.parse("2020-09-23T00:00:00Z"), "DIA"),
@@ -124,10 +131,10 @@ public enum Currency {
     MKR(false, Instant.parse("2015-08-15T00:00:00Z"), "Maker"),
     NMR(false, Instant.parse("2017-06-21T00:00:00Z"), "Numeraire"),
     PAXG(false, Instant.parse("2019-09-26T00:00:00Z"), "PAX Gold"),
-    CAKE(false, Instant.parse("2021-01-30T00:00:00Z"), "PancakeSwap"),
+    CAKE(false, Instant.parse("2021-02-06T00:00:00Z"), "PancakeSwap"),
     BAL(false, Instant.parse("2020-06-24T00:00:00Z"), "Balancer"),
     BEAM(false, Instant.parse("2019-01-18T00:00:00Z"), "Beam"),
-    _1INCH("1INCH",false, Instant.parse("2020-12-25T00:00:00Z"), "1inch"),
+    _1INCH("1INCH",false, Instant.parse("2021-01-14T00:00:00Z"), "1inch"),
     VTC(false, Instant.parse("2014-01-08T00:00:00Z"), "Vertcoin"),
     ERG(false, Instant.parse("2017-07-02T00:00:00Z"), "Ergo"),
     LUNA(false, Instant.parse("2019-08-01T00:00:00Z"), "Terra"),
@@ -140,46 +147,36 @@ public enum Currency {
     SRM(false, Instant.parse("2020-08-20T00:00:00Z"), "Serum"),
     XEC(false, Instant.parse("2021-08-26T00:00:00Z"), "eCash");
 
-    private final String code;
-    private final int decimalDigits;
-    private final boolean fiat;
-    private final Instant introduction;
-    private final String description;
+    String code;
+    int decimalDigits;
+    boolean fiat;
+    Instant introduction;
+    Instant endDate;
+    String description;
 
     Currency(boolean fiat, Instant introduction, String description) {
-        this(null, fiat ? 2 : 8, fiat, introduction, description);
+        this(null, fiat ? 2 : 8, fiat, introduction, null, description);
+    }
+
+    Currency(boolean fiat, Instant introduction, Instant endDate, String description) {
+        this(null, fiat ? 2 : 8, fiat, introduction, endDate, description);
     }
 
     Currency(String code, boolean fiat, Instant introduction, String description) {
-        this(code, fiat ? 2 : 8, fiat, introduction, description);
+        this(code, fiat ? 2 : 8, fiat, introduction, null, description);
     }
 
-    Currency(String code, int decimalDigits, boolean fiat, Instant introduction, String description) {
+    Currency(String code, int decimalDigits, boolean fiat, Instant introduction, Instant endDate, String description) {
         this.decimalDigits = decimalDigits;
         this.fiat = fiat;
         this.introduction = introduction;
+        this.endDate = endDate;
         this.description = description;
         this.code = code == null ? name() : code;
     }
 
     public String code() {
         return code;
-    }
-
-    public int getDecimalDigits() {
-        return decimalDigits;
-    }
-
-    public boolean isFiat() {
-        return fiat;
-    }
-
-    public Instant getIntroduction() {
-        return introduction;
-    }
-
-    public String getDescription() {
-        return description;
     }
 
     public static List<Currency> getFiats() {
