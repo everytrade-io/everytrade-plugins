@@ -51,6 +51,16 @@ public final class CurrencyPair implements Comparable<CurrencyPair>{
             : quote.getIntroduction();
     }
 
+    public Instant getEndDate() {
+        if (base.getEndDate() == null) {
+            return quote.getEndDate();
+        }
+        if (quote.getEndDate() == null) {
+            return base.getEndDate();
+        }
+        return base.getEndDate().isBefore(quote.getEndDate()) ? base.getEndDate() : quote.getEndDate();
+    }
+
     public static List<CurrencyPair> getTradeablePairs() {
         Set<CurrencyPair> currencyPairs = new HashSet<>();
         for (Currency base : Currency.values()) {
