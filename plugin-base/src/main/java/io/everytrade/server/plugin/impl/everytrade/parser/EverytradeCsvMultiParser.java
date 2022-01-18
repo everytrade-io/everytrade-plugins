@@ -211,7 +211,7 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                     "Total Currency", "Description", "Status"
                 ),
                 CsvHeader.of(
-                    "ID", "Datum", "Účet", "Typ", "Částka", "Částka měny", "Cena", "Cena měny", "Poplatek", "Poplatek měny", "Celkem",
+                    "ID", "Datum", "Typ", "Částka", "Částka měny", "Cena", "Cena měny", "Poplatek", "Poplatek měny", "Celkem",
                     "Celkem měny", "Popisek", "Status", "První zůstatek po", "První zůstatek po měně", "Druhý zůstatek po",
                     "Druhý zůstatek po měně"
                 )
