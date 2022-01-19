@@ -1,4 +1,4 @@
-package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
+package io.everytrade.server.plugin.impl.everytrade.parser.exchange.everytrade;
 
 import com.univocity.parsers.annotations.Format;
 import com.univocity.parsers.annotations.Headers;
@@ -18,15 +18,15 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-@Headers(sequence = {"UID", "DATE", "SYMBOL", "ACTION", "QUANTY", "VOLUME", "FEE"}, extract = true)
-public class EveryTradeBeanV2 extends ExchangeBean {
+@Headers(sequence = {"UID", "DATE", "SYMBOL", "ACTION", "QUANTY", "PRICE", "FEE"}, extract = true)
+public class EveryTradeBeanV1 extends ExchangeBean {
     private String uid;
     private Instant date;
     private Currency symbolBase;
     private Currency symbolQuote;
     private TransactionType action;
     private BigDecimal quantity;
-    private BigDecimal volume;
+    private BigDecimal price;
     private BigDecimal fee;
 
     @Parsed(field = "UID")
@@ -53,13 +53,13 @@ public class EveryTradeBeanV2 extends ExchangeBean {
     }
 
     @Parsed(field = "QUANTY", defaultNullRead = "0")
-    public void setQuantity(BigDecimal quantity) {
+    public void setQuantityBase(BigDecimal quantity) {
         this.quantity = quantity;
     }
 
-    @Parsed(field = "VOLUME", defaultNullRead = "0")
-    public void setVolume(BigDecimal volume) {
-        this.volume = volume;
+    @Parsed(field = "PRICE", defaultNullRead = "0")
+    public void setPrice(BigDecimal price) {
+        this.price = price;
     }
 
     @Parsed(field = "FEE", defaultNullRead = "0")
@@ -70,12 +70,21 @@ public class EveryTradeBeanV2 extends ExchangeBean {
     @Override
     public TransactionCluster toTransactionCluster() {
         validateCurrencyPair(symbolBase, symbolQuote);
-
+        final ImportedTransactionBean buySell = new BuySellImportedTransactionBean(
+            uid,               //uuid
+            date,               //executed
+            symbolBase,         //base
+            symbolQuote,        //quote
+            action,             //action
+            quantity,           //base quantity
+            price              //unit price
+        );
         List<ImportedTransactionBean> related;
         if (ParserUtils.equalsToZero(fee)) {
             related = Collections.emptyList();
         } else {
-            related = List.of(new FeeRebateImportedTransactionBean(
+            related = List.of(
+                new FeeRebateImportedTransactionBean(
                     uid + FEE_UID_PART,
                     date,
                     symbolBase,
@@ -87,16 +96,8 @@ public class EveryTradeBeanV2 extends ExchangeBean {
             );
         }
         return new TransactionCluster(
-            new BuySellImportedTransactionBean(
-                uid,
-                date,
-                symbolBase,
-                symbolQuote,
-                action,
-                quantity,
-                evalUnitPrice(volume, quantity)
-            ),
+            buySell,
             related
-            );
+        );
     }
 }

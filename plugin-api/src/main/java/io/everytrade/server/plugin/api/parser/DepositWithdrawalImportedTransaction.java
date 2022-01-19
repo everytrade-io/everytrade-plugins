@@ -2,15 +2,16 @@ package io.everytrade.server.plugin.api.parser;
 
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 
+import static lombok.AccessLevel.PRIVATE;
+
 @Getter
-@FieldDefaults(makeFinal=true, level= AccessLevel.PRIVATE)
+@FieldDefaults(makeFinal = true, level= PRIVATE)
 public class DepositWithdrawalImportedTransaction extends ImportedTransactionBean {
 
     BigDecimal volume;

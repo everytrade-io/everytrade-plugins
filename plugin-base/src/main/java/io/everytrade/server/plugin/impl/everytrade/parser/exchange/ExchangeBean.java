@@ -46,7 +46,7 @@ public abstract class ExchangeBean implements IImportableBean {
 
     protected void validateCurrencyPair(Currency base, Currency quote) {
         try {
-            final CurrencyPair currencyPair = new CurrencyPair(base, quote);
+            var currencyPair = new CurrencyPair(base, quote);
             if (!CurrencyPair.getTradeablePairs().contains(currencyPair)) {
                 throw new DataValidationException(UNSUPPORTED_CURRENCY_PAIR.concat(currencyPair.toString()));
             }

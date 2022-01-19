@@ -1,30 +1,19 @@
 package io.everytrade.server.plugin.impl.everytrade;
 
 import io.everytrade.server.parser.exchange.EveryTradeApiTransactionBean;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static lombok.AccessLevel.PRIVATE;
+
+@Data
+@NoArgsConstructor
+@FieldDefaults(level = PRIVATE)
 public class EveryTradeApiDto {
-    private String[] header; //TODO: remove header?
-    private List<EveryTradeApiTransactionBean> transactions = new ArrayList<>();
-
-    public EveryTradeApiDto() {
-    }
-
-    public String[] getHeader() {
-        return header == null ? null : header.clone();
-    }
-
-    public void setHeader(String[] header) {
-        this.header = header == null ? null : header.clone();
-    }
-
-    public List<EveryTradeApiTransactionBean> getTransactions() {
-        return transactions;
-    }
-
-    public void setTransactions(List<EveryTradeApiTransactionBean> transactions) {
-        this.transactions = transactions;
-    }
+    String[] header; //TODO: remove header?
+    List<EveryTradeApiTransactionBean> transactions = new ArrayList<>();
 }

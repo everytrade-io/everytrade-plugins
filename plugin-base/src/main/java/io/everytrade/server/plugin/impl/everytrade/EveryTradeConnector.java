@@ -91,31 +91,23 @@ public class EveryTradeConnector implements IConnector {
 
     @Override
     public DownloadResult getTransactions(String lastTransactionId) {
-        final EveryTradeApiDto data = api.getTransactions(apiKey, signer, lastTransactionId, MAX_FETCH_SIZE);
-
-        final List<EveryTradeApiTransactionBean> transactions
-            = Objects.requireNonNullElse(data.getTransactions(), new ArrayList<>());
+        var data = api.getTransactions(apiKey, signer, lastTransactionId, MAX_FETCH_SIZE);
+        var txs = Objects.requireNonNullElse(data.getTransactions(), new ArrayList<EveryTradeApiTransactionBean>());
 
         final List<TransactionCluster> importedClusters = new ArrayList<>();
         final List<ParsingProblem> parsingProblems = new ArrayList<>();
         long transactionCount = 0;
         String lastDownloadedTxUid = lastTransactionId;
-        for (EveryTradeApiTransactionBean transaction : transactions) {
+        for (EveryTradeApiTransactionBean tx : txs) {
             try {
-                final TransactionCluster cluster = transaction.toTransactionCluster();
+                var cluster = tx.toTransactionCluster();
                 importedClusters.add(cluster);
                 transactionCount += 1 + cluster.getRelated().size();
-                lastDownloadedTxUid = transaction.getUid();
+                lastDownloadedTxUid = tx.getUid();
             } catch (Exception e) {
-                LOG.error(
-                    "Error converting to ImportedTransactionBean: {}: {}",
-                    e.getClass().getName(),
-                    e.getMessage()
-                );
+                LOG.error("Error converting to ImportedTransactionBean: {}: {}", e.getClass().getName(), e.getMessage());
                 LOG.debug("Exception by converting to ImportedTransactionBean.", e);
-                parsingProblems.add(
-                    new ParsingProblem(transaction.toString(), e.getMessage(), ParsingProblemType.ROW_PARSING_FAILED)
-                );
+                parsingProblems.add(new ParsingProblem(tx.toString(), e.getMessage(), ParsingProblemType.ROW_PARSING_FAILED));
             }
         }
         LOG.info(
@@ -127,9 +119,6 @@ public class EveryTradeConnector implements IConnector {
             LOG.warn("{} row(s) not parsed.", parsingProblems.size());
         }
 
-        return new DownloadResult(
-            new ParseResult(importedClusters, parsingProblems),
-            lastDownloadedTxUid
-        );
+        return new DownloadResult(new ParseResult(importedClusters, parsingProblems), lastDownloadedTxUid);
     }
 }

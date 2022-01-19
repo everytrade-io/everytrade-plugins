@@ -1,7 +1,9 @@
 package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
 import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.DepositWithdrawalImportedTransaction;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParseResult;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
@@ -37,10 +39,7 @@ public class ParserTestUtils {
     public static void checkEqual(TransactionCluster expected, TransactionCluster actual) {
         assertNotNull(expected);
         assertNotNull(actual);
-        checkEqualMain(
-            (BuySellImportedTransactionBean)expected.getMain(),
-            (BuySellImportedTransactionBean)actual.getMain()
-        );
+        checkEqualMain(expected.getMain(), actual.getMain());
         assertEquals(expected.getRelated().size(), actual.getRelated().size());
         for (int i = 0; i < expected.getRelated().size(); i++) {
             checkEqualRelated(
@@ -62,10 +61,7 @@ public class ParserTestUtils {
         assertEquals(expected.getIgnoredFeeTransactionCount(), actual.getIgnoredFeeTransactionCount());
     }
 
-    public static void checkEqualMain(
-        BuySellImportedTransactionBean expected,
-        BuySellImportedTransactionBean actual
-    ) {
+    public static void checkEqualMain(ImportedTransactionBean expected, ImportedTransactionBean actual) {
         assertNotNull(expected);
         assertNotNull(actual);
         assertEquals(expected.getUid(), actual.getUid());
@@ -73,8 +69,17 @@ public class ParserTestUtils {
         assertEquals(expected.getBase(), actual.getBase());
         assertEquals(expected.getQuote(), actual.getQuote());
         assertEquals(expected.getAction(), actual.getAction());
-        assertEquals(0, expected.getBaseQuantity().compareTo(actual.getBaseQuantity()));
-        assertEquals(0, expected.getUnitPrice().compareTo(actual.getUnitPrice()));
+
+        if (expected instanceof BuySellImportedTransactionBean) {
+            var a = ((BuySellImportedTransactionBean) actual);
+            var e = ((BuySellImportedTransactionBean) expected);
+            assertEquals(0, e.getBaseQuantity().compareTo(a.getBaseQuantity()));
+            assertEquals(0, e.getUnitPrice().compareTo(a.getUnitPrice()));
+        } else if (expected instanceof DepositWithdrawalImportedTransaction) {
+            var a = ((DepositWithdrawalImportedTransaction) actual);
+            var e = ((DepositWithdrawalImportedTransaction) expected);
+            assertEquals(0, e.getVolume().compareTo(a.getVolume()));
+        }
         assertEquals(expected.getNote(), actual.getNote());
     }
 

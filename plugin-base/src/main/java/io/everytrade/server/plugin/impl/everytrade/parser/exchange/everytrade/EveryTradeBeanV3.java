@@ -1,4 +1,4 @@
-package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
+package io.everytrade.server.plugin.impl.everytrade.parser.exchange.everytrade;
 
 import com.univocity.parsers.annotations.Format;
 import com.univocity.parsers.annotations.Headers;

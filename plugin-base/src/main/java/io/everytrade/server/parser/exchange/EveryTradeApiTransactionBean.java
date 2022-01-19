@@ -3,169 +3,161 @@ package io.everytrade.server.parser.exchange;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.univocity.parsers.common.DataValidationException;
-import io.everytrade.server.model.CurrencyPair;
-import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.model.Currency;
+import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.DepositWithdrawalImportedTransaction;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
+import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
+import static lombok.AccessLevel.PRIVATE;
 
+@Data
+@NoArgsConstructor
+@FieldDefaults(level = PRIVATE)
 @JsonFormat(shape = JsonFormat.Shape.ARRAY)
-@JsonPropertyOrder({"uid", "timestamp", "base", "quote", "action", "quantity", "volume", "fee", "feeCurrency"})
+@JsonPropertyOrder({
+    "uid", "timestamp", "base", "quote", "action", "quantity", "volume", "fee", "feeCurrency", "rebate", "rebateCurrency",
+    "addressFrom", "addressTo"
+})
 public class EveryTradeApiTransactionBean {
-    private String uid;
-    private Instant timestamp;
-    private String base;
-    private String quote;
-    private String action;
-    private BigDecimal quantity;
-    private BigDecimal volume;
-    private BigDecimal fee;
-    private String feeCurrency;
 
-    public void setUid(String uid) {
-        this.uid = uid;
-    }
+    String uid;
+    Instant timestamp;
+    String base;
+    String quote;
+    TransactionType action;
+    BigDecimal quantity;
+    BigDecimal volume;
+    BigDecimal fee;
+    String feeCurrency;
+    BigDecimal rebate;
+    String rebateCurrency;
+    String addressFrom;
+    String addressTo;
 
     public void setTimestamp(Date timestamp) {
         this.timestamp = timestamp.toInstant();
     }
 
-    public void setBase(String symbol) {
-        base = symbol;
-    }
-
-    public void setQuote(String symbol) {
-        quote = symbol;
-    }
-
     public void setAction(String action) {
-        this.action = action;
+        this.action = TransactionType.valueOf(action);
     }
 
-    public void setQuantity(BigDecimal quantity) {
-        this.quantity = quantity;
-    }
-
-    public void setVolume(BigDecimal volume) {
-        this.volume = volume;
-    }
-
-    public void setFee(BigDecimal fee) {
-        this.fee = fee;
-    }
-
-    public void setFeeCurrency(String feeCurrency) {
-        this.feeCurrency = feeCurrency;
-    }
-
-    public String getUid() {
-        return uid;
-    }
-
-    public Instant getTimestamp() {
-        return timestamp;
-    }
-
-    public String getBase() {
-        return base;
-    }
-
-    public String getQuote() {
-        return quote;
-    }
-
-    public String getAction() {
-        return action;
-    }
-
-    public BigDecimal getQuantity() {
-        return quantity;
-    }
-
-    public BigDecimal getVolume() {
-        return volume;
-    }
-
-    public BigDecimal getFee() {
-        return fee;
-    }
-
-    public String getFeeCurrency() {
-        return feeCurrency;
-    }
-
-    public TransactionCluster  toTransactionCluster() {
-        final Currency base = Currency.fromCode(Objects.requireNonNull(this.base));
-        final Currency quote = Currency.fromCode(Objects.requireNonNull(this.quote));
-        try {
-            new CurrencyPair(base, quote);
-        } catch (CurrencyPair.FiatCryptoCombinationException e) {
-            throw new DataValidationException(e.getMessage());
+    public TransactionCluster toTransactionCluster() {
+        switch (action) {
+            case BUY:
+            case SELL:
+                return createBuySellTransactionCluster();
+            case DEPOSIT:
+            case WITHDRAWAL:
+                return createDepositOrWithdrawalTxCluster();
+            case FEE:
+                return new TransactionCluster(createFeeTransactionBean(true), List.of());
+            case REBATE:
+                return new TransactionCluster(createRebateTransactionBean(true), List.of());
+            default:
+                throw new IllegalStateException(String.format("Unsupported transaction type %s.", action));
         }
+    }
 
-        final Currency parsedFeeCurrency = Currency.fromCode(Objects.requireNonNull(feeCurrency));
-        final List<ImportedTransactionBean> related;
-        final boolean ignoredFee;
-        if (parsedFeeCurrency == base || parsedFeeCurrency == quote) {
-            related = List.of(
-                new FeeRebateImportedTransactionBean(
-                    uid + FEE_UID_PART,
-                    timestamp,
-                    base,
-                    quote,
-                    TransactionType.FEE,
-                    fee,
-                    parsedFeeCurrency
-                )
-            );
-            ignoredFee = false;
-        } else {
-            related = Collections.emptyList();
-            ignoredFee = true;
+    private TransactionCluster createDepositOrWithdrawalTxCluster() {
+        if (quantity.compareTo(BigDecimal.ZERO) == 0) {
+            throw new DataValidationException("Quantity can not be zero.");
         }
-
-         TransactionCluster cluster = new TransactionCluster(
-            new BuySellImportedTransactionBean(
-                uid,
-                timestamp,
-                base,
-                quote,
-                TransactionType.valueOf(action),
-                quantity,
-                volume.divide(quantity, 10, RoundingMode.HALF_UP) //unit price
-            ),
-            related
+        var tx = new DepositWithdrawalImportedTransaction(
+            uid,
+            timestamp,
+            Currency.fromCode(base),
+            Currency.fromCode(quote),
+            action,
+            quantity,
+            action == DEPOSIT ? addressFrom : addressTo
         );
-        if (ignoredFee) {
-            cluster.setIgnoredFee(1, "Fee " + feeCurrency + " currency is neither base or quote");
-        }
-        return cluster;
+        return new TransactionCluster(tx, getRelatedTxs());
     }
 
-    @Override
-    public String toString() {
-        return "EveryTradeApiTransactionBean{" +
-            "uid='" + uid + '\'' +
-            ", timestamp=" + timestamp +
-            ", base='" + base + '\'' +
-            ", quote='" + quote + '\'' +
-            ", action='" + action + '\'' +
-            ", quantity=" + quantity +
-            ", volume=" + volume +
-            ", fee=" + fee +
-            ", feeCurrency=" + feeCurrency +
-            '}';
+    private TransactionCluster createBuySellTransactionCluster() {
+        if (quantity.compareTo(BigDecimal.ZERO) == 0) {
+            throw new DataValidationException("Quantity can not be zero.");
+        }
+
+        var tx = new BuySellImportedTransactionBean(
+            uid,
+            timestamp,
+            Currency.fromCode(base),
+            Currency.fromCode(quote),
+            action,
+            quantity,
+            volume.divide(quantity, 10, RoundingMode.HALF_UP)
+        );
+        return new TransactionCluster(tx, getRelatedTxs());
+    }
+
+    private List<ImportedTransactionBean> getRelatedTxs() {
+        var related = new ArrayList<ImportedTransactionBean>();
+        if (fee.compareTo(BigDecimal.ZERO) > 0) {
+            related.add(createFeeTransactionBean(false));
+        }
+
+        if (rebate.compareTo(BigDecimal.ZERO) > 0) {
+            related.add(createRebateTransactionBean(false));
+        }
+        return related;
+    }
+
+    private FeeRebateImportedTransactionBean createFeeTransactionBean(boolean unrelated) {
+        var feeCurrencyIsBase = Objects.equals(feeCurrency, base);
+        var feeCurrencyIsQuote = Objects.equals(feeCurrency, quote);
+
+        if (!feeCurrencyIsBase && !feeCurrencyIsQuote) {
+            throw new DataValidationException(
+                String.format("Fee currency '%s' differs to base '%s' and to quote '%s'.", feeCurrency, base, quote)
+            );
+        }
+
+        return new FeeRebateImportedTransactionBean(
+            unrelated ? uid : uid + FEE_UID_PART,
+            timestamp,
+            Currency.fromCode(base),
+            Currency.fromCode(quote),
+            TransactionType.FEE,
+            fee,
+            Currency.fromCode(feeCurrency)
+        );
+    }
+
+    private FeeRebateImportedTransactionBean createRebateTransactionBean(boolean unrelated) {
+        var rebateCurrencyIsBase = Objects.equals(rebateCurrency, base);
+        var rebateCurrencyIsQuote = Objects.equals(rebateCurrency, quote);
+        if (!rebateCurrencyIsBase && !rebateCurrencyIsQuote) {
+            throw new DataValidationException(
+                String.format("Rebate currency '%s' differs to base '%s' and to quote '%s'.", rebateCurrency, base, quote)
+            );
+        }
+
+        return new FeeRebateImportedTransactionBean(
+            unrelated ? uid : uid + FEE_UID_PART,
+            timestamp,
+            Currency.fromCode(base),
+            Currency.fromCode(quote),
+            TransactionType.REBATE,
+            rebate,
+            Currency.fromCode(rebateCurrency)
+        );
     }
 }
