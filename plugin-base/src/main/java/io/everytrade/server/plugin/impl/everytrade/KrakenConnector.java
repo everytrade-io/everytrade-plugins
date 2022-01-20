@@ -17,7 +17,7 @@ import org.knowm.xchange.dto.account.FundingRecord;
 import org.knowm.xchange.dto.trade.UserTrade;
 import org.knowm.xchange.kraken.KrakenExchange;
 import org.knowm.xchange.kraken.service.KrakenAccountService;
-import org.knowm.xchange.kraken.service.KrakenTradeService;
+import org.knowm.xchange.kraken.service.KrakenTradeHistoryParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -120,7 +120,7 @@ public class KrakenConnector implements IConnector {
 
     private List<UserTrade> downloadTrades(boolean firstDownload, KrakenDownloadState state) {
         var tradeService = exchange.getTradeService();
-        var krakenTradeHistoryParams = (KrakenTradeService.KrakenTradeHistoryParams) tradeService.createTradeHistoryParams();
+        var krakenTradeHistoryParams = (KrakenTradeHistoryParams) tradeService.createTradeHistoryParams();
 
         if (!firstDownload) {
             krakenTradeHistoryParams.setStartId(state.getTradeLastContinuousTxUid());

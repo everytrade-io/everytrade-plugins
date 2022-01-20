@@ -6,7 +6,7 @@ import org.knowm.xchange.dto.marketdata.Trades;
 import org.knowm.xchange.dto.trade.UserTrade;
 import org.knowm.xchange.dto.trade.UserTrades;
 import org.knowm.xchange.kraken.service.KrakenAccountService;
-import org.knowm.xchange.kraken.service.KrakenTradeService;
+import org.knowm.xchange.kraken.service.KrakenTradeHistoryParams;
 import org.knowm.xchange.service.account.AccountService;
 import org.knowm.xchange.service.trade.TradeService;
 
@@ -26,7 +26,7 @@ public class KrakenExchangeMock extends KnowmExchangeMock {
     protected TradeService mockTradeService() throws Exception {
         var mock = mock(TradeService.class);
 
-        when(mock.createTradeHistoryParams()).thenReturn(new KrakenTradeService.KrakenTradeHistoryParams());
+        when(mock.createTradeHistoryParams()).thenReturn(new KrakenTradeHistoryParams());
 
         when(mock.getTradeHistory(any()))
             .thenReturn(
