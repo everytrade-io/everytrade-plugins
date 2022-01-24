@@ -79,6 +79,7 @@ import static io.everytrade.server.model.SupportedExchange.OKEX;
 import static io.everytrade.server.model.SupportedExchange.PAXFUL;
 import static io.everytrade.server.model.SupportedExchange.POLONIEX;
 import static io.everytrade.server.model.SupportedExchange.SHAKEPAY;
+import static io.everytrade.server.plugin.api.parser.ParsingProblemType.ROW_PARSING_FAILED;
 import static java.util.Map.entry;
 import static java.util.stream.Collectors.toMap;
 
@@ -495,7 +496,6 @@ public class EverytradeCsvMultiParser implements ICsvParser {
     );
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-
     @Override
     public String getId() {
         return ID;
@@ -503,23 +503,20 @@ public class EverytradeCsvMultiParser implements ICsvParser {
 
     @Override
     public ParseResult parse(File file, String header) {
-        final ExchangeParseDetail exchangeParseDetail = findCsvDetailByHeader(header);
+        var exchangeParseDetail = findCsvDetailByHeader(header);
         if (exchangeParseDetail == null) {
             throw new UnknownHeaderException(String.format("Unknown header: '%s'", header));
         }
-        final IExchangeSpecificParser exchangeParser = exchangeParseDetail.getParserFactory().get();
-        List<? extends ExchangeBean> listBeans = exchangeParser.parse(file);
-        final List<ParsingProblem> parsingProblems = new ArrayList<>(exchangeParser.getParsingProblems());
+        var exchangeParser = exchangeParseDetail.getParserFactory().get();
+        var listBeans = exchangeParser.parse(file);
+        var parsingProblems = new ArrayList<>(exchangeParser.getParsingProblems());
 
         List<TransactionCluster> transactionClusters = new ArrayList<>();
         for (ExchangeBean p : listBeans) {
             try {
-                final TransactionCluster transactionCluster = p.toTransactionCluster();
-                transactionClusters.add(transactionCluster);
+                transactionClusters.add(p.toTransactionCluster());
             } catch (DataValidationException e) {
-                parsingProblems.add(
-                    new ParsingProblem(p.rowToString(), e.getMessage(), ParsingProblemType.ROW_PARSING_FAILED)
-                );
+                parsingProblems.add(new ParsingProblem(p.rowToString(), e.getMessage(), ROW_PARSING_FAILED));
             }
         }
 

@@ -1,24 +1,12 @@
 package io.everytrade.server.plugin.api.parser;
 
+import lombok.NonNull;
+import lombok.Value;
+
 import java.util.List;
-import java.util.Objects;
 
+@Value
 public class ParseResult {
-    private final List<TransactionCluster> transactionClusters;
-    private final List<ParsingProblem> parsingProblems;
-
-    public ParseResult(List<TransactionCluster> transactionClusters, List<ParsingProblem> parsingProblems) {
-        Objects.requireNonNull(transactionClusters);
-        Objects.requireNonNull(parsingProblems);
-        this.transactionClusters = List.copyOf(transactionClusters);
-        this.parsingProblems = List.copyOf(parsingProblems);
-    }
-
-    public List<TransactionCluster> getTransactionClusters() {
-        return transactionClusters;
-    }
-
-    public List<ParsingProblem> getParsingProblems() {
-        return parsingProblems;
-    }
+    @NonNull List<TransactionCluster> transactionClusters;
+    @NonNull List<ParsingProblem> parsingProblems;
 }

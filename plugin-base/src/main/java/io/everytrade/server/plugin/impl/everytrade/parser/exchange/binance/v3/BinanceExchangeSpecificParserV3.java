@@ -17,6 +17,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.everytrade.server.plugin.api.parser.ParsingProblemType.PARSED_ROW_IGNORED;
+import static io.everytrade.server.plugin.api.parser.ParsingProblemType.ROW_PARSING_FAILED;
+
 public class BinanceExchangeSpecificParserV3 implements IExchangeSpecificParser {
     private static final String DEFAULT_DELIMITER = ",";
     private final String delimiter;
@@ -60,26 +63,16 @@ public class BinanceExchangeSpecificParserV3 implements IExchangeSpecificParser 
     }
 
     private BinanceBeanV3 parseExchangeBean(String[] vals) {
-        final String row = String.format(
-            "%s,%s,%s,%s,%s,%s,%s", vals[0], vals[1], vals[2], vals[3], vals[4], vals[5], vals[6]
-        );
+        var row = String.format("%s,%s,%s,%s,%s,%s,%s", vals[0], vals[1], vals[2], vals[3], vals[4], vals[5], vals[6]);
         try {
             return new BinanceBeanV3(vals[0], vals[1], vals[2], vals[4], vals[5], vals[6]);
         } catch (DataIgnoredException e) {
             parsingProblems.add(
-                new ParsingProblem(
-                    row,
-                    e.getMessage(),
-                    ParsingProblemType.PARSED_ROW_IGNORED
-                )
+                new ParsingProblem(row, e.getMessage(), PARSED_ROW_IGNORED)
             );
         } catch (Exception e) {
             parsingProblems.add(
-                new ParsingProblem(
-                    row,
-                    e.getMessage(),
-                    ParsingProblemType.ROW_PARSING_FAILED
-                )
+                new ParsingProblem(row, e.getMessage(), ROW_PARSING_FAILED)
             );
         }
         return null;
