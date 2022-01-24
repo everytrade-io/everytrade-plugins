@@ -34,10 +34,13 @@ public class KrakenBeanV1 extends ExchangeBean {
     private BigDecimal vol;
     private static final Map<String, Currency> CURRENCY_SHORT_CODES = new HashMap<>();
     private static final Map<String, Currency> CURRENCY_LONG_CODES = new HashMap<>();
+    private static final Map<String, Currency> CURRENCY_EXCEPTIONS = new HashMap<>();
 
     static {
         CURRENCY_SHORT_CODES.put("XBT", Currency.BTC);
         CURRENCY_LONG_CODES.put("XXBT", Currency.BTC);
+        CURRENCY_SHORT_CODES.put("XDG", Currency.DOGE);
+        CURRENCY_LONG_CODES.put("XXDG", Currency.DOGE);
 
         for (Currency value : Currency.values()) {
             if (value.equals(Currency.BTC)) {
