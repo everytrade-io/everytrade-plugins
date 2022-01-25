@@ -50,18 +50,12 @@ subprojects {
         toolVersion checkstyleVersion
     }
 
-    ossIndexAudit {
-        dependencyGraph = true
-        showAll = false
-    }
-
     dependencyCheck {
 //        failBuildOnCVSS = 0
     }
 
     afterEvaluate {
         tasks.named('check') {
-            dependsOn 'ossIndexAudit'
             dependsOn 'dependencyCheckAnalyze'
         }
     }
