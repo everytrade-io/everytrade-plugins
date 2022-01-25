@@ -23,6 +23,8 @@ subprojects {
     apply plugin: 'checkstyle'
     apply plugin: 'org.owasp.dependencycheck'
     apply plugin: 'org.sonatype.gradle.plugins.scan'
+    apply plugin: 'java'
+    apply plugin: 'maven-publish'
 
     if (spotbugsEnabled) {
         apply plugin: 'com.github.spotbugs'
@@ -42,6 +44,21 @@ subprojects {
                         stylesheet = 'fancy-hist.xsl'
                     }
                 }
+            }
+        }
+    }
+
+    java {
+        withSourcesJar()
+    }
+
+    publishing {
+        publications {
+            maven(MavenPublication) {
+                groupId project.group
+                artifactId project.name
+                version projectVersion
+                from components.java
             }
         }
     }
