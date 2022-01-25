@@ -12,7 +12,6 @@ import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
@@ -34,7 +33,6 @@ public class KrakenBeanV1 extends ExchangeBean {
     private BigDecimal vol;
     private static final Map<String, Currency> CURRENCY_SHORT_CODES = new HashMap<>();
     private static final Map<String, Currency> CURRENCY_LONG_CODES = new HashMap<>();
-    private static final Map<String, Currency> CURRENCY_EXCEPTIONS = new HashMap<>();
 
     static {
         CURRENCY_SHORT_CODES.put("XBT", Currency.BTC);
