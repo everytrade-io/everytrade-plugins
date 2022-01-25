@@ -104,6 +104,36 @@ class KrakenBeanV1Test {
     }
 
     @Test
+    void testParsingTransactionWithDodge() {
+        final String row = "TTT,OI,XXDGZUSD,2019-07-29 17:04:41.51,buy,limit,9480.3,18.9606,0.0493,0.002," +
+            "0,,\"LX,JX\"\n";
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new BuySellImportedTransactionBean(
+                "TTT",
+                Instant.parse("2019-07-29T17:04:41.51Z"),
+                Currency.DOGE,
+                Currency.USD,
+                TransactionType.BUY,
+                new BigDecimal("0.002"),
+                new BigDecimal("9480.3")
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    "TTT" + FEE_UID_PART,
+                    Instant.parse("2019-07-29T17:04:41.51Z"),
+                    Currency.DOGE,
+                    Currency.USD,
+                    TransactionType.FEE,
+                    new BigDecimal("0.0493"),
+                    Currency.USD
+                )
+            )
+        );
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
     void testUnknownExchangePair() {
         final String row = "TTT,OI,XXBCUSD,2019-07-29 17:04:41.51,buy," +
             "limit,9480.3,18.9606,0.0493,0.002,0,,\"LX,JX\"\n";

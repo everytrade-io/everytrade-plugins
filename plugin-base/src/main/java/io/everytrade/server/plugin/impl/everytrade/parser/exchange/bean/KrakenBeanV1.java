@@ -12,7 +12,6 @@ import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
@@ -38,6 +37,8 @@ public class KrakenBeanV1 extends ExchangeBean {
     static {
         CURRENCY_SHORT_CODES.put("XBT", Currency.BTC);
         CURRENCY_LONG_CODES.put("XXBT", Currency.BTC);
+        CURRENCY_SHORT_CODES.put("XDG", Currency.DOGE);
+        CURRENCY_LONG_CODES.put("XXDG", Currency.DOGE);
 
         for (Currency value : Currency.values()) {
             if (value.equals(Currency.BTC)) {
