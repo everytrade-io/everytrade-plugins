@@ -5,6 +5,7 @@ import com.univocity.parsers.annotations.Parsed;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.DepositWithdrawalImportedTransaction;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
@@ -30,6 +31,7 @@ public class CoinmateBeanV1 extends ExchangeBean {
     private BigDecimal price;
     private Currency priceCurrency;
     private BigDecimal fee;
+    private String address;
 
     @Parsed(field = "ID")
     public void setId(String id) {
@@ -48,6 +50,10 @@ public class CoinmateBeanV1 extends ExchangeBean {
             this.type = TransactionType.BUY;
         } else if ("SELL".equals(type) || "QUICK_SELL".equals(type)) {
             this.type = TransactionType.SELL;
+        } else if ("DEPOSIT".equals(type)) {
+            this.type = TransactionType.DEPOSIT;
+        } else if ("WITHDRAWAL".equals(type)) {
+            this.type = TransactionType.WITHDRAWAL;
         } else {
             throw new DataIgnoredException(UNSUPPORTED_TRANSACTION_TYPE.concat(type));
         }
@@ -85,13 +91,32 @@ public class CoinmateBeanV1 extends ExchangeBean {
 
     @Parsed(field = "Status")
     public void checkStatus(String status) {
+        if ("COMPLETED".equals(status)) {
+            status = "OK";
+        }
         if (!"OK".equals(status)) {
             throw new DataIgnoredException(UNSUPPORTED_STATUS_TYPE.concat(status));
         }
     }
 
+    @Parsed(field = {"Address", "Popisek"})
+    public void setAddress(String address){ this.address = address; }
+
     @Override
     public TransactionCluster toTransactionCluster() {
+        switch (this.type) {
+            case BUY:
+            case SELL:
+                return createBuySellTransactionCluster();
+            case DEPOSIT:
+            case WITHDRAWAL:
+                return createDepositOrWithdrawalTxCluster();
+            default:
+                throw new IllegalStateException(String.format("Unsupported transaction type %s.", type.name()));
+        }
+    }
+
+    private TransactionCluster createBuySellTransactionCluster() {
         validateCurrencyPair(amountCurrency, priceCurrency);
         final boolean ignoredFee = !priceCurrency.equals(auxFeeCurrency);
         List<ImportedTransactionBean> related;
@@ -110,7 +135,6 @@ public class CoinmateBeanV1 extends ExchangeBean {
                 )
             );
         }
-
         TransactionCluster cluster = new TransactionCluster(
             new BuySellImportedTransactionBean(
                 id,             //uuid
@@ -130,6 +154,39 @@ public class CoinmateBeanV1 extends ExchangeBean {
             );
         }
         return cluster;
+    }
+
+    private TransactionCluster createDepositOrWithdrawalTxCluster() {
+        var tx = new DepositWithdrawalImportedTransaction(
+            id,
+            date,
+            amountCurrency, //base
+            priceCurrency,  //quote
+            type,
+            amount,
+            address
+        );
+        return new TransactionCluster(tx, getRelatedFeeTransaction());
+    }
+
+    private List<ImportedTransactionBean> getRelatedFeeTransaction (){
+        List<ImportedTransactionBean> related;
+        if (ParserUtils.equalsToZero(fee)) {
+            related = Collections.emptyList();
+        } else {
+            related = List.of(
+                new FeeRebateImportedTransactionBean(
+                    id + FEE_UID_PART,
+                    date,
+                    amountCurrency,
+                    priceCurrency,
+                    TransactionType.FEE,
+                    fee.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
+                    auxFeeCurrency
+                )
+            );
+        }
+        return related;
     }
 
     private Currency parseCurrency(String c) {
