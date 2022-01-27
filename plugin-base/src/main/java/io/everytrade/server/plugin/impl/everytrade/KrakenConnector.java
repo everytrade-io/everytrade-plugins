@@ -23,11 +23,14 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 import static java.util.Collections.emptyList;
 import static lombok.AccessLevel.PRIVATE;
+import static org.knowm.xchange.dto.account.FundingRecord.Type.DEPOSIT;
+import static org.knowm.xchange.dto.account.FundingRecord.Type.WITHDRAWAL;
 
 @RequiredArgsConstructor
 @FieldDefaults(makeFinal = true, level = PRIVATE)
@@ -88,13 +91,12 @@ public class KrakenConnector implements IConnector {
     @Override
     public DownloadResult getTransactions(String downloadStateStr) {
         KrakenDownloadState downloadState = KrakenDownloadState.deserialize(downloadStateStr);
-        final boolean firstDownload = downloadState.hasEmptyState();
 
-        final List<UserTrade> userTrades = new ArrayList<>();
-        final List<FundingRecord> funding = new ArrayList<>();
+        var userTrades = new ArrayList<UserTrade>();
+        var funding = new ArrayList<FundingRecord>();
         int sentRequests = 0;
         while (sentRequests < MAX_TRADE_REQUESTS_COUNT) {
-            final List<UserTrade> downloadResult = downloadTrades(firstDownload, downloadState);
+            var downloadResult = downloadTrades(downloadState);
             if (downloadResult.isEmpty()) {
                 break;
             }
@@ -104,7 +106,7 @@ public class KrakenConnector implements IConnector {
 
         sentRequests = 0;
         while (sentRequests < MAX_FUNDING_REQUESTS_COUNT) {
-            final List<FundingRecord> downloadResult = downloadDepositsAndWithdrawals(firstDownload, downloadState);
+            var downloadResult = downloadDepositsAndWithdrawals(downloadState);
             funding.addAll(downloadResult);
             ++sentRequests;
             if (downloadResult.size() < FUNDING_MAX_RESPONSE_SIZE) {
@@ -118,15 +120,15 @@ public class KrakenConnector implements IConnector {
         );
     }
 
-    private List<UserTrade> downloadTrades(boolean firstDownload, KrakenDownloadState state) {
+    private List<UserTrade> downloadTrades(KrakenDownloadState state) {
         var tradeService = exchange.getTradeService();
         var krakenTradeHistoryParams = (KrakenTradeHistoryParams) tradeService.createTradeHistoryParams();
 
-        if (!firstDownload) {
+        if (!state.hasEmptyState()) {
             krakenTradeHistoryParams.setStartId(state.getTradeLastContinuousTxUid());
         }
 
-        final boolean isGap = state.getTradeFirstTxUidAfterGap() != null;
+        var isGap = state.getTradeFirstTxUidAfterGap() != null;
         if (isGap) {
             krakenTradeHistoryParams.setEndId(state.getTradeFirstTxUidAfterGap());
         }
@@ -166,27 +168,39 @@ public class KrakenConnector implements IConnector {
         return downloadedBlock;
     }
 
-    private List<FundingRecord> downloadDepositsAndWithdrawals(boolean firstDownload, KrakenDownloadState state) {
+    private List<FundingRecord> downloadDepositsAndWithdrawals(KrakenDownloadState state) {
         var accountService = exchange.getAccountService();
-        var params = (KrakenAccountService.KrakenFundingHistoryParams) accountService.createFundingHistoryParams();
+        var result = new ArrayList<FundingRecord>();
 
-        if (!firstDownload) {
-            params.setOffset(state.getFundingOffset());
+        for (FundingRecord.Type type : List.of(DEPOSIT, WITHDRAWAL)) {
+            var params = (KrakenAccountService.KrakenFundingHistoryParams) accountService.createFundingHistoryParams();
+            params.setType(type);
+            if (type == DEPOSIT && state.getDepositFromTimestamp() != null) {
+                params.setStartTime(new Date(state.getDepositFromTimestamp()));
+            } else if (type == WITHDRAWAL && state.getWithdrawalFromTimestamp() != null) {
+                params.setStartTime(new Date(state.getWithdrawalFromTimestamp()));
+            }
+
+            final List<FundingRecord> downloadedBlock;
+            try {
+                downloadedBlock = accountService.getFundingHistory(params);
+            } catch (IOException e) {
+                throw new IllegalStateException("Download user trade history failed.", e);
+            }
+
+            if (downloadedBlock.isEmpty()) {
+                LOG.info("No transactions in Kraken user history.");
+                continue;
+            }
+
+            var lastDate = downloadedBlock.stream().map(it -> it.getDate().getTime()).max(Long::compare).get() + 1000;
+            if (type == DEPOSIT) {
+                state.setDepositFromTimestamp(lastDate);
+            } else {
+                state.setWithdrawalFromTimestamp(lastDate);
+            }
+            result.addAll(downloadedBlock);
         }
-
-        final List<FundingRecord> downloadedBlock;
-        try {
-            downloadedBlock = accountService.getFundingHistory(params);
-        } catch (IOException e) {
-            throw new IllegalStateException("Download user trade history failed.", e);
-        }
-
-        if (downloadedBlock.isEmpty()) {
-            LOG.info("No transactions in Kraken user history.");
-            return emptyList();
-        }
-        state.addToFundingOffset((long) downloadedBlock.size());
-
-        return downloadedBlock;
+        return result;
     }
 }
