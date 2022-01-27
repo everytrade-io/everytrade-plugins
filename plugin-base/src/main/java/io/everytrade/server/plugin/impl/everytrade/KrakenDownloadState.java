@@ -20,14 +20,16 @@ public class KrakenDownloadState {
     String tradeLastContinuousTxUid;
     String tradeFirstTxUidAfterGap;
     String tradeLastTxUidAfterGap;
-    Long fundingOffset;
+    Long depositFromTimestamp;
+    Long withdrawalFromTimestamp;
 
     public String serialize() {
         final String result = new StringBuilder()
             .append(tradeLastContinuousTxUid == null ? "" : tradeLastContinuousTxUid).append(SERIALIZATION_SEPARATOR)
             .append(tradeFirstTxUidAfterGap == null ? "" : tradeFirstTxUidAfterGap).append(SERIALIZATION_SEPARATOR)
             .append(tradeLastTxUidAfterGap == null ? "" : tradeLastTxUidAfterGap).append(SERIALIZATION_SEPARATOR)
-            .append(fundingOffset == null ? "" :  fundingOffset)
+            .append(depositFromTimestamp == null ? "" :  depositFromTimestamp).append(SERIALIZATION_SEPARATOR)
+            .append(withdrawalFromTimestamp == null ? "" :  withdrawalFromTimestamp)
             .toString();
 
         if (result.length() > MAX_LENGTH_DOWNLOADED_TXUID) {
@@ -49,28 +51,23 @@ public class KrakenDownloadState {
 
         String[] splitValues = downloadState.split(SERIALIZATION_SEPARATOR);
 
-        String fundingOffsetStr = getGroupValueOrNull(splitValues, 4);
+        String depositTimestamp = getGroupValueOrNull(splitValues, 4);
+        String withdrawalTimestamp = getGroupValueOrNull(splitValues, 5);
         return new KrakenDownloadState(
             getGroupValueOrNull(splitValues, 1),
             getGroupValueOrNull(splitValues, 2),
             getGroupValueOrNull(splitValues, 3),
-            fundingOffsetStr == null ? null : Long.valueOf(fundingOffsetStr)
+            depositTimestamp == null ? null : Long.valueOf(depositTimestamp),
+            withdrawalTimestamp == null ? null : Long.valueOf(withdrawalTimestamp)
         );
-    }
-
-    public void addToFundingOffset(Long amountToAdd) {
-        if (fundingOffset == null) {
-            fundingOffset = amountToAdd;
-        } else {
-            fundingOffset += amountToAdd;
-        }
     }
 
     public boolean hasEmptyState() {
         return tradeLastContinuousTxUid == null &&
             tradeFirstTxUidAfterGap == null &&
             tradeLastTxUidAfterGap == null &&
-            fundingOffset == null;
+            depositFromTimestamp == null &&
+            withdrawalFromTimestamp == null;
     }
 
     private static String getGroupValueOrNull(String[] values, int group) {
