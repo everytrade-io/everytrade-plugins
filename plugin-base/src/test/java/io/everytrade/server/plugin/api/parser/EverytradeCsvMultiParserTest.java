@@ -1,9 +1,16 @@
 package io.everytrade.server.plugin.api.parser;
 
+import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.SupportedExchange;
+import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.impl.everytrade.parser.EverytradeCsvMultiParser;
+import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.ParserTestUtils;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 
@@ -29,6 +36,7 @@ import static io.everytrade.server.model.SupportedExchange.OKEX;
 import static io.everytrade.server.model.SupportedExchange.PAXFUL;
 import static io.everytrade.server.model.SupportedExchange.POLONIEX;
 import static io.everytrade.server.model.SupportedExchange.SHAKEPAY;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -328,6 +336,36 @@ class EverytradeCsvMultiParserTest {
         );
     }
 
+    @Test
+    void testCorrectParsingCoinMateCSVWithdrawalData()  {
+        String header = "ID;Datum;Účet;Typ;Částka;Částka měny;Cena;Cena měny;Poplatek;Poplatek měny;Celkem;Celkem měny;Popisek;Status\n";
+        String row = "TTT;2019-07-29 17:04:41.51;M;WITHDRAWAL;-5.51382448;LTC; ; ;0.0004;LTC;-5.51422448;LTC;714345f69ff74164a2bf82a49952187b2cdb29a24094127eea22d349c94b936b;COMPLETED\n";
+
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(header + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new DepositWithdrawalImportedTransaction(
+                "TTT",
+                Instant.parse("2019-07-29T17:04:41Z"),
+                Currency.LTC,
+                null,
+                TransactionType.WITHDRAWAL,
+                new BigDecimal("5.51382448"),
+                "714345f69ff74164a2bf82a49952187b2cdb29a24094127eea22d349c94b936b"
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    "TTT" + FEE_UID_PART,
+                    Instant.parse("2019-07-29T17:04:41Z"),
+                    Currency.LTC,
+                    null,
+                    TransactionType.FEE,
+                    new BigDecimal("0.0004").setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
+                    Currency.LTC
+                )
+            )
+        );
+        ParserTestUtils.checkEqual(expected, actual);
+    }
 
     private void doTest(Collection<String> headers, SupportedExchange expected) {
         headers.forEach(h -> {
