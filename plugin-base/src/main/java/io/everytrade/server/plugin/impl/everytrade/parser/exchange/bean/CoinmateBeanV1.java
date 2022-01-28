@@ -100,7 +100,9 @@ public class CoinmateBeanV1 extends ExchangeBean {
     }
 
     @Parsed(field = {"Description", "Popisek"})
-    public void setAddress(String address){ this.address = address; }
+    public void setAddress(String address) {
+        this.address = address;
+    }
 
     @Override
     public TransactionCluster toTransactionCluster() {
@@ -169,7 +171,7 @@ public class CoinmateBeanV1 extends ExchangeBean {
         return new TransactionCluster(tx, getRelatedFeeTransaction());
     }
 
-    private List<ImportedTransactionBean> getRelatedFeeTransaction (){
+    private List<ImportedTransactionBean> getRelatedFeeTransaction() {
         List<ImportedTransactionBean> related;
         if (ParserUtils.equalsToZero(fee)) {
             related = Collections.emptyList();
