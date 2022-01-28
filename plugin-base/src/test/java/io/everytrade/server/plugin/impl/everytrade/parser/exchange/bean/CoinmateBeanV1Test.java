@@ -147,10 +147,9 @@ class CoinmateBeanV1Test {
 
     @Test
     void testIgnoredTransactionType() {
-        final String row = "4;2019-08-30 05:05:24;DEPOSIT;0.0019;BTC;8630.7;EUR;0.03443649;EUR;16.43276649;EUR;" +
-            ";OK\n";
-        final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
-        final String error = parsingProblem.getMessage();
+        var row = "4;2019-08-30 05:05:24;DEPOSITZ;0.0019;BTC;8630.7;EUR;0.03443649;EUR;16.43276649;EUR;;OK\n";
+        var parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
+        var error = parsingProblem.getMessage();
         assertTrue(error.contains(ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE.concat("DEPOSIT")));
 
     }

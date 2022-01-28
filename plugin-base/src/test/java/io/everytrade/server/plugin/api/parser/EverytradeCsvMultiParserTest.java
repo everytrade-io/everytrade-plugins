@@ -339,7 +339,8 @@ class EverytradeCsvMultiParserTest {
     @Test
     void testCorrectParsingCoinMateCSVWithdrawalData()  {
         String header = "ID;Datum;Účet;Typ;Částka;Částka měny;Cena;Cena měny;Poplatek;Poplatek měny;Celkem;Celkem měny;Popisek;Status\n";
-        String row = "TTT;2019-07-29 17:04:41.51;M;WITHDRAWAL;-5.51382448;LTC; ; ;0.0004;LTC;-5.51422448;LTC;714345f69ff74164a2bf82a49952187b2cdb29a24094127eea22d349c94b936b;COMPLETED\n";
+        String row = "TTT;2019-07-29 17:04:41.51;M;WITHDRAWAL;-5.51382448;LTC; ; ;0.0004;LTC;-5.51422448;LTC;" +
+            "714345f69ff74164a2bf82a49952187b2cdb29a24094127eea22d349c94b936b;COMPLETED\n";
 
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(header + row);
         final TransactionCluster expected = new TransactionCluster(
