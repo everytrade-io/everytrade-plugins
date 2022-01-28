@@ -99,7 +99,7 @@ public class CoinmateBeanV1 extends ExchangeBean {
         }
     }
 
-    @Parsed(field = {"Address", "Popisek"})
+    @Parsed(field = {"Description", "Popisek"})
     public void setAddress(String address){ this.address = address; }
 
     @Override

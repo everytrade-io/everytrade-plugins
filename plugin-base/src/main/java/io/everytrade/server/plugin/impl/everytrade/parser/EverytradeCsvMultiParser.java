@@ -210,7 +210,7 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             .headers(List.of(
                 CsvHeader.of(
                     "ID", "Date", "Type", "Amount", "Amount Currency", "Price", "Price Currency", "Fee", "Fee Currency", "Total",
-                    "Total Currency", "Address", "Status"
+                    "Total Currency", "Description", "Status"
                 ),
                 CsvHeader.of(
                     "ID", "Datum", "Typ", "Částka", "Částka měny", "Cena", "Cena měny", "Poplatek", "Poplatek měny", "Celkem",
