@@ -166,7 +166,7 @@ public class CoinmateBeanV1 extends ExchangeBean {
             priceCurrency,  //quote
             type,
             amount,
-            address
+            amountCurrency.isFiat() ? null : address
         );
         return new TransactionCluster(tx, getRelatedFeeTransaction());
     }
