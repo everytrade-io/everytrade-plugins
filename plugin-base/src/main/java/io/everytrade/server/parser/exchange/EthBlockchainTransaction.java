@@ -9,38 +9,45 @@ import io.everytrade.server.plugin.api.parser.DepositWithdrawalImportedTransacti
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.plugin.impl.everytrade.etherscan.EtherScanErc20TransactionDto;
 import io.everytrade.server.plugin.impl.everytrade.etherscan.EtherScanTransactionDto;
+import lombok.Value;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.List;
 
+import static io.everytrade.server.model.Currency.ETH;
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
+import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.equalsToZero;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
+import static java.math.BigDecimal.TEN;
+import static java.math.RoundingMode.HALF_UP;
 import static java.util.Collections.emptyList;
 
-public class EthBlockchainApiTransactionBean {
-    private static final Currency BASE = Currency.ETH;
-    public static final BigDecimal DIVISOR = new BigDecimal("1E18");
-    public static final int DECIMAL_DIGIT = 18;
-    private final String id;
-    private final Instant timestamp;
-    private final TransactionType type;
-    private final Currency quote;
-    private final BigDecimal baseAmount;
-    private final BigDecimal unitPrice;
-    private final BigDecimal feeAmount;
-    private final boolean importFeesFromDeposits;
-    private final boolean importFeesFromWithdrawals;
-    private final String relatedAddress;
+@Value
+public class EthBlockchainTransaction {
+    public static final int ETH_DECIMAL_DIGIT = 18;
+    public static final BigDecimal ETH_DIVISOR = TEN.pow(ETH_DECIMAL_DIGIT);
 
-    public EthBlockchainApiTransactionBean(
-        EtherScanTransactionDto transactionDto,
+    Currency base;
+    String id;
+    Instant timestamp;
+    TransactionType type;
+    Currency quote;
+    BigDecimal baseAmount;
+    BigDecimal unitPrice;
+    BigDecimal feeAmount;
+    boolean importFeesFromDeposits;
+    boolean importFeesFromWithdrawals;
+    String relatedAddress;
+
+    public EthBlockchainTransaction(
+        EtherScanTransactionDto txDto,
         String address,
         String quote,
         boolean importDepositsAsBuys,
@@ -48,40 +55,52 @@ public class EthBlockchainApiTransactionBean {
         boolean importFeesFromDeposits,
         boolean importFeesFromWithdrawals
     ) {
-        id = transactionDto.getHash();
-        timestamp =  Instant.ofEpochSecond(transactionDto.getTimeStamp());
-        if (address.equals(transactionDto.getFrom())) {
+        id = txDto.getHash();
+        timestamp =  Instant.ofEpochSecond(txDto.getTimeStamp());
+        if (address.equals(txDto.getFrom())) {
             type = importWithdrawalsAsSells ? SELL : WITHDRAWAL;
-            relatedAddress = transactionDto.getTo();
-        } else if (address.equals(transactionDto.getTo())) {
+            relatedAddress = txDto.getTo();
+        } else if (address.equals(txDto.getTo())) {
             type = importDepositsAsBuys ? BUY : DEPOSIT;
-            relatedAddress = transactionDto.getFrom();
+            relatedAddress = txDto.getFrom();
         } else {
             throw new DataValidationException(
                 String.format(
                     "Can't determine transaction type. From address '%s' and to address '%s' both differs to source address '%s.",
-                    transactionDto.getFrom(),
-                    transactionDto.getTo(),
+                    txDto.getFrom(),
+                    txDto.getTo(),
                     address
                     )
             );
         }
-        if (transactionDto.getIsError() != 0) {
-            throw new DataValidationException(String.format("Transaction with error:%d.", transactionDto.getIsError()));
+        if (txDto.getIsError() != 0) {
+            throw new DataValidationException(String.format("Transaction with error:%d.", txDto.getIsError()));
         }
+
+        var currencyDecimalDigits = ETH_DECIMAL_DIGIT;
+        if (txDto instanceof EtherScanErc20TransactionDto) {
+            this.base = Currency.fromCode(((EtherScanErc20TransactionDto) txDto).getTokenSymbol());
+            currencyDecimalDigits = ((EtherScanErc20TransactionDto) txDto).getTokenDecimal();
+        } else if (txDto instanceof EtherScanTransactionDto) {
+            this.base = ETH;
+        } else {
+            throw new IllegalArgumentException("Cannot parse instance of {}" +  txDto.getClass());
+        }
+        var currencyDivisor = TEN.pow(currencyDecimalDigits);
+
         this.quote = Currency.fromCode(quote.toUpperCase());
         this.unitPrice = null; // it will be automatically added from the market in everytrade.
-        baseAmount = transactionDto.getValue().divide(DIVISOR, DECIMAL_DIGIT, RoundingMode.HALF_UP);
-        feeAmount = transactionDto.getGasPrice()
-            .multiply(transactionDto.getGasUsed())
-            .divide(DIVISOR, DECIMAL_DIGIT, RoundingMode.HALF_UP);
+        this.baseAmount = txDto.getValue().divide(currencyDivisor, currencyDecimalDigits, HALF_UP);
+        this.feeAmount = txDto.getGasPrice()
+            .multiply(txDto.getGasUsed())
+            .divide(ETH_DIVISOR, ETH_DECIMAL_DIGIT, HALF_UP);
         this.importFeesFromDeposits = importFeesFromDeposits;
         this.importFeesFromWithdrawals = importFeesFromWithdrawals;
     }
 
     public TransactionCluster toTransactionCluster() {
         try {
-            new CurrencyPair(BASE, quote);
+            new CurrencyPair(base, quote);
         } catch (CurrencyPair.FiatCryptoCombinationException e) {
             throw new IllegalArgumentException(e.getMessage());
         }
@@ -90,47 +109,23 @@ public class EthBlockchainApiTransactionBean {
             throw new IllegalArgumentException("Crypto amount can't be zero.");
         }
 
-        final boolean withFee = (List.of(BUY, DEPOSIT).contains(type) && importFeesFromDeposits)
+        var withFee = (List.of(BUY, DEPOSIT).contains(type) && importFeesFromDeposits)
             || (importFeesFromWithdrawals && List.of(SELL, WITHDRAWAL).contains(type));
 
         List<ImportedTransactionBean> related;
         if (equalsToZero(feeAmount) || !withFee) {
             related = emptyList();
         } else {
-            related = List.of(new FeeRebateImportedTransactionBean(
-                id + FEE_UID_PART,
-                timestamp,
-                BASE,
-                quote,
-                TransactionType.FEE,
-                feeAmount,
-                BASE
-            ));
+            related = List.of(new FeeRebateImportedTransactionBean(id + FEE_UID_PART, timestamp, base, quote, FEE, feeAmount, base));
         }
         return new TransactionCluster(createMainTx(), related);
     }
 
     private ImportedTransactionBean createMainTx() {
-        if (type == BUY || type == SELL) {
-            return new BuySellImportedTransactionBean(
-                id,
-                timestamp,
-                BASE,
-                quote,
-                type,
-                baseAmount,
-                unitPrice
-            );
-        } else if (type == DEPOSIT || type == WITHDRAWAL) {
-            return new DepositWithdrawalImportedTransaction(
-                id,
-                timestamp,
-                BASE,
-                quote,
-                type,
-                baseAmount,
-                relatedAddress
-            );
+        if (type.isBuyOrSell()) {
+            return new BuySellImportedTransactionBean(id, timestamp, base, quote, type, baseAmount, unitPrice);
+        } else if (type.isDepositOrWithdrawal()) {
+            return new DepositWithdrawalImportedTransaction(id, timestamp, base, quote, type, baseAmount, relatedAddress);
         } else {
             throw new IllegalArgumentException("Unsupported tx type " + type);
         }
