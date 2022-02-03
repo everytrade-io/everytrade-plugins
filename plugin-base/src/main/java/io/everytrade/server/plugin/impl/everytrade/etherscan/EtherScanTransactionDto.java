@@ -1,20 +1,22 @@
 package io.everytrade.server.plugin.impl.everytrade.etherscan;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 
 import static lombok.AccessLevel.PRIVATE;
 
 @Data
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = PRIVATE)
+@EqualsAndHashCode(of = {"hash"})
 public class EtherScanTransactionDto {
     long blockNumber;
     long timeStamp;

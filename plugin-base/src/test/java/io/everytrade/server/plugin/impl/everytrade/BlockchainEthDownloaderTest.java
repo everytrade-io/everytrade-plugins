@@ -7,9 +7,10 @@ import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.DepositWithdrawalImportedTransaction;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.plugin.impl.everytrade.etherscan.EtherScanClient;
 import io.everytrade.server.plugin.impl.everytrade.etherscan.EtherScanDto;
+import io.everytrade.server.plugin.impl.everytrade.etherscan.EtherScanErc20TransactionDto;
 import io.everytrade.server.plugin.impl.everytrade.etherscan.EtherScanTransactionDto;
-import io.everytrade.server.plugin.impl.everytrade.etherscan.EtherScanV1API;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -17,12 +18,13 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-import static io.everytrade.server.test.TestUtils.bigDecimalEquals;
-import static io.everytrade.server.test.TestUtils.findOneCluster;
+import static io.everytrade.server.model.Currency.USD;
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
+import static io.everytrade.server.test.TestUtils.bigDecimalEquals;
+import static io.everytrade.server.test.TestUtils.findOneCluster;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static java.util.Collections.emptyList;
@@ -32,14 +34,14 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class BlockchainEthDownloaderTest {
 
     private static final String ADDRESS = "address0";
-    private static final String FIAT = Currency.USD.code();
-
+    private static final String FIAT = USD.code();
     private static final BigDecimal ONE_ETH = new BigDecimal(1000000000000000000L);
 
     @Test
@@ -50,7 +52,6 @@ class BlockchainEthDownloaderTest {
         );
 
         var downloader = new BlockchainEthDownloader(
-            null,
             ADDRESS,
             "apiKey",
             FIAT,
@@ -58,10 +59,10 @@ class BlockchainEthDownloaderTest {
             true,
             false,
             false,
-            mockClient(txs)
+            mockClient(txs, emptyList())
         );
 
-        DownloadResult result = downloader.download();
+        DownloadResult result = downloader.download(null);
 
         var buyCluster = findOneCluster(result, BUY);
         assertEquals(0, buyCluster.getRelated().size());
@@ -80,7 +81,6 @@ class BlockchainEthDownloaderTest {
         );
 
         var downloader = new BlockchainEthDownloader(
-            null,
             ADDRESS,
             "apiKey",
             FIAT,
@@ -88,10 +88,10 @@ class BlockchainEthDownloaderTest {
             true,
             true,
             true,
-            mockClient(txs)
+            mockClient(txs, emptyList())
         );
 
-        DownloadResult result = downloader.download();
+        DownloadResult result = downloader.download(null);
 
         var buyCluster = findOneCluster(result, BUY);
         assertBuySell(buyCluster, BUY, TEN);
@@ -110,7 +110,6 @@ class BlockchainEthDownloaderTest {
         );
 
         var downloader = new BlockchainEthDownloader(
-            null,
             ADDRESS,
             "apiKey",
             FIAT,
@@ -118,10 +117,10 @@ class BlockchainEthDownloaderTest {
             false,
             false,
             false,
-            mockClient(txs)
+            mockClient(txs, emptyList())
         );
 
-        DownloadResult result = downloader.download();
+        DownloadResult result = downloader.download(null);
 
         var depositCluster = findOneCluster(result, DEPOSIT);
         assertEquals(0, depositCluster.getRelated().size());
@@ -140,7 +139,6 @@ class BlockchainEthDownloaderTest {
         );
 
         var downloader = new BlockchainEthDownloader(
-            null,
             ADDRESS,
             "apiKey",
             FIAT,
@@ -148,10 +146,10 @@ class BlockchainEthDownloaderTest {
             false,
             true,
             true,
-            mockClient(txs)
+            mockClient(txs, emptyList())
         );
 
-        DownloadResult result = downloader.download();
+        DownloadResult result = downloader.download(null);
 
         var depositCluster = findOneCluster(result, DEPOSIT);
         assertDepositWithdrawal(depositCluster, DEPOSIT, TEN);
@@ -171,7 +169,7 @@ class BlockchainEthDownloaderTest {
         assertNotNull(tx.getUid());
         assertNotNull(tx.getExecuted());
         assertEquals(Currency.ETH, tx.getBase());
-        assertEquals(Currency.USD, tx.getQuote());
+        assertEquals(USD, tx.getQuote());
         assertEquals(type, tx.getAction());
         assertNotNull(tx.getImported());
     }
@@ -184,7 +182,7 @@ class BlockchainEthDownloaderTest {
         assertNotNull(tx.getUid());
         assertNotNull(tx.getExecuted());
         assertEquals(Currency.ETH, tx.getBase());
-        assertEquals(Currency.USD, tx.getQuote());
+        assertEquals(USD, tx.getQuote());
         assertEquals(type, tx.getAction());
         assertNotNull(tx.getImported());
     }
@@ -200,20 +198,23 @@ class BlockchainEthDownloaderTest {
         assertNotNull(fee.getImported());
     }
 
-    private EtherScanV1API mockClient(List<EtherScanTransactionDto> txs) throws Exception {
-        var mock = mock(EtherScanV1API.class);
+    private EtherScanClient mockClient(List<EtherScanTransactionDto> txs, List<EtherScanErc20TransactionDto> erc20Txs) throws Exception {
+        var mock = mock(EtherScanClient.class);
+
+        when(mock.getBlockNumberByTimestamp(anyString(), anyString(), anyString())).thenReturn(successResponse(1_000_000L));
+        when(
+            mock
+                .getNormalTxsByAddress(anyString(), anyLong(), anyLong(), anyInt(), anyInt(), anyString(), anyString()))
+                .thenReturn(successResponse(txs))
+                .thenReturn(successResponse(emptyList())
+        ); // return empty list in second call to stop downloading
 
         when(
-            mock.getBlockNumberByTimestamp(anyString(), anyString(), anyString(), anyString(), anyString())
-        ).thenReturn(successResponse(1_000_000L));
-
-        when(
-            mock.getNormalTransactionsByAddress(
-                anyString(), anyString(), anyString(), anyLong(), anyLong(), anyInt(), anyInt(), anyString(), anyString())
-        )
-            .thenReturn(successResponse(txs))
-            .thenReturn(successResponse(emptyList())); // return empty list in second call to stop downloading
-
+            mock
+                .getErc20TxsByAddress(anyString(), isNull(), anyLong(), anyLong(), anyInt(), anyInt(), anyString(), anyString()))
+            .thenReturn(successResponse(erc20Txs))
+            .thenReturn(successResponse(emptyList())
+        ); // return empty list in second call to stop downloading
         return mock;
     }
 

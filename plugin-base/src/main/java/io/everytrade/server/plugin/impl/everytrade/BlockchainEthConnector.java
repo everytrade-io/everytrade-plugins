@@ -8,10 +8,14 @@ import io.everytrade.server.plugin.api.connector.ConnectorParameterDescriptor;
 import io.everytrade.server.plugin.api.connector.ConnectorParameterType;
 import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.connector.IConnector;
+import lombok.AllArgsConstructor;
+import lombok.Value;
 
 import java.util.List;
 import java.util.Map;
 
+@Value
+@AllArgsConstructor
 public class BlockchainEthConnector implements IConnector {
     private static final Object LOCK = new Object();
     private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "blockchainEthApiConnector";
@@ -81,13 +85,13 @@ public class BlockchainEthConnector implements IConnector {
 
     private static final String ETHERSCAN_API_KEY_PARAM = "apiKeyToken";
 
-    private final String address;
-    private final String apiKeyToken;
-    private final String fiatCurrency;
-    private final String importDepositsAsBuys;
-    private final String importWithdrawalsAsSells;
-    private final String importFeesFromDeposits;
-    private final String importFeesFromWithdrawals;
+    String address;
+    String apiKeyToken;
+    String fiatCurrency;
+    String importDepositsAsBuys;
+    String importWithdrawalsAsSells;
+    String importFeesFromDeposits;
+    String importFeesFromWithdrawals;
 
     public BlockchainEthConnector(Map<String, String> parameters) {
         this(
@@ -101,48 +105,24 @@ public class BlockchainEthConnector implements IConnector {
         );
     }
 
-    public BlockchainEthConnector(
-        String address,
-        String apiKeyToken,
-        String fiatCurrency,
-        String importDepositsAsBuys,
-        String importWithdrawalsAsSells,
-        String importFeesFromDeposits,
-        String importFeesFromWithdrawals
-    ) {
-        this.address = address;
-        this.apiKeyToken = apiKeyToken;
-        this.fiatCurrency = fiatCurrency;
-        this.importDepositsAsBuys = importDepositsAsBuys;
-        this.importWithdrawalsAsSells = importWithdrawalsAsSells;
-        this.importFeesFromDeposits = importFeesFromDeposits;
-        this.importFeesFromWithdrawals = importFeesFromWithdrawals;
-    }
-
     @Override
     public String getId() {
         return ID;
     }
 
     @Override
-    public DownloadResult getTransactions(String lastTransactionUid) {
+    public DownloadResult getTransactions(String downloadState) {
         synchronized (LOCK) {
             final var blockchainEthDownloader = new BlockchainEthDownloader(
                 address,
                 apiKeyToken,
-                lastTransactionUid,
                 fiatCurrency,
                 importDepositsAsBuys,
                 importWithdrawalsAsSells,
                 importFeesFromDeposits,
                 importFeesFromWithdrawals
             );
-            return blockchainEthDownloader.download();
+            return blockchainEthDownloader.download(downloadState);
         }
-    }
-
-    @Override
-    public void close() {
-        //AutoCloseable
     }
 }
