@@ -40,7 +40,6 @@ dependencies {
     pluginCompile "org.knowm.xchange:xchange-bitflyer:$xchangeVersion"
     pluginCompile "org.knowm.xchange:xchange-core:$xchangeVersion"
     pluginCompile "org.knowm.xchange:xchange-huobi:$xchangeVersion"
-    pluginCompile "org.knowm.xchange:xchange-coinbase:$xchangeVersion"
 
     pluginCompile "com.github.charvam:V3-Open-API-SDK:db22182525f075bfb8999bcdbea4a132e4d933cf"
 
@@ -49,6 +48,12 @@ dependencies {
      */
     //    pluginCompile "org.knowm.xchange:xchange-coinmate:$xchangeVersion"
     pluginCompile "com.github.martinkyov.Xchange:xchange-coinmate:f80f587e10faaf92839055a7e6154dd509c7d0c4"
+
+    /*
+     * only for temporary use till pull request confirmation https://github.com/knowm/XChange/pull/4403
+     */
+    //    pluginCompile "org.knowm.xchange:xchange-coinbase:$xchangeVersion"
+    pluginCompile "com.github.martinkyov.Xchange:xchange-coinbase:e83844d8baeaa69f345fc6de7293f460bfa96132"
 
     pluginCompile "com.github.GENERALBYTESCOM:bitrafael_public:1.0.42"
 
