@@ -1,5 +1,6 @@
 package io.everytrade.server.plugin.impl.everytrade;
 
+import lombok.experimental.FieldDefaults;
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.binance.service.BinanceFundingHistoryParams;
 import org.knowm.xchange.binance.service.BinanceTradeHistoryParams;
@@ -21,9 +22,12 @@ import java.util.stream.Collectors;
 
 import static java.time.temporal.ChronoUnit.DAYS;
 import static java.util.Comparator.comparing;
+import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.joining;
+import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.lang.StringUtils.isEmpty;
 
+@FieldDefaults(level = PRIVATE)
 public class BinanceDownloader {
 
     private static final Logger LOG = LoggerFactory.getLogger(BinanceDownloader.class);
@@ -36,7 +40,7 @@ public class BinanceDownloader {
 
     Map<String, String> currencyPairLastIds = new HashMap<>();
     Date lastFundingDownloadedTimestamp = null;
-    final Exchange exchange;
+    Exchange exchange;
 
     public BinanceDownloader(Exchange exchange, String downloadState) {
         this.exchange = exchange;
@@ -103,10 +107,12 @@ public class BinanceDownloader {
             }
             result.addAll(response);
 
+            if (!response.isEmpty()) {
+                lastFundingDownloadedTimestamp = response.stream().map(FundingRecord::getDate).max(naturalOrder()).get();
+            }
             if (response.size() < FUNDING_PER_REQUEST) {
                 break;
             }
-            lastFundingDownloadedTimestamp = response.get(response.size() - 1).getDate();
         }
         return result;
     }
