@@ -6,6 +6,7 @@ import lombok.experimental.FieldDefaults;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import static lombok.AccessLevel.PRIVATE;
 
@@ -57,4 +58,9 @@ public enum SupportedExchange {
             }
         }
     }
+
+    public static Optional<SupportedExchange> fromId(String id) {
+        return Optional.ofNullable(BY_ID.get(id));
+    }
 }
+
