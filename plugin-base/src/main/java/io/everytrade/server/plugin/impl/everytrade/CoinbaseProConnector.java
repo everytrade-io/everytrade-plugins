@@ -84,16 +84,16 @@ public class CoinbaseProConnector implements IConnector {
     }
 
     @Override
-    public DownloadResult getTransactions(String downloadState) {
+    public DownloadResult getTransactions(String lastTransactionId) {
         final ExchangeSpecification exSpec = new CoinbaseProExchange().getDefaultExchangeSpecification();
         exSpec.setApiKey(apiKey);
         exSpec.setSecretKey(apiSecret);
         exSpec.setExchangeSpecificParametersItem("passphrase", passPhrase);
         final Exchange exchange = ExchangeFactory.INSTANCE.createExchange(exSpec);
 
-        final CoinbaseProDownloader coinbaseProDownloader = new CoinbaseProDownloader(exchange, downloadState);
-        DownloadResult download = coinbaseProDownloader.download(currencyPairs);
-        return download;
+        final CoinbaseProDownloader coinbaseProDownloader = new CoinbaseProDownloader(exchange, lastTransactionId);
+        final ParseResult downloadResult = coinbaseProDownloader.download(currencyPairs);
 
+        return new DownloadResult(downloadResult, coinbaseProDownloader.getLastTransactionId());
     }
 }
