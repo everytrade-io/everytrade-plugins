@@ -7,6 +7,8 @@ import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.ParsingProblemType;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileReader;
@@ -17,15 +19,22 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import static io.everytrade.server.plugin.api.parser.ParsingProblemType.PARSED_ROW_IGNORED;
+import static io.everytrade.server.plugin.api.parser.ParsingProblemType.ROW_PARSING_FAILED;
+import static java.util.stream.Collectors.toList;
+
 public class DefaultUnivocityExchangeSpecificParser implements IExchangeSpecificParser {
-    private static final String DEFAUL_DELIMITER = ",";
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultUnivocityExchangeSpecificParser.class);
+    private static final String DEFAULT_DELIMITER = ",";
+    private static final List<String> LINE_SEPARATORS = List.of("\n", "\r", "\r\n");
+
     private final Class<? extends ExchangeBean> exchangeBean;
     private final String delimiter;
     private final String lineSeparator;
     private List<ParsingProblem> parsingProblems = List.of();
 
     public DefaultUnivocityExchangeSpecificParser(Class<? extends ExchangeBean> exchangeBean) {
-        this(exchangeBean, DEFAUL_DELIMITER, null);
+        this(exchangeBean, DEFAULT_DELIMITER, null);
     }
 
     public DefaultUnivocityExchangeSpecificParser(
@@ -48,8 +57,25 @@ public class DefaultUnivocityExchangeSpecificParser implements IExchangeSpecific
     @Override
     public List<? extends ExchangeBean> parse(File inputFile) {
         parsingProblems = new ArrayList<>();
-        final CsvParserSettings parserSettings = createParserSettings(parsingProblems);
-        return parse(inputFile, parserSettings, exchangeBean);
+
+        if (lineSeparator != null) {
+            return parse(inputFile, createParserSettings(parsingProblems, lineSeparator), exchangeBean);
+        }
+
+        var settings = LINE_SEPARATORS.stream()
+            .map(separator -> createParserSettings(parsingProblems, separator))
+            .collect(toList());
+
+        Exception lastException = null;
+        for (CsvParserSettings s : settings) {
+            try {
+                return parse(inputFile, s, exchangeBean);
+            } catch (Exception e) {
+                lastException = e;
+                LOG.error("Failed to parse file. Trying another config...");
+            }
+        }
+        throw new RuntimeException(lastException);
     }
 
     @Override
@@ -80,17 +106,12 @@ public class DefaultUnivocityExchangeSpecificParser implements IExchangeSpecific
         }
     }
 
-    private CsvParserSettings createParserSettings(
-        List<ParsingProblem> parsingProblems
-    ) {
-        CsvParserSettings parserSettings = new CsvParserSettings();
+    private CsvParserSettings createParserSettings(List<ParsingProblem> parsingProblems, String lineSeparator) {
+        var parserSettings = new CsvParserSettings();
         parserSettings.setHeaderExtractionEnabled(true);
         parserSettings.setProcessorErrorHandler((error, inputRow, context) -> {
-            ParsingProblemType parsingProblemType = error instanceof DataIgnoredException
-                ? ParsingProblemType.PARSED_ROW_IGNORED : ParsingProblemType.ROW_PARSING_FAILED;
-            ParsingProblem parsingProblem
-                = new ParsingProblem(Arrays.toString(inputRow), error.getMessage(), parsingProblemType);
-            parsingProblems.add(parsingProblem);
+            ParsingProblemType parsingProblemType = error instanceof DataIgnoredException ? PARSED_ROW_IGNORED : ROW_PARSING_FAILED;
+            parsingProblems.add(new ParsingProblem(Arrays.toString(inputRow), error.getMessage(), parsingProblemType));
         });
         parserSettings.getFormat().setDelimiter(delimiter);
         //default setting is autodetect
