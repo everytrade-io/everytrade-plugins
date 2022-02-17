@@ -92,9 +92,8 @@ public class CoinbaseProConnector implements IConnector {
         final Exchange exchange = ExchangeFactory.INSTANCE.createExchange(exSpec);
 
         final CoinbaseProDownloader coinbaseProDownloader = new CoinbaseProDownloader(exchange, lastTransactionId);
-        final List<UserTrade> userTrades = coinbaseProDownloader.download(currencyPairs);
-        final ParseResult parseResult = new XChangeConnectorParser().getParseResult(userTrades, emptyList());
+        final ParseResult downloadResult = coinbaseProDownloader.download(currencyPairs);
 
-        return new DownloadResult(parseResult, coinbaseProDownloader.getLastTransactionId());
+        return new DownloadResult(downloadResult, coinbaseProDownloader.getLastTransactionId());
     }
 }

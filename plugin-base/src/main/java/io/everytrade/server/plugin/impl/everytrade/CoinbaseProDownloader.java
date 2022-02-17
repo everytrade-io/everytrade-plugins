@@ -1,5 +1,6 @@
 package io.everytrade.server.plugin.impl.everytrade;
 
+import io.everytrade.server.plugin.api.parser.ParseResult;
 import lombok.experimental.FieldDefaults;
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.coinbasepro.dto.trade.CoinbaseProTradeHistoryParams;
@@ -15,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static java.util.Collections.emptyList;
 import static lombok.AccessLevel.PRIVATE;
 
 @FieldDefaults(makeFinal = false, level = PRIVATE)
@@ -42,7 +42,14 @@ public class CoinbaseProDownloader {
         }
     }
 
-    public List<UserTrade> download(String currencyPairs) {
+    public ParseResult download(String currencyPairs) {
+        var funding = downloadFunding(currencyPairs);
+        var trades = downloadTrades(currencyPairs);
+
+        return new XChangeConnectorParser().getParseResult(trades, funding);
+    }
+
+    public List<UserTrade> downloadTrades(String currencyPairs) {
         var tradeService = exchange.getTradeService();
         var params = (CoinbaseProTradeHistoryParams) tradeService.createTradeHistoryParams();
         params.setLimit(TX_PER_REQUEST);
@@ -83,17 +90,47 @@ public class CoinbaseProDownloader {
     }
 
     public List<FundingRecord> downloadFunding(String currencyPairs) {
-        var accService = exchange.getAccountService();
-        var params = (CoinbaseProTradeHistoryParams) accService.createFundingHistoryParams();
-        params.setLimit(TX_PER_REQUEST);
+        final List<FundingRecord> records = new ArrayList<>();
+        var accountService = exchange.getAccountService();
+        var params = (CoinbaseProTradeHistoryParams) accountService.createFundingHistoryParams();
 
-        // TODO
+        //DEPOSITS
+        params.setLimit(TX_PER_REQUEST);
+        params.setType(FundingRecord.Type.DEPOSIT);
+        final List<FundingRecord> depositRecords;
+
         try {
-            return accService.getFundingHistory(params);
-        } catch (IOException e) {
-            e.printStackTrace();
+            Thread.sleep(SLEEP_BETWEEN_REQUESTS_MS);
+        } catch (InterruptedException e) {
+            throw new IllegalStateException("Funding deposit record history download sleep interrupted.", e);
         }
-        return emptyList();
+        try {
+            depositRecords = accountService.getFundingHistory(params);
+        } catch (Exception e) {
+            throw new IllegalStateException("Funding deposit record history download failed. ", e);
+        }
+        if (!depositRecords.isEmpty()) {
+            records.addAll(depositRecords);
+        }
+
+        //WITHDRAWALS
+        params.setLimit(TX_PER_REQUEST);
+        params.setType(FundingRecord.Type.WITHDRAWAL);
+        final List<FundingRecord> withdrawalRecords;
+        try {
+            Thread.sleep(SLEEP_BETWEEN_REQUESTS_MS);
+        } catch (InterruptedException e) {
+            throw new IllegalStateException("Funding withdrawal record history download sleep interrupted.", e);
+        }
+        try {
+            withdrawalRecords = accountService.getFundingHistory(params);
+        } catch (Exception e) {
+            throw new IllegalStateException("Funding withdrawal record history download failed. ", e);
+        }
+        if (!withdrawalRecords.isEmpty()) {
+            records.addAll(withdrawalRecords);
+        }
+        return records;
     }
 
     public String getLastTransactionId() {
