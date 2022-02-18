@@ -1,9 +1,18 @@
 package io.everytrade.server.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.experimental.FieldDefaults;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import static lombok.AccessLevel.PRIVATE;
+
+@Getter
+@AllArgsConstructor
+@FieldDefaults(level = PRIVATE, makeFinal = true)
 public enum SupportedExchange {
     BITSTAMP("Bitstamp", "bitstamp"),
     BITTREX("Bittrex", "bittrex"),
@@ -32,8 +41,8 @@ public enum SupportedExchange {
     AQUANOW("Aquanow", "aquanow"),
     ;
 
-    private final String displayName;
-    private final String internalId;
+    String displayName;
+    String internalId;
 
     private static final Map<String, SupportedExchange> BY_ID;
 
@@ -50,20 +59,8 @@ public enum SupportedExchange {
         }
     }
 
-    SupportedExchange(String displayName, String internalId) {
-        this.displayName = displayName;
-        this.internalId = internalId;
-    }
-
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    public String getInternalId() {
-        return internalId;
-    }
-
     public static Optional<SupportedExchange> fromId(String id) {
         return Optional.ofNullable(BY_ID.get(id));
     }
 }
+
