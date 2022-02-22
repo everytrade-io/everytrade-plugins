@@ -1,14 +1,18 @@
 package io.everytrade.server.plugin.impl.everytrade;
 
-import io.everytrade.server.plugin.api.parser.ParseResult;
+import io.everytrade.server.plugin.api.connector.DownloadResult;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.knowm.xchange.Exchange;
+import org.knowm.xchange.coinbasepro.dto.account.CoinbaseProTransfersWithHeader;
 import org.knowm.xchange.coinbasepro.dto.trade.CoinbaseProTradeHistoryParams;
+import org.knowm.xchange.coinbasepro.service.CoinbaseProAccountService;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.account.FundingRecord;
 import org.knowm.xchange.dto.trade.UserTrade;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -17,6 +21,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static lombok.AccessLevel.PRIVATE;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 @FieldDefaults(makeFinal = false, level = PRIVATE)
 public class CoinbaseProDownloader {
@@ -25,28 +30,22 @@ public class CoinbaseProDownloader {
     private static final int MAX_REQUEST_COUNT = 3000;
     private static final int SLEEP_BETWEEN_REQUESTS_MS = 200;
     public static final int FIRST_COINBASE_TX_ID = 1;
+    public static final String FIRST_DEPOSIT_ID = "";
+    public static final String FIRST_WITHDRAWAL_ID = "";
+    private DownloadState state;
 
-
-    Map<String, Integer> currencyPairLastIds;
     Exchange exchange;
 
     public CoinbaseProDownloader(Exchange exchange, String downloadState) {
         this.exchange = exchange;
-
-        if (downloadState == null) {
-            currencyPairLastIds = new HashMap<>();
-        } else {
-            currencyPairLastIds = Arrays.stream(downloadState.split(":"))
-                .map(entry -> entry.split("="))
-                .collect(Collectors.toMap(entry -> entry[0], entry -> Integer.parseInt(entry[1])));
-        }
+        this.state = DownloadState.deserialize(downloadState);
     }
 
-    public ParseResult download(String currencyPairs) {
-        var funding = downloadFunding(currencyPairs);
+    public DownloadResult download(String currencyPairs) {
+        var funding = downloadFunding();
         var trades = downloadTrades(currencyPairs);
-
-        return new XChangeConnectorParser().getParseResult(trades, funding);
+        String serialize = state.serialize();
+        return new DownloadResult(new XChangeConnectorParser().getParseResult(trades, funding), serialize);
     }
 
     public List<UserTrade> downloadTrades(String currencyPairs) {
@@ -60,7 +59,8 @@ public class CoinbaseProDownloader {
 
         for (CurrencyPair pair : pairs) {
             params.setCurrencyPair(pair);
-            final Integer lastDownloadedTxFound = currencyPairLastIds.get(pair.toString());
+            String key = pair.toString();
+            final Integer lastDownloadedTxFound = state.currencyPairLastIds.get(key);
             int lastDownloadedTx = lastDownloadedTxFound == null ? FIRST_COINBASE_TX_ID : lastDownloadedTxFound;
 
             while (sentRequests < MAX_REQUEST_COUNT) {
@@ -84,20 +84,24 @@ public class CoinbaseProDownloader {
 
                 ++sentRequests;
             }
-            currencyPairLastIds.put(pair.toString(), lastDownloadedTx);
+            state.currencyPairLastIds.put(pair.toString(), lastDownloadedTx);
         }
         return userTrades;
     }
 
-    public List<FundingRecord> downloadFunding(String currencyPairs) {
+    public List<FundingRecord> downloadFunding() {
         final List<FundingRecord> records = new ArrayList<>();
-        var accountService = exchange.getAccountService();
+        var accountService = (CoinbaseProAccountService) exchange.getAccountService();
         var params = (CoinbaseProTradeHistoryParams) accountService.createFundingHistoryParams();
 
         //DEPOSITS
+        final String lastDepositId = state.getLastDepositId();
+        String lastDownloadedDepositId = lastDepositId == null ? FIRST_DEPOSIT_ID : lastDepositId;
         params.setLimit(TX_PER_REQUEST);
         params.setType(FundingRecord.Type.DEPOSIT);
-        final List<FundingRecord> depositRecords;
+        params.setBeforeTransferId(lastDownloadedDepositId);
+
+        final CoinbaseProTransfersWithHeader depositRecords;
 
         try {
             Thread.sleep(SLEEP_BETWEEN_REQUESTS_MS);
@@ -105,37 +109,83 @@ public class CoinbaseProDownloader {
             throw new IllegalStateException("Funding deposit record history download sleep interrupted.", e);
         }
         try {
-            depositRecords = accountService.getFundingHistory(params);
+            depositRecords = accountService.getTransfersWithPagination(params);
         } catch (Exception e) {
             throw new IllegalStateException("Funding deposit record history download failed. ", e);
         }
-        if (!depositRecords.isEmpty()) {
-            records.addAll(depositRecords);
+        if (!depositRecords.getFundingRecords().isEmpty()) {
+            List<FundingRecord> fundingDepositRecords = depositRecords.getFundingRecords();
+            records.addAll(fundingDepositRecords);
+            lastDownloadedDepositId = depositRecords.getCbBefore();
+            state.setLastDepositId(lastDownloadedDepositId);
         }
 
         //WITHDRAWALS
+        final String lastWithdrawal = state.getLastWithdrawalId();
+        String lastDownloadedWithdrawalId = lastWithdrawal == null ? FIRST_WITHDRAWAL_ID : lastWithdrawal;
         params.setLimit(TX_PER_REQUEST);
         params.setType(FundingRecord.Type.WITHDRAWAL);
-        final List<FundingRecord> withdrawalRecords;
+        params.setBeforeTransferId(lastDownloadedWithdrawalId);
+
+        final CoinbaseProTransfersWithHeader withdrawalRecords;
         try {
             Thread.sleep(SLEEP_BETWEEN_REQUESTS_MS);
         } catch (InterruptedException e) {
             throw new IllegalStateException("Funding withdrawal record history download sleep interrupted.", e);
         }
         try {
-            withdrawalRecords = accountService.getFundingHistory(params);
+            withdrawalRecords = accountService.getTransfersWithPagination(params);
         } catch (Exception e) {
             throw new IllegalStateException("Funding withdrawal record history download failed. ", e);
         }
-        if (!withdrawalRecords.isEmpty()) {
-            records.addAll(withdrawalRecords);
+        if (!withdrawalRecords.getFundingRecords().isEmpty()) {
+            List<FundingRecord> fundingRecords = withdrawalRecords.getFundingRecords();
+            records.addAll(fundingRecords);
+            lastDownloadedWithdrawalId = withdrawalRecords.getCbBefore();
+            state.setLastWithdrawalId(lastDownloadedWithdrawalId);
         }
         return records;
     }
 
     public String getLastTransactionId() {
-        return currencyPairLastIds.keySet().stream()
-            .map(key -> key + "=" + currencyPairLastIds.get(key))
-            .collect(Collectors.joining(":"));
+        return state.serialize();
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @FieldDefaults(level = PRIVATE)
+    private static class DownloadState {
+        private static final String SEPARATOR_FOR_SPLIT = "\\|";
+        private static final String SEPARATOR = "|";
+
+        Map<String, Integer> currencyPairLastIds = new HashMap<>();
+        String lastDepositId;
+        String lastWithdrawalId;
+
+        public static DownloadState deserialize(String state) {
+            if (isEmpty(state)) {
+                return new DownloadState();
+            }
+            var strA = state.split(SEPARATOR_FOR_SPLIT);
+
+            var tradeIds = Arrays.stream(strA[0].split(":"))
+                .map(entry -> entry.split("="))
+                .collect(Collectors.toMap(entry -> entry[0], entry -> Integer.parseInt(entry[1])));
+
+            return new DownloadState(
+                tradeIds,
+                strA.length > 1 ? strA[1] : null,
+                strA.length > 2 ? strA[2] : null
+            );
+        }
+
+        public String serialize() {
+            return currencyPairLastIds.keySet().stream()
+                .map(key -> key + "=" + currencyPairLastIds.get(key))
+                .collect(Collectors.joining(":"))
+                + SEPARATOR + (lastDepositId != null ? lastDepositId : "")
+                + SEPARATOR + (lastWithdrawalId != null ? lastWithdrawalId : "");
+        }
     }
 }
