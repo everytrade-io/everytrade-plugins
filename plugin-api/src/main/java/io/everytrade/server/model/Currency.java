@@ -324,7 +324,7 @@ public enum Currency {
     OM(false, Instant.parse("2020-09-03T00:00:00Z"), "Mantra dao"),
     PORTO(false, Instant.parse("2021-11-19T00:00:00Z"), "FC Porto"),
     POWR(false, Instant.parse("2017-10-26T00:00:00Z"), "Power Ledger"),
-    QI(false, Instant.parse("2021-09-23T00:00:00Z"), "Benqui"),
+    QI(false, Instant.parse("2021-09-23T00:00:00Z"), "Benqi"),
     REPV2(false, Instant.parse("2015-10-26T00:00:00Z"), "Augur"),
     SFP(false, Instant.parse("2022-12-04T00:00:00Z"), "SafePal Token"),
     SKY(false, Instant.parse("2013-12-22T00:00:00Z"), "Skycoin"),
