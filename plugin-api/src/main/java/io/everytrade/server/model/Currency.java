@@ -324,7 +324,7 @@ public enum Currency {
     OM(false, Instant.parse("2020-09-03T00:00:00Z"), "Mantra dao"),
     PORTO(false, Instant.parse("2021-11-19T00:00:00Z"), "FC Porto"),
     POWR(false, Instant.parse("2017-10-26T00:00:00Z"), "Power Ledger"),
-    QI(false, Instant.parse("2021-09-23T00:00:00Z"), "Benqui"),
+    QI(false, Instant.parse("2021-09-23T00:00:00Z"), "Benqi"),
     REPV2(false, Instant.parse("2015-10-26T00:00:00Z"), "Augur"),
     SFP(false, Instant.parse("2022-12-04T00:00:00Z"), "SafePal Token"),
     SKY(false, Instant.parse("2013-12-22T00:00:00Z"), "Skycoin"),
@@ -388,7 +388,27 @@ public enum Currency {
     SHR(false, Instant.parse("2018-06-04T00:00:00Z"), "ShareToken"),
     SINGH(false, Instant.parse("2022-02-12T00:00:00Z"), "SinghCoin"),
     SLV(false, Instant.parse("2019-04-28T00:00:00Z"), "Silverway"),
-    ZLA(false, Instant.parse("2018-02-01T00:00:00Z"), "Zilla");
+    ZLA(false, Instant.parse("2018-02-01T00:00:00Z"), "Zilla"),
+    ACA(false, Instant.parse("2021-10-01T00:00:00Z"), "ACA Token"),
+    ALPINE(false, Instant.parse("2022-02-21T00:00:00Z"), "ALPINE Fan Token"),
+    BCPT(false, Instant.parse("2017-04-01T00:00:00Z"), "Blockmason Credit Protocol"),
+    BOBA(false, Instant.parse("2021-05-16T00:00:00Z"), "Boobam"),
+    BSD(false, Instant.parse("2014-06-07T00:00:00Z"), "BitSend"),
+    BTCST(false, Instant.parse("2021-08-26T00:00:00Z"), "BTC Standard Hashrate Token"),
+    BTTC(false, Instant.parse("2022-02-17T00:00:00Z"), "BitTorrent Chain"),
+    COP(false, Instant.parse("2021-08-12T00:00:00Z"), "Copiosa"),
+    DON(false, Instant.parse("2021-08-06T00:00:00Z"), "Don-key"),
+    GRS(false, Instant.parse("2017-03-22T00:00:00Z"), "Groestlcoin"),
+    MEETONE(false, Instant.parse("2017-08-09T00:00:00Z"), "MEET.ONE"),
+    ONG(false, Instant.parse("2018-08-23T00:00:00Z"), "Ontology Gas"),
+    PURSE(false, Instant.parse("2022-02-04T00:00:00Z"), "Purse token"),
+    SCRT(false, Instant.parse("2020-02-13T00:00:00Z"), "Secret"),
+    SGB(false, Instant.parse("2021-10-08T00:00:00Z"), "Songbird"),
+    TKO(false, Instant.parse("2021-05-21T00:00:00Z"), "Tokocrypto"),
+    UST(false, Instant.parse("2020-12-10T00:00:00Z"), "TerraUSD"),
+    VGX(false, Instant.parse("2017-06-28T00:00:00Z"), "Voyager Token"),
+    WAXP(false, Instant.parse("2017-10-05T00:00:00Z"), "WAX"),
+    XNO(false, Instant.parse("2015-10-05T00:00:00Z"), "Nano");
 
 
     String code;
