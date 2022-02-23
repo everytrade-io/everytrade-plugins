@@ -35,7 +35,6 @@ dependencies {
     pluginCompile "org.knowm.xchange:xchange-bittrex:$xchangeVersion"
     pluginCompile "org.knowm.xchange:xchange-bitstamp:$xchangeVersion"
     pluginCompile "org.knowm.xchange:xchange-bitfinex:$xchangeVersion"
-    pluginCompile "org.knowm.xchange:xchange-coinbasepro:$xchangeVersion"
     pluginCompile "org.knowm.xchange:xchange-bitmex:$xchangeVersion"
     pluginCompile "org.knowm.xchange:xchange-bitflyer:$xchangeVersion"
     pluginCompile "org.knowm.xchange:xchange-core:$xchangeVersion"
@@ -54,6 +53,12 @@ dependencies {
      */
     //    pluginCompile "org.knowm.xchange:xchange-coinbase:$xchangeVersion"
     pluginCompile "com.github.martinkyov.Xchange:xchange-coinbase:e83844d8baeaa69f345fc6de7293f460bfa96132"
+
+    /*
+     * only for temporary use till pull request confirmation https://github.com/knowm/XChange/pull/4412
+     */
+    //   pluginCompile "org.knowm.xchange:xchange-coinbasepro:$xchangeVersion"
+    pluginCompile "com.github.martinkyov.Xchange:xchange-coinbasepro:e4303df2a1ca9a055219a0aa6d57603707103140"
 
     pluginCompile "com.github.GENERALBYTESCOM:bitrafael_public:1.0.42"
 
