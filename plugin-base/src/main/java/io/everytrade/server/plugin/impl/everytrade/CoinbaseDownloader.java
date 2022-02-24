@@ -6,6 +6,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.knowm.xchange.Exchange;
+import org.knowm.xchange.coinbase.v2.service.CoinbaseAccountService;
 import org.knowm.xchange.coinbase.v2.service.CoinbaseTradeHistoryParams;
 import org.knowm.xchange.coinbase.v2.service.CoinbaseTradeService;
 import org.knowm.xchange.dto.account.FundingRecord;
@@ -32,6 +33,7 @@ import static org.knowm.xchange.bitfinex.service.BitfinexAdapters.log;
 public class CoinbaseDownloader {
     //https://developers.coinbase.com/api/v2#rate-limiting 10.000 / API-KEY / hour ---> 2500 / 15 min
     private static final int MAX_REQUEST_COUNT = 2500;
+    private static final int MAX_REQUEST_COUNT_DEPOSIT_WITHDRAWALS = 2500;
     private static final String DASH_SYMBOL = "-";
     private static final String COLON_SYMBOL = ":";
     private static final String PIPE_SYMBOL = "|";
@@ -46,10 +48,11 @@ public class CoinbaseDownloader {
         var funding = downloadFunding(walletStates);
         var trades = downloadTrades(walletStates);
 
-        return DownloadResult.builder()
+        DownloadResult build = DownloadResult.builder()
             .parseResult(new XChangeConnectorParser().getParseResult(trades, funding))
             .downloadStateData(getLastTransactionId(walletStates))
             .build();
+        return build;
     }
 
     private List<UserTrade> downloadTrades(Map<String, WalletState> walletStates) {
@@ -114,42 +117,83 @@ public class CoinbaseDownloader {
     }
 
     public List<FundingRecord> downloadFunding(Map<String, WalletState> walletStates) {
-        //var accountService = (CoinbaseAccountService) exchange.getAccountService();
-        List<FundingRecord> fundingRecords = new ArrayList<>();
-        // TODO funding
-       /* for (Map.Entry<String, WalletState> entry : walletStates.entrySet()) {
+        final List<FundingRecord> fundingRecords = new ArrayList<>();
+        int sentRequests = 0;
+
+        var accountService = (CoinbaseAccountService) exchange.getAccountService();
+        CoinbaseTradeHistoryParams params = (CoinbaseTradeHistoryParams) accountService.createFundingHistoryParams();
+        params.setLimit(TRANSACTIONS_PER_REQUEST_LIMIT);
+
+        for (Map.Entry<String, WalletState> entry : walletStates.entrySet()) {
             String lastDepositId = entry.getValue().lastDepositId;
-            String lastWithdrawId = entry.getValue().lastWithdrawId;
-            String walletId = entry.getKey();
+            String lastWithdrawalId = entry.getValue().lastWithdrawalId;
+            final String walletId = entry.getKey();
 
-            Map depositsBlock;
-            try {
-                depositsBlock = accountService.getDeposits(walletId);
-            } catch (IOException e) {
-                throw new IllegalStateException("Download deposit history failed.", e);
+            while (sentRequests < MAX_REQUEST_COUNT_DEPOSIT_WITHDRAWALS) {
+                ++sentRequests;
+                params.setStartId(lastDepositId);
+                final List<FundingRecord> depositRecords;
+                try {
+                    depositRecords = accountService.getDepositHistory(params, walletId);
+                } catch (IOException e) {
+                    throw new IllegalStateException("Download deposit history failed.", e);
+                }
+
+                if (depositRecords.isEmpty()) {
+                    break;
+                }
+
+                fundingRecords.addAll(depositRecords);
+                lastDepositId = depositRecords.get(0).getInternalId();
             }
 
-            final Map withdrawalsBlock;
-            try {
-                withdrawalsBlock = accountService.getWithdrawals(walletId);
-            } catch (IOException e) {
-                throw new IllegalStateException("Download sells history failed.", e);
+            while (sentRequests < MAX_REQUEST_COUNT_DEPOSIT_WITHDRAWALS) {
+                ++sentRequests;
+                params.setStartId(lastWithdrawalId);
+                final List<FundingRecord> withdrawalRecords;
+                try {
+                    withdrawalRecords = accountService.getWithdrawalHistory(params, walletId);
+                } catch (IOException e) {
+                    throw new IllegalStateException("Download sells history failed.", e);
+                }
+
+                if (withdrawalRecords.isEmpty()) {
+                    break;
+                }
+
+                fundingRecords.addAll(withdrawalRecords);
+                lastWithdrawalId = withdrawalRecords.get(0).getInternalId();
+
             }
-            assert depositsBlock != null;
-            assert withdrawalsBlock != null;
-        }*/
+            if (sentRequests == MAX_REQUEST_COUNT) {
+                log.info("Max request count {} has been achieved.", MAX_REQUEST_COUNT);
+            }
+
+            final WalletState walletState = walletStates.get(walletId);
+            walletState.lastDepositId = lastDepositId;
+            walletState.lastWithdrawalId = lastWithdrawalId;
+
+        }
         return fundingRecords;
     }
 
     private String getLastTransactionId(Map<String, WalletState> walletStates) {
         return walletStates.entrySet().stream()
-            .filter(entry -> entry.getValue().lastBuyId != null || entry.getValue().lastSellId != null)
+            .filter(entry -> entry.getValue().lastBuyId != null ||
+                entry.getValue().lastSellId != null ||
+                entry.getValue().lastDepositId != null ||
+                entry.getValue().lastWithdrawalId != null
+            )
             .map(
                 entry -> entry.getKey()
                     + COLON_SYMBOL
                     + Objects.requireNonNullElse(entry.getValue().lastBuyId, DASH_SYMBOL)
                     + COLON_SYMBOL
                     + Objects.requireNonNullElse(entry.getValue().lastSellId, DASH_SYMBOL)
+                    + COLON_SYMBOL
+                    + Objects.requireNonNullElse(entry.getValue().lastDepositId, DASH_SYMBOL)
+                    + COLON_SYMBOL
+                    + Objects.requireNonNullElse(entry.getValue().lastWithdrawalId, DASH_SYMBOL)
             )
             .collect(Collectors.joining(PIPE_SYMBOL));
     }
