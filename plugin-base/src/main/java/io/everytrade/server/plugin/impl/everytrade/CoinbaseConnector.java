@@ -71,6 +71,7 @@ public class CoinbaseConnector implements IConnector {
     @Override
     public DownloadResult getTransactions(String lastTransactionId) {
         CoinbaseDownloader coinbaseDownloader = new CoinbaseDownloader(exchange);
-        return coinbaseDownloader.download(lastTransactionId);
+        DownloadResult download = coinbaseDownloader.download(lastTransactionId);
+        return download;
     }
 }
