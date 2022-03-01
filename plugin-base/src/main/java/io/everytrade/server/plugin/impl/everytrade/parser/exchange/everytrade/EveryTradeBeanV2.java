@@ -9,8 +9,12 @@ import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.plugin.impl.everytrade.OkexConnectorParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
+import io.everytrade.server.util.CurrencyUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -28,6 +32,7 @@ public class EveryTradeBeanV2 extends ExchangeBean {
     private BigDecimal quantity;
     private BigDecimal volume;
     private BigDecimal fee;
+    private static final Logger LOG = LoggerFactory.getLogger(OkexConnectorParser.class);
 
     @Parsed(field = "UID")
     public void setUid(String uid) {
@@ -43,8 +48,8 @@ public class EveryTradeBeanV2 extends ExchangeBean {
     @Parsed(field = "SYMBOL")
     public void setSymbol(String symbol) {
         String[] symbolParts = symbol.split("/");
-        symbolBase = Currency.fromCode(symbolParts[0]);
-        symbolQuote = Currency.fromCode(symbolParts[1]);
+        symbolBase = CurrencyUtil.fromString(symbolParts[0]);
+        symbolQuote = CurrencyUtil.fromString(symbolParts[1]);
     }
 
     @Parsed(field = "ACTION")

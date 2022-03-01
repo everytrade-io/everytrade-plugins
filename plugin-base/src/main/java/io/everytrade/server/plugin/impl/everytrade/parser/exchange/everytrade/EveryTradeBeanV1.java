@@ -11,6 +11,7 @@ import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
+import io.everytrade.server.util.CurrencyUtil;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -43,8 +44,8 @@ public class EveryTradeBeanV1 extends ExchangeBean {
     @Parsed(field = "SYMBOL")
     public void setSymbol(String symbol) {
         String[] symbolParts = symbol.split("/");
-        symbolBase = Currency.fromCode(symbolParts[0]);
-        symbolQuote = Currency.fromCode(symbolParts[1]);
+        symbolBase = CurrencyUtil.fromString(symbolParts[0]);
+        symbolQuote = CurrencyUtil.fromString(symbolParts[1]);
     }
 
     @Parsed(field = "ACTION")
