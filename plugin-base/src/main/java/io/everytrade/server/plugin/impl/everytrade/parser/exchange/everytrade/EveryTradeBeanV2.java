@@ -12,7 +12,7 @@ import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.OkexConnectorParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
-import io.everytrade.server.util.CurrencyUtilFromQuote;
+import io.everytrade.server.util.CurrencyUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,9 +48,8 @@ public class EveryTradeBeanV2 extends ExchangeBean {
     @Parsed(field = "SYMBOL")
     public void setSymbol(String symbol) {
         String[] symbolParts = symbol.split("/");
-        CurrencyUtilFromQuote currencySwitchUtil = new CurrencyUtilFromQuote();
-        symbolBase = currencySwitchUtil.currencyCodeSwitcher(symbolParts[0]);
-        symbolQuote = currencySwitchUtil.currencyCodeSwitcher(symbolParts[1]);
+        symbolBase = CurrencyUtil.fromString(symbolParts[0]);
+        symbolQuote = CurrencyUtil.fromString(symbolParts[1]);
     }
 
     @Parsed(field = "ACTION")
