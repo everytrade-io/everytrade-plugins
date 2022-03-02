@@ -144,7 +144,7 @@ public class CoinbaseDownloader {
                 }
 
                 fundingRecords.addAll(depositRecords);
-                lastDepositId = depositRecords.get(0).getInternalId();
+                lastDepositId = depositRecords.get(depositRecords.size() - 1).getInternalId();
             }
 
             while (sentRequests < MAX_REQUEST_COUNT_DEPOSIT_WITHDRAWALS) {
@@ -162,7 +162,7 @@ public class CoinbaseDownloader {
                 }
 
                 fundingRecords.addAll(withdrawalRecords);
-                lastWithdrawalId = withdrawalRecords.get(0).getInternalId();
+                lastWithdrawalId = withdrawalRecords.get(withdrawalRecords.size() - 1).getInternalId();
 
             }
             if (sentRequests == MAX_REQUEST_COUNT) {
