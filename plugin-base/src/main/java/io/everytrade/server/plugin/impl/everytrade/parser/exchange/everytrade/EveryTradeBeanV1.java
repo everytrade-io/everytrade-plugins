@@ -9,6 +9,7 @@ import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.plugin.impl.everytrade.parser.EverytradeCSVParserValidator;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import io.everytrade.server.util.CurrencyUtil;
@@ -18,6 +19,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Headers(sequence = {"UID", "DATE", "SYMBOL", "ACTION", "QUANTY", "PRICE", "FEE"}, extract = true)
 public class EveryTradeBeanV1 extends ExchangeBean {
@@ -43,9 +45,9 @@ public class EveryTradeBeanV1 extends ExchangeBean {
 
     @Parsed(field = "SYMBOL")
     public void setSymbol(String symbol) {
-        String[] symbolParts = symbol.split("/");
-        symbolBase = CurrencyUtil.fromString(symbolParts[0]);
-        symbolQuote = CurrencyUtil.fromString(symbolParts[1]);
+        Map<String,String> symbolParts = EverytradeCSVParserValidator.parsedSymbol(symbol);
+        symbolBase = CurrencyUtil.fromString(symbolParts.get("symbolBase"));
+        symbolQuote = CurrencyUtil.fromString(symbolParts.get("symbolQuote"));
     }
 
     @Parsed(field = "ACTION")
@@ -54,18 +56,18 @@ public class EveryTradeBeanV1 extends ExchangeBean {
     }
 
     @Parsed(field = "QUANTY", defaultNullRead = "0")
-    public void setQuantityBase(BigDecimal quantity) {
-        this.quantity = quantity;
+    public void setQuantityBase(String quantity) {
+        this.quantity = EverytradeCSVParserValidator.numberParser(quantity);
     }
 
     @Parsed(field = "PRICE", defaultNullRead = "0")
-    public void setPrice(BigDecimal price) {
-        this.price = price;
+    public void setPrice(String price) {
+        this.price = EverytradeCSVParserValidator.numberParser(price);
     }
 
     @Parsed(field = "FEE", defaultNullRead = "0")
-    public void setFee(BigDecimal fee) {
-        this.fee = fee;
+    public void setFee(String fee) {
+        this.fee = EverytradeCSVParserValidator.numberParser(fee);
     }
 
     @Override
