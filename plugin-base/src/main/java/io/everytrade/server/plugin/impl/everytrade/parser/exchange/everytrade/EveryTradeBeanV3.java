@@ -5,6 +5,7 @@ import com.univocity.parsers.annotations.Headers;
 import com.univocity.parsers.annotations.Parsed;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
+import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
@@ -51,9 +52,9 @@ public class EveryTradeBeanV3 extends ExchangeBean {
 
     @Parsed(field = "SYMBOL")
     public void setSymbol(String value) {
-        Map<String,String> symbolParts = EverytradeCSVParserValidator.parsedSymbol(value);
-        symbolBase = CurrencyUtil.fromString(symbolParts.get("symbolBase"));
-        symbolQuote = CurrencyUtil.fromString(symbolParts.get("symbolQuote"));
+        CurrencyPair symbolParts = EverytradeCSVParserValidator.parseSymbol(value);
+        symbolBase = symbolParts.getBase();
+        symbolQuote = symbolParts.getQuote();
     }
 
     @Parsed(field = "ACTION")
@@ -63,17 +64,17 @@ public class EveryTradeBeanV3 extends ExchangeBean {
 
     @Parsed(field = "QUANTY", defaultNullRead = "0")
     public void setQuantityBase(String value) {
-        quantity = EverytradeCSVParserValidator.numberParser(value);
+        quantity = EverytradeCSVParserValidator.parserNumber(value);
     }
 
     @Parsed(field = "PRICE", defaultNullRead = "0")
     public void setPrice(String value) {
-        price = EverytradeCSVParserValidator.numberParser(value);
+        price = EverytradeCSVParserValidator.parserNumber(value);
     }
 
     @Parsed(field = "FEE", defaultNullRead = "0")
     public void setFee(String value) {
-        fee = EverytradeCSVParserValidator.numberParser(value);
+        fee = EverytradeCSVParserValidator.parserNumber(value);
     }
 
     @Parsed(field = "FEE_CURRENCY")
@@ -83,7 +84,7 @@ public class EveryTradeBeanV3 extends ExchangeBean {
 
     @Parsed(field = "REBATE", defaultNullRead = "0")
     public void setRebate(String value) {
-        rebate =  EverytradeCSVParserValidator.numberParser(value);
+        rebate =  EverytradeCSVParserValidator.parserNumber(value);
     }
 
     @Parsed(field = "REBATE_CURRENCY")
