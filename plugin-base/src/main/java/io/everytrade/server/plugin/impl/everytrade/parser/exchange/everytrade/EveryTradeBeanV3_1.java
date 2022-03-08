@@ -5,12 +5,14 @@ import com.univocity.parsers.annotations.Headers;
 import com.univocity.parsers.annotations.Parsed;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
+import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.DepositWithdrawalImportedTransaction;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.plugin.impl.everytrade.parser.EverytradeCSVParserValidator;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import io.everytrade.server.util.CurrencyUtil;
 import lombok.experimental.FieldDefaults;
@@ -20,6 +22,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
@@ -36,17 +39,30 @@ public class EveryTradeBeanV3_1 extends ExchangeBean {
     Instant date;
     Currency symbolBase;
     Currency symbolQuote;
-    TransactionType action;
-    @Parsed(field = "QUANTY", defaultNullRead = "0")
-    BigDecimal quantity;
-    @Parsed(field = "PRICE", defaultNullRead = "0")
     BigDecimal price;
-    @Parsed(field = "FEE", defaultNullRead = "0")
+    BigDecimal quantity;
     BigDecimal fee;
-    Currency feeCurrency;
-    @Parsed(field = "REBATE", defaultNullRead = "0")
     BigDecimal rebate;
     Currency rebateCurrency;
+    TransactionType action;
+    @Parsed(field = "QUANTY", defaultNullRead = "0")
+    public void setQuanty(String value) {
+        quantity = EverytradeCSVParserValidator.parserNumber(value);
+    }
+
+    @Parsed(field = "PRICE", defaultNullRead = "0")
+    public void setPrice(String value) {
+        price = EverytradeCSVParserValidator.parserNumber(value);
+    }
+    @Parsed(field = "FEE", defaultNullRead = "0")
+    public void setFee(String value){
+        fee = EverytradeCSVParserValidator.parserNumber(value);
+    }
+    Currency feeCurrency;
+    @Parsed(field = "REBATE", defaultNullRead = "0")
+    public void setRebate(String value){
+        rebate = EverytradeCSVParserValidator.parserNumber(value);
+    }
     @Parsed(field = "ADDRESS_FROM")
     String addressFrom;
     @Parsed(field = "ADDRESS_TO")
@@ -60,10 +76,9 @@ public class EveryTradeBeanV3_1 extends ExchangeBean {
 
     @Parsed(field = "SYMBOL")
     public void setSymbol(String value) {
-        String[] symbolParts = value.split("/");
-        symbolBase = CurrencyUtil.fromString(symbolParts[0]);
-        symbolQuote = symbolParts.length > 1 ? CurrencyUtil.fromString(symbolParts[1]) :
-            CurrencyUtil.fromString(symbolParts[0]);
+        CurrencyPair symbolParts = EverytradeCSVParserValidator.parseSymbol(value);
+        symbolBase = symbolParts.getBase();
+        symbolQuote = symbolParts.getQuote();
     }
 
     @Parsed(field = "ACTION")
@@ -73,12 +88,12 @@ public class EveryTradeBeanV3_1 extends ExchangeBean {
 
     @Parsed(field = "FEE_CURRENCY")
     public void setFeeCurrency(String value) {
-        feeCurrency = value == null ? null : Currency.fromCode(value);
+        feeCurrency = value == null ? null : Currency.fromCode(EverytradeCSVParserValidator.correctCurrency(value));
     }
 
     @Parsed(field = "REBATE_CURRENCY")
     public void setRebateCurrency(String value) {
-        rebateCurrency = value == null ? null : Currency.fromCode(value);
+        rebateCurrency = value == null ? null : Currency.fromCode(EverytradeCSVParserValidator.correctCurrency(value));
     }
 
     @Override
