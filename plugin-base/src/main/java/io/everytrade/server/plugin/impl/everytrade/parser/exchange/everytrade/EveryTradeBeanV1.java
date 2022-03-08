@@ -4,6 +4,7 @@ import com.univocity.parsers.annotations.Format;
 import com.univocity.parsers.annotations.Headers;
 import com.univocity.parsers.annotations.Parsed;
 import io.everytrade.server.model.Currency;
+import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
@@ -12,14 +13,12 @@ import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.EverytradeCSVParserValidator;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
-import io.everytrade.server.util.CurrencyUtil;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 @Headers(sequence = {"UID", "DATE", "SYMBOL", "ACTION", "QUANTY", "PRICE", "FEE"}, extract = true)
 public class EveryTradeBeanV1 extends ExchangeBean {
@@ -45,9 +44,9 @@ public class EveryTradeBeanV1 extends ExchangeBean {
 
     @Parsed(field = "SYMBOL")
     public void setSymbol(String symbol) {
-        Map<String,String> symbolParts = EverytradeCSVParserValidator.parsedSymbol(symbol);
-        symbolBase = CurrencyUtil.fromString(symbolParts.get("symbolBase"));
-        symbolQuote = CurrencyUtil.fromString(symbolParts.get("symbolQuote"));
+        CurrencyPair symbolParts = EverytradeCSVParserValidator.parseSymbol(symbol);
+        symbolBase = symbolParts.getBase();
+        symbolQuote = symbolParts.getQuote();
     }
 
     @Parsed(field = "ACTION")
@@ -57,17 +56,17 @@ public class EveryTradeBeanV1 extends ExchangeBean {
 
     @Parsed(field = "QUANTY", defaultNullRead = "0")
     public void setQuantityBase(String quantity) {
-        this.quantity = EverytradeCSVParserValidator.numberParser(quantity);
+        this.quantity = EverytradeCSVParserValidator.parserNumber(quantity);
     }
 
     @Parsed(field = "PRICE", defaultNullRead = "0")
     public void setPrice(String price) {
-        this.price = EverytradeCSVParserValidator.numberParser(price);
+        this.price = EverytradeCSVParserValidator.parserNumber(price);
     }
 
     @Parsed(field = "FEE", defaultNullRead = "0")
     public void setFee(String fee) {
-        this.fee = EverytradeCSVParserValidator.numberParser(fee);
+        this.fee = EverytradeCSVParserValidator.parserNumber(fee);
     }
 
     @Override

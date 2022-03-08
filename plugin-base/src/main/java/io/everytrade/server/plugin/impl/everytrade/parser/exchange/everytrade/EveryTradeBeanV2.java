@@ -4,6 +4,7 @@ import com.univocity.parsers.annotations.Format;
 import com.univocity.parsers.annotations.Headers;
 import com.univocity.parsers.annotations.Parsed;
 import io.everytrade.server.model.Currency;
+import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
@@ -49,9 +50,9 @@ public class EveryTradeBeanV2 extends ExchangeBean {
 
     @Parsed(field = "SYMBOL")
     public void setSymbol(String symbol) {
-        Map<String,String> symbolParts = EverytradeCSVParserValidator.parsedSymbol(symbol);
-        symbolBase = CurrencyUtil.fromString(symbolParts.get("symbolBase"));
-        symbolQuote = CurrencyUtil.fromString(symbolParts.get("symbolQuote"));
+        CurrencyPair symbolParts = EverytradeCSVParserValidator.parseSymbol(symbol);
+        symbolBase = symbolParts.getBase();
+        symbolQuote = symbolParts.getQuote();
     }
 
     @Parsed(field = "ACTION")
@@ -61,17 +62,17 @@ public class EveryTradeBeanV2 extends ExchangeBean {
 
     @Parsed(field = "QUANTY", defaultNullRead = "0")
     public void setQuantity(String quantity) {
-        this.quantity = EverytradeCSVParserValidator.numberParser(quantity);
+        this.quantity = EverytradeCSVParserValidator.parserNumber(quantity);
     }
 
     @Parsed(field = "VOLUME", defaultNullRead = "0")
     public void setVolume(String volume) {
-        this.volume = EverytradeCSVParserValidator.numberParser(volume);
+        this.volume = EverytradeCSVParserValidator.parserNumber(volume);
     }
 
     @Parsed(field = "FEE", defaultNullRead = "0")
     public void setFee(String fee) {
-        this.fee = EverytradeCSVParserValidator.numberParser(fee);
+        this.fee = EverytradeCSVParserValidator.parserNumber(fee);
     }
 
     @Override

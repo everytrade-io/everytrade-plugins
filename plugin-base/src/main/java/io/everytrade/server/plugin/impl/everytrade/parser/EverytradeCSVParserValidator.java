@@ -1,34 +1,29 @@
 package io.everytrade.server.plugin.impl.everytrade.parser;
 
-import io.everytrade.server.plugin.api.parser.TransactionCluster;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
-import io.everytrade.server.util.CurrencyUtil;
+import io.everytrade.server.model.CurrencyPair;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 public class EverytradeCSVParserValidator {
 
-    public static Map<String,String> parsedSymbol(String value) {
-        Map<String,String> symbols = new HashMap<>();
-        String[] symbolParts = symbolPairParser(value);
-        String base = correctCurrency(symbolParts[0].toUpperCase());
-        symbols.put("symbolBase", base);
+    public static CurrencyPair parseSymbol(String value) {
+        String[] symbolParts = parsePair(value);
+        String base = correctCurrency(symbolParts[0]);
+        String quote = correctCurrency(symbolParts[0]);
         if (symbolParts.length > 1) {
-            symbols.put("symbolQuote", correctCurrency(symbolParts[1].toUpperCase()));
-        } else {
-            symbols.put("symbolQuote", base);
+            quote = correctCurrency(symbolParts[1]);
         }
-        return symbols;
+        CurrencyPair pair = new CurrencyPair(base,quote);
+        return pair;
     }
 
-    public static String[] symbolPairParser(String value) {
+    public static String[] parsePair(String value) {
         return value.split("/");
     }
 
-    public static BigDecimal numberParser(String value) {
+    public static BigDecimal parserNumber(String value) {
         String parsedValue = value;
 
         // e.g. 2,100.00
