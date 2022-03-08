@@ -62,7 +62,7 @@ public class BinanceBeanV3 extends ExchangeBean {
         feeCurrency = findEnds(fee);
         if (feeCurrency != null) {
             final String feeValue = fee.replaceAll("[A-Z,\\s$]", "");
-            this.fee = new BigDecimal(feeValue);
+            this.fee = new BigDecimal(feeValue).abs();
         } else {
             this.fee = BigDecimal.ZERO;
         }
