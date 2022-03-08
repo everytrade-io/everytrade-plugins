@@ -114,7 +114,8 @@ public class EverytradeCsvMultiParser implements ICsvParser {
 
         EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
             .headers(List.of(
-                CsvHeader.of("Date(UTC)", "Pair", "Side", "Price", "Executed", "Amount", "Fee").withSeparator(DELIMITER_COMMA)
+                CsvHeader.of("Date(UTC)", "Pair", "Side", "Price", "Executed", "Amount", "Fee").withSeparator(DELIMITER_COMMA),
+                CsvHeader.of("Date(UTC)", "Pair", "Side", "Price", "Quantity", "Amount", "Fee").withSeparator(DELIMITER_COMMA)
             ))
             .parserFactory(BinanceExchangeSpecificParserV3::new)
             .supportedExchange(BINANCE)
