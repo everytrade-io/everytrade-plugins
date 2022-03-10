@@ -59,10 +59,12 @@ public class BinanceBeanV3 extends ExchangeBean {
         this.type = detectTransactionType(type);
         this.filled = new BigDecimal(filled.replaceAll("[A-Z,\\s$]", ""));
         this.total = new BigDecimal(total.replaceAll("[A-Z,\\s$]", ""));
-        feeCurrency = findEnds(fee);
-        if (feeCurrency != null) {
-            final String feeValue = fee.replaceAll("[A-Z,\\s$]", "");
-            this.fee = new BigDecimal(feeValue).abs();
+        final String feeValue = fee.replaceAll("[A-Z,\\s$]", "");
+        BigDecimal feeAbsValue = new BigDecimal(feeValue).abs(); // abs value of fee
+        Currency currencyEnds = findEnds(fee); // end of string with currency code
+        if (currencyEnds != null && feeAbsValue.compareTo((BigDecimal.ZERO)) > 0)  {
+            feeCurrency = currencyEnds;
+            this.fee = feeAbsValue;
         } else {
             this.fee = BigDecimal.ZERO;
         }
