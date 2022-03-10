@@ -1,6 +1,7 @@
 package io.everytrade.server.plugin.impl.everytrade.parser;
 
 import io.everytrade.server.model.CurrencyPair;
+import io.everytrade.server.util.CurrencyUtil;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -40,7 +41,8 @@ public class EverytradeCSVParserValidator {
     }
 
     public static String correctCurrency(String value) {
-        return value.toUpperCase();
+        value = value.toUpperCase();
+        return CurrencyUtil.fromStringToString(value);
     }
 
 }
