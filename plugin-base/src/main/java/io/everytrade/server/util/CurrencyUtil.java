@@ -15,4 +15,8 @@ public class CurrencyUtil {
     public static Currency fromString(String currencyName) {
         return CURRENCY_EXCEPTIONS.get(currencyName) != null ? CURRENCY_EXCEPTIONS.get(currencyName) : Currency.fromCode(currencyName);
     }
+
+    public static String fromStringToString(String currencyName) {
+        return CURRENCY_EXCEPTIONS.get(currencyName) != null ? CURRENCY_EXCEPTIONS.get(currencyName).getCode() : currencyName;
+    }
 }
