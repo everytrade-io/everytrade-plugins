@@ -19,17 +19,18 @@ import org.knowm.xchange.bittrex.BittrexExchange;
 import org.knowm.xchange.bittrex.dto.account.BittrexDepositHistory;
 import org.knowm.xchange.bittrex.dto.account.BittrexWithdrawalHistory;
 import org.knowm.xchange.bittrex.service.BittrexAccountServiceRaw;
+
+import org.knowm.xchange.bittrex.service.BittrexTradeHistoryParams;
 import org.knowm.xchange.dto.trade.UserTrade;
 import org.knowm.xchange.service.trade.TradeService;
-import org.knowm.xchange.service.trade.params.TradeHistoryParams;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import static com.google.common.base.Strings.emptyToNull;
-import static io.everytrade.server.plugin.impl.everytrade.ConnectorUtils.findDuplicateTransaction;
 import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
@@ -38,7 +39,9 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 public class BittrexConnector implements IConnector {
     private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "bittrexApiConnector";
 
-    private static final int DEPOSIT_WITHDRAWAL_PAGE_SIZE = 200;
+    private static final int DEPOSIT_WITHDRAWAL_PAGE_SIZE = 50;
+    private static final int TRADE_PAGE_SIZE = 200;
+    private static final int MAX_REQUEST_COUNT = 3;
 
     private static final ConnectorParameterDescriptor PARAMETER_API_SECRET =
         new ConnectorParameterDescriptor(
@@ -97,72 +100,145 @@ public class BittrexConnector implements IConnector {
     }
 
     private List<UserTrade> downloadTrades(DownloadState downloadState) {
+        final List<UserTrade> trades = new ArrayList<>();
         TradeService tradeService = exchange.getTradeService();
-        TradeHistoryParams params = tradeService.createTradeHistoryParams();
-        List<UserTrade> userTradesBlock;
-        try {
-            userTradesBlock = tradeService.getTradeHistory(params).getUserTrades();
-        } catch (Exception e) {
-            throw new IllegalStateException("User trade history download failed.", e);
+        BittrexTradeHistoryParams params = (BittrexTradeHistoryParams) tradeService.createTradeHistoryParams();
+        String startTxTime = downloadState.getStartTxTime();
+        String endTxTime = downloadState.getEndTxTime();
+
+        if (startTxTime != null && endTxTime != null && Long.parseLong(endTxTime) > Long.parseLong(startTxTime)) {
+            params.setStartTime(new Date(Long.parseLong(downloadState.getStartTxTime())));
         }
 
-        if (downloadState.lastTxId == null) {
-            return userTradesBlock;
+        if (startTxTime != null && endTxTime == null) {
+            params.setStartTime(new Date(Long.parseLong(downloadState.getStartTxTime())));
         }
 
-        final List<UserTrade> userTradesToAdd;
-        final int duplicateTxIndex = findDuplicateTransaction(downloadState.lastTxId, userTradesBlock);
-        if (duplicateTxIndex > -1) {
-            if (duplicateTxIndex < userTradesBlock.size() - 1) {
-                userTradesToAdd = userTradesBlock.subList(duplicateTxIndex + 1, userTradesBlock.size());
-            } else {
-                userTradesToAdd = List.of();
+        if (endTxTime != null) {
+            params.setEndTime(new Date(Long.parseLong(downloadState.getEndTxTime())));
+        }
+        int sentRequests = 0;
+        while (sentRequests < MAX_REQUEST_COUNT) {
+            ++sentRequests;
+            final List<UserTrade> userTradesBlock;
+            try {
+                userTradesBlock = tradeService.getTradeHistory(params).getUserTrades();
+            } catch (Exception e) {
+                throw new IllegalStateException("User trade history download failed.", e);
             }
-        } else {
-            userTradesToAdd = userTradesBlock;
-        }
 
-        if (!userTradesToAdd.isEmpty()) {
-            downloadState.setLastTxId(userTradesToAdd.get(userTradesToAdd.size() - 1).getId());
+            if (downloadState.getEndTxTime() == null && !userTradesBlock.isEmpty()) {
+                long startTime = userTradesBlock.get(userTradesBlock.size() - 1).getTimestamp().getTime() + (1 * 1000);
+                downloadState.setStartTxTime(String.valueOf(startTime));
+            }
+            if (userTradesBlock.isEmpty()) {
+                downloadState.setEndTxTime(null);
+                break;
+            }
+            Date timestamp = userTradesBlock.get(0).getTimestamp();
+            params.setEndTime(timestamp);
+            downloadState.setEndTxTime(String.valueOf(timestamp.getTime()));
+            Collections.reverse(userTradesBlock);
+            trades.addAll(userTradesBlock);
         }
-        return userTradesToAdd;
+        return trades;
     }
+
 
     private List<BittrexDepositHistory> downloadDeposits(DownloadState downloadState) {
         var accountService = (BittrexAccountServiceRaw) exchange.getAccountService();
-
         List<BittrexDepositHistory> deposits = new ArrayList<>();
-        try {
-            deposits.addAll(accountService.getBittrexDepositsClosed(
-                null, downloadState.lastDepositId,null, DEPOSIT_WITHDRAWAL_PAGE_SIZE
-            ));
-        } catch (IOException e) {
-            throw new IllegalStateException("User deposit history download failed.", e);
+
+        String startStateItemId = downloadState.getStartDepositId();
+        String endStateItemId = downloadState.getEndDepositId();
+
+        String startItemId = null;
+        String endItemId = null;
+
+        if (startStateItemId != null && endStateItemId == null) {
+            startItemId = startStateItemId;
         }
 
-        if (!deposits.isEmpty()) {
-            downloadState.setLastDepositId(deposits.get(deposits.size() -1).getId());
+        if (endStateItemId != null) {
+            endItemId = endStateItemId;
+        }
+
+        int sentRequests = 0;
+        while (sentRequests < MAX_REQUEST_COUNT) {
+            ++sentRequests;
+            final List<BittrexDepositHistory> depositsBlock = new ArrayList<>();
+
+            try {
+                depositsBlock.addAll(accountService.getBittrexDepositsClosed(
+                    null, endItemId, startItemId, DEPOSIT_WITHDRAWAL_PAGE_SIZE
+                ));
+            } catch (IOException e) {
+                throw new IllegalStateException("User deposit history download failed.", e);
+            }
+            // first round
+            if (endItemId == null && !depositsBlock.isEmpty()) {
+                String id = depositsBlock.get(0).getId(); // add one
+                downloadState.setStartDepositId(id);
+            }
+
+            if (depositsBlock.isEmpty() || depositsBlock.size() < DEPOSIT_WITHDRAWAL_PAGE_SIZE) {
+                downloadState.setEndDepositId(null);
+                break;
+            }
+            endItemId = depositsBlock.get(depositsBlock.size() - 1).getId();
+            downloadState.setEndDepositId(endItemId);
+            deposits.addAll(depositsBlock);
         }
         return deposits;
     }
 
     private List<BittrexWithdrawalHistory> downloadWithdrawals(DownloadState downloadState) {
         var accountService = (BittrexAccountServiceRaw) exchange.getAccountService();
-
         List<BittrexWithdrawalHistory> withdrawals = new ArrayList<>();
-        try {
-            withdrawals.addAll(accountService.getBittrexWithdrawalsClosed(
-                null, downloadState.lastWithdrawalId,null, DEPOSIT_WITHDRAWAL_PAGE_SIZE
-            ));
-        } catch (IOException e) {
-            throw new IllegalStateException("User withdrawal history download failed.", e);
+
+        String startStateItemId = downloadState.getStartWithdrawalId();
+        String endStateItemId = downloadState.getEndWithdrawalId();
+
+        String startItemId = null;
+        String endItemId = null;
+
+        if (startStateItemId != null && endStateItemId == null) {
+            startItemId = startStateItemId;
         }
 
-        if (!withdrawals.isEmpty()) {
-            downloadState.setLastDepositId(withdrawals.get(withdrawals.size() -1).getId());
+        if (endStateItemId != null) {
+            endItemId = endStateItemId;
+        }
+
+        int sentRequests = 0;
+        while (sentRequests < MAX_REQUEST_COUNT) {
+            ++sentRequests;
+            final List<BittrexWithdrawalHistory> withdrawalBlock = new ArrayList<>();
+
+            try {
+                withdrawalBlock.addAll(accountService.getBittrexWithdrawalsClosed(
+                    null, endItemId, startItemId, DEPOSIT_WITHDRAWAL_PAGE_SIZE
+                ));
+            } catch (IOException e) {
+                throw new IllegalStateException("User withdrawal history download failed.", e);
+            }
+            // first round
+            if (endItemId == null && !withdrawalBlock.isEmpty()) {
+                String id = withdrawalBlock.get(0).getId(); // add one
+                downloadState.setStartWithdrawalId(id);
+            }
+
+            if (withdrawalBlock.isEmpty() || withdrawalBlock.size() < DEPOSIT_WITHDRAWAL_PAGE_SIZE) {
+                downloadState.setEndWithdrawalId(null);
+                break;
+            }
+            endItemId = withdrawalBlock.get(withdrawalBlock.size() - 1).getId();
+            downloadState.setEndDepositId(endItemId);
+            withdrawals.addAll(withdrawalBlock);
         }
         return withdrawals;
     }
+
 
     @Data
     @NoArgsConstructor
@@ -171,26 +247,37 @@ public class BittrexConnector implements IConnector {
     private static class DownloadState {
         private static final String SEPARATOR = "=";
 
-        String lastTxId;
-        String lastDepositId;
-        String lastWithdrawalId;
+        String startTxTime;
+        String endTxTime;
+        String startDepositId;
+        String endDepositId;
+        String startWithdrawalId;
+        String endWithdrawalId;
 
         public static DownloadState deserialize(String state) {
             if (isEmpty(state)) {
                 return new DownloadState();
             }
-            var strA = state.split(SEPARATOR);
+            var stringState = state.split(SEPARATOR);
+
             return new DownloadState(
-                strA[0],
-                strA.length > 1 ? emptyToNull(strA[1]) : null,
-                strA.length > 2 ? emptyToNull(strA[2]) : null
+                stringState[0].equals(" ") ? null : stringState[0],
+                stringState.length < 1 || stringState[1].equals(" ")  ? null : stringState[1],
+                stringState.length < 2 || stringState[2].equals(" ")  ? null : stringState[2],
+                stringState.length < 3 || stringState[3].equals(" ")  ? null : stringState[3],
+                stringState.length < 4 || stringState[4].equals(" ")  ? null : stringState[4],
+                stringState.length < 5 || stringState[5].equals(" ")  ? null : stringState[5]
             );
         }
 
         public String serialize() {
-            return (lastTxId == null ? "" : lastTxId) + SEPARATOR +
-                (lastDepositId == null ? "" : lastDepositId) + SEPARATOR +
-                (lastWithdrawalId == null ? "" : lastWithdrawalId);
+            return
+                (startTxTime == null ? " " : startTxTime) + SEPARATOR +
+                    (endTxTime == null ? " " : endTxTime) + SEPARATOR +
+                    (startDepositId == null ? " " : startDepositId) + SEPARATOR +
+                    (endDepositId == null ? " " : endDepositId) + SEPARATOR +
+                    (startWithdrawalId == null ? " " : startWithdrawalId) + SEPARATOR +
+                    (endWithdrawalId == null ? " " : endWithdrawalId);
         }
     }
 }
