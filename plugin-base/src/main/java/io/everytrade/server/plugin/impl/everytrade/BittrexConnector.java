@@ -39,9 +39,9 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 public class BittrexConnector implements IConnector {
     private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "bittrexApiConnector";
 
-    private static final int DEPOSIT_WITHDRAWAL_PAGE_SIZE = 50;
+    private static final int DEPOSIT_WITHDRAWAL_PAGE_SIZE = 200;
     private static final int TRADE_PAGE_SIZE = 200;
-    private static final int MAX_REQUEST_COUNT = 3;
+    private static final int MAX_REQUEST_COUNT = 5;
 
     private static final ConnectorParameterDescriptor PARAMETER_API_SECRET =
         new ConnectorParameterDescriptor(
@@ -183,6 +183,7 @@ public class BittrexConnector implements IConnector {
 
             if (depositsBlock.isEmpty() || depositsBlock.size() < DEPOSIT_WITHDRAWAL_PAGE_SIZE) {
                 downloadState.setEndDepositId(null);
+                deposits.addAll(depositsBlock);
                 break;
             }
             endItemId = depositsBlock.get(depositsBlock.size() - 1).getId();
@@ -230,6 +231,7 @@ public class BittrexConnector implements IConnector {
 
             if (withdrawalBlock.isEmpty() || withdrawalBlock.size() < DEPOSIT_WITHDRAWAL_PAGE_SIZE) {
                 downloadState.setEndWithdrawalId(null);
+                withdrawals.addAll(withdrawalBlock);
                 break;
             }
             endItemId = withdrawalBlock.get(withdrawalBlock.size() - 1).getId();
