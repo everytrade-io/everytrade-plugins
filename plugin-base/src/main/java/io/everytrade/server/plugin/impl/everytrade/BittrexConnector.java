@@ -114,7 +114,7 @@ public class BittrexConnector implements IConnector {
             params.setStartTime(new Date(Long.parseLong(downloadState.getStartTxTime())));
         }
 
-        if(endTxTime != null) {
+        if (endTxTime != null) {
             params.setEndTime(new Date(Long.parseLong(downloadState.getEndTxTime())));
         }
         int sentRequests = 0;
@@ -127,11 +127,11 @@ public class BittrexConnector implements IConnector {
                 throw new IllegalStateException("User trade history download failed.", e);
             }
 
-            if(downloadState.getEndTxTime() == null && !userTradesBlock.isEmpty()) {
-                long startTime = userTradesBlock.get(userTradesBlock.size() - 1).getTimestamp().getTime() + (1 * 1000); // add one second;
+            if (downloadState.getEndTxTime() == null && !userTradesBlock.isEmpty()) {
+                long startTime = userTradesBlock.get(userTradesBlock.size() - 1).getTimestamp().getTime() + (1 * 1000);
                 downloadState.setStartTxTime(String.valueOf(startTime));
             }
-            if(userTradesBlock.isEmpty()) {
+            if (userTradesBlock.isEmpty()) {
                 downloadState.setEndTxTime(null);
                 break;
             }
@@ -159,7 +159,7 @@ public class BittrexConnector implements IConnector {
             startItemId = startStateItemId;
         }
 
-        if(endStateItemId != null) {
+        if (endStateItemId != null) {
             endItemId = endStateItemId;
         }
 
@@ -176,12 +176,12 @@ public class BittrexConnector implements IConnector {
                 throw new IllegalStateException("User deposit history download failed.", e);
             }
             // first round
-            if(endItemId == null && !depositsBlock.isEmpty()) {
+            if (endItemId == null && !depositsBlock.isEmpty()) {
                 String id = depositsBlock.get(0).getId(); // add one
                 downloadState.setStartDepositId(id);
             }
 
-            if(depositsBlock.isEmpty() || depositsBlock.size() < DEPOSIT_WITHDRAWAL_PAGE_SIZE) {
+            if (depositsBlock.isEmpty() || depositsBlock.size() < DEPOSIT_WITHDRAWAL_PAGE_SIZE) {
                 downloadState.setEndDepositId(null);
                 break;
             }
@@ -206,7 +206,7 @@ public class BittrexConnector implements IConnector {
             startItemId = startStateItemId;
         }
 
-        if(endStateItemId != null) {
+        if (endStateItemId != null) {
             endItemId = endStateItemId;
         }
 
@@ -223,12 +223,12 @@ public class BittrexConnector implements IConnector {
                 throw new IllegalStateException("User withdrawal history download failed.", e);
             }
             // first round
-            if(endItemId == null && !withdrawalBlock.isEmpty()) {
+            if (endItemId == null && !withdrawalBlock.isEmpty()) {
                 String id = withdrawalBlock.get(0).getId(); // add one
                 downloadState.setStartWithdrawalId(id);
             }
 
-            if(withdrawalBlock.isEmpty() || withdrawalBlock.size() < DEPOSIT_WITHDRAWAL_PAGE_SIZE) {
+            if (withdrawalBlock.isEmpty() || withdrawalBlock.size() < DEPOSIT_WITHDRAWAL_PAGE_SIZE) {
                 downloadState.setEndWithdrawalId(null);
                 break;
             }
@@ -273,11 +273,11 @@ public class BittrexConnector implements IConnector {
         public String serialize() {
             return
                 (startTxTime == null ? " " : startTxTime) + SEPARATOR +
-                (endTxTime == null ? " " : endTxTime) + SEPARATOR +
-                (startDepositId == null ? " " : startDepositId) + SEPARATOR +
-                (endDepositId == null ? " " : endDepositId) + SEPARATOR +
-                (startWithdrawalId == null ? " " : startWithdrawalId) + SEPARATOR +
-                (endWithdrawalId == null ? " " : endWithdrawalId);
+                    (endTxTime == null ? " " : endTxTime) + SEPARATOR +
+                    (startDepositId == null ? " " : startDepositId) + SEPARATOR +
+                    (endDepositId == null ? " " : endDepositId) + SEPARATOR +
+                    (startWithdrawalId == null ? " " : startWithdrawalId) + SEPARATOR +
+                    (endWithdrawalId == null ? " " : endWithdrawalId);
         }
     }
 }
