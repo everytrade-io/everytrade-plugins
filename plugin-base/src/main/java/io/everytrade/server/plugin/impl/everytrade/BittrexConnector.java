@@ -262,11 +262,11 @@ public class BittrexConnector implements IConnector {
 
             return new DownloadState(
                 stringState[0].equals(" ") ? null : stringState[0],
-                stringState[1].equals(" ") ? null : stringState[1],
-                stringState[2].equals(" ") ? null : stringState[2],
-                stringState[3].equals(" ") ? null : stringState[3],
-                stringState[4].equals(" ") ? null : stringState[4],
-                stringState[5].equals(" ") ? null : stringState[5]
+                stringState[1].equals(" ") || stringState.length < 1 ? null : stringState[1],
+                stringState[2].equals(" ") || stringState.length < 2 ? null : stringState[2],
+                stringState[3].equals(" ") || stringState.length < 3  ? null : stringState[3],
+                stringState[4].equals(" ") || stringState.length < 4  ? null : stringState[4],
+                stringState[5].equals(" ") || stringState.length < 5 ? null : stringState[5]
             );
         }
 
