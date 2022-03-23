@@ -167,17 +167,6 @@ public class EveryTradeBeanV3_1 extends ExchangeBean {
     }
 
     private FeeRebateImportedTransactionBean createFeeTransactionBean(boolean unrelated) {
-        final boolean feeCurrencyIsBase = Objects.equals(feeCurrency, symbolBase);
-        final boolean feeCurrencyIsQuote = Objects.equals(feeCurrency, symbolQuote);
-        if (!feeCurrencyIsBase && !feeCurrencyIsQuote) {
-            throw new DataValidationException(String.format(
-                "Fee currency '%s' differs to base '%s' and to quote '%s'.",
-                feeCurrency,
-                symbolBase,
-                symbolQuote
-            ));
-        }
-
         return new FeeRebateImportedTransactionBean(
             unrelated ? uid : uid + FEE_UID_PART,
             date,
@@ -190,17 +179,6 @@ public class EveryTradeBeanV3_1 extends ExchangeBean {
     }
 
     private FeeRebateImportedTransactionBean createRebateTransactionBean(boolean unrelated) {
-        final boolean rebateCurrencyIsBase = Objects.equals(rebateCurrency, symbolBase);
-        final boolean rebateCurrencyIsQuote = Objects.equals(rebateCurrency, symbolQuote);
-        if (!rebateCurrencyIsBase && !rebateCurrencyIsQuote) {
-            throw new DataValidationException(String.format(
-                "Rebate currency '%s' differs to base '%s' and to quote '%s'.",
-                rebateCurrency,
-                symbolBase,
-                symbolQuote
-            ));
-        }
-
         return new FeeRebateImportedTransactionBean(
             unrelated ? uid : uid + FEE_UID_PART,
             date,
