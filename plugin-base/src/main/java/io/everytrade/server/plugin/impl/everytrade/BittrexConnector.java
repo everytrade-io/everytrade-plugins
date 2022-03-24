@@ -124,7 +124,7 @@ public class BittrexConnector implements IConnector {
             try {
                 userTradesBlock = tradeService.getTradeHistory(params).getUserTrades();
             } catch (Exception e) {
-                throw new IllegalStateException("User trade history download failed.", e);
+                throw new IllegalStateException("User trade history download failed. " + e.getMessage(), e);
             }
 
             if (downloadState.getEndTxTime() == null && !userTradesBlock.isEmpty()) {
