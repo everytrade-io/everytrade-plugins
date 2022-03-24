@@ -97,8 +97,7 @@ public class BinanceBeanV1 extends ExchangeBean {
         validateCurrencyPair(marketBase, marketQuote);
         validatePositivity(amount, total, fee);
 
-        final boolean isIncorrectFeeCoin
-            = feeCoin == null || !(feeCoin.equals(marketBase) || feeCoin.equals(marketQuote));
+        final boolean isIncorrectFeeCoin = (feeCoin == null);
 
         final List<ImportedTransactionBean> related;
 
@@ -109,8 +108,8 @@ public class BinanceBeanV1 extends ExchangeBean {
                 new FeeRebateImportedTransactionBean(
                     null,
                     date,
-                    marketBase,
-                    marketQuote,
+                    feeCoin,
+                    feeCoin,
                     TransactionType.FEE,
                     fee.setScale(ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE),
                     feeCoin
