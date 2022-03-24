@@ -84,9 +84,7 @@ public class XChangeApiTransaction {
             }
         }
 
-        final boolean isIgnoredFee = !(base.equals(feeCurrency) ||
-            (quote == null && feeCurrency == null) ||
-            (quote != null && quote.equals(feeCurrency)));
+        final boolean isIgnoredFee = (feeCurrency == null);
 
         List<ImportedTransactionBean> related;
         if (nullOrZero(feeAmount) || isIgnoredFee) {
@@ -95,8 +93,8 @@ public class XChangeApiTransaction {
             related = List.of(new FeeRebateImportedTransactionBean(
                     id + FEE_UID_PART,
                     timestamp,
-                    base,
-                    quote,
+                    feeCurrency,
+                    feeCurrency,
                     FEE,
                     feeAmount,
                     feeCurrency
