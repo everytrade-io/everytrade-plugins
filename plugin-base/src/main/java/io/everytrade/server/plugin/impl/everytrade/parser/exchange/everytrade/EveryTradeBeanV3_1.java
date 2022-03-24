@@ -14,7 +14,6 @@ import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.EverytradeCSVParserValidator;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
-import io.everytrade.server.util.CurrencyUtil;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
@@ -22,10 +21,9 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
+import static java.math.BigDecimal.ZERO;
 import static lombok.AccessLevel.PRIVATE;
 
 @Headers(sequence = {
@@ -117,7 +115,7 @@ public class EveryTradeBeanV3_1 extends ExchangeBean {
     }
 
     private TransactionCluster createDepositOrWithdrawalTxCluster() {
-        if (quantity.compareTo(BigDecimal.ZERO) == 0) {
+        if (quantity.compareTo(ZERO) == 0) {
             throw new DataValidationException("Quantity can not be zero.");
         }
         var tx = new DepositWithdrawalImportedTransaction(
@@ -134,10 +132,10 @@ public class EveryTradeBeanV3_1 extends ExchangeBean {
     }
 
     private TransactionCluster createBuySellTransactionCluster() {
-        if (quantity.compareTo(BigDecimal.ZERO) == 0) {
+        if (quantity.compareTo(ZERO) == 0) {
             throw new DataValidationException("Quantity can not be zero.");
         }
-        if (price.compareTo(BigDecimal.ZERO) == 0) {
+        if (price.compareTo(ZERO) == 0) {
             throw new DataValidationException("Price can not be zero.");
         }
 
@@ -156,11 +154,11 @@ public class EveryTradeBeanV3_1 extends ExchangeBean {
 
     private List<ImportedTransactionBean> getRelatedTxs() {
         var related = new ArrayList<ImportedTransactionBean>();
-        if (fee.compareTo(BigDecimal.ZERO) > 0) {
+        if (fee.compareTo(ZERO) > 0) {
             related.add(createFeeTransactionBean(false));
         }
 
-        if (rebate.compareTo(BigDecimal.ZERO) > 0) {
+        if (rebate.compareTo(ZERO) > 0) {
             related.add(createRebateTransactionBean(false));
         }
         return related;
@@ -170,8 +168,8 @@ public class EveryTradeBeanV3_1 extends ExchangeBean {
         return new FeeRebateImportedTransactionBean(
             unrelated ? uid : uid + FEE_UID_PART,
             date,
-            symbolBase,
-            symbolQuote,
+            feeCurrency != null ? feeCurrency : symbolBase,
+            feeCurrency != null ? feeCurrency : symbolQuote,
             TransactionType.FEE,
             fee,
             feeCurrency
@@ -182,8 +180,8 @@ public class EveryTradeBeanV3_1 extends ExchangeBean {
         return new FeeRebateImportedTransactionBean(
             unrelated ? uid : uid + FEE_UID_PART,
             date,
-            symbolBase,
-            symbolQuote,
+            rebateCurrency != null ? rebateCurrency : symbolBase,
+            rebateCurrency != null ? rebateCurrency : symbolQuote,
             TransactionType.REBATE,
             rebate,
             rebateCurrency
