@@ -11,17 +11,23 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static io.everytrade.server.model.Currency.BNB;
+import static io.everytrade.server.model.Currency.BTC;
+import static io.everytrade.server.model.Currency.BUSD;
+import static io.everytrade.server.model.Currency.DAI;
+import static io.everytrade.server.model.Currency.ETH;
+import static io.everytrade.server.model.Currency.USDC;
+import static io.everytrade.server.model.Currency.USDT;
 import static lombok.AccessLevel.PRIVATE;
 
 @Getter
 @FieldDefaults(level = PRIVATE)
-public final class CurrencyPair implements Comparable<CurrencyPair>{
+public final class CurrencyPair implements Comparable<CurrencyPair> {
+
+    private static final Set<Currency> ALLOWED_CRYPTO_QUOTES = Set.of(USDT, BTC, ETH, BNB, BUSD, USDC, DAI);
 
     @NonNull Currency base;
     @NonNull Currency quote;
-
-    private static final Set<Currency> ALLOWED_CRYPTO_QUOTES =
-        Set.of(Currency.USDT, Currency.BTC, Currency.ETH, Currency.BNB);
 
     public enum CurrencyPosition {BASE, QUOTE}
     public static final Comparator<CurrencyPair> COMPARATOR =
@@ -139,12 +145,12 @@ public final class CurrencyPair implements Comparable<CurrencyPair>{
     }
 
     private static boolean isUnsupportedCryptoPairs(Currency base, Currency quote) {
-        if (Currency.USDT.equals(base)) {
-            return Currency.BTC.equals(quote) || Currency.ETH.equals(quote) || Currency.BNB.equals(quote);
-        } else if (Currency.BTC.equals(base)) {
-            return  Currency.ETH.equals(quote) || Currency.BNB.equals(quote);
+        if (USDT.equals(base)) {
+            return BTC.equals(quote) || ETH.equals(quote) || BNB.equals(quote);
+        } else if (BTC.equals(base)) {
+            return  ETH.equals(quote) || BNB.equals(quote);
         } else {
-            return base.equals(Currency.ETH) && quote.equals(Currency.BNB);
+            return base.equals(ETH) && quote.equals(BNB);
         }
     }
 
