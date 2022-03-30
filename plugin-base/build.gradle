@@ -30,7 +30,6 @@ dependencies {
     compileOnly project(':plugin-api')
     compileOnly 'org.slf4j:slf4j-api:1.7.30'
     pluginCompile "com.univocity:univocity-parsers:2.8.4"
-    pluginCompile "org.knowm.xchange:xchange-kraken:$xchangeVersion"
     pluginCompile "org.knowm.xchange:xchange-binance:$xchangeVersion"
     pluginCompile "org.knowm.xchange:xchange-bittrex:$xchangeVersion"
     pluginCompile "org.knowm.xchange:xchange-bitstamp:$xchangeVersion"
@@ -47,6 +46,12 @@ dependencies {
      */
     //    pluginCompile "org.knowm.xchange:xchange-coinmate:$xchangeVersion"
     pluginCompile "com.github.martinkyov.Xchange:xchange-coinmate:f80f587e10faaf92839055a7e6154dd509c7d0c4"
+
+    /*
+     * only for temporary use till pull request confirmation https://github.com/knowm/XChange/pull/4448
+     */
+    //    pluginCompile "org.knowm.xchange:xchange-kraken:$xchangeVersion"
+    pluginCompile "com.github.martinkyov.Xchange:xchange-kraken:f5086cd25812f9f9cb904bb1d3f21d8cb1d6a69f"
 
     /*
      * only for temporary use till pull request confirmation https://github.com/knowm/XChange/pull/4403
