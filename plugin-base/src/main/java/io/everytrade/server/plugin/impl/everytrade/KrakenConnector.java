@@ -13,19 +13,26 @@ import lombok.experimental.FieldDefaults;
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.ExchangeFactory;
 import org.knowm.xchange.ExchangeSpecification;
+import org.knowm.xchange.currency.Currency;
 import org.knowm.xchange.dto.account.FundingRecord;
 import org.knowm.xchange.dto.trade.UserTrade;
 import org.knowm.xchange.kraken.KrakenExchange;
+import org.knowm.xchange.kraken.KrakenUtils;
+import org.knowm.xchange.kraken.dto.account.DepostitStatus;
+import org.knowm.xchange.kraken.dto.account.WithdrawStatus;
 import org.knowm.xchange.kraken.service.KrakenAccountService;
 import org.knowm.xchange.kraken.service.KrakenTradeHistoryParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
 import static lombok.AccessLevel.PRIVATE;
@@ -40,8 +47,8 @@ public class KrakenConnector implements IConnector {
 
     // According Kraken rules https://support.kraken.com/hc/en-us/articles/206548367-What-are-the-API-rate-limits-
     private static final int MAX_TRADE_REQUESTS_COUNT = 7;
-    private static final int MAX_FUNDING_REQUESTS_COUNT = 14;
-    private static final int FUNDING_MAX_RESPONSE_SIZE = 50;
+    private static final Duration SLEEP_BETWEEN_TRADE_REQUESTS = Duration.ofMillis(6 * 1000);
+    private static final Duration SLEEP_BETWEEN_FUNDING_REQUESTS = Duration.ofMillis(3 * 1000);
 
     private static final ConnectorParameterDescriptor PARAMETER_API_SECRET =
         new ConnectorParameterDescriptor(
@@ -96,6 +103,11 @@ public class KrakenConnector implements IConnector {
         var funding = new ArrayList<FundingRecord>();
         int sentRequests = 0;
         while (sentRequests < MAX_TRADE_REQUESTS_COUNT) {
+            try {
+                Thread.sleep(SLEEP_BETWEEN_TRADE_REQUESTS.toMillis());
+            } catch (InterruptedException e) {
+                // ignore
+            }
             var downloadResult = downloadTrades(downloadState);
             if (downloadResult.isEmpty()) {
                 break;
@@ -104,15 +116,8 @@ public class KrakenConnector implements IConnector {
             ++sentRequests;
         }
 
-        sentRequests = 0;
-        while (sentRequests < MAX_FUNDING_REQUESTS_COUNT) {
-            var downloadResult = downloadDepositsAndWithdrawals(downloadState);
-            funding.addAll(downloadResult);
-            ++sentRequests;
-            if (downloadResult.size() < FUNDING_MAX_RESPONSE_SIZE) {
-                break;
-            }
-        }
+        var downloadResult = downloadDepositsAndWithdrawals(downloadState);
+        funding.addAll(downloadResult);
 
         return new DownloadResult(
             new XChangeConnectorParser().getParseResult(userTrades, funding),
@@ -169,7 +174,7 @@ public class KrakenConnector implements IConnector {
     }
 
     private List<FundingRecord> downloadDepositsAndWithdrawals(KrakenDownloadState state) {
-        var accountService = exchange.getAccountService();
+        var accountService = (KrakenAccountService) exchange.getAccountService();
         var result = new ArrayList<FundingRecord>();
 
         for (FundingRecord.Type type : List.of(DEPOSIT, WITHDRAWAL)) {
@@ -181,10 +186,40 @@ public class KrakenConnector implements IConnector {
                 params.setStartTime(new Date(state.getWithdrawalFromTimestamp()));
             }
 
-            final List<FundingRecord> downloadedBlock;
+            List<FundingRecord> downloadedBlock;
+            List<DepostitStatus> depositStatuses = new ArrayList<>();
+            List<WithdrawStatus> withdrawalStatuses = new ArrayList<>();
             try {
                 downloadedBlock = accountService.getFundingHistory(params);
-            } catch (IOException e) {
+                // adding addresses into records
+                {
+                    Thread.sleep(SLEEP_BETWEEN_FUNDING_REQUESTS.toMillis());
+                    Set<Currency> assets = getListOfAssets(downloadedBlock); // list of unique currencies
+                    if (type == DEPOSIT) {
+                        for (Currency a : assets) {
+                            // getting a block of recent (last three months) deposit statuses (status contains addresses)
+                            Thread.sleep(SLEEP_BETWEEN_FUNDING_REQUESTS.toMillis());
+                            List<DepostitStatus> getBlockWithAddresses = accountService.getDepositStatus(null,
+                                KrakenUtils.getKrakenCurrencyCode(a), null);
+                            depositStatuses.addAll(getBlockWithAddresses);
+                        }
+                        // previous records - replacement
+                        downloadedBlock = depositAddresses(downloadedBlock, depositStatuses);
+                    }
+
+                    if (type == WITHDRAWAL) {
+                        for (Currency a : assets) {
+                            // getting a block of recent (last three months) deposit statuses (status contains addresses)
+                            Thread.sleep(SLEEP_BETWEEN_FUNDING_REQUESTS.toMillis());
+                            List<WithdrawStatus> getBlockWithAddresses = accountService.getWithdrawStatus(null, KrakenUtils.getKrakenCurrencyCode(a), null);
+                            withdrawalStatuses.addAll(getBlockWithAddresses);
+                        }
+                        // previous records - replacement
+                        downloadedBlock = withdrawalAddresses(downloadedBlock, withdrawalStatuses);
+                    }
+                }
+
+            } catch (IOException | InterruptedException e) {
                 throw new IllegalStateException("Download user trade history failed.", e);
             }
 
@@ -203,4 +238,36 @@ public class KrakenConnector implements IConnector {
         }
         return result;
     }
+
+    public Set<Currency> getListOfAssets(final List<FundingRecord> fundings) {
+        return fundings.stream().map(record -> record.getCurrency()).collect(Collectors.toSet());
+    }
+
+
+    public List<FundingRecord> depositAddresses(List<FundingRecord> recordsBlock, List<DepostitStatus> statuses ) {
+        final List<FundingRecord> recordsWithAddresses = new ArrayList<>();
+        for (FundingRecord r : recordsBlock) {
+            String internalId = r.getInternalId();
+            var status = statuses.stream().filter(s -> (s.getRefid().equals(internalId))).findAny();
+            String newAddress = !status.isEmpty() ? status.get().getInfo() : null;
+            recordsWithAddresses.add(recordWithAddress(r,newAddress));
+        }
+        return recordsWithAddresses;
+    }
+
+    public List<FundingRecord> withdrawalAddresses(List<FundingRecord> recordsBlock, List<WithdrawStatus> statuses ) {
+        final List<FundingRecord> recordsWithAddresses = new ArrayList<>();
+        for (FundingRecord r : recordsBlock) {
+            String internalId = r.getInternalId();
+            var status = statuses.stream().filter(s -> (s.getRefid().equals(internalId))).findAny();
+            String newAddress = !status.isEmpty() ? status.get().getInfo() : null;
+            recordsWithAddresses.add(recordWithAddress(r,newAddress));
+        }
+        return recordsWithAddresses;
+    }
+
+    private FundingRecord recordWithAddress(FundingRecord oldRecord, String address) {
+        return new FundingRecord.Builder().from(oldRecord).setAddress(address).build();
+    }
+
 }
