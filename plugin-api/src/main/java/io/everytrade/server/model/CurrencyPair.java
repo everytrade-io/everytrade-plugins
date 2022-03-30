@@ -18,13 +18,14 @@ import static io.everytrade.server.model.Currency.DAI;
 import static io.everytrade.server.model.Currency.ETH;
 import static io.everytrade.server.model.Currency.USDC;
 import static io.everytrade.server.model.Currency.USDT;
+import static io.everytrade.server.model.Currency.XRP;
 import static lombok.AccessLevel.PRIVATE;
 
 @Getter
 @FieldDefaults(level = PRIVATE)
 public final class CurrencyPair implements Comparable<CurrencyPair> {
 
-    private static final Set<Currency> ALLOWED_CRYPTO_QUOTES = Set.of(USDT, BTC, ETH, BNB, BUSD, USDC, DAI);
+    private static final Set<Currency> ALLOWED_CRYPTO_QUOTES = Set.of(USDT, BTC, ETH, BNB, BUSD, USDC, DAI, XRP);
 
     @NonNull Currency base;
     @NonNull Currency quote;
