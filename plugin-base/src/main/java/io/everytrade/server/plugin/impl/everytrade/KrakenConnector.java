@@ -192,31 +192,30 @@ public class KrakenConnector implements IConnector {
             try {
                 downloadedBlock = accountService.getFundingHistory(params);
                 // adding addresses into records
-                {
-                    Thread.sleep(SLEEP_BETWEEN_FUNDING_REQUESTS.toMillis());
-                    Set<Currency> assets = getListOfAssets(downloadedBlock); // list of unique currencies
-                    if (type == DEPOSIT) {
-                        for (Currency a : assets) {
-                            // getting a block of recent (last three months) deposit statuses (status contains addresses)
-                            Thread.sleep(SLEEP_BETWEEN_FUNDING_REQUESTS.toMillis());
-                            List<DepostitStatus> getBlockWithAddresses = accountService.getDepositStatus(null,
-                                KrakenUtils.getKrakenCurrencyCode(a), null);
-                            depositStatuses.addAll(getBlockWithAddresses);
-                        }
-                        // previous records - replacement
-                        downloadedBlock = depositAddresses(downloadedBlock, depositStatuses);
+                Thread.sleep(SLEEP_BETWEEN_FUNDING_REQUESTS.toMillis());
+                Set<Currency> assets = getListOfAssets(downloadedBlock); // list of unique currencies
+                if (type == DEPOSIT) {
+                    for (Currency a : assets) {
+                        // getting a block of recent (last three months) deposit statuses (status contains addresses)
+                        Thread.sleep(SLEEP_BETWEEN_FUNDING_REQUESTS.toMillis());
+                        List<DepostitStatus> getBlockWithAddresses = accountService.getDepositStatus(null,
+                            KrakenUtils.getKrakenCurrencyCode(a), null);
+                        depositStatuses.addAll(getBlockWithAddresses);
                     }
+                    // previous records - replacement
+                    downloadedBlock = depositAddresses(downloadedBlock, depositStatuses);
+                }
 
-                    if (type == WITHDRAWAL) {
-                        for (Currency a : assets) {
-                            // getting a block of recent (last three months) deposit statuses (status contains addresses)
-                            Thread.sleep(SLEEP_BETWEEN_FUNDING_REQUESTS.toMillis());
-                            List<WithdrawStatus> getBlockWithAddresses = accountService.getWithdrawStatus(null, KrakenUtils.getKrakenCurrencyCode(a), null);
-                            withdrawalStatuses.addAll(getBlockWithAddresses);
-                        }
-                        // previous records - replacement
-                        downloadedBlock = withdrawalAddresses(downloadedBlock, withdrawalStatuses);
+                if (type == WITHDRAWAL) {
+                    for (Currency a : assets) {
+                        // getting a block of recent (last three months) deposit statuses (status contains addresses)
+                        Thread.sleep(SLEEP_BETWEEN_FUNDING_REQUESTS.toMillis());
+                        List<WithdrawStatus> getBlockWithAddresses =
+                            accountService.getWithdrawStatus(null, KrakenUtils.getKrakenCurrencyCode(a), null);
+                        withdrawalStatuses.addAll(getBlockWithAddresses);
                     }
+                    // previous records - replacement
+                    downloadedBlock = withdrawalAddresses(downloadedBlock, withdrawalStatuses);
                 }
 
             } catch (IOException | InterruptedException e) {
