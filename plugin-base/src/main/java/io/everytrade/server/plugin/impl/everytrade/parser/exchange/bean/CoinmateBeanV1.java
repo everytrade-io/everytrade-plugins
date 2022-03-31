@@ -120,7 +120,7 @@ public class CoinmateBeanV1 extends ExchangeBean {
 
     private TransactionCluster createBuySellTransactionCluster() {
         validateCurrencyPair(amountCurrency, priceCurrency);
-        final boolean ignoredFee = !priceCurrency.equals(auxFeeCurrency);
+        final boolean ignoredFee = (auxFeeCurrency == null);
         List<ImportedTransactionBean> related;
         if (ParserUtils.equalsToZero(fee) || ignoredFee) {
             related = Collections.emptyList();
@@ -129,8 +129,8 @@ public class CoinmateBeanV1 extends ExchangeBean {
                 new FeeRebateImportedTransactionBean(
                     id + FEE_UID_PART,
                     date,
-                    amountCurrency,
-                    priceCurrency,
+                    auxFeeCurrency,
+                    auxFeeCurrency,
                     TransactionType.FEE,
                     fee.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
                     auxFeeCurrency
@@ -180,8 +180,8 @@ public class CoinmateBeanV1 extends ExchangeBean {
                 new FeeRebateImportedTransactionBean(
                     id + FEE_UID_PART,
                     date,
-                    amountCurrency,
-                    priceCurrency,
+                    auxFeeCurrency,
+                    auxFeeCurrency,
                     TransactionType.FEE,
                     fee.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
                     auxFeeCurrency

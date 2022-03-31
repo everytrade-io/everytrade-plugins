@@ -99,8 +99,8 @@ public class BitstampBeanV1 extends ExchangeBean {
                 new FeeRebateImportedTransactionBean(
                     null,
                     dateTime,
-                    amountCurrency,
-                    valueCurrency,
+                    feeCurrency,
+                    feeCurrency,
                     TransactionType.FEE,
                     fee,
                     feeCurrency

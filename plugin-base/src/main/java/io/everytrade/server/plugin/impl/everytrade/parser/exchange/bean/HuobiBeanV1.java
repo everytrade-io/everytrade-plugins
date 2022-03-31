@@ -82,8 +82,7 @@ public class HuobiBeanV1 extends ExchangeBean {
     @Override
     public TransactionCluster toTransactionCluster() {
         validateCurrencyPair(pairBase, pairQuote);
-        final boolean isIncorrectFeeCoin
-            = feeCurrency == null || !(feeCurrency.equals(pairBase) || feeCurrency.equals(pairQuote));
+        final boolean isIncorrectFeeCoin = (feeCurrency == null);
         final BigDecimal baseQuantity;
         final BigDecimal quoteVolume;
         final List<ImportedTransactionBean> related;
@@ -97,8 +96,8 @@ public class HuobiBeanV1 extends ExchangeBean {
                 new FeeRebateImportedTransactionBean(
                     null,
                     time,
-                    pairBase,
-                    pairQuote,
+                    feeCurrency,
+                    feeCurrency,
                     TransactionType.FEE,
                     fee,
                     feeCurrency

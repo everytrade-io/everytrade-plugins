@@ -96,8 +96,7 @@ public class BitfinexBeanV1 extends ExchangeBean {
         TransactionType transactionType = amount.compareTo(BigDecimal.ZERO) > 0
             ? TransactionType.BUY : TransactionType.SELL;
 
-        final boolean isIncorrectFeeCurr
-            = feeCurrency == null || !(feeCurrency.equals(pairBase) || feeCurrency.equals(pairQuote));
+        final boolean isIncorrectFeeCurr = (feeCurrency == null);
 
         List<ImportedTransactionBean> related;
 
@@ -108,8 +107,8 @@ public class BitfinexBeanV1 extends ExchangeBean {
                 new FeeRebateImportedTransactionBean(
                     uid + FEE_UID_PART,
                     dateConverted,
-                    pairBase,
-                    pairQuote,
+                    feeCurrency,
+                    feeCurrency,
                     TransactionType.FEE,
                     fee.abs().setScale(ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE),
                     feeCurrency

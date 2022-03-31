@@ -122,8 +122,8 @@ public class OkexBeanV1 extends ExchangeBean {
                 new FeeRebateImportedTransactionBean(
                     tradeID + FEE_UID_PART,
                     tradeTime,
-                    pairsBase,
-                    pairsQuote,
+                    feeCurrency,
+                    feeCurrency,
                     TransactionType.FEE,
                     feeConverted,
                     feeCurrency
