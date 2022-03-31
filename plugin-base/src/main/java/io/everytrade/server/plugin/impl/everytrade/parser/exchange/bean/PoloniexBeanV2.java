@@ -141,8 +141,8 @@ public class PoloniexBeanV2 extends ExchangeBean {
                 new FeeRebateImportedTransactionBean(
                     null,
                     date,
-                    marketBase,
-                    marketQuote,
+                    feeCurrency,
+                    feeCurrency,
                     TransactionType.FEE,
                     fee,
                     feeCurrency

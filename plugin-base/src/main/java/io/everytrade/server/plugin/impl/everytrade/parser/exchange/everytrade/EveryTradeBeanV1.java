@@ -89,7 +89,7 @@ public class EveryTradeBeanV1 extends ExchangeBean {
                 new FeeRebateImportedTransactionBean(
                     uid + FEE_UID_PART,
                     date,
-                    symbolBase,
+                    symbolQuote,
                     symbolQuote,
                     TransactionType.FEE,
                     fee,

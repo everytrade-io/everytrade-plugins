@@ -80,7 +80,7 @@ public class CoinbaseBeanV1 extends ExchangeBean {
                 new FeeRebateImportedTransactionBean(
                     null,
                     timeStamp,
-                    asset,
+                    quoteCurrency,
                     quoteCurrency,
                     TransactionType.FEE,
                     fees.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),

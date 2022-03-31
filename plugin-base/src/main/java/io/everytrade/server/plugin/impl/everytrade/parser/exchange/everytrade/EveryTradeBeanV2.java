@@ -86,7 +86,7 @@ public class EveryTradeBeanV2 extends ExchangeBean {
             related = List.of(new FeeRebateImportedTransactionBean(
                     uid + FEE_UID_PART,
                     date,
-                    symbolBase,
+                    symbolQuote,
                     symbolQuote,
                     TransactionType.FEE,
                     fee,

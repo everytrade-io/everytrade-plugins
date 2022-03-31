@@ -118,7 +118,7 @@ public class CoinbaseProBeanV1 extends ExchangeBean {
                 new FeeRebateImportedTransactionBean(
                     tradeId + FEE_UID_PART,
                     createdAt,
-                    productBase,
+                    productQuote,
                     productQuote,
                     TransactionType.FEE,
                     fee.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),

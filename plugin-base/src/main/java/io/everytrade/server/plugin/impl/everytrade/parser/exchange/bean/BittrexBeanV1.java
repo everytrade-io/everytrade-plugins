@@ -94,7 +94,7 @@ public class BittrexBeanV1 extends ExchangeBean {
                 new FeeRebateImportedTransactionBean(
                     orderUuid + FEE_UID_PART,
                     closed,
-                    exchangeBase,
+                    exchangeQuote,
                     exchangeQuote,
                     TransactionType.FEE,
                     comissionPaid,

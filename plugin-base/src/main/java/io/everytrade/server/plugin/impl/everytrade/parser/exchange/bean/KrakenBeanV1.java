@@ -113,7 +113,7 @@ public class KrakenBeanV1 extends ExchangeBean {
                 new FeeRebateImportedTransactionBean(
                     txid + FEE_UID_PART,
                     time,
-                    pairBase,
+                    pairQuote,
                     pairQuote,
                     TransactionType.FEE,
                     fee.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
