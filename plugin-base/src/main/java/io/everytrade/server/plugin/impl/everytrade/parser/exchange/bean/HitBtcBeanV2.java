@@ -83,7 +83,7 @@ public class HitBtcBeanV2 extends ExchangeBean {
                 new FeeRebateImportedTransactionBean(
                     tradeId + FEE_UID_PART,
                     date,
-                    instrumentBase,
+                    instrumentQuote,
                     instrumentQuote,
                     TransactionType.FEE,
                     fee.abs(),

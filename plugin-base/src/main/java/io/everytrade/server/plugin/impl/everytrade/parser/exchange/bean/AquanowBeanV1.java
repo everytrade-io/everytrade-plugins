@@ -111,7 +111,7 @@ public class AquanowBeanV1  extends ExchangeBean {
                     null,
                     date,
                     marketBase,
-                    marketQuote,
+                    marketBase,
                     TransactionType.FEE,
                     fee.setScale(ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE),
                     marketBase

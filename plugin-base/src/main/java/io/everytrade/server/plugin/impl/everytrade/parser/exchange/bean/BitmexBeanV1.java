@@ -122,7 +122,7 @@ public class BitmexBeanV1 extends ExchangeBean {
                 new FeeRebateImportedTransactionBean(
                     orderID + FEE_UID_PART,
                     transactTime,
-                    symbolBase,
+                    symbolQuote,
                     symbolQuote,
                     TransactionType.FEE,
                     execComm.setScale(ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE),

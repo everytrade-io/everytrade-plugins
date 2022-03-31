@@ -86,7 +86,7 @@ public class BitflyerBeanV1 extends ExchangeBean {
             related = List.of(new FeeRebateImportedTransactionBean(
                     orderID + FEE_UID_PART,
                     tradeDate,
-                    currency1,
+                    currency2,
                     currency2,
                     TransactionType.FEE,
                     fee.abs().setScale(ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE),
