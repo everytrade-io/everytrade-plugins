@@ -120,7 +120,7 @@ public class BitstampBeanV1 extends ExchangeBean {
 
     private TransactionCluster createBuySellTransactionCluster(){
         validateCurrencyPair(amountCurrency, valueCurrency);
-        if (!valueCurrency.equals(rateCurrency) || !valueCurrency.equals(feeCurrency)) {
+        if (!valueCurrency.equals(rateCurrency)) {
             throw new DataValidationException(CURRENCY_EQUALITY_MESSAGE);
         }
         List<ImportedTransactionBean> related;
