@@ -25,6 +25,8 @@ import java.util.List;
 @Headers(sequence = {"Type", "DateTime", "Amount", "Value", "Rate", "Fee", "Sub Type"}, extract = true)
 public class BitstampBeanV1 extends ExchangeBean {
     public static final String CURRENCY_EQUALITY_MESSAGE = "Value currency, rate currency and fee currency not equals.";
+    public static final String FEE_PART = "fee";
+
     private String type;
     private Instant dateTime;
     private Currency amountCurrency;
@@ -64,38 +66,39 @@ public class BitstampBeanV1 extends ExchangeBean {
         amountValue = quantity;
     }
 
-    @Parsed(field = "Value", defaultNullRead = "")
+    @Parsed(field = "Value")
     public void setValue(String value) {
-        String[] valueParts = value.split(" ");
-        if (valueParts[0].equals(value)) {
+        if (value == null) {
             this.value = BigDecimal.ZERO;
         } else {
+            String[] valueParts = value.split(" ");
             this.value = new BigDecimal(valueParts[0]);
             valueCurrency = Currency.fromCode(valueParts[1]);
         }
     }
 
-    @Parsed(field = "Rate", defaultNullRead = "")
+    @Parsed(field = "Rate")
     public void setRate(String rate) {
-        if(!rate.equals("")) {
-            rateCurrency = Currency.fromCode(rate.split(" ")[1]);
+        if (rate != null) {
+            String[] r = rate.split(" ");
+            rateCurrency = Currency.fromCode(r[1]);
         }
     }
 
-    @Parsed(field = "Fee", defaultNullRead = "")
+    @Parsed(field = "Fee")
     public void setFee(String fee) {
-        String[] feeParts = fee.split(" ");
-        if (feeParts[0].equals("")) {
+        if (fee == null) {
             this.fee = BigDecimal.ZERO;
         } else {
+            String[] feeParts = fee.split(" ");
             this.fee = new BigDecimal(feeParts[0]);
             feeCurrency = Currency.fromCode(feeParts[1]);
         }
     }
 
-    @Parsed(field = "Sub Type", defaultNullRead = "")
+    @Parsed(field = "Sub Type")
     public void setSubType(String field) {
-        if (!field.equals("")) {
+        if (field != null) {
             subType = detectTransactionType(field);
         } else if (type.equals("Deposit") || type.equals("Withdrawal")) {
             subType = detectTransactionType(type);
@@ -173,7 +176,7 @@ public class BitstampBeanV1 extends ExchangeBean {
         } else {
             related = List.of(
                 new FeeRebateImportedTransactionBean(
-                    null + FEE_UID_PART,
+                    FEE_PART,
                     dateTime,
                     amountCurrency,
                     valueCurrency,
@@ -185,6 +188,5 @@ public class BitstampBeanV1 extends ExchangeBean {
         }
         return related;
     }
-
 }
 
