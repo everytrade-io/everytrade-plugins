@@ -40,7 +40,7 @@ public class BitstampBeanV1 extends ExchangeBean {
 
     @Parsed(field = "Type")
     public void setType(String field) {
-        if(!field.equals("Market")) {
+        if(!"Market".equals(field)) {
             this.type = field;
         }
     }
@@ -100,7 +100,7 @@ public class BitstampBeanV1 extends ExchangeBean {
     public void setSubType(String field) {
         if (field != null) {
             subType = detectTransactionType(field);
-        } else if (type.equals("Deposit") || type.equals("Withdrawal")) {
+        } else if ("Deposit".equals(type) || "Withdrawal".equals(type)) {
             subType = detectTransactionType(type);
         } else {
             throw new DataIgnoredException(UNSUPPORTED_TRANSACTION_TYPE.concat(field));
