@@ -81,6 +81,7 @@ public class XChangeConnectorParser {
                     .quote(null)
                     .originalAmount(d.getQuantity())
                     .address(d.getCryptoAddress())
+                    .isBittrexApiDepositTx(true)
                     .build();
                 return xchangeApiTransaction.toTransactionCluster();
             } catch (Exception e) {

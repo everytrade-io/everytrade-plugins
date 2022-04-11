@@ -39,6 +39,7 @@ public class XChangeApiTransaction {
     BigDecimal price;
     BigDecimal feeAmount;
     String address;
+    Boolean isBittrexApiDepositTx;
 
     public static XChangeApiTransaction fromTrade(UserTrade trade) {
         final Instrument instrument = trade.getInstrument();
@@ -112,7 +113,11 @@ public class XChangeApiTransaction {
         }
 
         if (isIgnoredFee) {
-            cluster.setIgnoredFee(1, "Fee " + (feeCurrency != null ? feeCurrency.code() : "null") + " currency is not base or quote");
+            if(isBittrexApiDepositTx) {
+                // ignore - Bittrex does not send any data for deposit fees because the deposit is free of charge.
+            } else {
+                cluster.setIgnoredFee(1, "Fee " + (feeCurrency != null ? feeCurrency.code() : "null") + " currency is not base or quote");
+            }
         }
         return cluster;
     }
