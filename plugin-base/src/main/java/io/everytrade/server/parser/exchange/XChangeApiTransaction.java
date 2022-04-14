@@ -39,6 +39,8 @@ public class XChangeApiTransaction {
     BigDecimal price;
     BigDecimal feeAmount;
     String address;
+    @Builder.Default
+    boolean logIgnoredFees = true;
 
     public static XChangeApiTransaction fromTrade(UserTrade trade) {
         final Instrument instrument = trade.getInstrument();
@@ -111,7 +113,7 @@ public class XChangeApiTransaction {
             throw new DataValidationException("Unsupported type " + type.name());
         }
 
-        if (isIgnoredFee) {
+        if (isIgnoredFee && logIgnoredFees) {
             cluster.setIgnoredFee(1, "Fee " + (feeCurrency != null ? feeCurrency.code() : "null") + " currency is not base or quote");
         }
         return cluster;
