@@ -114,7 +114,7 @@ public class XChangeApiTransaction {
         }
 
         if (isIgnoredFee && logIgnoredFees) {
-                cluster.setIgnoredFee(1, "Fee " + (feeCurrency != null ? feeCurrency.code() : "null") + " currency is not base or quote");
+            cluster.setIgnoredFee(1, "Fee " + (feeCurrency != null ? feeCurrency.code() : "null") + " currency is not base or quote");
         }
         return cluster;
     }
