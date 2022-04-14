@@ -145,7 +145,9 @@ public class CoinbaseProDownloader {
             lastDownloadedWithdrawalId = withdrawalRecords.getCbBefore();
             state.setLastWithdrawalId(lastDownloadedWithdrawalId);
         }
-        return records;
+        return records.stream()
+            .filter(r -> FundingRecord.Status.COMPLETE.name().equals(r.getStatus().name()))
+            .collect(Collectors.toList());
     }
 
     public String getLastTransactionId() {
