@@ -15,14 +15,15 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static java.time.temporal.ChronoUnit.DAYS;
 import static java.util.Comparator.comparing;
-import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.joining;
 import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.lang.StringUtils.isEmpty;
@@ -37,6 +38,9 @@ public class BinanceDownloader {
     private static final Duration FUNDING_HISTORY_WAIT_DURATION = Duration.ofMillis(100);
     private static final int TXS_PER_REQUEST = 1000;
     private static final int FUNDING_PER_REQUEST = 1000;
+    private static final Date EXCHANGE_OPENING_DATE = new GregorianCalendar(2017,06,01).getTime();
+    private static long FUNDING_PERIOD_REQUEST = 88;
+    private static final int MAX_FUNDING_REQUESTS = 25;
 
     Map<String, String> currencyPairLastIds = new HashMap<>();
     Date lastFundingDownloadedTimestamp = null;
@@ -87,14 +91,16 @@ public class BinanceDownloader {
         var params = (BinanceFundingHistoryParams) exchange.getAccountService().createFundingHistoryParams();
 
         List<FundingRecord> result = new ArrayList<>();
-        while (result.size() + FUNDING_PER_REQUEST < maxCount) {
+        int requests = 0;
+        while (result.size() + FUNDING_PER_REQUEST < maxCount && requests < MAX_FUNDING_REQUESTS) {
             sleepBetweenRequests(FUNDING_HISTORY_WAIT_DURATION);
+            Date lastRequestTime = new Date();
+            lastFundingDownloadedTimestamp = Objects.requireNonNullElse(lastFundingDownloadedTimestamp, EXCHANGE_OPENING_DATE);
 
-            if (lastFundingDownloadedTimestamp != null) {
-                params.setStartTime(lastFundingDownloadedTimestamp);
-                // API limit is 90 day window
-                params.setEndTime(Date.from(lastFundingDownloadedTimestamp.toInstant().plus(89, DAYS)));
-            }
+            params.setStartTime(lastFundingDownloadedTimestamp);
+            // API limit is 90 day window
+            Date endDate = Date.from(lastFundingDownloadedTimestamp.toInstant().plus(FUNDING_PERIOD_REQUEST, DAYS));
+            params.setEndTime(endDate);
 
             final List<FundingRecord> response;
             try {
@@ -102,17 +108,16 @@ public class BinanceDownloader {
             } catch (IOException e) {
                 throw new IllegalStateException("User funding history download failed. ", e);
             }
-            if (!response.isEmpty() && response.get(0).getDate().equals(lastFundingDownloadedTimestamp)) {
-                response.remove(0);
-            }
-            result.addAll(response);
-
-            if (!response.isEmpty()) {
-                lastFundingDownloadedTimestamp = response.stream().map(FundingRecord::getDate).max(naturalOrder()).get();
-            }
             if (response.size() < FUNDING_PER_REQUEST) {
-                break;
+                lastFundingDownloadedTimestamp = lastRequestTime.after(endDate) ? endDate : lastRequestTime;
+                result.addAll(response);
+                if (lastFundingDownloadedTimestamp == lastRequestTime) {
+                    break;
+                }
+            } else {
+                FUNDING_PERIOD_REQUEST = Long.divideUnsigned(FUNDING_PERIOD_REQUEST,2); // too many results halve the period
             }
+            requests++;
         }
         return result;
     }
@@ -133,7 +138,7 @@ public class BinanceDownloader {
             .filter(key -> currencyPairLastIds.get(key) != null)
             .map(key -> key + "=" + currencyPairLastIds.get(key))
             .collect(joining(":")) + STATE_SEPARATOR
-            + (lastFundingDownloadedTimestamp == null ? "" : lastFundingDownloadedTimestamp.getTime());
+            + (lastFundingDownloadedTimestamp == null ? EXCHANGE_OPENING_DATE.getTime() : lastFundingDownloadedTimestamp.getTime());
     }
 
     // deserialize last downloaded IDs and timestamps to be able to continue where left off
