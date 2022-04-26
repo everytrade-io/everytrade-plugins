@@ -75,7 +75,7 @@ public class BinanceDownloader {
                     break;
                 }
                 userTrades.addAll(userTradesBlock);
-                lastDownloadedTx = userTradesBlock.stream().max(comparing(UserTrade::getId)).get().getId();
+                lastDownloadedTx = userTradesBlock.stream().max(comparing(u -> Integer.parseInt(u.getId()))).get().getId();
                 params.setStartId(lastDownloadedTx);
             }
             currencyPairLastIds.put(pair.toString(), lastDownloadedTx);
