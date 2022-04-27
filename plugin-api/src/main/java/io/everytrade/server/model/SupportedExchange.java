@@ -32,7 +32,7 @@ public enum SupportedExchange {
     COINBASE_PRO("Coinbase Pro", "coinbasepro"),
     BITMEX("BitMEX", "bitmex"),
     BITFLYER("bitFlyer", "bitflyer"),
-    OKEX("OKEX", "okex"),
+    OKX("OKX", "okex"),
     COINBASE("Coinbase", "coinbase"),
     BLOCKCHAINBTC("Blockchain BTC", "blockchainbtc"),
     BLOCKCHAINETH("Blockchain ETH", "blockchaineth"),

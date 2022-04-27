@@ -9,18 +9,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class OkexDownloader {
+public class OkxDownloader {
     //https://www.okex.com/docs/en/#spot-account_information - limit 20 requests per second
     private static final int MAX_REQUESTS = 30;
     private static final Duration SLEEP_BETWEEN_REQUESTS = Duration.ofMillis(100);
     private static final String MAX_TXS_PER_REQUEST = "100";
     public static final String STATUS_FULLY_FILLED = "2";
     private final SpotOrderAPIServive spotOrderApiService;
-    private final OkexCurrencyPairDonwloadState donwloadState;
+    private final OkxCurrencyPairDonwloadState donwloadState;
 
-    public OkexDownloader(SpotOrderAPIServive spotOrderApiService, String lastTransactionId) {
+    public OkxDownloader(SpotOrderAPIServive spotOrderApiService, String lastTransactionId) {
         Objects.requireNonNull(this.spotOrderApiService = spotOrderApiService);
-        donwloadState = new OkexCurrencyPairDonwloadState(lastTransactionId);
+        donwloadState = new OkxCurrencyPairDonwloadState(lastTransactionId);
     }
 
     public List<OrderInfo> download(String currencyPairs) {

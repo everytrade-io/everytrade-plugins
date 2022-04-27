@@ -1,7 +1,7 @@
 package io.everytrade.server.plugin.impl.everytrade;
 
 import com.okcoin.commons.okex.open.api.bean.spot.result.OrderInfo;
-import io.everytrade.server.parser.exchange.OkexApiTransactionBean;
+import io.everytrade.server.parser.exchange.OkxApiTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParseResult;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.ParsingProblemType;
@@ -12,10 +12,10 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OkexConnectorParser {
-    private static final Logger LOG = LoggerFactory.getLogger(OkexConnectorParser.class);
+public class OkxConnectorParser {
+    private static final Logger LOG = LoggerFactory.getLogger(OkxConnectorParser.class);
 
-    private OkexConnectorParser() {
+    private OkxConnectorParser() {
     }
 
     public static ParseResult getParseResult(List<OrderInfo> orderInfos) {
@@ -23,8 +23,8 @@ public class OkexConnectorParser {
         final List<ParsingProblem> parsingProblems = new ArrayList<>();
         for (OrderInfo orderInfo : orderInfos) {
             try {
-                OkexApiTransactionBean okexApiTransactionBean = new OkexApiTransactionBean(orderInfo);
-                transactionClusters.add(okexApiTransactionBean.toTransactionCluster());
+                OkxApiTransactionBean okxApiTransactionBean = new OkxApiTransactionBean(orderInfo);
+                transactionClusters.add(okxApiTransactionBean.toTransactionCluster());
             } catch (Exception e) {
                 LOG.error("Error converting to ImportedTransactionBean: {}", e.getMessage());
                 LOG.debug("Exception by converting to ImportedTransactionBean.", e);

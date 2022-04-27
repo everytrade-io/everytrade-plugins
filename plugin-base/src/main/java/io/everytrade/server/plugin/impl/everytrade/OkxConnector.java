@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class OkexConnector implements IConnector {
+public class OkxConnector implements IConnector {
     private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "okexApiConnector";
 
     private static final ConnectorParameterDescriptor PARAMETER_API_SECRET =
@@ -54,9 +54,9 @@ public class OkexConnector implements IConnector {
 
     public static final ConnectorDescriptor DESCRIPTOR = new ConnectorDescriptor(
         ID,
-        "OKEX Connector",
+        "OKX Connector",
         "",
-        SupportedExchange.OKEX.getInternalId(),
+        SupportedExchange.OKX.getInternalId(),
         List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET, PARAMETER_PASS_PHRASE, PARAMETER_CURRENCY_PAIRS)
     );
     private static final String OKEX_URL = "https://www.okex.com/";
@@ -65,7 +65,7 @@ public class OkexConnector implements IConnector {
     private final String passPhrase;
     private final String currencyPairs;
 
-    public OkexConnector(Map<String, String> parameters) {
+    public OkxConnector(Map<String, String> parameters) {
         Objects.requireNonNull(this.apiKey = parameters.get(PARAMETER_API_KEY.getId()));
         Objects.requireNonNull(this.apiSecret = parameters.get(PARAMETER_API_SECRET.getId()));
         Objects.requireNonNull(this.passPhrase = parameters.get(PARAMETER_PASS_PHRASE.getId()));
@@ -85,9 +85,9 @@ public class OkexConnector implements IConnector {
         config.setSecretKey(apiSecret);
         config.setPassphrase(passPhrase);
         final SpotOrderAPIServive spotOrderApiService = new SpotOrderApiServiceImpl(config);
-        final OkexDownloader okexDownloader = new OkexDownloader(spotOrderApiService, lastTransactionId);
-        final List<OrderInfo> orderInfos = okexDownloader.download(currencyPairs);
-        final ParseResult parseResult = OkexConnectorParser.getParseResult(orderInfos);
-        return new DownloadResult(parseResult, okexDownloader.getLastTransactionId());
+        final OkxDownloader okxDownloader = new OkxDownloader(spotOrderApiService, lastTransactionId);
+        final List<OrderInfo> orderInfos = okxDownloader.download(currencyPairs);
+        final ParseResult parseResult = OkxConnectorParser.getParseResult(orderInfos);
+        return new DownloadResult(parseResult, okxDownloader.getLastTransactionId());
     }
 }

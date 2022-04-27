@@ -17,7 +17,7 @@ import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.Exchan
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-class OkexBeanV1Test {
+class OkxBeanV1Test {
     private static final String HEADER_CORRECT
         = "\uFEFFOrder ID,\uFEFFTrade ID,\uFEFFTrade Time,\uFEFFPairs,\uFEFFAmount,\uFEFFPrice,\uFEFFTotal," +
         "\uFEFFtaker/maker,\uFEFFFee,\uFEFFunit\r\n";

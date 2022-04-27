@@ -19,7 +19,7 @@ import java.util.Objects;
 
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 
-public class OkexApiTransactionBean {
+public class OkxApiTransactionBean {
     public static final int DECIMAL_SCALE = 10;
     public static final String FULLY_FILLED = "2";
     private final String orderId;
@@ -42,7 +42,7 @@ public class OkexApiTransactionBean {
         }
     }
 
-    public OkexApiTransactionBean(OrderInfo orderInfo) {
+    public OkxApiTransactionBean(OrderInfo orderInfo) {
         Objects.requireNonNull(orderInfo);
         if (!orderInfo.getState().equals(FULLY_FILLED)) {
             throw new DataValidationException(String.format("Unsupported status type '%s'.", orderInfo.getState()));

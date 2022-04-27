@@ -177,8 +177,8 @@ How to create a new plugin and make it part of the Base Plugin Pack:
    |everytrade|everytrade.everytradeParser|Parser|Bitmex||
    |everytrade|everytrade.huobiApiConnector|Connector|Huobi||
    |everytrade|everytrade.everytradeParser|Parser|Huobi||
-   |everytrade|everytrade.okexApiConnector|Connector|OKEX||
-   |everytrade|everytrade.everytradeParser|Parser|OKEX||
+   |everytrade|everytrade.okxApiConnector|Connector|OKX||
+   |everytrade|everytrade.everytradeParser|Parser|OKX||
    |everytrade|everytrade.everytradeParser|Parser|bitFlyer||
    |everytrade|everytrade.everytradeParser|Parser|Coinsquare||
    |everytrade|everytrade.everytradeParser|Parser|HitBTC||
