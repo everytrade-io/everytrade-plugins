@@ -27,11 +27,11 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 public class CoinbaseProDownloader {
     //https://docs.pro.coinbase.com/#rate-limits - max 5 request per user per second --> 200 ms between requests
     private static final int TX_PER_REQUEST = 100;
+    private static final int FUNDINGS_PER_REQUEST = 100;
     private static final int MAX_REQUEST_COUNT = 3000;
     private static final int SLEEP_BETWEEN_REQUESTS_MS = 200;
     public static final int FIRST_COINBASE_TX_ID = 1;
-    public static final String FIRST_DEPOSIT_ID = "";
-    public static final String FIRST_WITHDRAWAL_ID = "";
+    public static final String EXCHANGE_OPENING_DATE = "2012-01-01 23:59:59.909298+00";
     private DownloadState state;
 
     Exchange exchange;
@@ -97,8 +97,8 @@ public class CoinbaseProDownloader {
 
         //DEPOSITS
         final String lastDepositId = state.getLastDepositId();
-        String lastDownloadedDepositId = lastDepositId == null ? FIRST_DEPOSIT_ID : lastDepositId;
-        params.setLimit(TX_PER_REQUEST);
+        String lastDownloadedDepositId = lastDepositId == null ? EXCHANGE_OPENING_DATE : lastDepositId;
+        params.setLimit(FUNDINGS_PER_REQUEST);
         params.setType(FundingRecord.Type.DEPOSIT);
         params.setBeforeTransferId(lastDownloadedDepositId);
 
@@ -123,8 +123,8 @@ public class CoinbaseProDownloader {
 
         //WITHDRAWALS
         final String lastWithdrawal = state.getLastWithdrawalId();
-        String lastDownloadedWithdrawalId = lastWithdrawal == null ? FIRST_WITHDRAWAL_ID : lastWithdrawal;
-        params.setLimit(TX_PER_REQUEST);
+        String lastDownloadedWithdrawalId = lastWithdrawal == null ? EXCHANGE_OPENING_DATE : lastWithdrawal;
+        params.setLimit(FUNDINGS_PER_REQUEST);
         params.setType(FundingRecord.Type.WITHDRAWAL);
         params.setBeforeTransferId(lastDownloadedWithdrawalId);
 
