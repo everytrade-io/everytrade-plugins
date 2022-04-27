@@ -10,11 +10,10 @@ import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
-import io.everytrade.server.plugin.impl.everytrade.OkexConnectorParser;
+import io.everytrade.server.plugin.impl.everytrade.OkxConnectorParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.EverytradeCSVParserValidator;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
-import io.everytrade.server.util.CurrencyUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +22,6 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 @Headers(sequence = {"UID", "DATE", "SYMBOL", "ACTION", "QUANTY", "VOLUME", "FEE"}, extract = true)
 public class EveryTradeBeanV2 extends ExchangeBean {
@@ -35,7 +33,7 @@ public class EveryTradeBeanV2 extends ExchangeBean {
     private BigDecimal quantity;
     private BigDecimal volume;
     private BigDecimal fee;
-    private static final Logger LOG = LoggerFactory.getLogger(OkexConnectorParser.class);
+    private static final Logger LOG = LoggerFactory.getLogger(OkxConnectorParser.class);
 
     @Parsed(field = "UID")
     public void setUid(String uid) {

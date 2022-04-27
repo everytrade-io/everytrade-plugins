@@ -12,12 +12,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class OkexCurrencyPairDonwloadState {
+public class OkxCurrencyPairDonwloadState {
     private final Map<String, CurrencyPairDownloadState> currencyPairDownloadStates;
     private static final String REGEX = "^([^:]*):([^:]*):([^:]*):([^:]*)$";
     private static final Pattern SPLIT_PATTERN = Pattern.compile(REGEX);
 
-    public OkexCurrencyPairDonwloadState(String lastTransactionId) {
+    public OkxCurrencyPairDonwloadState(String lastTransactionId) {
         if (lastTransactionId == null || lastTransactionId.equals("")) {
             currencyPairDownloadStates = new HashMap<>();
         } else {

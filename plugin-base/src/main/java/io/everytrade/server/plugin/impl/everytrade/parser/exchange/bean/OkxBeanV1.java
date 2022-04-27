@@ -23,7 +23,7 @@ import java.util.List;
 //'Order ID' values start with BOM (\uFEFF) symbol.
 @Headers(sequence = {"\uFEFFTrade ID","\uFEFFTrade Time","\uFEFFPairs","\uFEFFAmount","\uFEFFPrice","\uFEFFTotal",
     "\uFEFFFee", "\uFEFFunit\r"}, extract = true)
-public class OkexBeanV1 extends ExchangeBean {
+public class OkxBeanV1 extends ExchangeBean {
     private String tradeID;
     private Instant tradeTime;
     private Currency pairsBase;

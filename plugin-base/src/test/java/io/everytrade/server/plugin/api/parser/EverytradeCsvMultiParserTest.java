@@ -32,7 +32,7 @@ import static io.everytrade.server.model.SupportedExchange.HITBTC;
 import static io.everytrade.server.model.SupportedExchange.HUOBI;
 import static io.everytrade.server.model.SupportedExchange.KRAKEN;
 import static io.everytrade.server.model.SupportedExchange.LOCALBITCOINS;
-import static io.everytrade.server.model.SupportedExchange.OKEX;
+import static io.everytrade.server.model.SupportedExchange.OKX;
 import static io.everytrade.server.model.SupportedExchange.PAXFUL;
 import static io.everytrade.server.model.SupportedExchange.POLONIEX;
 import static io.everytrade.server.model.SupportedExchange.SHAKEPAY;
@@ -258,13 +258,13 @@ class EverytradeCsvMultiParserTest {
     }
 
     @Test
-    void testOkex() {
+    void testOkx() {
         doTest(
             List.of(
                 "\uFEFFOrder ID,\uFEFFTrade ID,\uFEFFTrade Time,\uFEFFPairs,\uFEFFAmount,\uFEFFPrice,\uFEFFTotal," +
                     "\uFEFFtaker/maker,\uFEFFFee,\uFEFFunit"
             ),
-            OKEX
+            OKX
         );
     }
 

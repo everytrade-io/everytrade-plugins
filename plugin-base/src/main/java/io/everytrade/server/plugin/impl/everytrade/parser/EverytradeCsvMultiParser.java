@@ -6,7 +6,6 @@ import io.everytrade.server.plugin.api.parser.ICsvParser;
 import io.everytrade.server.plugin.api.parser.ParseResult;
 import io.everytrade.server.plugin.api.parser.ParserDescriptor;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
-import io.everytrade.server.plugin.api.parser.ParsingProblemType;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.csv.CsvHeader;
 import io.everytrade.server.plugin.impl.everytrade.EveryTradePlugin;
@@ -15,7 +14,6 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BitfinexExcha
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.CoinbaseExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.DefaultUnivocityExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.IExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.AquanowBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BinanceBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BitflyerBeanV1;
@@ -41,7 +39,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.HitBtcBe
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.HuobiBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.KrakenBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.LocalBitcoinsBeanV1;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OkexBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OkxBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.PaxfulBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.PoloniexBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.PoloniexBeanV2;
@@ -75,7 +73,7 @@ import static io.everytrade.server.model.SupportedExchange.HITBTC;
 import static io.everytrade.server.model.SupportedExchange.HUOBI;
 import static io.everytrade.server.model.SupportedExchange.KRAKEN;
 import static io.everytrade.server.model.SupportedExchange.LOCALBITCOINS;
-import static io.everytrade.server.model.SupportedExchange.OKEX;
+import static io.everytrade.server.model.SupportedExchange.OKX;
 import static io.everytrade.server.model.SupportedExchange.PAXFUL;
 import static io.everytrade.server.model.SupportedExchange.POLONIEX;
 import static io.everytrade.server.model.SupportedExchange.SHAKEPAY;
@@ -371,8 +369,8 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                     .of("Order ID", "Trade ID", "Trade Time", "Pairs", "Amount", "Price", "Total", "taker/maker", "Fee", "unit")
                     .withSeparator(DELIMITER_COMMA)
             ))
-            .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(OkexBeanV1.class, DELIMITER_COMMA, LINE_SEPARATOR))
-            .supportedExchange(OKEX)
+            .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(OkxBeanV1.class, DELIMITER_COMMA, LINE_SEPARATOR))
+            .supportedExchange(OKX)
             .build());
 
         /* PAXFUL */

@@ -31,7 +31,7 @@ public class EveryTradePlugin implements IPlugin {
             BittrexConnector.DESCRIPTOR,
             CoinbaseProConnector.DESCRIPTOR,
             BitmexConnector.DESCRIPTOR,
-            OkexConnector.DESCRIPTOR,
+            OkxConnector.DESCRIPTOR,
             HuobiConnector.DESCRIPTOR,
             CoinbaseConnector.DESCRIPTOR,
             BlockchainBtcConnector.DESCRIPTOR,
@@ -91,8 +91,8 @@ public class EveryTradePlugin implements IPlugin {
         if (connectorId.equals(BitmexConnector.DESCRIPTOR.getId())) {
             return new BitmexConnector(parameters);
         }
-        if (connectorId.equals(OkexConnector.DESCRIPTOR.getId())) {
-            return new OkexConnector(parameters);
+        if (connectorId.equals(OkxConnector.DESCRIPTOR.getId())) {
+            return new OkxConnector(parameters);
         }
         if (connectorId.equals(HuobiConnector.DESCRIPTOR.getId())) {
             return new HuobiConnector(parameters);
