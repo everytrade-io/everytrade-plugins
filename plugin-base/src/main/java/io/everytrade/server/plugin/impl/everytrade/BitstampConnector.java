@@ -169,7 +169,7 @@ public class BitstampConnector implements IConnector {
                 break;
             }
             funding.addAll(fundingBlock);
-            lastDownloadedTx = fundingBlock.get(fundingBlock.size() - 1).getInternalId();
+            lastDownloadedTx = fundingBlock.get(0).getInternalId();
             params.setStartId(lastDownloadedTx);
             ++sentRequests;
         }
