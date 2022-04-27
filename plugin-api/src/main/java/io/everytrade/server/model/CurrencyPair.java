@@ -11,13 +11,26 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static io.everytrade.server.model.Currency.ADA;
 import static io.everytrade.server.model.Currency.BNB;
 import static io.everytrade.server.model.Currency.BTC;
 import static io.everytrade.server.model.Currency.BUSD;
+import static io.everytrade.server.model.Currency.CRO;
 import static io.everytrade.server.model.Currency.DAI;
 import static io.everytrade.server.model.Currency.ETH;
+import static io.everytrade.server.model.Currency.FRAX;
+import static io.everytrade.server.model.Currency.HUSD;
+import static io.everytrade.server.model.Currency.LINK;
+import static io.everytrade.server.model.Currency.LTC;
+import static io.everytrade.server.model.Currency.LUNA;
+import static io.everytrade.server.model.Currency.LUSD;
+import static io.everytrade.server.model.Currency.MANA;
+import static io.everytrade.server.model.Currency.SOL;
+import static io.everytrade.server.model.Currency.TUSD;
 import static io.everytrade.server.model.Currency.USDC;
+import static io.everytrade.server.model.Currency.USDN;
 import static io.everytrade.server.model.Currency.USDT;
+import static io.everytrade.server.model.Currency.UST;
 import static io.everytrade.server.model.Currency.XRP;
 import static lombok.AccessLevel.PRIVATE;
 
@@ -25,7 +38,9 @@ import static lombok.AccessLevel.PRIVATE;
 @FieldDefaults(level = PRIVATE)
 public final class CurrencyPair implements Comparable<CurrencyPair> {
 
-    private static final Set<Currency> ALLOWED_CRYPTO_QUOTES = Set.of(USDT, BTC, ETH, BNB, BUSD, USDC, DAI, XRP);
+    private static final Set<Currency> ALLOWED_CRYPTO_QUOTES = Set.of(
+        USDT, BTC, ETH, BNB, BUSD, USDC, DAI, XRP, ADA, CRO, FRAX, HUSD, LINK, LTC, LUNA, LUSD, MANA, SOL, TUSD, USDN, UST
+    );
 
     @NonNull Currency base;
     @NonNull Currency quote;

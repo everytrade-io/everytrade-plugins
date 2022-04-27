@@ -254,14 +254,11 @@ public class CoinbaseDownloader {
         return actualWalletStates;
     }
 
-    public static List<Map.Entry<String, WalletState>> sortWalletsByFundingUpdates(Map<String, WalletState>walletsMap)
-    {
+    public static List<Map.Entry<String, WalletState>> sortWalletsByFundingUpdates(Map<String, WalletState>walletsMap) {
         var wallets = walletsMap.entrySet().stream().collect(Collectors.toList());
-        for (int i = 0; i < wallets.size() - 1; i++)
-        {
+        for (int i = 0; i < wallets.size() - 1; i++) {
             int min = i;
-            for (int j = i + 1; j < wallets.size(); j++)
-            {
+            for (int j = i + 1; j < wallets.size(); j++) {
                 Long prev = (wallets.get(j).getValue().lastFundingWalletUpdate == null) ? 1L :
                     Long.parseLong(wallets.get(j).getValue().lastFundingWalletUpdate);
                 Long next = (wallets.get(min).getValue().lastFundingWalletUpdate == null) ? 1L :
@@ -277,14 +274,11 @@ public class CoinbaseDownloader {
         return wallets;
     }
 
-    public static List<Map.Entry<String, WalletState>> sortWalletsByTxsUpdates(Map<String, WalletState>walletsMap)
-    {
+    public static List<Map.Entry<String, WalletState>> sortWalletsByTxsUpdates(Map<String, WalletState>walletsMap) {
         var wallets = walletsMap.entrySet().stream().collect(Collectors.toList());
-        for (int i = 0; i < wallets.size() - 1; i++)
-        {
+        for (int i = 0; i < wallets.size() - 1; i++) {
             int min = i;
-            for (int j = i + 1; j < wallets.size(); j++)
-            {
+            for (int j = i + 1; j < wallets.size(); j++) {
                 Long prev = (wallets.get(j).getValue().lastTxWalletUpdate == null) ? 1L :
                     Long.parseLong(wallets.get(j).getValue().lastTxWalletUpdate);
                 Long next = (wallets.get(min).getValue().lastTxWalletUpdate == null) ? 1L :
