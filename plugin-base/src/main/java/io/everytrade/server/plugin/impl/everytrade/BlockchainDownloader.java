@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -35,6 +36,8 @@ public class BlockchainDownloader {
     private static final String COIN_SERVER_URL = "https://coin.cz";
     private static final int MIN_COINFIRMATIONS = 6;
     private static final Set<Currency> SUPPORTED_CRYPTO = Set.of(Currency.BTC, Currency.LTC);
+    private static final int MAX_REQUESTS = 50;
+    private static final int LIMIT = 300;
 
     Client client;
     String lastTransactionUid;
@@ -86,30 +89,54 @@ public class BlockchainDownloader {
     }
 
     public DownloadResult download(String source) {
+        List<Transaction> transactions = new ArrayList<>();
+        int request = 0;
+        int page = 0;
+
         if (isXpub(source)) {
-            final Collection<AddressInfo> addressInfos = client.getAddressesInfoFromXpub(source, Integer.MAX_VALUE);
-            if (addressInfos == null) {
-                throw new IllegalArgumentException(String.format(
-                    "No addresses info found for crypto '%s' and key '%s'",
-                    cryptoCurrency,
-                    ConnectorUtils.truncate(source, TRUNCATE_LIMIT)
-                ));
+            while (request < MAX_REQUESTS) {
+                var addressInfoBlock = client.getAddressesInfoFromXpub(source, LIMIT, page);
+                if (addressInfoBlock == null && page == 0 || addressInfoBlock.size() < 1) {
+                    throw new IllegalArgumentException(String.format(
+                        "No addresses info found for crypto '%s' and key '%s'",
+                        cryptoCurrency,
+                        ConnectorUtils.truncate(source, TRUNCATE_LIMIT)
+                    ));
+                }
+                var newTransactions = getNewTransactionsFromAddressInfos(addressInfoBlock);
+                if (newTransactions.size() < LIMIT) {
+                    transactions.add((Transaction) newTransactions);
+                    break;
+                }
+                transactions.add((Transaction) newTransactions);
+                request++;
+                page++;
             }
-            return getTransactionsFromAddressInfos(addressInfos);
         } else {
-            final AddressInfo addressInfo = client.getAddressInfo(source, Integer.MAX_VALUE);
-            if (addressInfo == null) {
+                var addressInfoBlock = client.getAddressInfo(source, LIMIT, page);
+            if (addressInfoBlock == null && page == 0) {
                 throw new IllegalArgumentException(String.format(
                     "No source info found for crypto '%s' and source '%s'",
                     cryptoCurrency,
                     ConnectorUtils.truncate(source, TRUNCATE_LIMIT)
                 ));
             }
-            return getTransactionsFromAddressInfos(List.of(addressInfo));
+            while (request < MAX_REQUESTS) {
+                var newTransactions = getNewTransactionsFromAddressInfos(List.of(addressInfoBlock));
+                if (newTransactions.size() < LIMIT) {
+                    transactions.add((Transaction) newTransactions);
+                    break;
+                }
+                transactions.add((Transaction) newTransactions);
+                request++;
+                page++;
+            }
         }
+        var lastNewTimestamp = transactions.stream().max(Comparator.comparing(Transaction::getTimestamp)).get().getTimestamp();
+        return getTransactionsFromAddressInfos(transactions, lastNewTimestamp);
     }
 
-    private DownloadResult getTransactionsFromAddressInfos(Collection<AddressInfo> addressInfos) {
+    private List<Transaction> getNewTransactionsFromAddressInfos(Collection<AddressInfo> addressInfos) {
         final List<Transaction> transactions = new ArrayList<>();
         long newLastTxTimestamp = 0;
         for (AddressInfo addressInfo : addressInfos) {
@@ -129,7 +156,11 @@ public class BlockchainDownloader {
                 }
             }
         }
+        return transactions;
+    }
 
+
+    private DownloadResult getTransactionsFromAddressInfos(List<Transaction> transactions, long newLastTxTimestamp) {
         final ParseResult parseResult = BlockchainConnectorParser.getParseResult(
             transactions,
             cryptoCurrency,
@@ -139,6 +170,7 @@ public class BlockchainDownloader {
             importFeesFromDeposits,
             importFeesFromWithdrawals
         );
+
         final String newLastTransactionUid = getNewLastTransactionId(newLastTxTimestamp, transactions);
         return new DownloadResult(parseResult, newLastTransactionUid);
     }
