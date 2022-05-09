@@ -83,7 +83,10 @@ public class BlockchainApiTransactionBean {
         }
         final boolean withFee =
             (importFeesFromDeposits && TransactionType.BUY.equals(type))
-                || (importFeesFromWithdrawals && SELL.equals(type));
+                || (importFeesFromWithdrawals && SELL.equals(type))
+                || (!importFeesFromWithdrawals && WITHDRAWAL.equals(type))
+                || (!importFeesFromDeposits && DEPOSIT.equals(type)
+            );
 
         final boolean ignoredFee = !(base.equals(feeCurrency) || quote.equals(feeCurrency));
         List<ImportedTransactionBean> related;
