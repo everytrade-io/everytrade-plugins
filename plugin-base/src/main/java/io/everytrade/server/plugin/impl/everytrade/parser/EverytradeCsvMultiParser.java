@@ -29,6 +29,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.Coinmate
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinsquareBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinsquareBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.DVChainBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.KrakenBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.everytrade.EveryTradeBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.everytrade.EveryTradeBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.everytrade.EveryTradeBeanV3;
@@ -349,6 +350,18 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             .supportedExchange(KRAKEN)
             .build());
 
+        EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+            .headers(List.of(
+                CsvHeader
+                    .of(
+                        "txid","refid","time","type","subtype","aclass","asset","amount","fee","balance"
+                    )
+                    .withSeparator(DELIMITER_COMMA)
+            ))
+            .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(KrakenBeanV2.class))
+            .supportedExchange(KRAKEN)
+            .build());
+
         /* LOCALBITCOINS */
         EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
             .headers(List.of(
@@ -512,7 +525,10 @@ public class EverytradeCsvMultiParser implements ICsvParser {
         List<TransactionCluster> transactionClusters = new ArrayList<>();
         for (ExchangeBean p : listBeans) {
             try {
-                transactionClusters.add(p.toTransactionCluster());
+                var cluster = p.toTransactionCluster();
+                if (cluster != null) {
+                    transactionClusters.add(cluster);
+                }
             } catch (DataValidationException e) {
                 parsingProblems.add(new ParsingProblem(p.rowToString(), e.getMessage(), ROW_PARSING_FAILED));
             }

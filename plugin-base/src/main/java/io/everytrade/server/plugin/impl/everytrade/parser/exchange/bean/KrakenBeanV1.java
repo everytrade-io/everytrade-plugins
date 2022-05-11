@@ -12,6 +12,7 @@ import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
+import io.everytrade.server.util.KrakenCurrencyUtil;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
@@ -34,24 +35,7 @@ public class KrakenBeanV1 extends ExchangeBean {
     private static final Map<String, Currency> CURRENCY_SHORT_CODES = new HashMap<>();
     private static final Map<String, Currency> CURRENCY_LONG_CODES = new HashMap<>();
 
-    static {
-        CURRENCY_SHORT_CODES.put("XBT", Currency.BTC);
-        CURRENCY_LONG_CODES.put("XXBT", Currency.BTC);
-        CURRENCY_SHORT_CODES.put("XDG", Currency.DOGE);
-        CURRENCY_LONG_CODES.put("XXDG", Currency.DOGE);
 
-        for (Currency value : Currency.values()) {
-            if (value.equals(Currency.BTC)) {
-                continue;
-            }
-            CURRENCY_SHORT_CODES.put(value.code(), value);
-            if (value.isFiat()) {
-                CURRENCY_LONG_CODES.put("Z" + value.code(), value);
-            } else {
-                CURRENCY_LONG_CODES.put("X" + value.code(), value);
-            }
-        }
-    }
 
     @Parsed(field = "txid")
     public void setTxid(String txid) {
@@ -66,8 +50,8 @@ public class KrakenBeanV1 extends ExchangeBean {
             throw new DataValidationException(String.format("Can not parse pair %s.", pair));
         }
 
-        this.pairBase = findCurrencyByCode(mBase);
-        this.pairQuote = findCurrencyByCode(mQuote);
+        this.pairBase = KrakenCurrencyUtil.findCurrencyByCode(mBase);
+        this.pairQuote = KrakenCurrencyUtil.findCurrencyByCode(mQuote);
     }
 
     @Parsed(field = "time")
@@ -183,18 +167,5 @@ public class KrakenBeanV1 extends ExchangeBean {
             isFindingBase ? "base" : "quote",
             pairCode
         ));
-    }
-
-    private Currency findCurrencyByCode(String code) {
-        final Currency currencyLong = CURRENCY_LONG_CODES.get(code);
-        if (currencyLong != null) {
-            return currencyLong;
-        }
-        final Currency currencyShort = CURRENCY_SHORT_CODES.get(code);
-        if (currencyShort != null) {
-            return currencyShort;
-        }
-
-        throw new IllegalStateException(String.format("Currency not found for code %s.", code));
     }
 }
