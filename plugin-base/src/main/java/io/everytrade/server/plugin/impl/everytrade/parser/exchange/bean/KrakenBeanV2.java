@@ -10,6 +10,7 @@ import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
+import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import io.everytrade.server.util.KrakenCurrencyUtil;
 
@@ -19,6 +20,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -76,6 +78,9 @@ public class KrakenBeanV2 extends ExchangeBean {
 
     @Parsed(field = "type")
     public void setType(String type) {
+        if (!List.of("deposit", "withdrawal").contains(type)) {
+            throw new DataIgnoredException("Transaction type \"" + type + "\" ignored");
+        }
         this.type = detectTransactionType(type);
     }
 
