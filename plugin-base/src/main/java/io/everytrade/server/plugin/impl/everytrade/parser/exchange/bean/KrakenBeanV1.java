@@ -32,10 +32,6 @@ public class KrakenBeanV1 extends ExchangeBean {
     private BigDecimal cost;
     private BigDecimal fee;
     private BigDecimal vol;
-    private static final Map<String, Currency> CURRENCY_SHORT_CODES = new HashMap<>();
-    private static final Map<String, Currency> CURRENCY_LONG_CODES = new HashMap<>();
-
-
 
     @Parsed(field = "txid")
     public void setTxid(String txid) {
@@ -121,12 +117,12 @@ public class KrakenBeanV1 extends ExchangeBean {
     }
 
     private String findCurrencyCode(String pairCode, boolean isFindingBase) {
-        List<String> matchedShortCodes = CURRENCY_SHORT_CODES
+        List<String> matchedShortCodes = KrakenCurrencyUtil.CURRENCY_SHORT_CODES
             .keySet()
             .stream()
             .filter(prefix -> isFindingBase ? pairCode.startsWith(prefix) : pairCode.endsWith(prefix))
             .collect(Collectors.toList());
-        List<String> matchedLongCodes = CURRENCY_LONG_CODES
+        List<String> matchedLongCodes = KrakenCurrencyUtil.CURRENCY_LONG_CODES
             .keySet()
             .stream()
             .filter(prefix -> isFindingBase ? pairCode.startsWith(prefix) : pairCode.endsWith(prefix))
@@ -140,7 +136,9 @@ public class KrakenBeanV1 extends ExchangeBean {
             final String matchedShortCode = matchedShortCodes.get(0);
             final String matchedLongCode = matchedLongCodes.get(0);
             final boolean foundCurrenciesMatch =
-                CURRENCY_SHORT_CODES.get(matchedShortCode).equals(CURRENCY_LONG_CODES.get(matchedLongCode));
+                KrakenCurrencyUtil.CURRENCY_SHORT_CODES.get(matchedShortCode).equals(
+                    KrakenCurrencyUtil.CURRENCY_LONG_CODES.get(matchedLongCode)
+                );
             if (foundCurrenciesMatch) {
                 return matchedLongCode;
             } else {
