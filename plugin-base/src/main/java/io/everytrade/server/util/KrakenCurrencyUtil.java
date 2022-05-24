@@ -7,12 +7,18 @@ import java.util.Map;
 
 public class KrakenCurrencyUtil {
 
-    private static final Map<String, Currency> CURRENCY_SHORT_CODES = new HashMap<>();
-    private static final Map<String, Currency> CURRENCY_LONG_CODES = new HashMap<>();
+    public static final Map<String, Currency> CURRENCY_SHORT_CODES = new HashMap<>();
+    public static final Map<String, Currency> CURRENCY_LONG_CODES = new HashMap<>();
 
     static {
         CURRENCY_SHORT_CODES.put("XBT", Currency.BTC);
         CURRENCY_LONG_CODES.put("XXBT", Currency.BTC);
+
+        CURRENCY_SHORT_CODES.put("XLT", Currency.LTC);
+        CURRENCY_LONG_CODES.put("XXLT", Currency.LTC);
+        CURRENCY_SHORT_CODES.put("XLTC", Currency.LTC);
+        CURRENCY_LONG_CODES.put("XXLTC", Currency.LTC);
+
         CURRENCY_SHORT_CODES.put("XDG", Currency.DOGE);
         CURRENCY_LONG_CODES.put("XXDG", Currency.DOGE);
 
