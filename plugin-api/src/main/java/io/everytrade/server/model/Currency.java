@@ -562,7 +562,17 @@ public enum Currency {
     SUB(false, Instant.parse("2017-08-21T00:00:00Z"), "Substratum"),
     TNT(false, Instant.parse("2017-08-24T00:00:00Z"), "Tierion"),
     VIB(false, Instant.parse("2017-10-05T00:00:00Z"), "Viberate"),
-    VIBE(false, Instant.parse("2017-10-21T00:00:00Z"), "VIBE");
+    VIBE(false, Instant.parse("2017-10-21T00:00:00Z"), "VIBE"),
+    BABY(false, Instant.parse("2021-09-21T00:00:00"), "BabySwap"),
+    CFI(false, Instant.parse("2021-09-17T00:00:00"), "CyberFi"),
+    EBST(false, Instant.parse("2017-01-01T00:00:00"), "eBoost"),
+    EXP(false, Instant.parse("2017-09-14T00:00:00"), "Expanse"),
+    HT(false, Instant.parse("2018-01-31T00:00:00"), "Huobi Token"),
+    MXC(false, Instant.parse("2018-12-05T00:00:00"), "Macine Xchange Coin"),
+    OCN(false, Instant.parse("2018-01-17T00:00:00"), "Odyssey"),
+    SRN(false, Instant.parse("2018-09-27T00:00:00"), "SIRIN LABS Token"),
+    UBQ(false, Instant.parse("2014-08-01T00:00:00"), "Ubiq"),
+    XEL(false, Instant.parse("2017-01-22T00:00:00"), "XEL");
 
     String code;
     int decimalDigits;
