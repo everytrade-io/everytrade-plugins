@@ -127,17 +127,11 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 .supportedExchange(BINANCE)
                 .build());
 
-//            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
-//                .headers(List.of(binanceHeader4.withSeparator(delimiter)))
-//                .parserFactory(() -> new BinanceExchangeSpecificParserV2(BinanceBeanV4.class))
-//                .supportedExchange(BINANCE)
-//                .build());
-////
-//            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
-//                .headers(List.of(binanceHeader4.withSeparator(delimiter)))
-//                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(BinanceBeanV4.class))
-//                .supportedExchange(BINANCE)
-//                .build());
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(binanceHeader4.withSeparator(delimiter)))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(BinanceBeanV4.class))
+                .supportedExchange(BINANCE)
+                .build());
         });
 
         EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
@@ -148,22 +142,6 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             .parserFactory(BinanceExchangeSpecificParserV3::new)
             .supportedExchange(BINANCE)
             .build());
-
-//        EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
-//            .headers(List.of(
-//                CsvHeader.of("UTC_Time","Account","Operation","Coin","Change","Remark").withSeparator(DELIMITER_COMMA)
-//            ))
-//            .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(BinanceBeanV4.class, DELIMITER_COMMA))
-//            .supportedExchange(BINANCE)
-//            .build());
-//
-//        EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
-//            .headers(List.of(
-//                CsvHeader.of("User_ID,UTC_Time,Account,Operation,Coin,Change,Remark").withSeparator(DELIMITER_COMMA)
-//            ))
-//            .parserFactory(() -> new BinanceExchangeSpecificParserV2(BinanceBeanV4.class))
-//            .supportedExchange(BINANCE)
-//            .build());
 
         /* BITFINEX */
         EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
