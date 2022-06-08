@@ -10,6 +10,7 @@ import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.csv.CsvHeader;
 import io.everytrade.server.plugin.impl.everytrade.EveryTradePlugin;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.UnknownHeaderException;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BinanceExchangeSpecificParserV4;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BitfinexExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.CoinbaseExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.DefaultUnivocityExchangeSpecificParser;
@@ -47,6 +48,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.Poloniex
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.ShakePayBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v2.BinanceExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v3.BinanceExchangeSpecificParserV3;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceBeanV4;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.everytrade.EveryTradeBeanV3_1;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,6 +98,12 @@ public class EverytradeCsvMultiParser implements ICsvParser {
         var binanceHeader2 = CsvHeader.of(
             "Date(UTC)", "Pair", "Type", "Order Price", "Order Amount", "AvgTrading Price", "Filled", "Total", "status"
         );
+        var binanceHeader3 =
+            CsvHeader.of("UTC_Time","Account","Operation","Coin","Change","Remark")
+                .withSeparator(DELIMITER_COMMA);
+        var binanceHeader4 =
+            CsvHeader.of("User_ID","UTC_Time","Account","Operation","Coin","Change","Remark")
+                .withSeparator(DELIMITER_COMMA);
 
         DELIMITERS.forEach(delimiter -> {
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
@@ -109,6 +117,27 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 .parserFactory(() -> new BinanceExchangeSpecificParser(delimiter))
                 .supportedExchange(BINANCE)
                 .build());
+
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(binanceHeader3.withSeparator(delimiter),
+                                binanceHeader4.withSeparator(delimiter)
+
+                    ))
+                .parserFactory(() -> new BinanceExchangeSpecificParserV4(BinanceBeanV4.class))
+                .supportedExchange(BINANCE)
+                .build());
+
+//            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+//                .headers(List.of(binanceHeader4.withSeparator(delimiter)))
+//                .parserFactory(() -> new BinanceExchangeSpecificParserV2(BinanceBeanV4.class))
+//                .supportedExchange(BINANCE)
+//                .build());
+////
+//            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+//                .headers(List.of(binanceHeader4.withSeparator(delimiter)))
+//                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(BinanceBeanV4.class))
+//                .supportedExchange(BINANCE)
+//                .build());
         });
 
         EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
@@ -119,6 +148,22 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             .parserFactory(BinanceExchangeSpecificParserV3::new)
             .supportedExchange(BINANCE)
             .build());
+
+//        EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+//            .headers(List.of(
+//                CsvHeader.of("UTC_Time","Account","Operation","Coin","Change","Remark").withSeparator(DELIMITER_COMMA)
+//            ))
+//            .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(BinanceBeanV4.class, DELIMITER_COMMA))
+//            .supportedExchange(BINANCE)
+//            .build());
+//
+//        EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+//            .headers(List.of(
+//                CsvHeader.of("User_ID,UTC_Time,Account,Operation,Coin,Change,Remark").withSeparator(DELIMITER_COMMA)
+//            ))
+//            .parserFactory(() -> new BinanceExchangeSpecificParserV2(BinanceBeanV4.class))
+//            .supportedExchange(BINANCE)
+//            .build());
 
         /* BITFINEX */
         EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
@@ -522,6 +567,10 @@ public class EverytradeCsvMultiParser implements ICsvParser {
         var listBeans = exchangeParser.parse(file);
         var parsingProblems = new ArrayList<>(exchangeParser.getParsingProblems());
 
+        if (exchangeParser instanceof BinanceExchangeSpecificParserV4) {
+            listBeans = ((BinanceExchangeSpecificParserV4) exchangeParser).convertMultipleRowsToTransactions((List<BinanceBeanV4>) listBeans);
+        }
+
         List<TransactionCluster> transactionClusters = new ArrayList<>();
         for (ExchangeBean p : listBeans) {
             try {
@@ -560,4 +609,5 @@ public class EverytradeCsvMultiParser implements ICsvParser {
         }
         return counter;
     }
+
 }
