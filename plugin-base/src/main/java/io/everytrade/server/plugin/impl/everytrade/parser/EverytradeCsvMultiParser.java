@@ -546,7 +546,8 @@ public class EverytradeCsvMultiParser implements ICsvParser {
         var parsingProblems = new ArrayList<>(exchangeParser.getParsingProblems());
 
         if (exchangeParser instanceof BinanceExchangeSpecificParserV4) {
-            listBeans = ((BinanceExchangeSpecificParserV4) exchangeParser).convertMultipleRowsToTransactions((List<BinanceBeanV4>) listBeans);
+            listBeans = ((BinanceExchangeSpecificParserV4) exchangeParser)
+                .convertMultipleRowsToTransactions((List<BinanceBeanV4>) listBeans);
         }
 
         List<TransactionCluster> transactionClusters = new ArrayList<>();

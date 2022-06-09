@@ -13,7 +13,10 @@ import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
+import lombok.Data;
 import lombok.NonNull;
+import lombok.experimental.FieldDefaults;
+import static lombok.AccessLevel.PRIVATE;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -22,33 +25,35 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+@Data
+@FieldDefaults(level = PRIVATE)
 @Headers(sequence = {"Operation", "UTC_Time", "Account", "Coin", "Change", "Remark", "User_ID"}, extract = true)
 public class BinanceBeanV4 extends ExchangeBean {
 
-    private Instant date;
-    private String account;
-    private String userId;
-    private String operation;
-    private Currency coin;
-    private BigDecimal change;
-    private String remark;
+    Instant date;
+    String account;
+    String userId;
+    String operation;
+    Currency coin;
+    BigDecimal change;
+    String remark;
 
-    private int rowId;
+    int rowId;
     public List<Integer> usedIds = new ArrayList<>();
 
-    private boolean isInTransaction;
-    private boolean unsupportedRow;
-    private String message;
-    private boolean isMergedWithAnotherGroup;
+    boolean isInTransaction;
+    boolean unsupportedRow;
+    String message;
+    boolean isMergedWithAnotherGroup;
 
-    private Currency marketBase;
-    private Currency marketQuote;
-    private TransactionType type;
-    private BigDecimal amountBase;
-    private BigDecimal amountQuote;
-    private BigDecimal fee;
-    private Currency feeCurrency;
-    private BigDecimal transactionPrice;
+    Currency marketBase;
+    Currency marketQuote;
+    TransactionType type;
+    BigDecimal amountBase;
+    BigDecimal amountQuote;
+    BigDecimal fee;
+    Currency feeCurrency;
+    BigDecimal transactionPrice;
 
     public List<BinanceBeanV4> feeTransactions = new ArrayList<>();
 
@@ -121,117 +126,13 @@ public class BinanceBeanV4 extends ExchangeBean {
         this.remark = remark;
     }
 
-    public Currency getCoin() {
-        return coin;
-    }
-
-    public Instant getDate() {
-        return date;
-    }
-
-    public String getAccount() {
-        return account;
-    }
-
-    public Currency getMarketBase() {
-        return marketBase;
-    }
-
-    public Currency getMarketQuote() {
-        return marketQuote;
-    }
-
-    public String getOperation() {
-        return operation;
-    }
-
-    public TransactionType getType() {
-        return type;
-    }
-
-    public BigDecimal getAmountBase() {
-        return amountBase;
-    }
-
-    public BigDecimal getFee() {
-        return fee;
-    }
-
-    public Currency getFeeCurrency() {
-        return feeCurrency;
-    }
-
-    public String getRemark() {
-        return remark;
-    }
-
-    public BigDecimal getTransactionPrice() {
-        return transactionPrice;
-    }
-
-    public void setTransactionPrice(BigDecimal transactionPrice) {
-        this.transactionPrice = transactionPrice;
-    }
-
-    public void setMarketQuote(Currency marketQuote) {
-        this.marketQuote = marketQuote;
-    }
-
-    public void setType(TransactionType type) {
-        this.type = type;
-    }
-
-    public void setAmountBase(BigDecimal amountBase) {
-        this.amountBase = amountBase;
-    }
-
-    public void setFee(BigDecimal fee) {
-        this.fee = fee;
-    }
-
-    public void setFeeCurrency(Currency feeCurrency) {
-        this.feeCurrency = feeCurrency;
-    }
-
-    public boolean isInTransaction() {
-        return isInTransaction;
-    }
-
-    public void setInTransaction(boolean inTransaction) {
-        this.isInTransaction = inTransaction;
-    }
-
-    public boolean isUnsupportedRow() {
-        return unsupportedRow;
-    }
-
-    public void setUnsupportedRow(boolean unsupportedRow) {
-        this.unsupportedRow = unsupportedRow;
-    }
-
-    public int getRowId() {
-        return rowId;
-    }
-
     public void setRowId(int rowId) {
         this.message = "Row id " + rowId;
         this.rowId = rowId;
     }
 
-    public BigDecimal getChange() {
-        return change;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
     public void setMessage(String message) {
         this.message = this.message + "; " + message;
-    }
-
-    public boolean isMergedWithAnotherGroup() {
-        return isMergedWithAnotherGroup;
     }
 
     public void setMergedWithAnotherGroup(boolean mergedWithAnotherGroup) {
@@ -239,18 +140,6 @@ public class BinanceBeanV4 extends ExchangeBean {
             this.setMessage("Grouped with tolerance 1s ");
         }
         isMergedWithAnotherGroup = mergedWithAnotherGroup;
-    }
-
-    public void setMarketBase(Currency marketBase) {
-        this.marketBase = marketBase;
-    }
-
-    public BigDecimal getAmountQuote() {
-        return amountQuote;
-    }
-
-    public void setAmountQuote(BigDecimal amountQuote) {
-        this.amountQuote = amountQuote;
     }
 
     public void checkCurrencyPairForRows() {

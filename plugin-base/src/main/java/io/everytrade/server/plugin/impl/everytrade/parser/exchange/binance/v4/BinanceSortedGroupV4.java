@@ -12,7 +12,15 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import io.everytrade.server.model.Currency;
+import lombok.Data;
 
+import static io.everytrade.server.model.TransactionType.BUY;
+import static io.everytrade.server.model.TransactionType.DEPOSIT;
+import static io.everytrade.server.model.TransactionType.SELL;
+import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
+import static java.math.BigDecimal.ZERO;
+
+@Data
 public class BinanceSortedGroupV4 {
 
     Instant time;
@@ -54,7 +62,7 @@ public class BinanceSortedGroupV4 {
             for (Map.Entry<Currency, List<BinanceBeanV4>> entry : rows.entrySet()) {
                 var newBean = new BinanceBeanV4();
                 var currency = entry.getKey();
-                var change = entry.getValue().stream().map(BinanceBeanV4::getChange).reduce(BigDecimal.ZERO, BigDecimal::add);
+                var change = entry.getValue().stream().map(BinanceBeanV4::getChange).reduce(ZERO, BigDecimal::add);
                 var ids = entry.getValue().stream().map(BinanceBeanV4::getRowId).collect(Collectors.toList());
                 if (entry.getValue().size() > 0) {
                     newBean.setChange(change);
@@ -76,7 +84,7 @@ public class BinanceSortedGroupV4 {
         var stValue = rowBuySellRelated.get(0).getChange();
         var ndValue = rowBuySellRelated.get(1).getChange();
         var minus = stValue.multiply(ndValue); // must be everytime minus
-        if (minus.compareTo(BigDecimal.ZERO) > 0) {
+        if (minus.compareTo(ZERO) > 0) {
             throw new DataIgnoredException("Wrong change value");
         }
     }
@@ -143,7 +151,7 @@ public class BinanceSortedGroupV4 {
         }
     }
 
-    private String parseIds(List<Integer> ids) {
+    public static String parseIds(List<Integer> ids) {
         String s = "";
         for (int id : ids) {
             s = s + " " + id + "; ";
@@ -167,10 +175,10 @@ public class BinanceSortedGroupV4 {
             txs.setMarketBase(row.getCoin());
             txs.setDate(row.getDate());
             txs.setMergedWithAnotherGroup(row.isMergedWithAnotherGroup());
-            if (row.getChange().compareTo(BigDecimal.ZERO) > 0) {
-                txs.setType(TransactionType.DEPOSIT);
+            if (row.getChange().compareTo(ZERO) > 0) {
+                txs.setType(DEPOSIT);
             } else {
-                txs.setType(TransactionType.WITHDRAWAL);
+                txs.setType(WITHDRAWAL);
             }
             createdTransactions.add(txs);
         }
@@ -179,6 +187,11 @@ public class BinanceSortedGroupV4 {
     private void createBuySellTxs() {
         var stRow = rowBuySellRelated.get(0);
         var ndRow = rowBuySellRelated.get(1);
+        if(stRow.getChange().compareTo(ZERO) < 0
+            && ndRow.getChange().compareTo(ZERO) > 0) {
+            stRow =  rowBuySellRelated.get(1);
+            ndRow = rowBuySellRelated.get(0);
+        }
         var txsBuySell = new BinanceBeanV4();
         txsBuySell.setDate(stRow.getDate());
         txsBuySell.usedIds.addAll(stRow.usedIds);
@@ -192,35 +205,35 @@ public class BinanceSortedGroupV4 {
             if (!stRow.getCoin().isFiat()) {
                 txsBuySell.setMarketBase(stRow.getCoin());
                 txsBuySell.setAmountBase(stRow.getChange().abs());
-                if (stRow.getChange().compareTo(BigDecimal.ZERO) < 0) {
-                    txsBuySell.setType(TransactionType.SELL);
+                if (stRow.getChange().compareTo(ZERO) < 0) {
+                    txsBuySell.setType(SELL);
                 } else {
-                    txsBuySell.setType(TransactionType.BUY);
+                    txsBuySell.setType(BUY);
                 }
                 txsBuySell.setMarketQuote(ndRow.getCoin());
                 txsBuySell.setAmountQuote(ndRow.getChange().abs());
             } else {
                 txsBuySell.setMarketBase(ndRow.getCoin());
                 txsBuySell.setAmountBase(ndRow.getChange().abs());
-                if (ndRow.getChange().compareTo(BigDecimal.ZERO) < 0) {
-                    txsBuySell.setType(TransactionType.SELL);
+                if (ndRow.getChange().compareTo(ZERO) < 0) {
+                    txsBuySell.setType(SELL);
                 } else {
-                    txsBuySell.setType(TransactionType.BUY);
+                    txsBuySell.setType(BUY);
                 }
                 txsBuySell.setMarketQuote(stRow.getCoin());
                 txsBuySell.setAmountQuote(stRow.getChange().abs());
             }
         } else {
-            if (stRow.getChange().compareTo(BigDecimal.ZERO) > 0) {
+            if (stRow.getChange().compareTo(ZERO) > 0) {
                 txsBuySell.setMarketBase(stRow.getCoin());
                 txsBuySell.setAmountBase(stRow.getChange().abs());
-                txsBuySell.setType(TransactionType.BUY);
+                txsBuySell.setType(BUY);
                 txsBuySell.setMarketQuote(ndRow.getCoin());
                 txsBuySell.setAmountQuote(ndRow.getChange());
             } else {
                 txsBuySell.setMarketBase(ndRow.getCoin());
                 txsBuySell.setAmountBase(ndRow.getChange().abs());
-                txsBuySell.setType(TransactionType.BUY);
+                txsBuySell.setType(BUY);
                 txsBuySell.setMarketQuote(stRow.getCoin());
                 txsBuySell.setAmountQuote(stRow.getChange());
             }
@@ -267,15 +280,7 @@ public class BinanceSortedGroupV4 {
                 rowsBuySellRelated.put(row.getCoin(), newList);
             }
         } else {
-            throw new DataIgnoredException("Row " + row.getRowId() + "cannot be added due to wrong operation");
+            throw new DataIgnoredException("Row " + row.getRowId() + "cannot be added due to wrong operation. ");
         }
-    }
-
-    public Instant getTime() {
-        return time;
-    }
-
-    public void setTime(Instant time) {
-        this.time = time;
     }
 }
