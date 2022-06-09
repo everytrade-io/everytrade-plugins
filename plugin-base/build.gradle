@@ -68,7 +68,7 @@ dependencies {
     //   pluginCompile "org.knowm.xchange:xchange-coinbasepro:$xchangeVersion"
     pluginCompile "com.github.martinkyov.Xchange:xchange-coinbasepro:e4303df2a1ca9a055219a0aa6d57603707103140"
 
-    pluginCompile "com.github.GENERALBYTESCOM:bitrafael_public:1.0.42"
+    pluginCompile "com.github.GENERALBYTESCOM:bitrafael_public:1.0.46"
 
     //TODO Remove it once ResCU releases a newer version with updated dependency - due to security bugs in the older
     // version used by ResCU
