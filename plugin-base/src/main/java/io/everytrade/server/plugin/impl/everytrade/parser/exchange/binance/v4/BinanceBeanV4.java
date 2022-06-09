@@ -21,7 +21,6 @@ import static lombok.AccessLevel.PRIVATE;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -74,7 +73,7 @@ public class BinanceBeanV4 extends ExchangeBean {
 
     @Parsed(field = "Account")
     public void setAccount(String account) {
-        var supportedAccounts = BinanceSupportedOperations.supportedAccountTypes;
+        var supportedAccounts = BinanceSupportedOperations.SUPPORTED_ACCOUNT_TYPES;
         if (!supportedAccounts.contains(account)) {
             this.setUnsupportedRow(true);
             this.setMessage("Unsupported type of account " + account + " ");
@@ -84,7 +83,7 @@ public class BinanceBeanV4 extends ExchangeBean {
 
     @Parsed(field = "Operation")
     public void setOperation(String operation) {
-        var supportedOperations = BinanceSupportedOperations.supportedOperationTypes;
+        var supportedOperations = BinanceSupportedOperations.SUPPORTED_OPERATION_TYPES;
         if (!supportedOperations.contains(operation)) {
             this.setUnsupportedRow(true);
             this.setMessage("Unsupported type of operation " + operation + " ");
