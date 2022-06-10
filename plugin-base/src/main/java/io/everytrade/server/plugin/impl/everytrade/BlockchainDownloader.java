@@ -36,7 +36,7 @@ public class BlockchainDownloader {
     private static final String COIN_SERVER_URL = "https://coin.cz";
     private static final int MIN_COINFIRMATIONS = 6;
     private static final Set<Currency> SUPPORTED_CRYPTO = Set.of(Currency.BTC, Currency.LTC);
-    private static final int MAX_REQUESTS = 50;
+    private static final int MAX_REQUESTS = 25;
     private static final int LIMIT = 300;
 
     Client client;
@@ -103,12 +103,14 @@ public class BlockchainDownloader {
                         ConnectorUtils.truncate(source, TRUNCATE_LIMIT)
                     ));
                 }
-                var newTransactions = getNewTransactionsFromAddressInfos(addressInfoBlock);
-                if (newTransactions.size() < LIMIT) {
-                    transactions.add((Transaction) newTransactions);
+                if (addressInfoBlock == null) {
                     break;
                 }
-                transactions.add((Transaction) newTransactions);
+                var newTransactions = getNewTransactionsFromAddressInfos(addressInfoBlock);
+                transactions.addAll(newTransactions);
+                if (addressInfoBlock.size() < LIMIT) {
+                    break;
+                }
                 request++;
                 page++;
             }
@@ -127,7 +129,7 @@ public class BlockchainDownloader {
                 }
                 var newTransactions = getNewTransactionsFromAddressInfos(List.of(addressInfoBlock));
                 transactions.addAll(newTransactions);
-                if (newTransactions.size() < LIMIT) {
+                if (addressInfoBlock.getTxInfos().size() < LIMIT) {
                     break;
                 }
                 request++;
