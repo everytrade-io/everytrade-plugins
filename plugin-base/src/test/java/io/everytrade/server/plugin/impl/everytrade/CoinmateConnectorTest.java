@@ -2,13 +2,9 @@ package io.everytrade.server.plugin.impl.everytrade;
 
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.CurrencyPair;
-import io.everytrade.server.plugin.api.connector.ConnectorParameterDescriptor;
-import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.DepositWithdrawalImportedTransaction;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
-import io.everytrade.server.plugin.impl.generalbytes.GbConnector;
-import io.everytrade.server.plugin.impl.everytrade.BlockchainBtcConnector;
 
 
 import io.everytrade.server.test.mock.CoinmateExchangeMock;
@@ -17,9 +13,7 @@ import org.knowm.xchange.dto.account.FundingRecord;
 import org.knowm.xchange.dto.trade.UserTrade;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static io.everytrade.server.model.Currency.BTC;
 import static io.everytrade.server.model.Currency.USD;
@@ -88,20 +82,4 @@ class CoinmateConnectorTest {
             assertEquals(Currency.USD, tx.getQuote());
         }
     }
-
-    @Test
-    public void connectionTest() {
-        BlockchainBtcConnector gbConnector = new BlockchainBtcConnector(
-            "1KfHEbTSWde2mpcN6A12EYhiuFtc8WGDeo",
-            "USD",
-            "true",
-            "false",
-            "false",
-            "false");
-        String lastTransactionId = "1641049471000:64be6447bd4581def09e4458689c01b3d02fb6c35c8f923bec6278fb71334983";
-//        lastTransactionId = null;
-        DownloadResult download = gbConnector.getTransactions(null);
-        DownloadResult downloadTwo = download;
-    }
-
 }
