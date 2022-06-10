@@ -36,7 +36,7 @@ public class BlockchainDownloader {
     private static final String COIN_SERVER_URL = "https://coin.cz";
     private static final int MIN_COINFIRMATIONS = 6;
     private static final Set<Currency> SUPPORTED_CRYPTO = Set.of(Currency.BTC, Currency.LTC);
-    private static final int MAX_REQUESTS = 25;
+    private static final int MAX_REQUESTS = 50;
     private static final int LIMIT = 300;
 
     Client client;
