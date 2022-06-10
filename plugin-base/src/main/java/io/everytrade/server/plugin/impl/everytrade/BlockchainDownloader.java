@@ -113,21 +113,23 @@ public class BlockchainDownloader {
                 page++;
             }
         } else {
-                var addressInfoBlock = client.getAddressInfo(source, LIMIT, page);
-            if (addressInfoBlock == null && page == 0) {
-                throw new IllegalArgumentException(String.format(
-                    "No source info found for crypto '%s' and source '%s'",
-                    cryptoCurrency,
-                    ConnectorUtils.truncate(source, TRUNCATE_LIMIT)
-                ));
-            }
             while (request < MAX_REQUESTS) {
-                var newTransactions = getNewTransactionsFromAddressInfos(List.of(addressInfoBlock));
-                if (newTransactions.size() < LIMIT) {
-                    transactions.add((Transaction) newTransactions);
+                var addressInfoBlock = client.getAddressInfo(source, LIMIT, page);
+                if (addressInfoBlock == null && page == 0) {
+                    throw new IllegalArgumentException(String.format(
+                        "No source info found for crypto '%s' and source '%s'",
+                        cryptoCurrency,
+                        ConnectorUtils.truncate(source, TRUNCATE_LIMIT)
+                    ));
+                }
+                if (addressInfoBlock == null) {
                     break;
                 }
-                transactions.add((Transaction) newTransactions);
+                var newTransactions = getNewTransactionsFromAddressInfos(List.of(addressInfoBlock));
+                transactions.addAll(newTransactions);
+                if (newTransactions.size() < LIMIT) {
+                    break;
+                }
                 request++;
                 page++;
             }
