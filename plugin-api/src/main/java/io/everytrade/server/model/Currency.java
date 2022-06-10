@@ -572,7 +572,13 @@ public enum Currency {
     OCN(false, Instant.parse("2018-01-17T00:00:00Z"), "Odyssey"),
     SRN(false, Instant.parse("2018-09-27T00:00:00Z"), "SIRIN LABS Token"),
     UBQ(false, Instant.parse("2014-08-01T00:00:00Z"), "Ubiq"),
-    XEL(false, Instant.parse("2017-01-22T00:00:00Z"), "XEL");
+    XEL(false, Instant.parse("2017-01-22T00:00:00Z"), "XEL"),
+    BICO(false, Instant.parse("2021-12-29T00:00:00Z"), "Biconomy"),
+    CITY(false, Instant.parse("2022-05-02T00:00:00Z"), "Manchester City Fan Token"),
+    GTC(false, Instant.parse("2021-08-23T00:00:00Z"), "gtc-gitcoin"),
+    PYR(false, Instant.parse("2022-02-08T00:00:00Z"), "Vulcan Forged PYR"),
+    XDC(false, Instant.parse("2019-04-04T00:00:00Z"), "XDC Network"),
+    GAL(false, Instant.parse("2022-04-28T00:00:00Z"), "Project Galaxy");
 
     String code;
     int decimalDigits;
