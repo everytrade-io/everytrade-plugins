@@ -103,12 +103,14 @@ public class BlockchainDownloader {
                         ConnectorUtils.truncate(source, TRUNCATE_LIMIT)
                     ));
                 }
-                var newTransactions = getNewTransactionsFromAddressInfos(addressInfoBlock);
-                if (newTransactions.size() < LIMIT) {
-                    transactions.add((Transaction) newTransactions);
+                if (addressInfoBlock == null) {
                     break;
                 }
-                transactions.add((Transaction) newTransactions);
+                var newTransactions = getNewTransactionsFromAddressInfos(addressInfoBlock);
+                transactions.addAll(newTransactions);
+                if (addressInfoBlock.size() < LIMIT) {
+                    break;
+                }
                 request++;
                 page++;
             }
@@ -127,7 +129,7 @@ public class BlockchainDownloader {
                 }
                 var newTransactions = getNewTransactionsFromAddressInfos(List.of(addressInfoBlock));
                 transactions.addAll(newTransactions);
-                if (newTransactions.size() < LIMIT) {
+                if (addressInfoBlock.getTxInfos().size() < LIMIT) {
                     break;
                 }
                 request++;
