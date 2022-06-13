@@ -108,7 +108,11 @@ public class EveryTradeBeanV3_1 extends ExchangeBean {
             case FEE:
                 return new TransactionCluster(createFeeTransactionBean(true), List.of());
             case REBATE:
-                return new TransactionCluster(createRebateTransactionBean(true), List.of());
+                try{
+                    return new TransactionCluster(createRebateTransactionBean(true), List.of());
+                } catch (Exception e) {
+                    throw new DataValidationException(String.format("Wrong rebate data: %s", e.getMessage()));
+                }
             default:
                 throw new IllegalStateException(String.format("Unsupported transaction type %s.", action));
         }
