@@ -24,8 +24,6 @@ import static java.util.Collections.emptyList;
 
 public class BinanceBeanV3 extends ExchangeBean {
 
-    private static Map<String, CurrencyPair> fastCurrencyPair = new HashMap<>();
-
     private Instant date;
     private Currency pairBase;
     private Currency pairQuote;
@@ -35,19 +33,14 @@ public class BinanceBeanV3 extends ExchangeBean {
     private BigDecimal fee;
     private Currency feeCurrency;
 
-    static {
-        getTradeablePairs().forEach(t -> fastCurrencyPair.put(
-            String.format("%s%s", t.getBase().code(), t.getQuote().code()), t)
-        );
-    }
-
     public BinanceBeanV3(
         String date,
         String pair,
         String type,
         String filled,
         String total,
-        String fee
+        String fee,
+        Map<String, CurrencyPair> fastCurrencyPair
     ) {
         this.date = ParserUtils.parse("yyyy-MM-dd HH:mm:ss", date);
         final CurrencyPair currencyPair = fastCurrencyPair.get(pair);
