@@ -9,6 +9,7 @@ import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.csv.CsvHeader;
 import io.everytrade.server.plugin.impl.everytrade.EveryTradePlugin;
+import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.UnknownHeaderException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BinanceExchangeSpecificParserV4;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BitfinexExchangeSpecificParser;
@@ -80,6 +81,7 @@ import static io.everytrade.server.model.SupportedExchange.OKX;
 import static io.everytrade.server.model.SupportedExchange.PAXFUL;
 import static io.everytrade.server.model.SupportedExchange.POLONIEX;
 import static io.everytrade.server.model.SupportedExchange.SHAKEPAY;
+import static io.everytrade.server.plugin.api.parser.ParsingProblemType.PARSED_ROW_IGNORED;
 import static io.everytrade.server.plugin.api.parser.ParsingProblemType.ROW_PARSING_FAILED;
 import static java.util.Map.entry;
 import static java.util.stream.Collectors.toMap;
@@ -557,7 +559,9 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 if (cluster != null) {
                     transactionClusters.add(cluster);
                 }
-            } catch (DataValidationException e) {
+            } catch (DataIgnoredException e) {
+                parsingProblems.add(new ParsingProblem(p.rowToString(), e.getMessage(), PARSED_ROW_IGNORED));
+            }  catch (Exception e) {
                 parsingProblems.add(new ParsingProblem(p.rowToString(), e.getMessage(), ROW_PARSING_FAILED));
             }
         }
