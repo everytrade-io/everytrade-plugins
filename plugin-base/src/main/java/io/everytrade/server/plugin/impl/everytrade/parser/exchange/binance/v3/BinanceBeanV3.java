@@ -14,12 +14,10 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static io.everytrade.server.model.CurrencyPair.getTradeablePairs;
 import static java.util.Collections.emptyList;
 
 public class BinanceBeanV3 extends ExchangeBean {
@@ -71,7 +69,7 @@ public class BinanceBeanV3 extends ExchangeBean {
         var isIncorrectFeeCoin = (feeCurrency == null);
 
         List<ImportedTransactionBean> related;
-        if (isIncorrectFeeCoin) {
+        if (isIncorrectFeeCoin || ParserUtils.equalsToZero(fee)) {
             related = emptyList();
         } else {
             related = List.of(
@@ -100,7 +98,9 @@ public class BinanceBeanV3 extends ExchangeBean {
             related
         );
         if (isIncorrectFeeCoin) {
-            cluster.setIgnoredFee(1, "Fee " + (feeCurrency != null ? feeCurrency.code() : "null") + " currency is neither base or quote");
+            cluster.setFailedFee(1, "Fee " + (feeCurrency != null ? feeCurrency.code() : "null") + " currency is neither base or quote");
+        } else if (ParserUtils.equalsToZero(fee)) {
+            cluster.setIgnoredFee(1, "Fee amount is 0 " + (feeCurrency != null ? feeCurrency.code() : ""));
         }
         return cluster;
     }

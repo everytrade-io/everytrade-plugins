@@ -70,9 +70,9 @@ public class GbApiTransactionBean {
         } catch (CurrencyPair.FiatCryptoCombinationException e) {
             throw new DataValidationException(e.getMessage());
         }
-        final boolean isIgnoredFee = !(base.equals(expenseCurrency) || quote.equals(expenseCurrency));
+        final boolean isIncorrectFee = !(base.equals(expenseCurrency) || quote.equals(expenseCurrency));
         List<ImportedTransactionBean> related;
-        if (ParserUtils.equalsToZero(expense) || isIgnoredFee) {
+        if (ParserUtils.equalsToZero(expense) || isIncorrectFee) {
             related = Collections.emptyList();
         } else {
             related = List.of(new FeeRebateImportedTransactionBean(
@@ -101,8 +101,11 @@ public class GbApiTransactionBean {
             ),
             related
         );
-        if (isIgnoredFee) {
-            cluster.setIgnoredFee(1, "Fee " + expenseCurrency + " currency is neither base or quote");
+        if (isIncorrectFee) {
+            cluster.setFailedFee(1, "Fee " + expenseCurrency + " currency is neither base or quote");
+        }
+        if (ParserUtils.equalsToZero(expense)) {
+            cluster.setIgnoredFee(1, "Fee amount is 0 " + expenseCurrency);
         }
         return cluster;
     }

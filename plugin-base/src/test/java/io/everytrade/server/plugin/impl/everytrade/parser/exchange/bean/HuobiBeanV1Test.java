@@ -191,7 +191,7 @@ class HuobiBeanV1Test {
             ),
             Collections.emptyList()
         );
-        expected.setIgnoredFee(1, "");
+        expected.setFailedFee(1, "");
         ParserTestUtils.checkEqual(expected, actual);
     }
 

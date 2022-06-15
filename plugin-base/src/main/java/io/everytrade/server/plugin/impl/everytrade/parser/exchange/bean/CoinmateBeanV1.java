@@ -120,9 +120,9 @@ public class CoinmateBeanV1 extends ExchangeBean {
 
     private TransactionCluster createBuySellTransactionCluster() {
         validateCurrencyPair(amountCurrency, priceCurrency);
-        final boolean ignoredFee = (auxFeeCurrency == null);
+        final boolean isIncorrectFee = (auxFeeCurrency == null);
         List<ImportedTransactionBean> related;
-        if (ParserUtils.equalsToZero(fee) || ignoredFee) {
+        if (ParserUtils.equalsToZero(fee) || isIncorrectFee) {
             related = Collections.emptyList();
         } else {
             related = List.of(
@@ -149,11 +149,13 @@ public class CoinmateBeanV1 extends ExchangeBean {
             ),
             related
         );
-        if (ignoredFee) {
-            cluster.setIgnoredFee(
+        if (isIncorrectFee) {
+            cluster.setFailedFee(
                 1,
                 "Fee " + (auxFeeCurrency != null ? auxFeeCurrency.code() : "null") + " currency is neither base or quote"
             );
+        } else if(ParserUtils.equalsToZero(fee)) {
+            cluster.setIgnoredFee(1, "Fee amount is 0 " + (auxFeeCurrency != null ? auxFeeCurrency.code() : ""));
         }
         return cluster;
     }

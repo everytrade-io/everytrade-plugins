@@ -88,9 +88,9 @@ public class BlockchainApiTransactionBean {
                 || (importFeesFromDeposits && DEPOSIT.equals(type)
             );
 
-        final boolean ignoredFee = !(base.equals(feeCurrency) || quote.equals(feeCurrency));
+        final boolean isIncorrectFee = !(base.equals(feeCurrency) || quote.equals(feeCurrency));
         List<ImportedTransactionBean> related;
-        if (ParserUtils.equalsToZero(feeAmount) || ignoredFee || !withFee) {
+        if (ParserUtils.equalsToZero(feeAmount) || isIncorrectFee || !withFee) {
             related = Collections.emptyList();
         } else {
             related = List.of(new FeeRebateImportedTransactionBean(
@@ -106,8 +106,10 @@ public class BlockchainApiTransactionBean {
         }
 
         var cluster = new TransactionCluster(createTx(), related);
-        if (ignoredFee) {
-            cluster.setIgnoredFee(1, "Fee " + (feeCurrency != null ? feeCurrency.code() : "null") + " currency is not base or quote");
+        if (isIncorrectFee) {
+            cluster.setFailedFee(1, "Fee " + (feeCurrency != null ? feeCurrency.code() : "null") + " currency is not base or quote");
+        } else if (ParserUtils.equalsToZero(feeAmount)) {
+            cluster.setIgnoredFee(1, "Fee amount is 0 " + (feeCurrency != null ? feeCurrency.code() : ""));
         }
         return cluster;
     }

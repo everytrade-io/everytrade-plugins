@@ -175,7 +175,7 @@ class BinanceBeanV1Test {
             ),
            Collections.emptyList()
         );
-        expected.setIgnoredFee(1, null);
+        expected.setFailedFee(1, null);
         ParserTestUtils.checkEqual(expected, actual);
     }
 

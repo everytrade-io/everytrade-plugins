@@ -53,7 +53,7 @@ class BinanceBeanV2Test {
             ),
            Collections.emptyList()
         );
-        expected.setIgnoredFee(1, null);
+        expected.setFailedFee(1, null);
         ParserTestUtils.checkEqual(expected, actual);
     }
 
@@ -143,7 +143,7 @@ class BinanceBeanV2Test {
             ),
             Collections.emptyList()
         );
-        expected.setIgnoredFee(1, "");
+        expected.setFailedFee(1, "");
         ParserTestUtils.checkEqual(expected, actual);
     }
 

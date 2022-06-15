@@ -89,7 +89,7 @@ public class BinanceBeanV2 extends ExchangeBean {
 
         final List<ImportedTransactionBean> related;
 
-        if (isIncorrectFeeCoin) {
+        if (isIncorrectFeeCoin || ParserUtils.equalsToZero(fee)) {
             related = Collections.emptyList();
         } else {
             related = List.of(
@@ -118,7 +118,10 @@ public class BinanceBeanV2 extends ExchangeBean {
             related
         );
         if (isIncorrectFeeCoin) {
-            cluster.setIgnoredFee(1, "Fee " + (feeCurrency != null ? feeCurrency.code() : "null") + " currency is neither base or quote");
+            cluster.setFailedFee(1, "Fee " + (feeCurrency != null ? feeCurrency.code() : "null")
+                + " currency is neither base or quote");
+        } else if (ParserUtils.equalsToZero(fee)) {
+            cluster.setIgnoredFee(1, "Fee amount is 0 " + (feeCurrency != null ? feeCurrency.code() : ""));
         }
         return cluster;
     }
