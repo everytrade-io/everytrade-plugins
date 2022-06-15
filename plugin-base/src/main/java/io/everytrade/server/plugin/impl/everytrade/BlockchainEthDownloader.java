@@ -182,7 +182,10 @@ public class BlockchainEthDownloader {
             }
         }
 
-        return new ParseResult(transactionClusters, parsingProblems);
+        return ParseResult.builder()
+            .transactionClusters(transactionClusters)
+            .parsingProblems(parsingProblems)
+            .build();
     }
 
     private long downloadLastBlock() {

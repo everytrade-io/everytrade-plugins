@@ -46,15 +46,13 @@ public class BlockchainApiTransactionBean {
     boolean importFeesFromDeposits;
     boolean importFeesFromWithdrawals;
 
-    public BlockchainApiTransactionBean(
-        Transaction transaction,
-        String base,
-        String quote,
-        boolean importDepositsAsBuys,
-        boolean importWithdrawalsAsSells,
-        boolean importFeesFromDeposits,
-        boolean importFeesFromWithdrawals
-    ) {
+    public BlockchainApiTransactionBean(Transaction transaction,
+                                        String base,
+                                        String quote,
+                                        boolean importDepositsAsBuys,
+                                        boolean importWithdrawalsAsSells,
+                                        boolean importFeesFromDeposits,
+                                        boolean importFeesFromWithdrawals) {
         this.importDepositsAsBuys = importDepositsAsBuys;
         this.importWithdrawalsAsSells = importWithdrawalsAsSells;
         this.importFeesFromDeposits = importFeesFromDeposits;

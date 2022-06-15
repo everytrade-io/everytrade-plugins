@@ -12,7 +12,8 @@ import lombok.Value;
 public class DownloadResult {
 
     @NonNull
-    ParseResult parseResult;
+    @Builder.Default
+    ParseResult parseResult = ParseResult.builder().build();
 
     /* connector should return its state after download session. This state is then provided in next download so connector can continue
        where left off. */
