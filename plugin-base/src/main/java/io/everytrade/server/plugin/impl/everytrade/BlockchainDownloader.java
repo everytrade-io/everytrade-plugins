@@ -28,9 +28,7 @@ import static lombok.AccessLevel.PRIVATE;
 public class BlockchainDownloader {
 
     private static final int TRUNCATE_LIMIT = 10;
-    private static final String XPUB_PREFIX = "xpub";
-    private static final String LTUB_PREFIX = "Ltub";
-    private static final String MTUB_PREFIX = "Mtub";
+    private static final Set<String> XPUB_PREFIXES = Set.of("xpub", "ypub", "zpub", "Ltub", "Mtub");
     private static final String COLON_SYMBOL = ":";
     private static final String PIPE_SYMBOL = "|";
     private static final String COIN_SERVER_URL = "https://coin.cz";
@@ -106,8 +104,7 @@ public class BlockchainDownloader {
                 if (addressInfoBlock == null) {
                     break;
                 }
-                var newTransactions = getNewTransactionsFromAddressInfos(addressInfoBlock);
-                transactions.addAll(newTransactions);
+                transactions.addAll(getNewTransactionsFromAddressInfos(addressInfoBlock));
                 if (addressInfoBlock.size() < LIMIT) {
                     break;
                 }
@@ -136,8 +133,10 @@ public class BlockchainDownloader {
                 page++;
             }
         }
-        var lastNewTimestamp = transactions.stream().max(Comparator.comparing(Transaction::getTimestamp)).get().getTimestamp();
-        return getTransactionsFromAddressInfos(transactions, lastNewTimestamp);
+        var lastNewTimestamp = transactions.stream().max(Comparator.comparing(Transaction::getTimestamp));
+        return lastNewTimestamp
+            .map(transaction -> getTransactionsFromAddressInfos(transactions, transaction.getTimestamp()))
+            .orElseGet(() -> DownloadResult.builder().build());
     }
 
     private List<Transaction> getNewTransactionsFromAddressInfos(Collection<AddressInfo> addressInfos) {
@@ -193,6 +192,6 @@ public class BlockchainDownloader {
     }
 
     private boolean isXpub(String address) {
-        return address.startsWith(XPUB_PREFIX) || address.startsWith(LTUB_PREFIX) || address.startsWith(MTUB_PREFIX);
+        return XPUB_PREFIXES.stream().anyMatch(address::startsWith);
     }
 }
