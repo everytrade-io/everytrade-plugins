@@ -97,9 +97,13 @@ public class EveryTradeBeanV1 extends ExchangeBean {
                 )
             );
         }
-        return new TransactionCluster(
+        TransactionCluster transactionCluster = new TransactionCluster(
             buySell,
             related
         );
+        if(ParserUtils.equalsToZero(fee)) {
+            transactionCluster.setIgnoredFee(1, "Fee amount is 0 " + (symbolQuote != null ? symbolQuote.code() : ""));
+        }
+        return transactionCluster;
     }
 }

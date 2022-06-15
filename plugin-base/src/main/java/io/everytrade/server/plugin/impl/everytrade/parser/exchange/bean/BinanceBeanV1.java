@@ -130,7 +130,9 @@ public class BinanceBeanV1 extends ExchangeBean {
             related
         );
         if (isIncorrectFeeCoin) {
-            cluster.setIgnoredFee(1, "Fee " + (feeCoin != null ? feeCoin.code() : "null") + " currency is neither base or quote");
+            cluster.setFailedFee(1, "Fee " + (feeCoin != null ? feeCoin.code() : "null") + " currency is neither base or quote");
+        } else if (ParserUtils.equalsToZero(fee)) {
+            cluster.setIgnoredFee(1, "Fee amount is 0 " + (feeCoin != null ? feeCoin.code() : ""));
         }
         return cluster;
     }

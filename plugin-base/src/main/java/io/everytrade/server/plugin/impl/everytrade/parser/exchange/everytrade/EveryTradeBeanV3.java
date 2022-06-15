@@ -12,6 +12,7 @@ import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.EverytradeCSVParserValidator;
+import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import io.everytrade.server.util.CurrencyUtil;
 
@@ -136,10 +137,11 @@ public class EveryTradeBeanV3 extends ExchangeBean {
             related.add(createRebateTransactionBean(false));
         }
 
-        return new TransactionCluster(
-            buySell,
-            related
-        );
+        TransactionCluster transactionCluster = new TransactionCluster(buySell, related);
+        if(ParserUtils.equalsToZero(fee)) {
+            transactionCluster.setIgnoredFee(1, "Fee amount is 0 " + (feeCurrency != null ? feeCurrency.code() : ""));
+        }
+        return transactionCluster;
     }
 
     private FeeRebateImportedTransactionBean createFeeTransactionBean(boolean unrelated) {

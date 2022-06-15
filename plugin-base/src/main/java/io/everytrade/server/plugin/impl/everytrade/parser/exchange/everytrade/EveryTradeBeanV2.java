@@ -92,7 +92,7 @@ public class EveryTradeBeanV2 extends ExchangeBean {
                 )
             );
         }
-        return new TransactionCluster(
+        TransactionCluster transactionCluster = new TransactionCluster(
             new BuySellImportedTransactionBean(
                 uid,
                 date,
@@ -103,6 +103,10 @@ public class EveryTradeBeanV2 extends ExchangeBean {
                 evalUnitPrice(volume, quantity)
             ),
             related
-            );
+        );
+        if(ParserUtils.equalsToZero(fee)) {
+            transactionCluster.setIgnoredFee(1, "Fee amount is 0 " + (symbolQuote != null ? symbolQuote.code() : ""));
+        }
+        return transactionCluster;
     }
 }
