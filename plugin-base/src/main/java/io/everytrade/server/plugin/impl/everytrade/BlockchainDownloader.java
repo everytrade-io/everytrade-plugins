@@ -7,7 +7,6 @@ import com.generalbytes.bitrafael.tools.transaction.Transaction;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.parser.ParseResult;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
@@ -34,7 +33,7 @@ public class BlockchainDownloader {
     private static final String COIN_SERVER_URL = "https://coin.cz";
     private static final int MIN_COINFIRMATIONS = 6;
     private static final Set<Currency> SUPPORTED_CRYPTO = Set.of(Currency.BTC, Currency.LTC);
-    private static final int MAX_REQUESTS = 50;
+    private static final int MAX_REQUESTS = 10;
     private static final int LIMIT = 300;
 
     Client client;
