@@ -11,6 +11,7 @@ import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
@@ -20,6 +21,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.equalsToZero;
 
 @Headers(sequence = {"Time","Type","Pair","Side","Amount","Total","Fee"}, extract = true)
 public class HuobiBeanV1 extends ExchangeBean {
@@ -89,7 +92,7 @@ public class HuobiBeanV1 extends ExchangeBean {
         baseQuantity = amount.abs();
         quoteVolume = total.abs();
 
-        if (isIncorrectFeeCoin) {
+        if (isIncorrectFeeCoin || equalsToZero(fee)) {
             related = Collections.emptyList();
         } else {
             related = List.of(
@@ -121,7 +124,9 @@ public class HuobiBeanV1 extends ExchangeBean {
             related
         );
         if (isIncorrectFeeCoin) {
-            cluster.setIgnoredFee(1, "Fee " + (feeCurrency != null ? feeCurrency.code() : "null") + " currency is neither base or quote");
+            cluster.setFailedFee(1, "Fee " + (feeCurrency != null ? feeCurrency.code() : "null") + " currency is neither base or quote");
+        } else if (equalsToZero(fee)) {
+            cluster.setIgnoredFee(1, "Fee amount is 0 " + (feeCurrency != null ? feeCurrency.code() : ""));
         }
         return cluster;
     }

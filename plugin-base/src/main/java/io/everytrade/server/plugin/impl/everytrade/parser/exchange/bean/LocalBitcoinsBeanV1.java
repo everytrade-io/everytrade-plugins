@@ -9,6 +9,7 @@ import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
@@ -55,7 +56,7 @@ public class LocalBitcoinsBeanV1 extends ExchangeBean {
         } else if ("ONLINE_SELL".equals(value)) {
             this.tradeType = TransactionType.SELL;
         } else {
-            throw new DataValidationException(UNSUPPORTED_TRANSACTION_TYPE.concat(value));
+            throw new DataIgnoredException(UNSUPPORTED_TRANSACTION_TYPE.concat(value));
         }
     }
 

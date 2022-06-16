@@ -6,6 +6,7 @@ import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.impl.everytrade.parser.IImportableBean;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
+import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -91,7 +92,7 @@ public abstract class ExchangeBean implements IImportableBean {
         try {
             type =  TransactionType.valueOf(value.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException(UNSUPPORTED_TRANSACTION_TYPE.concat(value));
+            throw new DataIgnoredException(UNSUPPORTED_TRANSACTION_TYPE.concat(value));
         }
         return type;
     }

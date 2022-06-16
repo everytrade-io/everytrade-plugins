@@ -1,5 +1,6 @@
 package io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4;
 
+import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 
@@ -78,20 +79,20 @@ public class BinanceSortedGroupV4 {
 
     private void validateBuySell() {
         if (rowBuySellRelated.size() != 2) {
-            throw new DataIgnoredException("Wrong number of currencies");
+            throw new DataValidationException("Wrong number of currencies");
         }
         // one of them must be plus and second minus
         var stValue = rowBuySellRelated.get(0).getChange();
         var ndValue = rowBuySellRelated.get(1).getChange();
         var minus = stValue.multiply(ndValue); // must be everytime minus
         if (minus.compareTo(ZERO) > 0) {
-            throw new DataIgnoredException("Wrong change value");
+            throw new DataValidationException("Wrong change value");
         }
     }
 
     private void validateFee() {
         if (rowFees.size() > 0 && !(rowBuySellRelated.size() > 0 || rowDeposit.size() > 0 || rowWithdrawal.size() > 0)) {
-            throw new DataIgnoredException("No txs for fee");
+            throw new DataValidationException("No txs for fee");
         }
     }
 
@@ -147,7 +148,7 @@ public class BinanceSortedGroupV4 {
                 txs.setMergedWithAnotherGroup(fee.isMergedWithAnotherGroup());
             }
         } catch (Exception e) {
-            throw new DataIgnoredException("Fee not assigned to transaction");
+            throw new DataValidationException("Fee not assigned to transaction");
         }
     }
 

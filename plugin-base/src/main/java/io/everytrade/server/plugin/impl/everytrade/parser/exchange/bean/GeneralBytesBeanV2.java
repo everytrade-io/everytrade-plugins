@@ -116,8 +116,8 @@ public class GeneralBytesBeanV2 extends ExchangeBean {
     public TransactionCluster toTransactionCluster() {
         validateCurrencyPair(cryptoCurrency, cashCurrency);
         List<ImportedTransactionBean> related;
-        final boolean isIgnoredFee = !(expenseCurrency.equals(cryptoCurrency) || expenseCurrency.equals(cashCurrency));
-        if (ParserUtils.equalsToZero(expense) || isIgnoredFee) {
+        final boolean isIncorrectFee = !(expenseCurrency.equals(cryptoCurrency) || expenseCurrency.equals(cashCurrency));
+        if (ParserUtils.equalsToZero(expense) || isIncorrectFee) {
             related = Collections.emptyList();
         } else {
             related = List.of(
@@ -147,11 +147,13 @@ public class GeneralBytesBeanV2 extends ExchangeBean {
             ),
             related
         );
-        if (isIgnoredFee) {
-            cluster.setIgnoredFee(
+        if (isIncorrectFee) {
+            cluster.setFailedFee(
                 1,
                 "Fee " + (expenseCurrency != null ? expenseCurrency.code() : "null") + " currency is neither base or quote"
             );
+        } else if (ParserUtils.equalsToZero(expense)) {
+            cluster.setIgnoredFee(1, "Fee amount is 0 " + expenseCurrency);
         }
         return cluster;
     }

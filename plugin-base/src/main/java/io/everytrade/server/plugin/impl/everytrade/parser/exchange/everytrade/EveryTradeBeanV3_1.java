@@ -13,6 +13,7 @@ import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.EverytradeCSVParserValidator;
+import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import lombok.experimental.FieldDefaults;
 
@@ -23,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
+import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.equalsToZero;
 import static java.math.BigDecimal.ZERO;
 import static lombok.AccessLevel.PRIVATE;
 
@@ -153,7 +155,11 @@ public class EveryTradeBeanV3_1 extends ExchangeBean {
             price              //unit price
         );
 
-        return new TransactionCluster(tx, getRelatedTxs());
+        TransactionCluster transactionCluster = new TransactionCluster(tx, getRelatedTxs());
+        if(equalsToZero(fee)) {
+            transactionCluster.setIgnoredFee(1, "Fee amount is 0 " + (feeCurrency != null ? feeCurrency.code() : ""));
+        }
+        return transactionCluster;
     }
 
     private List<ImportedTransactionBean> getRelatedTxs() {

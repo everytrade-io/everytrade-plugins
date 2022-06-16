@@ -9,6 +9,7 @@ import io.everytrade.server.plugin.api.parser.DepositWithdrawalImportedTransacti
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import lombok.Builder;
 import lombok.Value;
 import org.knowm.xchange.dto.Order;
@@ -21,6 +22,7 @@ import java.time.Instant;
 import java.util.List;
 
 import static io.everytrade.server.model.TransactionType.FEE;
+import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.equalsToZero;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 import static java.util.Collections.emptyList;
@@ -86,10 +88,10 @@ public class XChangeApiTransaction {
             }
         }
 
-        final boolean isIgnoredFee = (feeCurrency == null);
+        final boolean isIncorrectFee = (feeCurrency == null);
 
         List<ImportedTransactionBean> related;
-        if (nullOrZero(feeAmount) || isIgnoredFee) {
+        if (nullOrZero(feeAmount) || isIncorrectFee) {
             related = emptyList();
         } else {
             related = List.of(new FeeRebateImportedTransactionBean(
@@ -113,8 +115,10 @@ public class XChangeApiTransaction {
             throw new DataValidationException("Unsupported type " + type.name());
         }
 
-        if (isIgnoredFee && logIgnoredFees) {
-            cluster.setIgnoredFee(1, "Fee " + (feeCurrency != null ? feeCurrency.code() : "null") + " currency is not base or quote");
+        if (isIncorrectFee && logIgnoredFees) {
+            cluster.setFailedFee(1, "Fee " + (feeCurrency != null ? feeCurrency.code() : "null") + " currency is not base or quote");
+        } else if (equalsToZero(feeAmount)) {
+            cluster.setIgnoredFee(1, "Fee amount is 0 " + (feeCurrency != null ? feeCurrency.code() : ""));
         }
         return cluster;
     }

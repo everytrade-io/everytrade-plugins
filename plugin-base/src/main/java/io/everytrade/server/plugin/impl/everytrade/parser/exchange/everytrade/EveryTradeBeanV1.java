@@ -20,6 +20,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.equalsToZero;
+
 @Headers(sequence = {"UID", "DATE", "SYMBOL", "ACTION", "QUANTY", "PRICE", "FEE"}, extract = true)
 public class EveryTradeBeanV1 extends ExchangeBean {
     private String uid;
@@ -82,7 +84,7 @@ public class EveryTradeBeanV1 extends ExchangeBean {
             price              //unit price
         );
         List<ImportedTransactionBean> related;
-        if (ParserUtils.equalsToZero(fee)) {
+        if (equalsToZero(fee)) {
             related = Collections.emptyList();
         } else {
             related = List.of(
@@ -97,9 +99,13 @@ public class EveryTradeBeanV1 extends ExchangeBean {
                 )
             );
         }
-        return new TransactionCluster(
+        TransactionCluster transactionCluster = new TransactionCluster(
             buySell,
             related
         );
+        if(equalsToZero(fee)) {
+            transactionCluster.setIgnoredFee(1, "Fee amount is 0 " + (symbolQuote != null ? symbolQuote.code() : ""));
+        }
+        return transactionCluster;
     }
 }
