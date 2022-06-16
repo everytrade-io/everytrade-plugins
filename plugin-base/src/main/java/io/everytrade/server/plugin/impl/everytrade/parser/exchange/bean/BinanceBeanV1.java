@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import static io.everytrade.server.model.CurrencyPair.getTradeablePairs;
+import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.equalsToZero;
 
 //MIN> BIN-001:|^Date\(.*\)$|Market|Type|Amount|Total|Fee|Fee Coin|
 //FULL> BIN-001:|^Date\(.*\)$|Market|Type|Price|Amount|Total|Fee|Fee Coin|
@@ -101,7 +102,7 @@ public class BinanceBeanV1 extends ExchangeBean {
 
         final List<ImportedTransactionBean> related;
 
-        if (isIncorrectFeeCoin || ParserUtils.equalsToZero(fee)) {
+        if (isIncorrectFeeCoin || equalsToZero(fee)) {
             related = Collections.emptyList();
         } else {
             related = List.of(
@@ -131,7 +132,7 @@ public class BinanceBeanV1 extends ExchangeBean {
         );
         if (isIncorrectFeeCoin) {
             cluster.setFailedFee(1, "Fee " + (feeCoin != null ? feeCoin.code() : "null") + " currency is neither base or quote");
-        } else if (ParserUtils.equalsToZero(fee)) {
+        } else if (equalsToZero(fee)) {
             cluster.setIgnoredFee(1, "Fee amount is 0 " + (feeCoin != null ? feeCoin.code() : ""));
         }
         return cluster;

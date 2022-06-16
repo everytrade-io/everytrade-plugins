@@ -22,6 +22,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.equalsToZero;
+
 @Headers(sequence = {"Time","Type","Pair","Side","Amount","Total","Fee"}, extract = true)
 public class HuobiBeanV1 extends ExchangeBean {
     public static final String UNSUPPORTED_TYPE = "Unsupported type ";
@@ -90,7 +92,7 @@ public class HuobiBeanV1 extends ExchangeBean {
         baseQuantity = amount.abs();
         quoteVolume = total.abs();
 
-        if (isIncorrectFeeCoin || ParserUtils.equalsToZero(fee)) {
+        if (isIncorrectFeeCoin || equalsToZero(fee)) {
             related = Collections.emptyList();
         } else {
             related = List.of(
@@ -123,7 +125,7 @@ public class HuobiBeanV1 extends ExchangeBean {
         );
         if (isIncorrectFeeCoin) {
             cluster.setFailedFee(1, "Fee " + (feeCurrency != null ? feeCurrency.code() : "null") + " currency is neither base or quote");
-        } else if (ParserUtils.equalsToZero(fee)) {
+        } else if (equalsToZero(fee)) {
             cluster.setIgnoredFee(1, "Fee amount is 0 " + (feeCurrency != null ? feeCurrency.code() : ""));
         }
         return cluster;

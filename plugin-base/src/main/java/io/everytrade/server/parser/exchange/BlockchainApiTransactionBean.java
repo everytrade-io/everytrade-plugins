@@ -26,6 +26,7 @@ import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
+import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.equalsToZero;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 
 @ToString
@@ -76,7 +77,7 @@ public class BlockchainApiTransactionBean {
             throw new IllegalArgumentException(e.getMessage());
         }
 
-        if (ParserUtils.equalsToZero(originalAmount)) {
+        if (equalsToZero(originalAmount)) {
             throw new IllegalArgumentException("Crypto amount can't be zero.");
         }
         final boolean withFee =
@@ -88,7 +89,7 @@ public class BlockchainApiTransactionBean {
 
         final boolean isIncorrectFee = !(base.equals(feeCurrency) || quote.equals(feeCurrency));
         List<ImportedTransactionBean> related;
-        if (ParserUtils.equalsToZero(feeAmount) || isIncorrectFee || !withFee) {
+        if (equalsToZero(feeAmount) || isIncorrectFee || !withFee) {
             related = Collections.emptyList();
         } else {
             related = List.of(new FeeRebateImportedTransactionBean(
@@ -106,7 +107,7 @@ public class BlockchainApiTransactionBean {
         var cluster = new TransactionCluster(createTx(), related);
         if (isIncorrectFee) {
             cluster.setFailedFee(1, "Fee " + (feeCurrency != null ? feeCurrency.code() : "null") + " currency is not base or quote");
-        } else if (ParserUtils.equalsToZero(feeAmount)) {
+        } else if (equalsToZero(feeAmount)) {
             cluster.setIgnoredFee(1, "Fee amount is 0 " + (feeCurrency != null ? feeCurrency.code() : ""));
         }
         return cluster;

@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
+import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.equalsToZero;
 import static java.math.BigDecimal.ZERO;
 import static lombok.AccessLevel.PRIVATE;
 
@@ -155,7 +156,7 @@ public class EveryTradeBeanV3_1 extends ExchangeBean {
         );
 
         TransactionCluster transactionCluster = new TransactionCluster(tx, getRelatedTxs());
-        if(ParserUtils.equalsToZero(fee)) {
+        if(equalsToZero(fee)) {
             transactionCluster.setIgnoredFee(1, "Fee amount is 0 " + (feeCurrency != null ? feeCurrency.code() : ""));
         }
         return transactionCluster;

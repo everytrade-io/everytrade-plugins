@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.equalsToZero;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE;
 import static io.everytrade.server.plugin.impl.generalbytes.GbPlugin.parseGbCurrency;
@@ -72,7 +73,7 @@ public class GbApiTransactionBean {
         }
         final boolean isIncorrectFee = !(base.equals(expenseCurrency) || quote.equals(expenseCurrency));
         List<ImportedTransactionBean> related;
-        if (ParserUtils.equalsToZero(expense) || isIncorrectFee) {
+        if (equalsToZero(expense) || isIncorrectFee) {
             related = Collections.emptyList();
         } else {
             related = List.of(new FeeRebateImportedTransactionBean(
@@ -104,7 +105,7 @@ public class GbApiTransactionBean {
         if (isIncorrectFee) {
             cluster.setFailedFee(1, "Fee " + expenseCurrency + " currency is neither base or quote");
         }
-        if (ParserUtils.equalsToZero(expense)) {
+        if (equalsToZero(expense)) {
             cluster.setIgnoredFee(1, "Fee amount is 0 " + expenseCurrency);
         }
         return cluster;

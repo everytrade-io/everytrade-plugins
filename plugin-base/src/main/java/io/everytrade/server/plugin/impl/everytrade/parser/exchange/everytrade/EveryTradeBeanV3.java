@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.equalsToZero;
+
 @Headers(sequence = {
     "UID", "DATE", "SYMBOL", "ACTION", "QUANTY", "PRICE", "FEE", "FEE_CURRENCY", "REBATE", "REBATE_CURRENCY"
 }, extract = true)
@@ -138,7 +140,7 @@ public class EveryTradeBeanV3 extends ExchangeBean {
         }
 
         TransactionCluster transactionCluster = new TransactionCluster(buySell, related);
-        if(ParserUtils.equalsToZero(fee)) {
+        if(equalsToZero(fee)) {
             transactionCluster.setIgnoredFee(1, "Fee amount is 0 " + (feeCurrency != null ? feeCurrency.code() : ""));
         }
         return transactionCluster;
