@@ -36,7 +36,8 @@ public class BinanceConnector implements IConnector {
             "apiSecret",
             ConnectorParameterType.SECRET,
             "API Secret",
-            ""
+            "",
+            false
         );
 
     private static final ConnectorParameterDescriptor PARAMETER_API_KEY =
@@ -44,7 +45,8 @@ public class BinanceConnector implements IConnector {
             "apiKey",
             ConnectorParameterType.STRING,
             "API Key",
-            ""
+            "",
+            false
         );
 
     private static final ConnectorParameterDescriptor PARAMETER_CURRENCY_PAIRS =
@@ -52,7 +54,8 @@ public class BinanceConnector implements IConnector {
             "currencyPairs",
             ConnectorParameterType.STRING,
             UiKey.CONNECTION_CURRENCY_PAIRS_DESC,
-            ""
+            "",
+            false
         );
 
     public static final ConnectorDescriptor DESCRIPTOR = new ConnectorDescriptor(

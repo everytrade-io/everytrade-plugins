@@ -26,7 +26,8 @@ public class OkxConnector implements IConnector {
             "apiSecret",
             ConnectorParameterType.SECRET,
             "API Secret",
-            ""
+            "",
+            false
         );
 
     private static final ConnectorParameterDescriptor PARAMETER_API_KEY =
@@ -34,7 +35,8 @@ public class OkxConnector implements IConnector {
             "apiKey",
             ConnectorParameterType.STRING,
             "API Key",
-            ""
+            "",
+            false
         );
 
     private static final ConnectorParameterDescriptor PARAMETER_PASS_PHRASE =
@@ -42,14 +44,16 @@ public class OkxConnector implements IConnector {
             "passPhrase",
             ConnectorParameterType.SECRET,
             UiKey.CONNECTION_PASSPHRASE,
-            ""
+            "",
+            false
         );
     private static final ConnectorParameterDescriptor PARAMETER_CURRENCY_PAIRS =
         new ConnectorParameterDescriptor(
             "currencyPairs",
             ConnectorParameterType.STRING,
             UiKey.CONNECTION_CURRENCY_PAIRS_DESC,
-            ""
+            "",
+            false
         );
 
     public static final ConnectorDescriptor DESCRIPTOR = new ConnectorDescriptor(

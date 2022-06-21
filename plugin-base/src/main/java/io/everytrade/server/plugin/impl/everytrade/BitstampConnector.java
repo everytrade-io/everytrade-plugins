@@ -45,7 +45,8 @@ public class BitstampConnector implements IConnector {
             "username",
             ConnectorParameterType.STRING,
             UiKey.CONNECTION_USER_NAME,
-            ""
+            "",
+            false
         );
 
     private static final ConnectorParameterDescriptor PARAMETER_API_SECRET =
@@ -53,7 +54,8 @@ public class BitstampConnector implements IConnector {
             "apiSecret",
             ConnectorParameterType.SECRET,
             "API Secret",
-            ""
+            "",
+            false
         );
 
     private static final ConnectorParameterDescriptor PARAMETER_API_KEY =
@@ -61,7 +63,8 @@ public class BitstampConnector implements IConnector {
             "apiKey",
             ConnectorParameterType.STRING,
             "API Key",
-            ""
+            "",
+            false
         );
 
     public static final ConnectorDescriptor DESCRIPTOR = new ConnectorDescriptor(

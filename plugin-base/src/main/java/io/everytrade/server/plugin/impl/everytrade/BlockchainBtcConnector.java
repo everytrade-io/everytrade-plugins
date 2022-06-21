@@ -21,7 +21,8 @@ public class BlockchainBtcConnector implements IConnector {
             "source",
             ConnectorParameterType.STRING,
             UiKey.CONNECTION_WALLET_ADDR_XPUB_KEY,
-            ""
+            "",
+            false
         );
 
     private static final ConnectorParameterDescriptor PARAMETER_FIAT_CURRENCY =
@@ -29,7 +30,8 @@ public class BlockchainBtcConnector implements IConnector {
             "fiatCurrency",
             ConnectorParameterType.FIAT_CURRENCY,
             UiKey.CONNECTION_FIAT_CURRENCY,
-            ""
+            "",
+            false
         );
 
     private static final ConnectorParameterDescriptor PARAMETER_IMPORT_DEPOSITS_AS_BUYS =
@@ -37,7 +39,8 @@ public class BlockchainBtcConnector implements IConnector {
             "importDepositsAsBuys",
             ConnectorParameterType.BOOLEAN,
             UiKey.CONNECTION_DEPOSITS_AS_BUY_OPT,
-            ""
+            "",
+            false
         );
 
     private static final ConnectorParameterDescriptor PARAMETER_IMPORT_WITHDRAWALS_AS_SELLS =
@@ -45,7 +48,8 @@ public class BlockchainBtcConnector implements IConnector {
             "importWithdrawalsAsSells",
             ConnectorParameterType.BOOLEAN,
             UiKey.CONNECTION_WITHDRAWAL_AS_SELL_OPT,
-            ""
+            "",
+            false
         );
 
     private static final ConnectorParameterDescriptor PARAMETER_IMPORT_FEES_FROM_DEPOSITS =
@@ -53,7 +57,8 @@ public class BlockchainBtcConnector implements IConnector {
             "importFeesFromDeposits",
             ConnectorParameterType.BOOLEAN,
             UiKey.CONNECTION_DEPOSIT_MINING_FEE_AS_BUY_OPT,
-            ""
+            "",
+            false
         );
 
     private static final ConnectorParameterDescriptor PARAMETER_IMPORT_FEES_FROM_WITHDRAWALS =
@@ -61,7 +66,8 @@ public class BlockchainBtcConnector implements IConnector {
             "importFeesFromWithdrawals",
             ConnectorParameterType.BOOLEAN,
             UiKey.CONNECTION_WITHDRAWAL_MINING_FEE_AS_SELL_OPT,
-            ""
+            "",
+            true
         );
 
     public static final ConnectorDescriptor DESCRIPTOR = new ConnectorDescriptor(
