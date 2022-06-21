@@ -76,7 +76,7 @@ public class BinanceBeanV4 extends ExchangeBean {
         var supportedAccounts = BinanceSupportedOperations.SUPPORTED_ACCOUNT_TYPES;
         if (!supportedAccounts.contains(account)) {
             this.setUnsupportedRow(true);
-            this.setMessage("Unsupported type of account " + account + " ");
+            this.setMessage("Unsupported type of account " + account + "; ");
         }
         this.account = account;
     }
@@ -86,7 +86,7 @@ public class BinanceBeanV4 extends ExchangeBean {
         var supportedOperations = BinanceSupportedOperations.SUPPORTED_OPERATION_TYPES;
         if (!supportedOperations.contains(operation)) {
             this.setUnsupportedRow(true);
-            this.setMessage("Unsupported type of operation " + operation + " ");
+            this.setMessage("Unsupported type of operation " + operation + "; ");
         }
         this.operation = operation;
         this.type = BinanceSwitcher.operationTypeSwitcher(operation);
@@ -98,7 +98,7 @@ public class BinanceBeanV4 extends ExchangeBean {
             this.coin = Currency.fromCode(coin);
         } catch (IllegalArgumentException e) {
             this.setUnsupportedRow(true);
-            this.setMessage(e.getMessage());
+            this.setMessage("Unsupported currency: " + coin + "; ");
         }
     }
 
@@ -112,7 +112,7 @@ public class BinanceBeanV4 extends ExchangeBean {
             this.change = new BigDecimal(change);
         } catch (NumberFormatException e) {
             this.setUnsupportedRow(true);
-            this.setMessage(e.getMessage());
+            this.setMessage("Wrong \"Change\" value: " + change + "; ");
         }
     }
 
@@ -126,12 +126,14 @@ public class BinanceBeanV4 extends ExchangeBean {
     }
 
     public void setRowId(int rowId) {
-        this.message = "Row id " + rowId;
+        String sub = (message == null) ? "" : message;
+        message = "Row id " + rowId + ": " + sub;
         this.rowId = rowId;
     }
 
     public void setMessage(String message) {
-        this.message = this.message + "; " + message;
+        String sub = (this.message == null) ? "" : (this.message + "; ");
+        this.message = sub + message;
     }
 
     public void setMergedWithAnotherGroup(boolean mergedWithAnotherGroup) {

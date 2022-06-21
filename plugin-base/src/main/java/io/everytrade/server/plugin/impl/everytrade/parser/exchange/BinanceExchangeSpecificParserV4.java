@@ -26,7 +26,8 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
 
     public List<? extends ExchangeBean> convertMultipleRowsToTransactions(List<BinanceBeanV4> rows) {
         List<BinanceBeanV4> result;
-        this.rows = setRowsWithIds(rows);
+        rows = setRowsWithIds(rows);
+        this.rows = rows;
         var groupedRowsByTime = this.rows.stream().collect(groupingBy(BinanceBeanV4::getDate));
         Map<Instant, List<BinanceBeanV4>> sortedGroupsByDate = new TreeMap<>(groupedRowsByTime);
         // merging rows nearly in the same time
@@ -47,14 +48,16 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
         Map<Instant, List<BinanceBeanV4>> result = new HashMap<>();
         for (Map.Entry<Instant, List<BinanceBeanV4>> entry : rowGroups.entrySet()) {
             var rowsInGroup = entry.getValue();
+            List<BinanceBeanV4> unSupportedRow = rowsInGroup.stream().filter(r -> r.isUnsupportedRow() == true).collect(Collectors.toList());
             var isOneOrMoreUnsupportedRows =
-                !rowsInGroup.stream().filter(r -> r.isUnsupportedRow() == true).collect(Collectors.toList()).isEmpty();
+                !unSupportedRow.isEmpty();
             if (!isOneOrMoreUnsupportedRows) {
                 result.put(entry.getKey(), entry.getValue());
             } else {
+                var mess = unSupportedRow.get(0).getMessage();
                 var ids = rowsInGroup.stream().map(r -> r.getRowId()).collect(Collectors.toList());
                 var s = BinanceSortedGroupV4.parseIds(ids);
-                setRowsAsUnsupported(rowsInGroup, "One or more rows in group " + "( rows: " + s + ") is unsupported");
+                setRowsAsUnsupported(rowsInGroup, "One or more rows in group " + "\"rows: " + s + "\" is unsupported;" + mess);
             }
         }
         return result;

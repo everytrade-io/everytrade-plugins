@@ -155,7 +155,7 @@ public class BinanceSortedGroupV4 {
     public static String parseIds(List<Integer> ids) {
         String s = "";
         for (int id : ids) {
-            s = s + " " + id + "; ";
+            s = s + " " + id + ";";
         }
         return s;
     }
