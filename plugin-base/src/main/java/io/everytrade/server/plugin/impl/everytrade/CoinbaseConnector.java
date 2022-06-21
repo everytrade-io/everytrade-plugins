@@ -31,7 +31,8 @@ public class CoinbaseConnector implements IConnector {
             "apiSecret",
             ConnectorParameterType.SECRET,
             "API Secret",
-            ""
+            "",
+            false
         );
 
     private static final ConnectorParameterDescriptor PARAMETER_API_KEY =
@@ -39,7 +40,8 @@ public class CoinbaseConnector implements IConnector {
             "apiKey",
             ConnectorParameterType.STRING,
             "API Key",
-            ""
+            "",
+            false
         );
 
     public static final ConnectorDescriptor DESCRIPTOR = new ConnectorDescriptor(

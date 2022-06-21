@@ -17,4 +17,6 @@ public class ConnectorParameterDescriptor {
 
     @NonNull
     String description;
+
+    boolean isSelectedByDefault;
 }

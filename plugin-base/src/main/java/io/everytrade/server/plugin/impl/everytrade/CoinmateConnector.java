@@ -45,7 +45,8 @@ public class CoinmateConnector implements IConnector {
             "username",
             ConnectorParameterType.STRING,
             "Client ID",
-            ""
+            "",
+            false
         );
 
     private static final ConnectorParameterDescriptor PARAMETER_API_SECRET =
@@ -53,7 +54,8 @@ public class CoinmateConnector implements IConnector {
             "apiSecret",
             ConnectorParameterType.SECRET,
             "API Secret",
-            ""
+            "",
+            false
         );
 
     private static final ConnectorParameterDescriptor PARAMETER_API_KEY =
@@ -61,7 +63,8 @@ public class CoinmateConnector implements IConnector {
             "apiKey",
             ConnectorParameterType.STRING,
             "API Key",
-            ""
+            "",
+            false
         );
 
     public static final ConnectorDescriptor DESCRIPTOR = new ConnectorDescriptor(

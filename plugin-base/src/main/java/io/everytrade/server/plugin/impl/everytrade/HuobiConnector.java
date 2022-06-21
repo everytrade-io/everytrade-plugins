@@ -34,7 +34,8 @@ public class HuobiConnector implements IConnector {
             "apiSecret",
             ConnectorParameterType.SECRET,
             "API Secret",
-            ""
+            "",
+            false
         );
 
     private static final ConnectorParameterDescriptor PARAMETER_API_KEY =
@@ -42,7 +43,8 @@ public class HuobiConnector implements IConnector {
             "apiKey",
             ConnectorParameterType.STRING,
             "API Key",
-            ""
+            "",
+            false
         );
 
     private static final ConnectorParameterDescriptor PARAMETER_CURRENCY_PAIRS =
@@ -50,7 +52,8 @@ public class HuobiConnector implements IConnector {
             "currencyPairs",
             ConnectorParameterType.STRING,
             UiKey.CONNECTION_CURRENCY_PAIRS_DESC,
-            ""
+            "",
+            false
         );
 
     public static final ConnectorDescriptor DESCRIPTOR = new ConnectorDescriptor(

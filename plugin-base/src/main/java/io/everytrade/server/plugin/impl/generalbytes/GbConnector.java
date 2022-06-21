@@ -46,7 +46,8 @@ public class GbConnector implements IConnector {
             "apiSecret",
             ConnectorParameterType.SECRET,
             "API Secret",
-            ""
+            "",
+            false
         );
 
     private static final ConnectorParameterDescriptor PARAMETER_API_KEY =
@@ -54,7 +55,8 @@ public class GbConnector implements IConnector {
             "apiKey",
             ConnectorParameterType.STRING,
             "API Key",
-            ""
+            "",
+            false
         );
 
     private static final ConnectorParameterDescriptor PARAMETER_URL =
@@ -62,7 +64,8 @@ public class GbConnector implements IConnector {
             "url",
             ConnectorParameterType.STRING,
             "CAS URL",
-            "URL to GENERAL BYTES Crypto Application Server For example https://gb.example.com:7777/"
+            "URL to GENERAL BYTES Crypto Application Server For example https://gb.example.com:7777/",
+            false
         );
 
     public static final ConnectorDescriptor DESCRIPTOR = new ConnectorDescriptor(

@@ -38,7 +38,8 @@ public class EveryTradeConnector implements IConnector {
             "apiSecret",
             ConnectorParameterType.SECRET,
             "API Secret",
-            ""
+            "",
+            false
         );
 
     private static final ConnectorParameterDescriptor PARAMETER_API_KEY =
@@ -46,7 +47,8 @@ public class EveryTradeConnector implements IConnector {
             "apiKey",
             ConnectorParameterType.STRING,
             "API Key",
-            ""
+            "",
+            false
         );
 
     private static final ConnectorParameterDescriptor PARAMETER_URL =
@@ -54,7 +56,8 @@ public class EveryTradeConnector implements IConnector {
             "url",
             ConnectorParameterType.STRING,
             "URL",
-            ""
+            "",
+            false
         );
 
     public static final ConnectorDescriptor DESCRIPTOR = new ConnectorDescriptor(
