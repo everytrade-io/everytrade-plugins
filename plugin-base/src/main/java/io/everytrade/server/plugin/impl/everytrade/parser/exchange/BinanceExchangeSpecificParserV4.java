@@ -57,7 +57,7 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
                 var mess = unSupportedRow.get(0).getMessage();
                 var ids = rowsInGroup.stream().map(r -> r.getRowId()).collect(Collectors.toList());
                 var s = BinanceSortedGroupV4.parseIds(ids);
-                setRowsAsUnsupported(rowsInGroup, "One or more rows in group " + "\"rows: " + s + "\" is unsupported;" + mess);
+                setRowsAsUnsupported(rowsInGroup, "One or more rows in group " + "\"rows:" + s + "\" is unsupported;" + mess);
             }
         }
         return result;
