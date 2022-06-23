@@ -86,7 +86,7 @@ public class BinanceBeanV4 extends ExchangeBean {
         var supportedOperations = BinanceSupportedOperations.SUPPORTED_OPERATION_TYPES;
         if (!supportedOperations.contains(operation)) {
             this.setUnsupportedRow(true);
-            this.setMessage("Unsupported type of operation " + operation + "; ");
+            this.setMessage("Unsupported type of operation " + operation);
         }
         this.operation = operation;
         this.type = BinanceSwitcher.operationTypeSwitcher(operation);
