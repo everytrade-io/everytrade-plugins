@@ -14,6 +14,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
 import static lombok.AccessLevel.PRIVATE;
@@ -24,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @FieldDefaults(level = PRIVATE)
 @Headers(sequence = {"Operation", "UTC_Time", "Account", "Coin", "Change", "Remark", "User_ID"}, extract = true)
@@ -42,6 +44,10 @@ public class BinanceBeanV4 extends ExchangeBean {
 
     boolean isInTransaction;
     boolean unsupportedRow;
+    boolean ignoredRow;
+    boolean failedRow;
+    boolean ignoredFeeRow;
+    boolean failedFeeRow;
     String message;
     boolean isMergedWithAnotherGroup;
 
@@ -141,10 +147,6 @@ public class BinanceBeanV4 extends ExchangeBean {
             this.setMessage("Grouped with tolerance 1s ");
         }
         isMergedWithAnotherGroup = mergedWithAnotherGroup;
-    }
-
-    public void checkCurrencyPairForRows() {
-        this.validateCurrencyPair(marketBase, marketQuote);
     }
 
     @Override

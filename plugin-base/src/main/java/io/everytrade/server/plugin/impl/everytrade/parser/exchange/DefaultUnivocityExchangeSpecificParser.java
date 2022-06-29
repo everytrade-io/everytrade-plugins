@@ -93,7 +93,8 @@ public class DefaultUnivocityExchangeSpecificParser implements IExchangeSpecific
                         return null;
                     }
                     bean.setRowValues(row);
-                    bean.setRowNumber(context.currentColumn());
+                    int rowNumber = context.currentColumn();
+                    bean.setRowNumber(rowNumber);
                     return bean;
                 }
             };

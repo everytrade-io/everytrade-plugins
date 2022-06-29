@@ -22,7 +22,7 @@ public abstract class ExchangeBean implements IImportableBean {
     public static final String REBATE_UID_PART = "-rebate";
     public static final String ILLEGAL_NEGATIVE_VALUES = "Illegal negative value(s) at index(es): ";
 
-    private List<String> rowValues;
+    protected List<String> rowValues;
     private long rowNumber;
 
     public void setRowValues(String[] row) {
@@ -44,7 +44,7 @@ public abstract class ExchangeBean implements IImportableBean {
         return transactionPrice.divide(baseQuantity, ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE);
     }
 
-    protected void validateCurrencyPair(Currency base, Currency quote) {
+    public static void validateCurrencyPair(Currency base, Currency quote) {
         try {
             var currencyPair = new CurrencyPair(base, quote);
             if (!CurrencyPair.getTradeablePairs().contains(currencyPair)) {
