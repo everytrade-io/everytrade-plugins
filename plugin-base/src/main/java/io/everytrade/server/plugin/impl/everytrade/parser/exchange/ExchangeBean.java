@@ -44,7 +44,7 @@ public abstract class ExchangeBean implements IImportableBean {
         return transactionPrice.divide(baseQuantity, ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE);
     }
 
-    protected void validateCurrencyPair(Currency base, Currency quote) {
+    protected static void validateCurrencyPair(Currency base, Currency quote) {
         try {
             var currencyPair = new CurrencyPair(base, quote);
             if (!CurrencyPair.getTradeablePairs().contains(currencyPair)) {
@@ -87,7 +87,7 @@ public abstract class ExchangeBean implements IImportableBean {
         }
     }
 
-    protected TransactionType detectTransactionType(String value) {
+    protected static TransactionType detectTransactionType(String value) {
         TransactionType type;
         try {
             type =  TransactionType.valueOf(value.toUpperCase());

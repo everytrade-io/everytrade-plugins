@@ -45,6 +45,24 @@ public final class CurrencyPair implements Comparable<CurrencyPair> {
     @NonNull Currency base;
     @NonNull Currency quote;
 
+    private static final Set<CurrencyPair> CURRENCY_PAIRS = new HashSet<>();
+
+    static {
+        for (Currency base : Currency.values()) {
+            for (Currency quote : Currency.values()) {
+                var baseIsCrypto = !base.isFiat();
+                var quoteIsFiat = quote.isFiat();
+                var quoteIsAllowedCrypto = ALLOWED_CRYPTO_QUOTES.contains(quote);
+                var quoteIsAllowed = quoteIsFiat || quoteIsAllowedCrypto;
+                var isUnsupportedCryptoPair = isUnsupportedCryptoPairs(base, quote);
+                if ((baseIsCrypto && quoteIsAllowed && !isUnsupportedCryptoPair) || (base == quote)) {
+                    CURRENCY_PAIRS.add(new CurrencyPair(base, quote));
+                }
+            }
+        }
+        CURRENCY_PAIRS.addAll(getSupportedFiatPairs());
+    }
+
     public enum CurrencyPosition {BASE, QUOTE}
     public static final Comparator<CurrencyPair> COMPARATOR =
         Comparator
@@ -84,21 +102,7 @@ public final class CurrencyPair implements Comparable<CurrencyPair> {
     }
 
     public static List<CurrencyPair> getTradeablePairs() {
-        Set<CurrencyPair> currencyPairs = new HashSet<>();
-        for (Currency base : Currency.values()) {
-            for (Currency quote : Currency.values()) {
-                var baseIsCrypto = !base.isFiat();
-                var quoteIsFiat = quote.isFiat();
-                var quoteIsAllowedCrypto = ALLOWED_CRYPTO_QUOTES.contains(quote);
-                var quoteIsAllowed = quoteIsFiat || quoteIsAllowedCrypto;
-                var isUnsupportedCryptoPair = isUnsupportedCryptoPairs(base, quote);
-                if ((baseIsCrypto && quoteIsAllowed && !isUnsupportedCryptoPair) || (base == quote)) {
-                    currencyPairs.add(new CurrencyPair(base, quote));
-                }
-            }
-        }
-        currencyPairs.addAll(getSupportedFiatPairs());
-        return new ArrayList<>(currencyPairs);
+         return new ArrayList<>(CURRENCY_PAIRS);
     }
 
     public static List<CurrencyPair> getSupportedFiatPairs() {
