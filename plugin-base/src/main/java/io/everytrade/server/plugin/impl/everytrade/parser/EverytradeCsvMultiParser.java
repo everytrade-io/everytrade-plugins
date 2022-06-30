@@ -15,7 +15,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BitfinexExcha
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.CoinbaseExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.DefaultUnivocityExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.KrakenExchangeSpecificParserV4;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.KrakenExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.AquanowBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BinanceBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BitflyerBeanV1;
@@ -383,7 +383,7 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                     )
                     .withSeparator(DELIMITER_COMMA)
             ))
-            .parserFactory(() -> new KrakenExchangeSpecificParserV4(KrakenBeanV2.class))
+            .parserFactory(() -> new KrakenExchangeSpecificParser(KrakenBeanV2.class))
             .supportedExchange(KRAKEN)
             .build());
 
@@ -552,8 +552,8 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 .convertMultipleRowsToTransactions((List<BinanceBeanV4>) listBeans);
         }
 
-        if (exchangeParser instanceof KrakenExchangeSpecificParserV4) {
-            listBeans = ((KrakenExchangeSpecificParserV4) exchangeParser)
+        if (exchangeParser instanceof KrakenExchangeSpecificParser) {
+            listBeans = ((KrakenExchangeSpecificParser) exchangeParser)
                 .convertMultipleRowsToTransactions((List<KrakenBeanV2>) listBeans);
         }
 

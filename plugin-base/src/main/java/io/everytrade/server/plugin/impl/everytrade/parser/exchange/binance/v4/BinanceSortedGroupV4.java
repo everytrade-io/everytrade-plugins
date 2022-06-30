@@ -25,7 +25,7 @@ import static java.math.BigDecimal.ZERO;
 @Data
 public class BinanceSortedGroupV4 {
 
-    Instant time;
+    Object time;
 
     // beforeSum
     Map<Currency, List<BinanceBeanV4>> rowsDeposit = new HashMap<>();

@@ -17,7 +17,7 @@ import static java.math.BigDecimal.ZERO;
 @Data
 public class KrakenSortedGroup {
 
-    String refId;
+    Object refId;
     List<KrakenBeanV2> rowsDeposit = new ArrayList<>();
     List<KrakenBeanV2> rowsWithdrawal = new  ArrayList<>();
     List<KrakenBeanV2> rowsTrades = new  ArrayList<>();
@@ -91,7 +91,7 @@ public class KrakenSortedGroup {
     }
 
     public void createTransactions(TransactionType type) {
-        if (type.equals(BUY) || type.equals(SELL)) {
+        if (type.isBuyOrSell()) {
             // set base and quote row
             if(rowsTrades.get(0).getFee().compareTo(ZERO) == 0
                 && rowsTrades.get(1).getFee().compareTo(ZERO) != 0) {
@@ -104,7 +104,7 @@ public class KrakenSortedGroup {
             validateBuySell();
             createBuySellTxs(type);
         }
-        if (type.equals(DEPOSIT) || type.equals(WITHDRAWAL)) {
+        if (type.isDepositOrWithdrawal()) {
             validateDepositWithdrawal(type);
             createDepositWithdrawalTxs(type);
         }
