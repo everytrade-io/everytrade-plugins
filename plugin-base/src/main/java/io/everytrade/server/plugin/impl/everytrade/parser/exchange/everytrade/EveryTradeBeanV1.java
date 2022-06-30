@@ -11,7 +11,6 @@ import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.EverytradeCSVParserValidator;
-import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
@@ -20,7 +19,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.equalsToZero;
+import static java.math.BigDecimal.ZERO;
 
 @Headers(sequence = {"UID", "DATE", "SYMBOL", "ACTION", "QUANTY", "PRICE", "FEE"}, extract = true)
 public class EveryTradeBeanV1 extends ExchangeBean {
@@ -84,7 +83,7 @@ public class EveryTradeBeanV1 extends ExchangeBean {
             price              //unit price
         );
         List<ImportedTransactionBean> related;
-        if (equalsToZero(fee)) {
+        if (ZERO.compareTo(fee) == 0) {
             related = Collections.emptyList();
         } else {
             related = List.of(
@@ -103,7 +102,7 @@ public class EveryTradeBeanV1 extends ExchangeBean {
             buySell,
             related
         );
-        if(equalsToZero(fee)) {
+        if (ZERO.compareTo(fee) == 0) {
             transactionCluster.setIgnoredFee(1, "Fee amount is 0 " + (symbolQuote != null ? symbolQuote.code() : ""));
         }
         return transactionCluster;
