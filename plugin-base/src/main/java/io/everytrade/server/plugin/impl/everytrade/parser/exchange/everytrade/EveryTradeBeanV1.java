@@ -83,7 +83,7 @@ public class EveryTradeBeanV1 extends ExchangeBean {
             price              //unit price
         );
         List<ImportedTransactionBean> related;
-        if (ZERO.equals(fee)) {
+        if (ZERO.compareTo(fee) == 0) {
             related = Collections.emptyList();
         } else {
             related = List.of(
@@ -102,7 +102,7 @@ public class EveryTradeBeanV1 extends ExchangeBean {
             buySell,
             related
         );
-        if (ZERO.equals(fee)) {
+        if (ZERO.compareTo(fee) == 0) {
             transactionCluster.setIgnoredFee(1, "Fee amount is 0 " + (symbolQuote != null ? symbolQuote.code() : ""));
         }
         return transactionCluster;
