@@ -6,14 +6,18 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.Bi
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kraken.KrakenSortedGroup;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kraken.KrakenSupportedTypes;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.groupingBy;
 
-public class KrakenExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpecificParser implements IExchangeSpecificParser {
+public class KrakenExchangeSpecificParser extends DefaultUnivocityExchangeSpecificParser implements IExchangeSpecificParser,
+    IMultiExchangeSpecificParser<KrakenBeanV2>  {
 
-    public KrakenExchangeSpecificParserV4(Class<? extends ExchangeBean> exchangeBean) {
+    public KrakenExchangeSpecificParser(Class<? extends ExchangeBean> exchangeBean) {
         super(exchangeBean);
     }
 
@@ -21,6 +25,7 @@ public class KrakenExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpec
     List<KrakenBeanV2> unSupportedRows = new ArrayList<>();
     List<KrakenBeanV2> duplicities = new ArrayList<>();
 
+    @Override
     public List<? extends ExchangeBean> convertMultipleRowsToTransactions(List<KrakenBeanV2> rows) {
         List<KrakenBeanV2> result;
         this.rows = setRowsWithIds(rows);
@@ -44,9 +49,10 @@ public class KrakenExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpec
         return rowsReadyForTxs;
     }
 
-    private Map<String, List<KrakenBeanV2>> removeGroupsWithUnsupportedRows(Map<String, List<KrakenBeanV2>> rowGroups) {
-        Map<String, List<KrakenBeanV2>> result = new HashMap<>();
-        for (Map.Entry<String, List<KrakenBeanV2>> entry : rowGroups.entrySet()) {
+    @Override
+    public Map<?, List<KrakenBeanV2>> removeGroupsWithUnsupportedRows(Map<?, List<KrakenBeanV2>> rowGroups) {
+        Map<Object, List<KrakenBeanV2>> result = new HashMap<>();
+        for (Map.Entry<?, List<KrakenBeanV2>> entry : rowGroups.entrySet()) {
             var rowsInGroup = entry.getValue();
             var isOneOrMoreUnsupportedRows =
                 !rowsInGroup.stream().filter(r -> r.isUnsupportedRow() == true).collect(Collectors.toList()).isEmpty();
@@ -61,9 +67,9 @@ public class KrakenExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpec
         return result;
     }
 
-    private Map<String,List<KrakenBeanV2>> removeDepositWithdrawalDuplicities(Map<String,List<KrakenBeanV2>> groupRows) {
-        Map<String,List<KrakenBeanV2>> result = new HashMap<>();
-        for(Map.Entry<String,List<KrakenBeanV2>> entry : groupRows.entrySet()) {
+    private Map<?,List<KrakenBeanV2>> removeDepositWithdrawalDuplicities(Map<?,List<KrakenBeanV2>> groupRows) {
+        Map<Object,List<KrakenBeanV2>> result = new HashMap<>();
+        for(Map.Entry<?,List<KrakenBeanV2>> entry : groupRows.entrySet()) {
             var values = entry.getValue();
             if(values.size() == 2 && KrakenSupportedTypes.DUPLICABLE_TYPES.contains(values.get(0).getType())) {
                 var stRow = values.get(0);
@@ -105,10 +111,10 @@ public class KrakenExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpec
         return rows;
     }
 
-    private List<KrakenBeanV2> createTransactionFromGroupOfRows(Map<String, List<KrakenBeanV2>> groups) {
+    @Override
+    public List<KrakenBeanV2> createTransactionFromGroupOfRows(Map<?, List<KrakenBeanV2>> groups) {
         List<KrakenBeanV2> result = new ArrayList<>();
-
-        for (Map.Entry<String, List<KrakenBeanV2>> entry : groups.entrySet()) {
+        for (Map.Entry<?, List<KrakenBeanV2>> entry : groups.entrySet()) {
             var sortedGroup = new KrakenSortedGroup();
             sortedGroup.setRefId(entry.getKey());
             var rows = entry.getValue();
@@ -124,5 +130,4 @@ public class KrakenExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpec
         }
         return result;
     }
-
 }
