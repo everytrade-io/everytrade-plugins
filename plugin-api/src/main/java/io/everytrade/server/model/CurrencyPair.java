@@ -102,7 +102,7 @@ public final class CurrencyPair implements Comparable<CurrencyPair> {
     }
 
     public static List<CurrencyPair> getTradeablePairs() {
-         return new ArrayList<>(CURRENCY_PAIRS);
+        return new ArrayList<>(CURRENCY_PAIRS);
     }
 
     public static List<CurrencyPair> getSupportedFiatPairs() {

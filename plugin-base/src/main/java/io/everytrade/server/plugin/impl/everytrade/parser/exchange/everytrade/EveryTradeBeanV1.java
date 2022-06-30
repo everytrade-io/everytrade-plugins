@@ -102,7 +102,7 @@ public class EveryTradeBeanV1 extends ExchangeBean {
             buySell,
             related
         );
-        if(ZERO.equals(fee)) {
+        if (ZERO.equals(fee)) {
             transactionCluster.setIgnoredFee(1, "Fee amount is 0 " + (symbolQuote != null ? symbolQuote.code() : ""));
         }
         return transactionCluster;
