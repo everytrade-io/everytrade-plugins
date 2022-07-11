@@ -170,7 +170,7 @@ public class KrakenBeanV2 extends ExchangeBean {
                     asset,
                     txsType,
                     amount.abs(),
-                    refid,
+                    null,
                     null
                 ),
                 related
