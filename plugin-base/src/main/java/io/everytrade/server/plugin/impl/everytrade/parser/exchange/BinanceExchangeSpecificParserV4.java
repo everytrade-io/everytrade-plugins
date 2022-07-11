@@ -14,7 +14,8 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.groupingBy;
 
-public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpecificParser implements IExchangeSpecificParser {
+public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpecificParser implements IExchangeSpecificParser,
+    IMultiExchangeSpecificParser<BinanceBeanV4> {
 
     private static final long TRANSACTION_MERGE_TOLERANCE_MS = 1000;
     public BinanceExchangeSpecificParserV4(Class<? extends ExchangeBean> exchangeBean) {
@@ -37,18 +38,21 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
         // creating transaction
         List<BinanceBeanV4> rowsReadyForTxs = createTransactionFromGroupOfRows(cleanGroups);
         result = rowsReadyForTxs;
-        unSupportedRows.stream().forEach( r -> {
-            r.setRowNumber((long)r.getRowId());
+        unSupportedRows.stream().forEach(r -> {
+            r.setRowNumber((long) r.getRowId());
         });
         result.addAll(unSupportedRows);
         return rowsReadyForTxs;
     }
 
-    private Map<Instant, List<BinanceBeanV4>> removeGroupsWithUnsupportedRows(Map<Instant, List<BinanceBeanV4>> rowGroups) {
-        Map<Instant, List<BinanceBeanV4>> result = new HashMap<>();
-        for (Map.Entry<Instant, List<BinanceBeanV4>> entry : rowGroups.entrySet()) {
+    @Override
+    public Map<?, List<BinanceBeanV4>> removeGroupsWithUnsupportedRows(Map<?, List<BinanceBeanV4>> rowGroups) {
+        Map<Object, List<BinanceBeanV4>> result = new HashMap<>();
+        for (Map.Entry<?, List<BinanceBeanV4>> entry : rowGroups.entrySet()) {
             var rowsInGroup = entry.getValue();
-            List<BinanceBeanV4> unSupportedRow = rowsInGroup.stream().filter(r -> r.isUnsupportedRow() == true).collect(Collectors.toList());
+            List<BinanceBeanV4> unSupportedRow = rowsInGroup.stream()
+                .filter(r -> r.isUnsupportedRow() == true)
+                .collect(Collectors.toList());
             var isOneOrMoreUnsupportedRows =
                 !unSupportedRow.isEmpty();
             if (!isOneOrMoreUnsupportedRows) {
@@ -104,10 +108,10 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
         return result;
     }
 
-    private List<BinanceBeanV4> createTransactionFromGroupOfRows(Map<Instant, List<BinanceBeanV4>> groups) {
+    @Override
+    public List<BinanceBeanV4> createTransactionFromGroupOfRows(Map<?, List<BinanceBeanV4>> groups) {
         List<BinanceBeanV4> result = new ArrayList<>();
-
-        for (Map.Entry<Instant, List<BinanceBeanV4>> entry : groups.entrySet()) {
+        for (Map.Entry<?, List<BinanceBeanV4>> entry : groups.entrySet()) {
             var sortedGroup = new BinanceSortedGroupV4();
             sortedGroup.setTime(entry.getKey());
             var rows = entry.getValue();

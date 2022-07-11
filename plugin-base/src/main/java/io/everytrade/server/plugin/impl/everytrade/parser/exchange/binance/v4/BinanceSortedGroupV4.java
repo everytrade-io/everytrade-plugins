@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import io.everytrade.server.model.Currency;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import lombok.Data;
 
 import static io.everytrade.server.model.TransactionType.BUY;
@@ -24,7 +25,7 @@ import static java.math.BigDecimal.ZERO;
 @Data
 public class BinanceSortedGroupV4 {
 
-    Instant time;
+    Object time;
 
     // beforeSum
     Map<Currency, List<BinanceBeanV4>> rowsDeposit = new HashMap<>();
@@ -148,7 +149,7 @@ public class BinanceSortedGroupV4 {
                 txs.setMergedWithAnotherGroup(fee.isMergedWithAnotherGroup());
             }
         } catch (Exception e) {
-            throw new DataValidationException("Fee not assigned to transaction");
+            throw new DataValidationException("Fee not assigned to transaction;");
         }
     }
 
@@ -239,7 +240,7 @@ public class BinanceSortedGroupV4 {
                 txsBuySell.setAmountQuote(stRow.getChange());
             }
         }
-        txsBuySell.checkCurrencyPairForRows();
+        ExchangeBean.validateCurrencyPair(txsBuySell.getMarketBase(),txsBuySell.getMarketQuote());
         createdTransactions.add(txsBuySell);
     }
 

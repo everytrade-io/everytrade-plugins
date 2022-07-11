@@ -1,6 +1,5 @@
 package io.everytrade.server.plugin.impl.everytrade.parser;
 
-import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.plugin.api.IPlugin;
 import io.everytrade.server.plugin.api.parser.ICsvParser;
 import io.everytrade.server.plugin.api.parser.ParseResult;
@@ -16,6 +15,8 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BitfinexExcha
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.CoinbaseExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.DefaultUnivocityExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.IMultiExchangeSpecificParser;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.KrakenExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.AquanowBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BinanceBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BitflyerBeanV1;
@@ -374,7 +375,7 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(KrakenBeanV1.class))
             .supportedExchange(KRAKEN)
             .build());
-
+//
         EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
             .headers(List.of(
                 CsvHeader
@@ -383,7 +384,7 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                     )
                     .withSeparator(DELIMITER_COMMA)
             ))
-            .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(KrakenBeanV2.class))
+            .parserFactory(() -> new KrakenExchangeSpecificParser(KrakenBeanV2.class))
             .supportedExchange(KRAKEN)
             .build());
 
@@ -547,9 +548,9 @@ public class EverytradeCsvMultiParser implements ICsvParser {
         var listBeans = exchangeParser.parse(file);
         var parsingProblems = new ArrayList<>(exchangeParser.getParsingProblems());
 
-        if (exchangeParser instanceof BinanceExchangeSpecificParserV4) {
-            listBeans = ((BinanceExchangeSpecificParserV4) exchangeParser)
-                .convertMultipleRowsToTransactions((List<BinanceBeanV4>) listBeans);
+        if (exchangeParser instanceof IMultiExchangeSpecificParser) {
+            listBeans = ((IMultiExchangeSpecificParser) exchangeParser)
+                .convertMultipleRowsToTransactions(listBeans);
         }
 
         List<TransactionCluster> transactionClusters = new ArrayList<>();
