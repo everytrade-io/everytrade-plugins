@@ -578,7 +578,17 @@ public enum Currency {
     GTC(false, Instant.parse("2021-08-23T00:00:00Z"), "gtc-gitcoin"),
     PYR(false, Instant.parse("2022-02-08T00:00:00Z"), "Vulcan Forged PYR"),
     XDC(false, Instant.parse("2019-04-04T00:00:00Z"), "XDC Network"),
-    GAL(false, Instant.parse("2022-04-28T00:00:00Z"), "Project Galaxy");
+    GAL(false, Instant.parse("2022-04-28T00:00:00Z"), "Project Galaxy"),
+    AIR(false, Instant.parse("2017-10-05T00:00:00Z"), "AirToken"),
+    AMM(false, Instant.parse("2017-12-13T00:00:00Z"), "MicroMoney"),
+    DF(false, Instant.parse("2021-05-27T00:00:00Z"), "dForce Token"),
+    DOV(false, Instant.parse("2017-10-26T00:00:00Z"), "Dovu"),
+    KIN(false, Instant.parse("2017-09-21T00:00:00Z"), "Kin"),
+    LUNC(false, Instant.parse("2019-08-01T00:00:00Z"), "Terra Classic"),
+    NWC(false, Instant.parse("2021-01-27T00:00:00Z"), "Newscrypto.io"),
+    VEN(false, Instant.parse("2018-01-01T00:00:00Z"), "VeChain [Token]"),
+    WETH(false, Instant.parse("2018-01-10T00:00:00Z"), "WETH"),
+    GXC(false, Instant.parse("2017-06-22T00:00:00Z"), "GXChain");
 
     String code;
     int decimalDigits;
