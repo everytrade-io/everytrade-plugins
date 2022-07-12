@@ -39,7 +39,7 @@ public enum SupportedExchange {
     BLOCKCHAINLTC("Blockchain LTC", "blockchainltc"),
     DVCHAIN("DV Chain", "dvchain"),
     AQUANOW("Aquanow", "aquanow"),
-    ;
+    SIMPLE_COIN("SimpleCoin", "simplecoin");
 
     String displayName;
     String internalId;
