@@ -33,6 +33,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.Coinsqua
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinsquareBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.DVChainBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.KrakenBeanV2;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.SimpleCoinBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.everytrade.EveryTradeBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.everytrade.EveryTradeBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.everytrade.EveryTradeBeanV3;
@@ -82,6 +83,7 @@ import static io.everytrade.server.model.SupportedExchange.OKX;
 import static io.everytrade.server.model.SupportedExchange.PAXFUL;
 import static io.everytrade.server.model.SupportedExchange.POLONIEX;
 import static io.everytrade.server.model.SupportedExchange.SHAKEPAY;
+import static io.everytrade.server.model.SupportedExchange.SIMPLE_COIN;
 import static io.everytrade.server.plugin.api.parser.ParsingProblemType.PARSED_ROW_IGNORED;
 import static io.everytrade.server.plugin.api.parser.ParsingProblemType.ROW_PARSING_FAILED;
 import static java.util.Map.entry;
@@ -134,6 +136,18 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 .headers(List.of(binanceHeader4.withSeparator(delimiter)))
                 .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(BinanceBeanV4.class))
                 .supportedExchange(BINANCE)
+                .build());
+
+            /* SimpleCoin */
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader
+                        .of("Order ID","Created At","From currency","From Amount","To currency",
+                            "To Amount","Status","Status direction","Final status")
+                        .withSeparator(delimiter)
+                ))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(SimpleCoinBeanV1.class, delimiter))
+                .supportedExchange(SIMPLE_COIN)
                 .build());
         });
 
@@ -446,6 +460,8 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(PoloniexBeanV1.class))
             .supportedExchange(POLONIEX)
             .build());
+
+
 
         /* SHAKEPAY */
         EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
