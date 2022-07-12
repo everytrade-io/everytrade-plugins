@@ -17,7 +17,8 @@ import java.util.Collections;
 import java.util.Date;
 
 @Headers(
-    sequence = {"Order ID","Created At","From currency","From Amount","To currency","To Amount","Status","Status direction","Final status"},
+    sequence = {"Order ID", "Created At", "From currency", "From Amount"
+        , "To currency", "To Amount", "Status", "Status direction", "Final status"},
     extract = true
 )
 public class SimpleCoinBeanV1 extends ExchangeBean {
@@ -53,7 +54,6 @@ public class SimpleCoinBeanV1 extends ExchangeBean {
         fromCurrency = Currency.fromCode(value);
     }
 
-
     @Parsed(field = "From Amount")
     public void setFromAmount(String value) {
         fromAmount = new BigDecimal(value);
@@ -68,7 +68,6 @@ public class SimpleCoinBeanV1 extends ExchangeBean {
     public void setToAmount(String value) {
         toAmount = new BigDecimal(value);
     }
-
 
     @Parsed(field = "Status")
     public void setStatus(String value) {
@@ -87,7 +86,7 @@ public class SimpleCoinBeanV1 extends ExchangeBean {
 
     @Override
     public TransactionCluster toTransactionCluster() {
-        if(!finalStatus.equals("Delivered")) {
+        if (!finalStatus.equals("Delivered")) {
             throw new DataIgnoredException(String.format("Invalid final status %s", finalStatus));
         }
         mapTransaction();
@@ -107,13 +106,14 @@ public class SimpleCoinBeanV1 extends ExchangeBean {
             Collections.emptyList()
         );
     }
-    private void mapTransaction(){
-        if(!fromCurrency.isFiat()) {
+
+    private void mapTransaction() {
+        if (!fromCurrency.isFiat()) {
             base = fromCurrency;
             quote = toCurrency;
             baseAmount = fromAmount;
             quoteAmount = toAmount;
-        } else if (!toCurrency.isFiat()){
+        } else if (!toCurrency.isFiat()) {
             base = toCurrency;
             baseAmount = toAmount;
             quote = fromCurrency;
