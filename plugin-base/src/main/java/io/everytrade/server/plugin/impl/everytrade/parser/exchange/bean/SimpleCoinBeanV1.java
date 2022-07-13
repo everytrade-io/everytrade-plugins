@@ -101,7 +101,7 @@ public class SimpleCoinBeanV1 extends ExchangeBean {
                 quote,
                 type,
                 baseAmount.abs(),
-                evalUnitPrice(baseAmount.abs(), quoteAmount.abs())
+                evalUnitPrice(quoteAmount.abs(), baseAmount.abs())
             ),
             Collections.emptyList()
         );
