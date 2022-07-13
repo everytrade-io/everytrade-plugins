@@ -15,10 +15,10 @@ import java.util.stream.Collectors;
 import static java.util.stream.Collectors.groupingBy;
 
 public class KrakenExchangeSpecificParser extends DefaultUnivocityExchangeSpecificParser implements IExchangeSpecificParser,
-    IMultiExchangeSpecificParser<KrakenBeanV2>  {
+    IMultiExchangeSpecificParser<KrakenBeanV2> {
 
-    public KrakenExchangeSpecificParser(Class<? extends ExchangeBean> exchangeBean) {
-        super(exchangeBean);
+    public KrakenExchangeSpecificParser(Class<? extends ExchangeBean> exchangeBean, String delimiter) {
+        super(exchangeBean, delimiter);
     }
 
     List<KrakenBeanV2> rows;
@@ -67,19 +67,18 @@ public class KrakenExchangeSpecificParser extends DefaultUnivocityExchangeSpecif
         return result;
     }
 
-    private Map<?,List<KrakenBeanV2>> removeDepositWithdrawalDuplicities(Map<?,List<KrakenBeanV2>> groupRows) {
-        Map<Object,List<KrakenBeanV2>> result = new HashMap<>();
-        for(Map.Entry<?,List<KrakenBeanV2>> entry : groupRows.entrySet()) {
+    private Map<?, List<KrakenBeanV2>> removeDepositWithdrawalDuplicities(Map<?, List<KrakenBeanV2>> groupRows) {
+        Map<Object, List<KrakenBeanV2>> result = new HashMap<>();
+        for (Map.Entry<?, List<KrakenBeanV2>> entry : groupRows.entrySet()) {
             var values = entry.getValue();
-            if(values.size() == 2 && KrakenSupportedTypes.DUPLICABLE_TYPES.contains(values.get(0).getType())) {
+            if (values.size() == 2 && KrakenSupportedTypes.DUPLICABLE_TYPES.contains(values.get(0).getType())) {
                 var stRow = values.get(0);
                 var ndRow = values.get(1);
                 if ("".equals(stRow.getTxid()) || !"".equals(ndRow.getTxid())) {
                     stRow.setDuplicateLine();
                     duplicities.add(stRow);
                     result.put(entry.getKey(), List.of(ndRow));
-                }
-                else if ("".equals(ndRow.getTxid()) || !"".equals(stRow.getTxid())) {
+                } else if ("".equals(ndRow.getTxid()) || !"".equals(stRow.getTxid())) {
                     ndRow.setDuplicateLine();
                     duplicities.add(ndRow);
                     result.put(entry.getKey(), List.of(stRow));

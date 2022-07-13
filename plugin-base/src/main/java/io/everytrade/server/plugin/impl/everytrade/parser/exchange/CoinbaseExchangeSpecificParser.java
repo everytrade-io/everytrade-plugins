@@ -13,16 +13,19 @@ import java.nio.file.Files;
 import java.util.List;
 
 public class CoinbaseExchangeSpecificParser implements IExchangeSpecificParser {
-    private static final String DELIMITER = ",";
+    private static String delimiter;
     private static final String GENERALIZED_HEADER = "Timestamp,Transaction Type,Asset,Quantity Transacted," +
         "Spot Price at Transaction,Subtotal,Total (inclusive of fees),Fees,Notes";
     private List<ParsingProblem> parsingProblems = List.of();
 
+    public CoinbaseExchangeSpecificParser(String delimiter) {
+        this.delimiter = delimiter;
+    }
     @Override
     public List<? extends ExchangeBean> parse(File inputFile) {
         final File tempFile = generalizeHeader(inputFile);
         final DefaultUnivocityExchangeSpecificParser parser
-            = new DefaultUnivocityExchangeSpecificParser(CoinbaseBeanV1.class, DELIMITER);
+            = new DefaultUnivocityExchangeSpecificParser(CoinbaseBeanV1.class, delimiter);
         final List<? extends ExchangeBean> exchangeBeans = parser.parse(tempFile);
         parsingProblems = parser.getParsingProblems();
         try {
