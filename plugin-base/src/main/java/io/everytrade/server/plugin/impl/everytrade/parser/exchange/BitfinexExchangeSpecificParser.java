@@ -14,13 +14,16 @@ import java.util.List;
 import java.util.Set;
 
 public class BitfinexExchangeSpecificParser implements IExchangeSpecificParser {
-    private static final String DELIMITER = ",";
+    private static String delimiter;
     private List<ParsingProblem> parsingProblems = List.of();
 
+    public BitfinexExchangeSpecificParser(String delimiter) {
+        this.delimiter = delimiter;
+    }
     @Override
     public List<? extends ExchangeBean> parse(File inputFile) {
         final DefaultUnivocityExchangeSpecificParser parser
-            = new DefaultUnivocityExchangeSpecificParser(BitfinexBeanV1.class, DELIMITER);
+            = new DefaultUnivocityExchangeSpecificParser(BitfinexBeanV1.class, delimiter);
         final List<? extends ExchangeBean> exchangeBeans = parser.parse(inputFile);
         final List<BitfinexBeanV1> bitfinexBeans = new ArrayList<>();
         for (ExchangeBean exchangeBean : exchangeBeans) {

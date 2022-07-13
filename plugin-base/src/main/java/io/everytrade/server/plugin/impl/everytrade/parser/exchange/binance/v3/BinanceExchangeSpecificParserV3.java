@@ -25,13 +25,12 @@ import static io.everytrade.server.plugin.api.parser.ParsingProblemType.PARSED_R
 import static io.everytrade.server.plugin.api.parser.ParsingProblemType.ROW_PARSING_FAILED;
 
 public class BinanceExchangeSpecificParserV3 implements IExchangeSpecificParser {
-    private static final String DEFAULT_DELIMITER = ",";
     private final String delimiter;
     private List<ParsingProblem> parsingProblems = List.of();
     private static Map<String, CurrencyPair> fastCurrencyPair = new HashMap<>();
 
-    public BinanceExchangeSpecificParserV3() {
-        delimiter = DEFAULT_DELIMITER;
+    public BinanceExchangeSpecificParserV3(String delimiter) {
+        this.delimiter = delimiter;
     }
 
     static {

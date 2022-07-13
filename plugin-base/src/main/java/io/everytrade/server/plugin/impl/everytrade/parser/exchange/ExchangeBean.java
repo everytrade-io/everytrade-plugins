@@ -40,6 +40,10 @@ public abstract class ExchangeBean implements IImportableBean {
             .concat(String.join(", ", rowValues));
     }
 
+    public List<String> getRowValues() {
+        return this.rowValues;
+    }
+
     protected BigDecimal evalUnitPrice(BigDecimal transactionPrice, BigDecimal baseQuantity) {
         return transactionPrice.divide(baseQuantity, ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE);
     }

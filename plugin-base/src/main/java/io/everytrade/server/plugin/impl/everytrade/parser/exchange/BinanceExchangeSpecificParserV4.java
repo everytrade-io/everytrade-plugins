@@ -18,8 +18,8 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
     IMultiExchangeSpecificParser<BinanceBeanV4> {
 
     private static final long TRANSACTION_MERGE_TOLERANCE_MS = 1000;
-    public BinanceExchangeSpecificParserV4(Class<? extends ExchangeBean> exchangeBean) {
-        super(exchangeBean);
+    public BinanceExchangeSpecificParserV4(Class<? extends ExchangeBean> exchangeBean, String delimiter) {
+        super(exchangeBean, delimiter);
     }
 
     List<BinanceBeanV4> rows;
