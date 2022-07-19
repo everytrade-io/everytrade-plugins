@@ -32,6 +32,7 @@ public class DefaultUnivocityExchangeSpecificParser implements IExchangeSpecific
     private final String delimiter;
     private final String lineSeparator;
     private List<ParsingProblem> parsingProblems = List.of();
+    private int rowId = 1;
 
     public DefaultUnivocityExchangeSpecificParser(Class<? extends ExchangeBean> exchangeBean) {
         this(exchangeBean, DEFAULT_DELIMITER, null);
@@ -88,6 +89,7 @@ public class DefaultUnivocityExchangeSpecificParser implements IExchangeSpecific
             BeanListProcessor<T> rowProcessor = new BeanListProcessor<>(exchangeBean) {
                 @Override
                 public T createBean(String[] row, Context context) {
+                    rowId++;
                     T bean = super.createBean(row, context);
                     if (bean == null) {
                         return null;
@@ -95,6 +97,7 @@ public class DefaultUnivocityExchangeSpecificParser implements IExchangeSpecific
                     bean.setRowValues(row);
                     int rowNumber = context.currentColumn();
                     bean.setRowNumber(rowNumber);
+                    bean.setRowId(rowId);
                     return bean;
                 }
             };

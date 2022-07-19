@@ -12,6 +12,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredE
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.UnknownHeaderException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BinanceExchangeSpecificParserV4;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BitfinexExchangeSpecificParser;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.CoinBaseProExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.CoinbaseExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.DefaultUnivocityExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
@@ -27,6 +28,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexB
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexBeanV3;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseProBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.coibasePro.v2.CoinbaseProBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinmateBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinmateBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinsquareBeanV1;
@@ -99,7 +101,6 @@ public class EverytradeCsvMultiParser implements ICsvParser {
     private static final List<ExchangeParseDetail> EXCHANGE_PARSE_DETAILS = new ArrayList<>();
 
     static {
-
 
         DELIMITERS.forEach(delimiter -> {
 
@@ -284,6 +285,16 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                     ).withSeparator(delimiter)
                 ))
                 .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(CoinbaseProBeanV1.class, delimiter))
+                .supportedExchange(COINBASE_PRO)
+                .build());
+
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader.of(
+                        "portfolio", "type", "time", "amount", "balance", "amount/balance unit", "transfer id", "trade id", "order id"
+                    ).withSeparator(delimiter)
+                ))
+                .parserFactory(() -> new CoinBaseProExchangeSpecificParser(CoinbaseProBeanV2.class, delimiter))
                 .supportedExchange(COINBASE_PRO)
                 .build());
 
@@ -587,8 +598,8 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             } catch (DataIgnoredException e) {
                 parsingProblems.add(new ParsingProblem(p.rowToString(), e.getMessage(), PARSED_ROW_IGNORED));
             } catch (Exception e) {
-                if(p.getRowValues() != null) {
-                    parsingProblems.add(new ParsingProblem(p.rowToString(), e.getMessage(), PARSED_ROW_IGNORED));
+                if (p.getRowValues() != null) {
+                    parsingProblems.add(new ParsingProblem(p.rowToString(), e.getMessage(), ROW_PARSING_FAILED));
                 }
             }
         }
