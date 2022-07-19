@@ -24,9 +24,18 @@ public abstract class ExchangeBean implements IImportableBean {
 
     protected List<String> rowValues;
     private long rowNumber;
+    protected int rowId;
 
     public void setRowValues(String[] row) {
         rowValues = Arrays.asList(row);
+    }
+
+    public void setRowId(int rowId) {
+        this.rowId = rowId;
+    }
+
+    public int getRowId() {
+        return this.rowId;
     }
 
     public void setRowNumber(long rowNumber) {
