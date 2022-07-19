@@ -588,7 +588,8 @@ public enum Currency {
     NWC(false, Instant.parse("2021-01-27T00:00:00Z"), "Newscrypto.io"),
     VEN(false, Instant.parse("2018-01-01T00:00:00Z"), "VeChain [Token]"),
     WETH(false, Instant.parse("2018-01-10T00:00:00Z"), "WETH"),
-    GXC(false, Instant.parse("2017-06-22T00:00:00Z"), "GXChain");
+    GXC(false, Instant.parse("2017-06-22T00:00:00Z"), "GXChain"),
+    WLUNA(false, Instant.parse("2021-01-27T00:00:00Z"), "Wrapped LUNA Token");
 
     String code;
     int decimalDigits;
