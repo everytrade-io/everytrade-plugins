@@ -153,29 +153,46 @@ public class CoinbaseProBeanV2 extends ExchangeBean {
 
     @Override
     public TransactionCluster toTransactionCluster() {
+        boolean ignoredFees = false;
+        boolean failedFees = false;
         if (unsupportedRow) {
             throw new DataIgnoredException(message);
         }
         if (failedDataRow) {
             throw new DataValidationException(message);
         }
-        if (getCurrency() == null) {
-            setCurrency(getAmountBalanceUnit());
-        }
-        if (getPrice() == null) {
-            setPrice(amount);
-        }
-
         TransactionCluster transactionCluster;
-
-        List<ImportedTransactionBean> related = Collections.emptyList();
-        boolean ignoredFee;
-        boolean failedFeeTransaction;
-
+        List<ImportedTransactionBean> related = new ArrayList<>();
+        if (fees.size() > 0) {
+            for (CoinbaseProBeanV2 fee : fees) {
+                try {
+                    fee.setPrice(fee.getAmount());
+                } catch (DataValidationException e) {
+                    failedFees = true;
+                }
+                if (ZERO.compareTo(fee.getPrice()) == 0) {
+                    ignoredFees = true;
+                }
+                try {
+                    var rebate = new FeeRebateImportedTransactionBean(
+                        fee.getTradeId() + " " + fee.getOrderId(),
+                        fee.getTime(),
+                        fee.getCurrency(),
+                        fee.getCurrency(),
+                        TransactionType.FEE,
+                        fee.getPrice().setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP).abs(),
+                        fee.getCurrency()
+                    );
+                    related.add(rebate);
+                } catch (DataValidationException | UnsupportedOperationException | IllegalArgumentException e) {
+                    failedFees = true;
+                }
+            }
+        }
         if (transactionType.isBuyOrSell()) {
             transactionCluster = new TransactionCluster(
                 new BuySellImportedTransactionBean(
-                    tradeId + " " + orderId,             //uuid
+                    tradeId,             //uuid
                     time,           //executed
                     base,         //base
                     quote,        //quote
@@ -186,6 +203,12 @@ public class CoinbaseProBeanV2 extends ExchangeBean {
                 related
             );
         } else if (transactionType.isDepositOrWithdrawal()) {
+            if (getCurrency() == null) {
+                setCurrency(getAmountBalanceUnit());
+            }
+            if (getPrice() == null) {
+                setPrice(amount);
+            }
             transactionCluster = new TransactionCluster(
                 new DepositWithdrawalImportedTransaction(
                     transferId,
@@ -201,32 +224,11 @@ public class CoinbaseProBeanV2 extends ExchangeBean {
         } else {
             throw new DataValidationException(String.format("Unsupported type %s; ", transactionType));
         }
-
-        if (fees.size() > 0) {
-            for (CoinbaseProBeanV2 fee : fees) {
-                try {
-                    fee.setPrice(fee.getAmount());
-                } catch (DataValidationException e) {
-                    transactionCluster.setFailedFee(fees.size(), String.format("Fee %s ;", e.getMessage()));
-                }
-                if (ZERO.compareTo(fee.getPrice()) == 0) {
-                    transactionCluster.setIgnoredFee(fees.size(), "Fee amount is 0 " + (currency != null ? currency.code() : ""));
-                }
-                try {
-                    var rebate = new FeeRebateImportedTransactionBean(
-                        fee.getTradeId() + " " + fee.getOrderId(),
-                        fee.getTime(),
-                        fee.getCurrency(),
-                        currency,
-                        TransactionType.FEE,
-                        fee.getPrice().setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP).abs(),
-                        fee.getCurrency()
-                    );
-                    related.add(rebate);
-                } catch (DataValidationException e) {
-                    transactionCluster.setFailedFee(fees.size(), String.format("Fee %s ;", e.getMessage()));
-                }
-            }
+        if (ignoredFees) {
+            transactionCluster.setIgnoredFee(fees.size(), "Fee amount is 0 " + (currency != null ? currency.code() : ""));
+        }
+        if (failedFees) {
+            transactionCluster.setFailedFee(fees.size(), "Fee cannot be added; ");
         }
         return transactionCluster;
     }
