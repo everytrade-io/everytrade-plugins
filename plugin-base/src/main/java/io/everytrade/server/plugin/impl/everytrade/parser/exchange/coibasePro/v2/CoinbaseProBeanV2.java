@@ -174,16 +174,18 @@ public class CoinbaseProBeanV2 extends ExchangeBean {
                     ignoredFees = true;
                 }
                 try {
-                    var rebate = new FeeRebateImportedTransactionBean(
-                        fee.getTradeId() + " " + fee.getOrderId(),
-                        fee.getTime(),
-                        fee.getCurrency(),
-                        fee.getCurrency(),
-                        TransactionType.FEE,
-                        fee.getPrice().setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP).abs(),
-                        fee.getCurrency()
-                    );
-                    related.add(rebate);
+                    if(!ignoredFees && !failedFees) {
+                        var rebate = new FeeRebateImportedTransactionBean(
+                            fee.getTradeId() + " " + fee.getOrderId(),
+                            fee.getTime(),
+                            fee.getCurrency(),
+                            fee.getCurrency(),
+                            TransactionType.FEE,
+                            fee.getPrice().setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP).abs(),
+                            fee.getCurrency()
+                        );
+                        related.add(rebate);
+                    }
                 } catch (DataValidationException | UnsupportedOperationException | IllegalArgumentException e) {
                     failedFees = true;
                 }
