@@ -147,6 +147,7 @@ public class CoinbaseProSortedGroup {
     private void createDepositWithdrawalTxs(TransactionType type) {
         createdTransaction.setTransactionType(type);
         createdTransaction.setTime(stRow.getTime());
+        createdTransaction.setTransferId(stRow.getTransferId());
         if (DEPOSIT.equals(type)) {
             createdTransaction.setAmount(deposit.getAmount());
             createdTransaction.setAmountBalanceUnit(deposit.getAmountBalanceUnit());
@@ -163,6 +164,7 @@ public class CoinbaseProSortedGroup {
         // mapping;
         createdTransaction.setTransactionType(type);
         createdTransaction.setTime(stRow.getTime());
+        createdTransaction.setTradeId(stRow.getTradeId());
         if (BUY.equals(type)) {
             createdTransaction.setBase(stRow.getCurrency());
             createdTransaction.setBaseAmount(stRow.getPrice().abs());
@@ -171,8 +173,8 @@ public class CoinbaseProSortedGroup {
         } else if (SELL.equals(type)) {
             createdTransaction.setBase(stRow.getCurrency());
             createdTransaction.setBaseAmount(stRow.getPrice().abs());
-            createdTransaction.setBase(ndRow.getCurrency());
-            createdTransaction.setBaseAmount(ndRow.getPrice().abs());
+            createdTransaction.setQuote(ndRow.getCurrency());
+            createdTransaction.setQuoteAmount(ndRow.getPrice().abs());
         } else {
             throw new DataValidationException("Cannot create buy/sell transaction; ");
         }
