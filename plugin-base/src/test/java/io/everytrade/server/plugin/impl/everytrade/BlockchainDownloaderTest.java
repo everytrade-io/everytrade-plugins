@@ -57,7 +57,8 @@ class BlockchainDownloaderTest {
             true,
             true,
             false,
-            false
+            false,
+            0
         );
 
         DownloadResult result = blockchainDownloader.download(ADDRESS);
@@ -88,7 +89,8 @@ class BlockchainDownloaderTest {
             true,
             true,
             true,
-            true
+            true,
+            0
         );
 
         DownloadResult result = blockchainDownloader.download(ADDRESS);
@@ -119,7 +121,8 @@ class BlockchainDownloaderTest {
             false,
             false,
             false,
-            false
+            false,
+            0
         );
 
         DownloadResult result = blockchainDownloader.download(ADDRESS);
@@ -150,7 +153,8 @@ class BlockchainDownloaderTest {
             false,
             false,
             true,
-            true
+            true,
+            0
         );
 
         DownloadResult result = blockchainDownloader.download(ADDRESS);

@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -23,7 +22,7 @@ import java.util.stream.Collectors;
 import static lombok.AccessLevel.PRIVATE;
 
 @AllArgsConstructor
-@FieldDefaults(makeFinal = true, level = PRIVATE)
+@FieldDefaults(level = PRIVATE)
 public class BlockchainDownloader {
 
     private static final int TRUNCATE_LIMIT = 10;
@@ -34,7 +33,7 @@ public class BlockchainDownloader {
     private static final int MIN_COINFIRMATIONS = 6;
     private static final Set<Currency> SUPPORTED_CRYPTO = Set.of(Currency.BTC, Currency.LTC);
     private static final int MAX_REQUESTS = 10;
-    private static final int LIMIT = 300;
+    private static final int LIMIT = 3;
 
     Client client;
     String lastTransactionUid;
@@ -46,6 +45,7 @@ public class BlockchainDownloader {
     boolean importWithdrawalsAsSells;
     boolean importFeesFromDeposits;
     boolean importFeesFromWithdrawals;
+    int lastTxPage;
 
     public BlockchainDownloader(
         String lastTransactionUid,
@@ -73,6 +73,7 @@ public class BlockchainDownloader {
 
         this.lastTransactionUid = lastTransactionUid;
         client = new Client(COIN_SERVER_URL, this.cryptoCurrency);
+        lastTxPage = 0;
         if (lastTransactionUid == null) {
             lastTxTimestamp = 0;
             lastTxHashes = Collections.emptySet();
@@ -82,26 +83,32 @@ public class BlockchainDownloader {
             final String hashes = split[1];
             lastTxHashes = Arrays.stream(hashes.split("\\" + PIPE_SYMBOL))
                 .collect(Collectors.toSet());
+            if (split.length == 3) {
+                lastTxPage = Integer.parseInt(split[2]);
+            }
         }
     }
 
     public DownloadResult download(String source) {
         List<Transaction> transactions = new ArrayList<>();
         int request = 0;
-        int page = 0;
-
+        int page = lastTxPage;
         if (isXpub(source)) {
             while (request < MAX_REQUESTS) {
                 var addressInfoBlock = client.getAddressesInfoFromXpub(source, LIMIT, page);
-                if (addressInfoBlock == null && page == 0 || addressInfoBlock.size() < 1) {
+                if (addressInfoBlock == null || addressInfoBlock.size() < 1) {
                     throw new IllegalArgumentException(String.format(
                         "No addresses info found for crypto '%s' and key '%s'",
                         cryptoCurrency,
                         ConnectorUtils.truncate(source, TRUNCATE_LIMIT)
                     ));
                 }
-                if (addressInfoBlock == null) {
-                    break;
+                int txSize = addressInfoBlock.size();
+                // condition for old txsUid without last page param
+                if (txSize > 0 && getNewTransactionsFromAddressInfos(addressInfoBlock).size() == 0) {
+                    request++;
+                    page++;
+                    continue;
                 }
                 transactions.addAll(getNewTransactionsFromAddressInfos(addressInfoBlock));
                 if (addressInfoBlock.size() < LIMIT) {
@@ -113,29 +120,32 @@ public class BlockchainDownloader {
         } else {
             while (request < MAX_REQUESTS) {
                 var addressInfoBlock = client.getAddressInfo(source, LIMIT, page);
-                if (addressInfoBlock == null && page == 0) {
+                if (addressInfoBlock == null) {
                     throw new IllegalArgumentException(String.format(
                         "No source info found for crypto '%s' and source '%s'",
                         cryptoCurrency,
                         ConnectorUtils.truncate(source, TRUNCATE_LIMIT)
                     ));
                 }
-                if (addressInfoBlock == null) {
-                    break;
+                int txSize = addressInfoBlock.getTxInfos().size();
+                // condition for old txsUid without last page param
+                if (txSize > 0 && getNewTransactionsFromAddressInfos(List.of(addressInfoBlock)).size() == 0) {
+                    request++;
+                    page++;
+                    continue;
                 }
-                var newTransactions = getNewTransactionsFromAddressInfos(List.of(addressInfoBlock));
-                transactions.addAll(newTransactions);
-                if (addressInfoBlock.getTxInfos().size() < LIMIT) {
+                transactions.addAll(getNewTransactionsFromAddressInfos(List.of(addressInfoBlock)));
+                if (txSize < LIMIT) {
                     break;
                 }
                 request++;
                 page++;
             }
         }
-        var lastNewTimestamp = transactions.stream().max(Comparator.comparing(Transaction::getTimestamp));
-        return lastNewTimestamp
-            .map(transaction -> getTransactionsFromAddressInfos(transactions, transaction.getTimestamp()))
-            .orElseGet(() -> DownloadResult.builder().build());
+        lastTxPage = page;
+        var lastNewTimestamp = transactions.stream().mapToLong(trans -> trans.getTimestamp()).max().orElse(0);
+        DownloadResult downloadResult = getTransactionsFromAddressInfos(transactions, lastNewTimestamp, lastTxPage);
+        return downloadResult;
     }
 
     private List<Transaction> getNewTransactionsFromAddressInfos(Collection<AddressInfo> addressInfos) {
@@ -161,8 +171,7 @@ public class BlockchainDownloader {
         return transactions;
     }
 
-
-    private DownloadResult getTransactionsFromAddressInfos(List<Transaction> transactions, long newLastTxTimestamp) {
+    private DownloadResult getTransactionsFromAddressInfos(List<Transaction> transactions, long newLastTxTimestamp, int newLastPage) {
         final ParseResult parseResult = BlockchainConnectorParser.getParseResult(
             transactions,
             cryptoCurrency,
@@ -172,13 +181,16 @@ public class BlockchainDownloader {
             importFeesFromDeposits,
             importFeesFromWithdrawals
         );
-
-        final String newLastTransactionUid = getNewLastTransactionId(newLastTxTimestamp, transactions);
+        final String newLastTransactionUid = getNewLastTransactionId(newLastTxTimestamp, transactions, newLastPage);
         return new DownloadResult(parseResult, newLastTransactionUid);
     }
 
-    private String getNewLastTransactionId(long newLastTxTimestamp, List<Transaction> transactions) {
+    private String getNewLastTransactionId(long newLastTxTimestamp, List<Transaction> transactions, int newLastPage) {
         if (newLastTxTimestamp == 0) {
+            // condition for old txsUid without last page param
+            if (lastTransactionUid.split(COLON_SYMBOL).length == 2) {
+                return lastTransactionUid + COLON_SYMBOL + newLastPage;
+            }
             return lastTransactionUid;
         }
         final Set<String> newLastTxHashesSet = transactions.stream()
@@ -186,8 +198,7 @@ public class BlockchainDownloader {
             .map(Transaction::getTxHash)
             .collect(Collectors.toSet());
         final String newLastTxHashes = String.join(PIPE_SYMBOL, newLastTxHashesSet);
-
-        return newLastTxTimestamp + COLON_SYMBOL + newLastTxHashes;
+        return newLastTxTimestamp + COLON_SYMBOL + newLastTxHashes + COLON_SYMBOL + newLastPage;
     }
 
     private boolean isXpub(String address) {
