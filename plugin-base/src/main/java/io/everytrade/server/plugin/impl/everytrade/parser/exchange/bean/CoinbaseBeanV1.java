@@ -23,10 +23,13 @@ public class CoinbaseBeanV1 extends ExchangeBean {
     private Instant timeStamp;
     private TransactionType transactionType;
     private Currency asset;
+    private String spotPriceCurrency;
     private BigDecimal quantityTransacted;
     private BigDecimal subtotal;
     private BigDecimal fees;
     private String notes;
+    private String type;
+    private boolean advancedTrade;
 
     @Parsed(field = "Timestamp")
     public void setTimeStamp(String value) {
@@ -35,12 +38,22 @@ public class CoinbaseBeanV1 extends ExchangeBean {
 
     @Parsed(field = "Transaction Type")
     public void setTransactionType(String value) {
+        type = value;
+        if(value.contains("Advanced Trade ")){
+            value = value.replace("Advanced Trade ", "");
+            advancedTrade = true;
+        }
         transactionType = detectTransactionType(value);
     }
 
     @Parsed(field = "Asset")
     public void setAsset(String value) {
         asset = Currency.fromCode(value);
+    }
+
+    @Parsed(field = "Spot Price Currency")
+    public void setSpotPriceCurrency(String value) {
+            spotPriceCurrency = value;
     }
 
     @Parsed(field = "Quantity Transacted")
@@ -105,6 +118,9 @@ public class CoinbaseBeanV1 extends ExchangeBean {
 
     private Currency detectQuote(String note) {
         try {
+            if(advancedTrade) {
+                return Currency.fromCode(spotPriceCurrency);
+            }
             if (note != null) {
                 var lastSpace = note.lastIndexOf(" ");
                 if (lastSpace > -1) {
