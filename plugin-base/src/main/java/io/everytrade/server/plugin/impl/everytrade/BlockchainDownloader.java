@@ -33,7 +33,7 @@ public class BlockchainDownloader {
     private static final int MIN_COINFIRMATIONS = 6;
     private static final Set<Currency> SUPPORTED_CRYPTO = Set.of(Currency.BTC, Currency.LTC);
     private static final int MAX_REQUESTS = 10;
-    private static final int LIMIT = 3;
+    private static final int LIMIT = 300;
 
     Client client;
     String lastTransactionUid;
