@@ -57,7 +57,9 @@ class BlockchainDownloaderTest {
             true,
             true,
             false,
-            false
+            false,
+            0,
+            300
         );
 
         DownloadResult result = blockchainDownloader.download(ADDRESS);
@@ -88,7 +90,9 @@ class BlockchainDownloaderTest {
             true,
             true,
             true,
-            true
+            true,
+            0,
+            300
         );
 
         DownloadResult result = blockchainDownloader.download(ADDRESS);
@@ -119,7 +123,9 @@ class BlockchainDownloaderTest {
             false,
             false,
             false,
-            false
+            false,
+            0,
+            300
         );
 
         DownloadResult result = blockchainDownloader.download(ADDRESS);
@@ -150,17 +156,19 @@ class BlockchainDownloaderTest {
             false,
             false,
             true,
-            true
+            true,
+            0,
+            300
         );
 
         DownloadResult result = blockchainDownloader.download(ADDRESS);
 
         var depositCluster = findOneCluster(result, DEPOSIT);
-        assertEquals(0, depositCluster.getRelated().size());
+        assertEquals(1, depositCluster.getRelated().size());
         assertDepositWithdrawal(depositCluster, DEPOSIT, new BigDecimal("0.009999"));
 
         var withdrawalCluster = findOneCluster(result, WITHDRAWAL);
-        assertEquals(0, withdrawalCluster.getRelated().size());
+        assertEquals(1, withdrawalCluster.getRelated().size());
         assertDepositWithdrawal(withdrawalCluster, WITHDRAWAL, new BigDecimal("0.000999"));
     }
 
@@ -206,6 +214,7 @@ class BlockchainDownloaderTest {
         var clientMock = mock(Client.class);
 
         when(clientMock.getAddressInfo(anyString(), anyInt())).thenReturn(mockResponse(ADDRESS, txs));
+        when(clientMock.getAddressInfo(anyString(), anyInt(), anyInt(), anyInt())).thenReturn(mockResponse(ADDRESS, txs));
         return clientMock;
     }
 

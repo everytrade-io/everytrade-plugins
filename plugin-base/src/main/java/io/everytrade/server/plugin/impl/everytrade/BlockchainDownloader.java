@@ -14,16 +14,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static io.everytrade.server.util.ApiSortUtil.SORT_ASC;
 import static lombok.AccessLevel.PRIVATE;
 
 @AllArgsConstructor
-@FieldDefaults(makeFinal = true, level = PRIVATE)
+@FieldDefaults(level = PRIVATE)
 public class BlockchainDownloader {
 
     private static final int TRUNCATE_LIMIT = 10;
@@ -46,6 +46,8 @@ public class BlockchainDownloader {
     boolean importWithdrawalsAsSells;
     boolean importFeesFromDeposits;
     boolean importFeesFromWithdrawals;
+    int lastTxPage;
+    int lastLimit;
 
     public BlockchainDownloader(
         String lastTransactionUid,
@@ -73,6 +75,8 @@ public class BlockchainDownloader {
 
         this.lastTransactionUid = lastTransactionUid;
         client = new Client(COIN_SERVER_URL, this.cryptoCurrency);
+        lastTxPage = 0;
+        lastLimit = LIMIT;
         if (lastTransactionUid == null) {
             lastTxTimestamp = 0;
             lastTxHashes = Collections.emptySet();
@@ -82,6 +86,22 @@ public class BlockchainDownloader {
             final String hashes = split[1];
             lastTxHashes = Arrays.stream(hashes.split("\\" + PIPE_SYMBOL))
                 .collect(Collectors.toSet());
+            if (split.length > 2) {
+                lastTxPage = Integer.parseInt(split[2]);
+            }
+            if (split.length > 3) {
+                lastLimit = Integer.parseInt(split[3]);
+            }
+        }
+    }
+
+    private int getPageByLimit() {
+        int currentLimit = LIMIT;
+        int previousLimit = lastLimit;
+        if (previousLimit == currentLimit || lastTxPage == 0) {
+            return lastTxPage;
+        } else {
+            return ((lastTxPage + 1) * previousLimit / currentLimit) - 1;
         }
     }
 
@@ -89,53 +109,51 @@ public class BlockchainDownloader {
         List<Transaction> transactions = new ArrayList<>();
         int request = 0;
         int page = 0;
-
+        try {
+            page = getPageByLimit();
+        } catch (Exception e) {
+            page = 0;
+        }
         if (isXpub(source)) {
-            while (request < MAX_REQUESTS) {
-                var addressInfoBlock = client.getAddressesInfoFromXpub(source, LIMIT, page);
-                if (addressInfoBlock == null && page == 0 || addressInfoBlock.size() < 1) {
-                    throw new IllegalArgumentException(String.format(
-                        "No addresses info found for crypto '%s' and key '%s'",
-                        cryptoCurrency,
-                        ConnectorUtils.truncate(source, TRUNCATE_LIMIT)
-                    ));
-                }
-                if (addressInfoBlock == null) {
-                    break;
-                }
-                transactions.addAll(getNewTransactionsFromAddressInfos(addressInfoBlock));
-                if (addressInfoBlock.size() < LIMIT) {
-                    break;
-                }
-                request++;
-                page++;
+            final Collection<AddressInfo> addressInfos = client.getAddressesInfoFromXpub(source, Integer.MAX_VALUE);
+            if (addressInfos == null) {
+                throw new IllegalArgumentException(String.format(
+                    "No addresses info found for crypto '%s' and key '%s'",
+                    cryptoCurrency,
+                    ConnectorUtils.truncate(source, TRUNCATE_LIMIT)
+                ));
             }
+            transactions.addAll(getNewTransactionsFromAddressInfos(addressInfos));
         } else {
             while (request < MAX_REQUESTS) {
-                var addressInfoBlock = client.getAddressInfo(source, LIMIT, page);
-                if (addressInfoBlock == null && page == 0) {
-                    throw new IllegalArgumentException(String.format(
-                        "No source info found for crypto '%s' and source '%s'",
-                        cryptoCurrency,
-                        ConnectorUtils.truncate(source, TRUNCATE_LIMIT)
-                    ));
-                }
+                var addressInfoBlock = client.getAddressInfo(source, LIMIT, page, SORT_ASC);
                 if (addressInfoBlock == null) {
+                    if (transactions.size() > 0 || page > 0) {
+                        break;
+                    } else {
+                        throw new IllegalArgumentException(String.format(
+                            "No source info found for crypto '%s' and source '%s'",
+                            cryptoCurrency,
+                            ConnectorUtils.truncate(source, TRUNCATE_LIMIT)
+                        ));
+                    }
+                }
+                int txSize = addressInfoBlock.getTxInfos().size();
+                if (txSize < LIMIT || txSize == 0) {
+                    transactions.addAll(getNewTransactionsFromAddressInfos(List.of(addressInfoBlock)));
                     break;
                 }
-                var newTransactions = getNewTransactionsFromAddressInfos(List.of(addressInfoBlock));
-                transactions.addAll(newTransactions);
-                if (addressInfoBlock.getTxInfos().size() < LIMIT) {
-                    break;
+                if (txSize == LIMIT) {
+                    transactions.addAll(getNewTransactionsFromAddressInfos(List.of(addressInfoBlock)));
                 }
                 request++;
                 page++;
             }
         }
-        var lastNewTimestamp = transactions.stream().max(Comparator.comparing(Transaction::getTimestamp));
-        return lastNewTimestamp
-            .map(transaction -> getTransactionsFromAddressInfos(transactions, transaction.getTimestamp()))
-            .orElseGet(() -> DownloadResult.builder().build());
+        lastTxPage = page;
+        var lastNewTimestamp = transactions.stream().mapToLong(trans -> trans.getTimestamp()).max().orElse(0);
+        DownloadResult downloadResult = getTransactionsFromAddressInfos(transactions, lastNewTimestamp, lastTxPage);
+        return downloadResult;
     }
 
     private List<Transaction> getNewTransactionsFromAddressInfos(Collection<AddressInfo> addressInfos) {
@@ -161,8 +179,7 @@ public class BlockchainDownloader {
         return transactions;
     }
 
-
-    private DownloadResult getTransactionsFromAddressInfos(List<Transaction> transactions, long newLastTxTimestamp) {
+    private DownloadResult getTransactionsFromAddressInfos(List<Transaction> transactions, long newLastTxTimestamp, int newLastPage) {
         final ParseResult parseResult = BlockchainConnectorParser.getParseResult(
             transactions,
             cryptoCurrency,
@@ -172,22 +189,29 @@ public class BlockchainDownloader {
             importFeesFromDeposits,
             importFeesFromWithdrawals
         );
-
-        final String newLastTransactionUid = getNewLastTransactionId(newLastTxTimestamp, transactions);
-        return new DownloadResult(parseResult, newLastTransactionUid);
+        String newLastTransactionId = getNewLastTransactionId(newLastTxTimestamp, transactions, newLastPage);
+        return new DownloadResult(parseResult, newLastTransactionId);
     }
 
-    private String getNewLastTransactionId(long newLastTxTimestamp, List<Transaction> transactions) {
+    private String getNewLastTransactionId(long newLastTxTimestamp, List<Transaction> transactions, int newLastPage) {
         if (newLastTxTimestamp == 0) {
-            return lastTransactionUid;
+            if (lastTransactionUid == null) {
+                return null;
+            }
+            // condition for old txsUid without last page param
+            if (lastTransactionUid.split(COLON_SYMBOL).length == 2) {
+                return lastTransactionUid + COLON_SYMBOL + newLastPage + COLON_SYMBOL + LIMIT;
+            }
+            // condition for clients with many transactions downloaded from old style and now needs more than one round of requests
+            var txHash = lastTxHashes.iterator().next();
+            return lastTxTimestamp + COLON_SYMBOL + txHash + COLON_SYMBOL + newLastPage + COLON_SYMBOL + LIMIT;
         }
         final Set<String> newLastTxHashesSet = transactions.stream()
             .filter(transaction -> transaction.getTimestamp() == newLastTxTimestamp)
             .map(Transaction::getTxHash)
             .collect(Collectors.toSet());
         final String newLastTxHashes = String.join(PIPE_SYMBOL, newLastTxHashesSet);
-
-        return newLastTxTimestamp + COLON_SYMBOL + newLastTxHashes;
+        return newLastTxTimestamp + COLON_SYMBOL + newLastTxHashes + COLON_SYMBOL + newLastPage + COLON_SYMBOL + LIMIT;
     }
 
     private boolean isXpub(String address) {

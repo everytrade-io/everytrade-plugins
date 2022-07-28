@@ -9,9 +9,12 @@ import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static io.everytrade.server.model.TransactionType.*;
+import static io.everytrade.server.model.TransactionType.BUY;
+import static io.everytrade.server.model.TransactionType.SELL;
+import static io.everytrade.server.model.TransactionType.DEPOSIT;
+import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
+import static io.everytrade.server.model.TransactionType.UNKNOWN;
 import static java.math.BigDecimal.ZERO;
 
 @Data
@@ -19,8 +22,8 @@ public class KrakenSortedGroup {
 
     Object refId;
     List<KrakenBeanV2> rowsDeposit = new ArrayList<>();
-    List<KrakenBeanV2> rowsWithdrawal = new  ArrayList<>();
-    List<KrakenBeanV2> rowsTrades = new  ArrayList<>();
+    List<KrakenBeanV2> rowsWithdrawal = new ArrayList<>();
+    List<KrakenBeanV2> rowsTrades = new ArrayList<>();
 
     // buy/sell
     KrakenBeanV2 rowBase;
@@ -64,14 +67,13 @@ public class KrakenSortedGroup {
         return UNKNOWN;
     }
 
-
     private void validateBuySell() {
         if (rowBase.getAsset().equals(rowQuote.getAsset())) {
             throw new DataValidationException("Wrong number of currencies");
         }
         // one of them must be plus and second minus
         if ((rowBase.getAmount().compareTo(ZERO) > 0 && rowQuote.getAmount().compareTo(ZERO) > 0)
-             || (rowBase.getAmount().compareTo(ZERO) < 0 && rowQuote.getAmount().compareTo(ZERO) < 0)) {
+            || (rowBase.getAmount().compareTo(ZERO) < 0 && rowQuote.getAmount().compareTo(ZERO) < 0)) {
             throw new DataValidationException("Wrong amount value");
         }
         ExchangeBean.validateCurrencyPair(rowBase.getAsset(), rowQuote.getAsset());
@@ -79,26 +81,34 @@ public class KrakenSortedGroup {
 
     private void validateDepositWithdrawal(TransactionType type) {
         if (type.equals(DEPOSIT)) {
-            if(rowsDeposit.size() != 1) throw new DataValidationException("Wrong deposit data;");
+            if (rowsDeposit.size() != 1) {
+                throw new DataValidationException("Wrong deposit data;");
+            }
             var row = rowsDeposit.get(0);
-            if(row.getAmount().compareTo(ZERO) < 0) throw new DataValidationException("Incorrect deposit amount value;");
+            if (row.getAmount().compareTo(ZERO) < 0) {
+                throw new DataValidationException("Incorrect deposit amount value;");
+            }
         }
         if (type.equals(WITHDRAWAL)) {
-            if(rowsWithdrawal.size() != 1) throw new DataValidationException("Wrong withdrawal data;");
+            if (rowsWithdrawal.size() != 1) {
+                throw new DataValidationException("Wrong withdrawal data;");
+            }
             var row = rowsWithdrawal.get(0);
-            if(row.getAmount().compareTo(ZERO) > 0) throw new DataValidationException("Incorrect withdrawal amount value;");
+            if (row.getAmount().compareTo(ZERO) > 0) {
+                throw new DataValidationException("Incorrect withdrawal amount value;");
+            }
         }
     }
 
     public void createTransactions(TransactionType type) {
         if (type.isBuyOrSell()) {
             // set base and quote row
-            if(rowsTrades.get(0).getFee().compareTo(ZERO) == 0
+            if (rowsTrades.get(0).getFee().compareTo(ZERO) == 0
                 && rowsTrades.get(1).getFee().compareTo(ZERO) != 0) {
-                rowBase =  rowsTrades.get(0);
+                rowBase = rowsTrades.get(0);
                 rowQuote = rowsTrades.get(1);
             } else {
-                rowQuote =  rowsTrades.get(0);
+                rowQuote = rowsTrades.get(0);
                 rowBase = rowsTrades.get(1);
             }
             validateBuySell();
@@ -120,13 +130,13 @@ public class KrakenSortedGroup {
 
     private void createDepositWithdrawalTxs(TransactionType type) {
         if (!rowsDeposit.isEmpty()) {
-            mapDepositWithdrawalTxs(rowsDeposit.get(0),type);
+            mapDepositWithdrawalTxs(rowsDeposit.get(0), type);
         } else {
             mapDepositWithdrawalTxs(rowsWithdrawal.get(0), type);
         }
     }
 
-    private void mapDepositWithdrawalTxs(KrakenBeanV2 row,TransactionType type) {
+    private void mapDepositWithdrawalTxs(KrakenBeanV2 row, TransactionType type) {
         createdTransaction.setTxsType(type);
         createdTransaction.setRefid(row.getRefid());
         createdTransaction.setRowId(row.getRowId());
@@ -152,7 +162,7 @@ public class KrakenSortedGroup {
         createdTransaction.setTime(rowBase.getTime());
         createdTransaction.setRowNumber(rowBase.getTime().getEpochSecond());
         createdTransaction.setTxsType(type);
-        createdTransaction.setTxid(rowBase.getTxid() + " " +  rowQuote.getTxid());
+        createdTransaction.setTxid(rowBase.getTxid() + " " + rowQuote.getTxid());
         createdTransaction.usedIds.add(rowBase.getRowId());
         createdTransaction.usedIds.add(rowQuote.getRowId());
         createdTransaction.setRowValues();
