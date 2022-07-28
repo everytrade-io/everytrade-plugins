@@ -263,7 +263,8 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
                 .headers(List.of(
                     CsvHeader
-                        .of("You can use this transaction report to inform your likely tax obligations. For US customers, Sells, Converts," +
+                        .of("You can use this transaction report to inform your likely tax obligations. " +
+                            "For US customers, Sells, Converts," +
                             " and Rewards Income, and Coinbase Earn transactions are taxable events. For final tax obligations, " +
                             "please consult your tax advisor."
                         )
@@ -317,7 +318,8 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
                 .headers(List.of(
                     CsvHeader.of(
-                        "?Transaction id", "Date", "Email", "Type", "Type detail", "Currency amount", "Amount", "Currency price", "Price",
+                        "?Transaction id", "Date", "Email", "Type", "Type detail", "Currency amount",
+                        "Amount", "Currency price", "Price",
                         "Currency fee", "Fee", "Currency total", "Total", "Description", "Status", "Currency first balance after",
                         "First balance after", "Currency second balance after", "Second balance after"
                     ).withSeparator(delimiter)
@@ -372,7 +374,8 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
                 .headers(List.of(
                     CsvHeader.of(
-                        "^Date \\(.*\\)$", "Instrument", "Trade ID", "Order ID", "Side", "Quantity", "Price", "Volume", "Fee", "Rebate", "Total"
+                        "^Date \\(.*\\)$", "Instrument", "Trade ID", "Order ID", "Side",
+                        "Quantity", "Price", "Volume", "Fee", "Rebate", "Total"
                     ).withSeparator(delimiter)
                 ))
                 .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(HitBtcBeanV1.class, delimiter))
@@ -415,7 +418,8 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
                 .headers(List.of(
                     CsvHeader
-                        .of("id", "created_at", "buyer", "seller", "trade_type", "btc_amount", "btc_traded", "fee_btc", "btc_amount_less_fee",
+                        .of("id", "created_at", "buyer", "seller", "trade_type", "btc_amount",
+                            "btc_traded", "fee_btc", "btc_amount_less_fee",
                             "btc_final", "fiat_amount", "fiat_fee", "fiat_per_btc", "currency", "exchange_rate", "transaction_released_at",
                             "online_provider", "reference")
                         .withSeparator(delimiter)
@@ -511,7 +515,8 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 .build());
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
                 .headers(List.of(
-                    CsvHeader.of("UID", "DATE", "SYMBOL", "ACTION", "QUANTY", "PRICE", "FEE", "FEE_CURRENCY", "REBATE", "REBATE_CURRENCY")
+                    CsvHeader.of("UID", "DATE", "SYMBOL", "ACTION", "QUANTY",
+                            "PRICE", "FEE", "FEE_CURRENCY", "REBATE", "REBATE_CURRENCY")
                         .withSeparator(delimiter)))
                 .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(EveryTradeBeanV3.class, delimiter))
                 .supportedExchange(EVERYTRADE)
@@ -536,10 +541,10 @@ public class EverytradeCsvMultiParser implements ICsvParser {
         DELIMITERS.forEach(delimiter -> {
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
                 .headers(List.of(CsvHeader.of(
-                    "Terminal SN", "Server Time", "Terminal Time", "Local Transaction Id", "Remote Transaction Id", "Type", "Cash Amount",
-                    "Cash Currency", "Crypto Amount", "Crypto Currency", "Used Discount", "Actual Discount (%)", "Destination address",
-                    "Related Remote Transaction Id", "Identity", "Status", "Phone Number", "Transaction Detail", "Expense",
-                    "Expense Currency"
+                    "Terminal SN", "Server Time", "Terminal Time", "Local Transaction Id", "Remote Transaction Id",
+                    "Type", "Cash Amount", "Cash Currency", "Crypto Amount", "Crypto Currency",
+                    "Used Discount", "Actual Discount (%)", "Destination address", "Related Remote Transaction Id",
+                    "Identity", "Status", "Phone Number", "Transaction Detail", "Expense", "Expense Currency"
                 ).withSeparator(delimiter)))
                 .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(GeneralBytesBeanV2.class, delimiter))
                 .supportedExchange(GENERAL_BYTES)
