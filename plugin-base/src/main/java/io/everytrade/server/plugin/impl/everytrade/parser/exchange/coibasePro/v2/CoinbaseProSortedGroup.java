@@ -11,7 +11,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static io.everytrade.server.model.TransactionType.*;
+import static io.everytrade.server.model.TransactionType.BUY;
+import static io.everytrade.server.model.TransactionType.SELL;
+import static io.everytrade.server.model.TransactionType.DEPOSIT;
+import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static java.math.BigDecimal.ZERO;
 
 @Data
