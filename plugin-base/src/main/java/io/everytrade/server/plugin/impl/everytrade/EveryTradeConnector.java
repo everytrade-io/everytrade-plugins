@@ -62,7 +62,7 @@ public class EveryTradeConnector implements IConnector {
 
     public static final ConnectorDescriptor DESCRIPTOR = new ConnectorDescriptor(
         ID,
-        "EveryTrade Universal Connector",
+        "WhaleBooks Universal Connector",
         "",
         SupportedExchange.EVERYTRADE.getInternalId(),
         List.of(PARAMETER_URL, PARAMETER_API_KEY, PARAMETER_API_SECRET)
