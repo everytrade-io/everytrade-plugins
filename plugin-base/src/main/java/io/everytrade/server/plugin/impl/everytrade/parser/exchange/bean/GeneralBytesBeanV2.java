@@ -109,7 +109,7 @@ public class GeneralBytesBeanV2 extends ExchangeBean {
 
     @Parsed(field = "Expense Currency")
     public void setExpenseCurrency(String value) {
-        expenseCurrency = Currency.fromCode(value);
+        expenseCurrency = parseGbCurrency(value);
     }
 
     @Override
@@ -157,4 +157,6 @@ public class GeneralBytesBeanV2 extends ExchangeBean {
         }
         return cluster;
     }
+
+
 }
