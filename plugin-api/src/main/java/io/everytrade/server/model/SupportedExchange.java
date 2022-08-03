@@ -18,7 +18,7 @@ public enum SupportedExchange {
     BITTREX("Bittrex", "bittrex"),
     GENERAL_BYTES("General Bytes CAS", "generalbytes"),
     KRAKEN("Kraken", "kraken"),
-    EVERYTRADE("EveryTrade", "everytrade"),
+    EVERYTRADE("WhaleBooks", "everytrade"),
     COINMATE("CoinMate", "coinmate"),
     HITBTC("HitBTC", "hitbtc"),
     SHAKEPAY("ShakePay", "shakepay"),
