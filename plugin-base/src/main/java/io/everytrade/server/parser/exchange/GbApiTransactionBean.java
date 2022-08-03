@@ -83,7 +83,7 @@ public class GbApiTransactionBean {
                     quoteCurrency,
                     TransactionType.FEE,
                     expense,
-                    Currency.fromCode(expenseCurrency),
+                    parseGbCurrency(expenseCurrency),
                     getRemoteUid()
                 )
             );
