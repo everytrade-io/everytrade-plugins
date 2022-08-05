@@ -20,6 +20,7 @@ import java.time.format.DateTimeParseException;
 import java.util.Collections;
 import java.util.List;
 
+import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
 import static io.everytrade.server.plugin.impl.generalbytes.GbPlugin.parseGbCurrency;
 
 @Headers(sequence = {"Server Time","Local Transaction Id","Remote Transaction Id","Type","Cash Amount","Cash Currency",
@@ -152,8 +153,8 @@ public class GeneralBytesBeanV2 extends ExchangeBean {
                 1,
                 "Fee " + (expenseCurrency != null ? expenseCurrency.code() : "null") + " currency is neither base or quote"
             );
-        } else if (ParserUtils.equalsToZero(expense)) {
-            cluster.setIgnoredFee(1, "Fee amount is 0 " + expenseCurrency);
+        } else if (nullOrZero(expense)) {
+//            cluster.setIgnoredFee(1, "Fee amount is 0 " + expenseCurrency);
         }
         return cluster;
     }

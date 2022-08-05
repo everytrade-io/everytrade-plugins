@@ -227,7 +227,7 @@ public class CoinbaseProBeanV2 extends ExchangeBean {
             throw new DataValidationException(String.format("Unsupported type %s; ", transactionType));
         }
         if (ignoredFees) {
-            transactionCluster.setIgnoredFee(fees.size(), "Fee amount is 0 " + (currency != null ? currency.code() : ""));
+//            transactionCluster.setIgnoredFee(fees.size(), "Fee amount is 0 " + (currency != null ? currency.code() : ""));
         }
         if (failedFees) {
             transactionCluster.setFailedFee(fees.size(), "Fee cannot be added; ");

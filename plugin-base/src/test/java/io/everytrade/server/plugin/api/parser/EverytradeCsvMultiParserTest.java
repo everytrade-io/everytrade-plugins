@@ -358,7 +358,7 @@ class EverytradeCsvMultiParserTest {
                     "TTT" + FEE_UID_PART,
                     Instant.parse("2019-07-29T17:04:41Z"),
                     Currency.LTC,
-                    null,
+                    Currency.LTC,
                     TransactionType.FEE,
                     new BigDecimal("0.0004").setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
                     Currency.LTC

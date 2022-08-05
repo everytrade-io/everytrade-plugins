@@ -12,11 +12,8 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.List;
 
-import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.UNSUPPORTED_CURRENCY_PAIR;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -53,7 +50,7 @@ class BinanceBeanV1Test {
                     null,
                     Instant.parse("2020-02-04T16:19:07Z"),
                     Currency.LTC,
-                    Currency.BTC,
+                    Currency.LTC,
                     TransactionType.FEE,
                     new BigDecimal("0.00161"),
                     Currency.LTC
@@ -81,7 +78,7 @@ class BinanceBeanV1Test {
                 new FeeRebateImportedTransactionBean(
                     null,
                     Instant.parse("2020-02-04T16:19:07Z"),
-                    Currency.LTC,
+                    Currency.BTC,
                     Currency.BTC,
                     TransactionType.FEE,
                     new BigDecimal("0.00161"),
@@ -110,7 +107,7 @@ class BinanceBeanV1Test {
                 new FeeRebateImportedTransactionBean(
                     null,
                     Instant.parse("2020-02-03T11:09:51Z"),
-                    Currency.LTC,
+                    Currency.BTC,
                     Currency.BTC,
                     TransactionType.FEE,
                     new BigDecimal("0.00001289"),
@@ -140,7 +137,7 @@ class BinanceBeanV1Test {
                     null,
                     Instant.parse("2020-02-03T11:09:51Z"),
                     Currency.LTC,
-                    Currency.BTC,
+                    Currency.LTC,
                     TransactionType.FEE,
                     new BigDecimal("0.00001289"),
                     Currency.LTC
@@ -148,42 +145,6 @@ class BinanceBeanV1Test {
             )
         );
         ParserTestUtils.checkEqual(expected, actual);
-    }
-
-
-    @Test
-    void testUnknownPair() {
-        final String row = "2020-02-03 11:09:51;BTCLTC;SELL;0.007497;1.72;0.01289484;0.00001289;LTC\n";
-        final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
-        final String error = parsingProblem.getMessage();
-        assertTrue(error.contains(UNSUPPORTED_CURRENCY_PAIR.concat("BTCLTC")));
-    }
-
-    @Test
-    void testCorrectParsingRawTransactionBuyFeeSkipped() {
-        final String row = "2020-02-04 16:19:07;LTCBTC;BUY;0.007393;1.61;0.01190273;0.00161;BNB\n";
-        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
-        final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
-                null,
-                Instant.parse("2020-02-04T16:19:07Z"),
-                Currency.LTC,
-                Currency.BTC,
-                TransactionType.BUY,
-                new BigDecimal("1.61"),
-                new BigDecimal("0.0073930000")
-            ),
-           Collections.emptyList()
-        );
-        expected.setFailedFee(1, null);
-        ParserTestUtils.checkEqual(expected, actual);
-    }
-
-    @Test
-    void testIgnoredFee() {
-        final String row = "2020-02-04 16:19:07;LTCBTC;BUY;0.007393;1.61;0.01190273;0.00161;BNB\n";
-        final TransactionCluster transactionCluster = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
-        assertEquals(1, transactionCluster.getIgnoredFeeTransactionCount());
     }
 
     @Test

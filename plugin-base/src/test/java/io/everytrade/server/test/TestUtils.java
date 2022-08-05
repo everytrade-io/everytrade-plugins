@@ -65,6 +65,29 @@ public class TestUtils {
         );
     }
 
+    public static UserTrade userTrade(
+        String id,
+        TransactionType type,
+        BigDecimal volume,
+        CurrencyPair pair,
+        BigDecimal price,
+        BigDecimal fee,
+        io.everytrade.server.model.Currency feeCurrency
+    ) {
+        return new UserTrade(
+            type == TransactionType.BUY ? Order.OrderType.BID : Order.OrderType.ASK,
+            volume,
+            toXchangePair(pair),
+            price,
+            new Date(),
+            id,
+            UUID.randomUUID().toString(),
+            fee,
+            toXchangeCurrency(feeCurrency),
+            UUID.randomUUID().toString()
+        );
+    }
+
     public static FundingRecord fundingRecord(
         TransactionType type,
         BigDecimal volume,

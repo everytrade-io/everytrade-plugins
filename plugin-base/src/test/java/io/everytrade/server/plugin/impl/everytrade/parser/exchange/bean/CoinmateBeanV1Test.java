@@ -63,7 +63,7 @@ class CoinmateBeanV1Test {
                 new FeeRebateImportedTransactionBean(
                     "4" + FEE_UID_PART,
                     Instant.parse("2019-08-30T05:05:24Z"),
-                    Currency.BTC,
+                    Currency.EUR,
                     Currency.EUR,
                     TransactionType.FEE,
                     new BigDecimal("0.03443649"),
@@ -95,7 +95,7 @@ class CoinmateBeanV1Test {
                 new FeeRebateImportedTransactionBean(
                     "7722246" + FEE_UID_PART,
                     Instant.parse("2021-03-21T18:54:15Z"),
-                    Currency.BTC,
+                    Currency.CZK,
                     Currency.CZK,
                     TransactionType.FEE,
                     new BigDecimal("69.75584587"),
@@ -125,7 +125,7 @@ class CoinmateBeanV1Test {
                 new FeeRebateImportedTransactionBean(
                     "4" + FEE_UID_PART,
                     Instant.parse("2019-08-30T05:05:24Z"),
-                    Currency.BTC,
+                    Currency.EUR,
                     Currency.EUR,
                     TransactionType.FEE,
                     new BigDecimal("0.03443649"),
@@ -134,15 +134,6 @@ class CoinmateBeanV1Test {
             )
         );
         ParserTestUtils.checkEqual(expected, actual);
-    }
-
-    @Test
-    void testDifferentCurrencies() {
-        // Verify that currency unit at "Price Currency" and "Fee Currency" fields are the same, if not skip the row
-        // and report an invalid one
-        final String row = "4;2019-08-30 05:05:24;BUY;0.0019;BTC;8630.7;EUR;0.03443649;CZK;16.43276649;EUR;;OK\n";
-        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
-        assertEquals(1, actual.getIgnoredFeeTransactionCount());
     }
 
     @Test

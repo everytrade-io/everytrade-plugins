@@ -15,7 +15,6 @@ import java.time.Instant;
 import java.util.List;
 
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -64,7 +63,7 @@ class CoinmateBeanV2Test {
                 new FeeRebateImportedTransactionBean(
                     "1" + FEE_UID_PART,
                     Instant.parse("2020-02-10T19:08:30Z"),
-                    Currency.BTC,
+                    Currency.EUR,
                     Currency.EUR,
                     TransactionType.FEE,
                     new BigDecimal("0.85913259"),
@@ -94,7 +93,7 @@ class CoinmateBeanV2Test {
                 new FeeRebateImportedTransactionBean(
                     "1" + FEE_UID_PART,
                     Instant.parse("2020-02-10T19:08:30Z"),
-                    Currency.BTC,
+                    Currency.EUR,
                     Currency.EUR,
                     TransactionType.FEE,
                     new BigDecimal("0.85913259"),
@@ -124,7 +123,7 @@ class CoinmateBeanV2Test {
                 new FeeRebateImportedTransactionBean(
                     "1" + FEE_UID_PART,
                     Instant.parse("2020-02-10T19:08:30Z"),
-                    Currency.BTC,
+                    Currency.EUR,
                     Currency.EUR,
                     TransactionType.FEE,
                     new BigDecimal("0.85913259"),
@@ -133,14 +132,6 @@ class CoinmateBeanV2Test {
             )
         );
         ParserTestUtils.checkEqual(expected, actual);
-    }
-
-    @Test
-    void testDifferentCurrencies()  {
-        final String row = "1;2020-02-10 19:08:30;mail;name;Quick trade;SELL;BTC;" +
-            "-0.047668;EUR;9011.62834249;USD;0.85913259;EUR;428.70716724;;OK;BTC;1.99655368;EUR;83230.41972657\n";
-        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
-        assertEquals(1, actual.getIgnoredFeeTransactionCount());
     }
 
     @Test

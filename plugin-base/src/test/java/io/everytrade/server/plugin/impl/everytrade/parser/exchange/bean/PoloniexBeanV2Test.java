@@ -55,7 +55,7 @@ class PoloniexBeanV2Test {
                     null,
                     Instant.parse("2020-01-31T10:56:44Z"),
                     Currency.BTC,
-                    Currency.USDT,
+                    Currency.BTC,
                     TransactionType.FEE,
                     new BigDecimal("0.00042537"),
                     Currency.BTC
@@ -84,7 +84,7 @@ class PoloniexBeanV2Test {
                 new FeeRebateImportedTransactionBean(
                     null,
                     Instant.parse("2020-01-27T20:39:14Z"),
-                    Currency.BTC,
+                    Currency.USDT,
                     Currency.USDT,
                     TransactionType.FEE,
                     new BigDecimal("2.19266475"),

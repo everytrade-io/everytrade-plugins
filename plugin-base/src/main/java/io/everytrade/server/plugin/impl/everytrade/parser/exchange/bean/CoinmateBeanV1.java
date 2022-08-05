@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.List;
 
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.equalsToZero;
+import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
 
 public class CoinmateBeanV1 extends ExchangeBean {
     // auxiliary field for validation
@@ -156,8 +157,8 @@ public class CoinmateBeanV1 extends ExchangeBean {
                 1,
                 "Fee " + (auxFeeCurrency != null ? auxFeeCurrency.code() : "null") + " currency is neither base or quote"
             );
-        } else if(equalsToZero(fee)) {
-            cluster.setIgnoredFee(1, "Fee amount is 0 " + (auxFeeCurrency != null ? auxFeeCurrency.code() : ""));
+        } else if(nullOrZero(fee)) {
+//            cluster.setIgnoredFee(1, "Fee amount is 0 " + (auxFeeCurrency != null ? auxFeeCurrency.code() : ""));
         }
         return cluster;
     }

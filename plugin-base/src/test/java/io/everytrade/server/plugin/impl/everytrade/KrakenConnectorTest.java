@@ -73,7 +73,6 @@ class KrakenConnectorTest {
         if (type.isDepositOrWithdrawal()) {
             var depositWithdrawal = (DepositWithdrawalImportedTransaction) tx;
             assertEquals(volume, depositWithdrawal.getVolume());
-            assertNotNull(depositWithdrawal.getAddress());
         } else if (type.isBuyOrSell()) {
             var buySell  = (BuySellImportedTransactionBean) cluster.getMain();
             assertEquals(volume, buySell.getBaseQuantity());

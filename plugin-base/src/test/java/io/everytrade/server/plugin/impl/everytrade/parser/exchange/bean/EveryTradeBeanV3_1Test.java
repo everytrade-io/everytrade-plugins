@@ -5,6 +5,7 @@ import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.DepositWithdrawalImportedTransaction;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -78,7 +80,7 @@ class EveryTradeBeanV3_1Test {
                 new FeeRebateImportedTransactionBean(
                     "1-fee",
                     Instant.parse("2021-07-27T14:43:18Z"),
-                    Currency.BTC,
+                    Currency.CZK,
                     Currency.CZK,
                     TransactionType.FEE,
                     new BigDecimal("140"),
@@ -108,7 +110,7 @@ class EveryTradeBeanV3_1Test {
                     "1-fee",
                     Instant.parse("2021-07-27T14:43:18Z"),
                     Currency.BTC,
-                    Currency.CZK,
+                    Currency.BTC,
                     TransactionType.FEE,
                     new BigDecimal("0.001"),
                     Currency.BTC
@@ -140,6 +142,15 @@ class EveryTradeBeanV3_1Test {
     @Test
     void testCorrectParsingRawTransactionSellWithRebateQuote() {
         final String row = "1;27.7.2021 14:59:21;BTC/EUR;SELL;0.066306;8736.534094;;;5.7;EUR;;\n";
+        List<ImportedTransactionBean>related = new ArrayList<>();
+        related.add(new FeeRebateImportedTransactionBean(
+            "1-fee",
+            Instant.parse("2021-07-27T14:59:21Z"),
+            Currency.EUR,
+            Currency.EUR,
+            TransactionType.REBATE,
+            new BigDecimal("5.7"),
+            Currency.EUR));
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
             new BuySellImportedTransactionBean(
@@ -151,15 +162,7 @@ class EveryTradeBeanV3_1Test {
                 new BigDecimal("0.066306"),
                 new BigDecimal("8736.534094")
             ),
-            List.of(new FeeRebateImportedTransactionBean(
-                "1-fee",
-                Instant.parse("2021-07-27T14:59:21Z"),
-                Currency.BTC,
-                Currency.EUR,
-                TransactionType.REBATE,
-                new BigDecimal("5.7"),
-                Currency.EUR
-            ))
+            related
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -182,7 +185,7 @@ class EveryTradeBeanV3_1Test {
                 "1-fee",
                 Instant.parse("2021-07-27T14:59:21Z"),
                 Currency.BTC,
-                Currency.EUR,
+                Currency.BTC,
                 TransactionType.REBATE,
                 new BigDecimal("0.001"),
                 Currency.BTC
@@ -199,7 +202,7 @@ class EveryTradeBeanV3_1Test {
             new FeeRebateImportedTransactionBean(
                 "1",
                 Instant.parse("2021-07-27T14:59:21Z"),
-                Currency.BTC,
+                Currency.CZK,
                 Currency.CZK,
                 TransactionType.FEE,
                 new BigDecimal("100"),
@@ -219,7 +222,7 @@ class EveryTradeBeanV3_1Test {
                 "1",
                 Instant.parse("2021-07-27T14:59:21Z"),
                 Currency.BTC,
-                Currency.CZK,
+                Currency.BTC,
                 TransactionType.FEE,
                 new BigDecimal("0.01"),
                 Currency.BTC
@@ -237,7 +240,7 @@ class EveryTradeBeanV3_1Test {
             new FeeRebateImportedTransactionBean(
                 "1",
                 Instant.parse("2021-07-27T14:59:21Z"),
-                Currency.BTC,
+                Currency.CZK,
                 Currency.CZK,
                 TransactionType.REBATE,
                 new BigDecimal("100"),
@@ -257,7 +260,7 @@ class EveryTradeBeanV3_1Test {
                 "1",
                 Instant.parse("2021-07-27T14:59:21Z"),
                 Currency.BTC,
-                Currency.CZK,
+                Currency.BTC,
                 TransactionType.REBATE,
                 new BigDecimal("0.01"),
                 Currency.BTC
@@ -300,22 +303,6 @@ class EveryTradeBeanV3_1Test {
         final String row = "1;2021-07-27 14:43:18;BTC/CZK;WITHDRAWZ;0.066506;210507.3226;;;;;;\n";
         final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
         assertTrue(parsingProblem.getMessage().contains(ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE.concat("WITHDRAWZ"))
-        );
-    }
-
-    @Test
-    void testDiffFeeCurrency() {
-        final String row = "1;27.7.2021 14:43:18;BTC/CZK;BUY;0.066506;210507.3226;140;EUR;;;;\n";
-        final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
-        assertTrue(parsingProblem.getMessage().contains("Fee currency 'EUR' differs")
-        );
-    }
-
-    @Test
-    void testDiffRebateCurrency() {
-        final String row = "1;27.7.2021 14:59:21;BTC/EUR;SELL;0.066306;8736.534094;;;0.001;LTC;;\n";
-        final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
-        assertTrue(parsingProblem.getMessage().contains("Rebate currency 'LTC' differs")
         );
     }
 

@@ -63,7 +63,7 @@ class CoinbaseProBeanV1Test {
                 new FeeRebateImportedTransactionBean(
                     "0" + FEE_UID_PART,
                     Instant.parse("2020-05-18T20:08:39.184Z"),
-                    Currency.LTC,
+                    Currency.EUR,
                     Currency.EUR,
                     TransactionType.FEE,
                     new BigDecimal("0.6152736302"),
@@ -93,7 +93,7 @@ class CoinbaseProBeanV1Test {
                 new FeeRebateImportedTransactionBean(
                     "1" + FEE_UID_PART,
                     Instant.parse("2020-05-18T20:10:26.735Z"),
-                    Currency.LTC,
+                    Currency.EUR,
                     Currency.EUR,
                     TransactionType.FEE,
                     new BigDecimal("0.5823735923"),
