@@ -12,7 +12,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Collections;
 
-import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.UNSUPPORTED_CURRENCY_PAIR;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -78,11 +77,4 @@ class ShakePayBeanV1Test {
         assertTrue(error.contains("Unable to set value 'XXX'"));
     }
 
-    @Test
-    void testNotAllowedPair() {
-        final String row = "exchange,2020-03-11T19:59:23+00,\"1,000\",XMR,0.09172307,XRP,10902.3826,,\n";
-        final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
-        final String error = parsingProblem.getMessage();
-        assertTrue(error.contains(UNSUPPORTED_CURRENCY_PAIR.concat("XMR/XRP")));
-    }
 }

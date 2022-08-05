@@ -51,7 +51,7 @@ class BitstampBeanV1Test {
                 new FeeRebateImportedTransactionBean(
                     null,
                     Instant.parse("2019-02-14T15:32:00Z"),
-                    Currency.BTC,
+                    Currency.USD,
                     Currency.USD,
                     TransactionType.FEE,
                     new BigDecimal("0.00990595"),
@@ -60,17 +60,6 @@ class BitstampBeanV1Test {
             )
         );
         ParserTestUtils.checkEqual(expected, actual);
-    }
-
-    @Test
-    void testCurrencyUnitAreTheSameFeeWrong() {
-        // Verify that currency unit at Value/Rate/Fee fields are the same (must be a quote),
-        // if not skip the row and report an invalid one
-        final String row = "Market,\"Feb. 14, 2019, 03:32 PM\",Main Account,0.00111167 BTC,3.96238096 USD,3564.35 " +
-            "USD,0.00990595 CZK,Buy\n";
-        final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
-        final String error = parsingProblem.getMessage();
-        assertTrue(error.contains(BitstampBeanV1.CURRENCY_EQUALITY_MESSAGE));
     }
 
     @Test

@@ -57,7 +57,7 @@ class EveryTradeBeanV1Test {
                 new FeeRebateImportedTransactionBean(
                     "1-fee",
                     Instant.parse("2019-09-01T14:43:18Z"),
-                    Currency.BTC,
+                    Currency.CZK,
                     Currency.CZK,
                     TransactionType.FEE,
                     new BigDecimal("0.1"),
@@ -86,7 +86,7 @@ class EveryTradeBeanV1Test {
                 new FeeRebateImportedTransactionBean(
                     "1-fee",
                     Instant.parse("2019-09-01T14:43:18Z"),
-                    Currency.BTC,
+                    Currency.CZK,
                     Currency.CZK,
                     TransactionType.FEE,
                     new BigDecimal("0.1"),

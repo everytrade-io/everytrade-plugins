@@ -1,10 +1,10 @@
 package io.everytrade.server.test.mock;
 
 import lombok.experimental.FieldDefaults;
-import org.knowm.xchange.bitmex.service.BitmexTradeHistoryParams;
 import org.knowm.xchange.bittrex.dto.account.BittrexDepositHistory;
 import org.knowm.xchange.bittrex.dto.account.BittrexWithdrawalHistory;
 import org.knowm.xchange.bittrex.service.BittrexAccountService;
+import org.knowm.xchange.bittrex.service.BittrexTradeHistoryParams;
 import org.knowm.xchange.currency.Currency;
 import org.knowm.xchange.dto.marketdata.Trades;
 import org.knowm.xchange.dto.meta.CurrencyMetaData;
@@ -22,7 +22,6 @@ import static java.util.Collections.emptyList;
 import static lombok.AccessLevel.PRIVATE;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -51,7 +50,7 @@ public class BittrexExchangeMock extends KnowmExchangeMock {
     protected TradeService mockTradeService() throws Exception {
         var mock = mock(TradeService.class);
 
-        when(mock.createTradeHistoryParams()).thenReturn(new BitmexTradeHistoryParams());
+        when(mock.createTradeHistoryParams()).thenReturn(new BittrexTradeHistoryParams());
 
         when(mock.getTradeHistory(any()))
             .thenReturn(

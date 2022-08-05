@@ -12,7 +12,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Collections;
 
-import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.UNSUPPORTED_CURRENCY_PAIR;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.PoloniexBeanV1.UNSUPPORTED_CATEGORY;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -79,15 +78,6 @@ class PoloniexBeanV1Test {
         final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
         final String error = parsingProblem.getMessage();
         assertTrue(error.contains(UNSUPPORTED_CATEGORY.concat("XXX")));
-    }
-
-    @Test
-    void testNotAllowedPair() {
-        final String row = "2020-03-31 12:11:33,BTC/LTC,Exchange,Sell,0.00606592,1.97827088,0.01200003,0.09%," +
-            "0,0.01198923,-1.97827088\n";
-        final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
-        final String error = parsingProblem.getMessage();
-        assertTrue(error.contains(UNSUPPORTED_CURRENCY_PAIR.concat("BTC/LTC")));
     }
 
     @Test

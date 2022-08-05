@@ -10,7 +10,6 @@ import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
-import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,6 +22,7 @@ import java.util.Date;
 import java.util.List;
 
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.equalsToZero;
+import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE;
 import static io.everytrade.server.plugin.impl.generalbytes.GbPlugin.parseGbCurrency;
@@ -105,8 +105,8 @@ public class GbApiTransactionBean {
         if (isIncorrectFee) {
             cluster.setFailedFee(1, "Fee " + expenseCurrency + " currency is neither base or quote");
         }
-        if (equalsToZero(expense)) {
-            cluster.setIgnoredFee(1, "Fee amount is 0 " + expenseCurrency);
+        if (nullOrZero(expense)) {
+//            cluster.setIgnoredFee(1, "Fee amount is 0 " + expenseCurrency);
         }
         return cluster;
     }

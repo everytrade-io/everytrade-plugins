@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.List;
 
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.equalsToZero;
+import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
 
 @Headers(sequence = {
     "?Transaction id", "Date", "Type detail", "Currency amount", "Amount", "Currency price", "Price", "Currency fee",
@@ -134,8 +135,8 @@ public class CoinmateBeanV2 extends ExchangeBean {
                 1,
                 "Fee " + (auxCurrencyFee != null ? auxCurrencyFee.code() : "null") + " currency is neither base or quote"
             );
-        } else if (equalsToZero(fee)) {
-            cluster.setIgnoredFee(1, "Fee amount is 0 " + (auxCurrencyFee != null ? auxCurrencyFee.code() : ""));
+        } else if (nullOrZero(fee)) {
+//            cluster.setIgnoredFee(1, "Fee amount is 0 " + (auxCurrencyFee != null ? auxCurrencyFee.code() : ""));
         }
         return cluster;
     }

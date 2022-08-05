@@ -60,7 +60,7 @@ class BitflyerBeanV1Test {
                 new FeeRebateImportedTransactionBean(
                     "BF-01-fee",
                     Instant.parse("2020-09-29T17:55:30Z"),
-                    Currency.LTC,
+                    Currency.USD,
                     Currency.USD,
                     TransactionType.FEE,
                     new BigDecimal("0.4"),
@@ -89,7 +89,7 @@ class BitflyerBeanV1Test {
                 new FeeRebateImportedTransactionBean(
                     "BF-02-fee",
                     Instant.parse("2020-09-29T17:53:28Z"),
-                    Currency.LTC,
+                    Currency.USD,
                     Currency.USD,
                     TransactionType.FEE,
                     new BigDecimal("0.2"),
@@ -100,11 +100,4 @@ class BitflyerBeanV1Test {
         ParserTestUtils.checkEqual(expected, actual);
     }
 
-    @Test
-    void testUnknonwExchangePair() {
-        final String row = "2020/09/29 17:55:30;LTC/USD;Buy;46.43;BCH;0.9;0;46.43;LTC;-41.79;BF-01;\n";
-        final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
-        final String error = parsingProblem.getMessage();
-        assertTrue(error.contains("Unsupported currency pair BCH/LTC"));
-    }
 }

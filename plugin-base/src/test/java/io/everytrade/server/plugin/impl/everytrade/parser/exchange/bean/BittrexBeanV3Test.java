@@ -63,7 +63,7 @@ class BittrexBeanV3Test {
                 new FeeRebateImportedTransactionBean(
                     "d-01" + FEE_UID_PART,
                     Instant.parse("2020-07-31T11:32:59Z"),
-                    Currency.LTC,
+                    Currency.USD,
                     Currency.USD,
                     TransactionType.FEE,
                     new BigDecimal("0.0570894"),
@@ -93,7 +93,7 @@ class BittrexBeanV3Test {
                 new FeeRebateImportedTransactionBean(
                     "d-01" + FEE_UID_PART,
                     Instant.parse("2020-07-31T11:35:21Z"),
-                    Currency.LTC,
+                    Currency.USD,
                     Currency.USD,
                     TransactionType.FEE,
                     new BigDecimal("0.05686182"),

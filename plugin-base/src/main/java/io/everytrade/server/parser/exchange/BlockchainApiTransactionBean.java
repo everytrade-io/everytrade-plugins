@@ -108,7 +108,7 @@ public class BlockchainApiTransactionBean {
         if (isIncorrectFee) {
             cluster.setFailedFee(1, "Fee " + (feeCurrency != null ? feeCurrency.code() : "null") + " currency is not base or quote");
         } else if (equalsToZero(feeAmount)) {
-            cluster.setIgnoredFee(1, "Fee amount is 0 " + (feeCurrency != null ? feeCurrency.code() : ""));
+//            cluster.setIgnoredFee(1, "Fee amount is 0 " + (feeCurrency != null ? feeCurrency.code() : ""));
         }
         return cluster;
     }

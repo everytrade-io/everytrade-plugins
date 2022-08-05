@@ -61,7 +61,7 @@ class KrakenBeanV1Test {
                 new FeeRebateImportedTransactionBean(
                     "TTT" + FEE_UID_PART,
                     Instant.parse("2019-07-29T17:04:41Z"),
-                    Currency.BTC,
+                    Currency.USD,
                     Currency.USD,
                     TransactionType.FEE,
                     new BigDecimal("0.0493"),
@@ -92,7 +92,7 @@ class KrakenBeanV1Test {
                 new FeeRebateImportedTransactionBean(
                     "TTT" + FEE_UID_PART,
                     Instant.parse("2019-07-29T17:04:41.51Z"),
-                    Currency.BTC,
+                    Currency.USD,
                     Currency.USD,
                     TransactionType.FEE,
                     new BigDecimal("0.0493"),
@@ -122,7 +122,7 @@ class KrakenBeanV1Test {
                 new FeeRebateImportedTransactionBean(
                     "TTT" + FEE_UID_PART,
                     Instant.parse("2019-07-29T17:04:41.51Z"),
-                    Currency.DOGE,
+                    Currency.USD,
                     Currency.USD,
                     TransactionType.FEE,
                     new BigDecimal("0.0493"),
@@ -161,7 +161,7 @@ class KrakenBeanV1Test {
                 new FeeRebateImportedTransactionBean(
                     "TTT" + FEE_UID_PART,
                     Instant.parse("2019-07-29T12:04:41.1451Z"),
-                    Currency.BTC,
+                    Currency.USD,
                     Currency.USD,
                     TransactionType.FEE,
                     new BigDecimal("0.0493"),

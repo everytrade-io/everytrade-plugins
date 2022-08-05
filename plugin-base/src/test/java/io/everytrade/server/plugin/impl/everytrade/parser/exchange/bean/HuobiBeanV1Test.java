@@ -56,7 +56,7 @@ class HuobiBeanV1Test {
                     null,
                     Instant.parse("2020-03-31T21:31:43Z"),
                     Currency.LTC,
-                    Currency.BTC,
+                    Currency.LTC,
                     TransactionType.FEE,
                     new BigDecimal("0.00178800"),
                     Currency.LTC
@@ -85,7 +85,7 @@ class HuobiBeanV1Test {
                 new FeeRebateImportedTransactionBean(
                     null,
                     Instant.parse("2020-03-31T21:31:43Z"),
-                    Currency.LTC,
+                    Currency.BTC,
                     Currency.BTC,
                     TransactionType.FEE,
                     new BigDecimal("0.00178800"),
@@ -116,7 +116,7 @@ class HuobiBeanV1Test {
                 new FeeRebateImportedTransactionBean(
                     null,
                     Instant.parse("2020-03-31T21:31:24Z"),
-                    Currency.LTC,
+                    Currency.BTC,
                     Currency.BTC,
                     TransactionType.FEE,
                     new BigDecimal("0.00000888"),
@@ -147,7 +147,7 @@ class HuobiBeanV1Test {
                     null,
                     Instant.parse("2020-03-31T21:31:24Z"),
                     Currency.LTC,
-                    Currency.BTC,
+                    Currency.LTC,
                     TransactionType.FEE,
                     new BigDecimal("0.00000888"),
                     Currency.LTC
@@ -176,38 +176,10 @@ class HuobiBeanV1Test {
     }
 
     @Test
-    void testWrongFeeCurrency() {
-        final String row = "2020-03-31 21:31:43,Exchange,LTC/BTC,Buy,0.006040,0.8940,0.0053,0.00178800ETH,\n";
-        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
-        final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
-                null,
-                Instant.parse("2020-03-31T21:31:43Z"),
-                Currency.LTC,
-                Currency.BTC,
-                TransactionType.BUY,
-                new BigDecimal("0.8940"),
-                new BigDecimal("0.0059284116")
-            ),
-            Collections.emptyList()
-        );
-        expected.setFailedFee(1, "");
-        ParserTestUtils.checkEqual(expected, actual);
-    }
-
-    @Test
-    void testNotAllowedPair() {
-        final String row = "2020-03-31 21:31:24,Exchange,BTC/LTC,Sell,0.006036,0.7362,0.0044,0.00000888BTC,\n";
-        final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
-        final String error = parsingProblem.getMessage();
-        assertTrue(error.contains(UNSUPPORTED_CURRENCY_PAIR.concat("BTC/LTC")));
-    }
-
-    @Test
     void testIgnoredFee() {
         final String row = "2020-03-31 21:31:24,Exchange,LTC/BTC,Sell,0.006036,0.7362,0.0044,0.00000888XXX,\n";
         final TransactionCluster transactionCluster = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
-        assertEquals(1, transactionCluster.getIgnoredFeeTransactionCount());
+        assertEquals(1, transactionCluster.getFailedFeeTransactionCount());
     }
 
     @Test
