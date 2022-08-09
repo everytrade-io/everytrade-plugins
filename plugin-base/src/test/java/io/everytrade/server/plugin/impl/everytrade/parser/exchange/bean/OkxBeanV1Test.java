@@ -62,7 +62,7 @@ class OkxBeanV1Test {
                     "0" + FEE_UID_PART,
                     Instant.parse("2020-09-25T17:27:02Z"),
                     Currency.LTC,
-                    Currency.USDT,
+                    Currency.LTC,
                     TransactionType.FEE,
                     new BigDecimal("0.1574646087"),
                     Currency.LTC
@@ -91,7 +91,7 @@ class OkxBeanV1Test {
                 new FeeRebateImportedTransactionBean(
                     "1" + FEE_UID_PART,
                     Instant.parse("2020-09-25T16:58:58Z"),
-                    Currency.LTC,
+                    Currency.USDT,
                     Currency.USDT,
                     TransactionType.FEE,
                     new BigDecimal("0.158170378905"),

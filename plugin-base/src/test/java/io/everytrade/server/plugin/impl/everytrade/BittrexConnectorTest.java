@@ -91,13 +91,13 @@ class BittrexConnectorTest {
     }
 
     private BittrexWithdrawalHistory withdrawal() {
-        var deposit = new BittrexWithdrawalHistory();
-        deposit.setId("1");
-        deposit.setCryptoAddress(ADDRESS);
-        deposit.setQuantity(TEN);
-        deposit.setCurrencySymbol("BTC");
-        deposit.setCompletedAt(new Date());
-        deposit.setTxCost(new BigDecimal("0.01"));
-        return deposit;
+        var withdrawal = new BittrexWithdrawalHistory();
+        withdrawal.setId("1");
+        withdrawal.setCryptoAddress(ADDRESS);
+        withdrawal.setQuantity(TEN);
+        withdrawal.setCurrencySymbol("BTC");
+        withdrawal.setCompletedAt(new Date());
+        withdrawal.setTxCost(new BigDecimal("0.01"));
+        return withdrawal;
     }
 }

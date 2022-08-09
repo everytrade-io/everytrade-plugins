@@ -12,7 +12,6 @@ import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.OkxConnectorParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.EverytradeCSVParserValidator;
-import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.equalsToZero;
+import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
 
 @Headers(sequence = {"UID", "DATE", "SYMBOL", "ACTION", "QUANTY", "VOLUME", "FEE"}, extract = true)
 public class EveryTradeBeanV2 extends ExchangeBean {
@@ -106,8 +106,8 @@ public class EveryTradeBeanV2 extends ExchangeBean {
             ),
             related
         );
-        if(equalsToZero(fee)) {
-            transactionCluster.setIgnoredFee(1, "Fee amount is 0 " + (symbolQuote != null ? symbolQuote.code() : ""));
+        if(nullOrZero(fee)) {
+//            transactionCluster.setIgnoredFee(1, "Fee amount is 0 " + (symbolQuote != null ? symbolQuote.code() : ""));
         }
         return transactionCluster;
     }

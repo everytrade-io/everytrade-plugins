@@ -64,7 +64,7 @@ class HitBtcBeanV2Test {
                 new FeeRebateImportedTransactionBean(
                     "0" + FEE_UID_PART,
                     Instant.parse("2018-10-29T12:41:32Z"),
-                    Currency.ETH,
+                    Currency.USD,
                     Currency.USD,
                     TransactionType.FEE,
                     new BigDecimal("0.00523827"),
@@ -95,7 +95,7 @@ class HitBtcBeanV2Test {
                 new FeeRebateImportedTransactionBean(
                     "0" + REBATE_UID_PART,
                     Instant.parse("2018-10-29T12:41:32Z"),
-                    Currency.ETH,
+                    Currency.USD,
                     Currency.USD,
                     TransactionType.REBATE,
                     new BigDecimal("0.00523827"),

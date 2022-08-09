@@ -212,8 +212,8 @@ public class KrakenConnector implements IConnector {
                     for (Currency a : assets) {
                         // getting a block of recent (last three months) deposit statuses (status contains addresses)
                         Thread.sleep(SLEEP_BETWEEN_FUNDING_REQUESTS.toMillis());
-                        List<WithdrawStatus> getBlockWithAddresses =
-                            accountService.getWithdrawStatus(null, KrakenUtils.getKrakenCurrencyCode(a), null);
+                        List<WithdrawStatus> getBlockWithAddresses = accountService.getWithdrawStatus(null,
+                            KrakenUtils.getKrakenCurrencyCode(a), null);
                         withdrawalStatuses.addAll(getBlockWithAddresses);
                     }
                     // previous records - replacement

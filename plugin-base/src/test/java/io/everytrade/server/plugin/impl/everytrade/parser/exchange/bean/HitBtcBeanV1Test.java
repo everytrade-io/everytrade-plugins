@@ -4,6 +4,7 @@ import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
@@ -50,6 +52,16 @@ class   HitBtcBeanV1Test {
         final String row
             = "\"2018-10-29 12:41:32\",\"ETH/USD\",\"0\",\"6\",\"sell\",\"0.2700\",\"194.01\"," +
             "\"52.38270000\",\"0.00523827\",\"0.00000\",\"52.38793827\"";
+        List<ImportedTransactionBean> related = new ArrayList<>();
+        related.add(new FeeRebateImportedTransactionBean(
+            "0" + FEE_UID_PART,
+            Instant.parse("2018-10-29T12:41:32Z"),
+            Currency.USD,
+            Currency.USD,
+            TransactionType.FEE,
+            new BigDecimal("0.00523827"),
+            Currency.USD
+        ));
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
             new BuySellImportedTransactionBean(
@@ -61,17 +73,7 @@ class   HitBtcBeanV1Test {
                 new BigDecimal("0.27"),
                 new BigDecimal("194.01")
             ),
-            List.of(
-                new FeeRebateImportedTransactionBean(
-                    "0" + FEE_UID_PART,
-                    Instant.parse("2018-10-29T12:41:32Z"),
-                    Currency.ETH,
-                    Currency.USD,
-                    TransactionType.FEE,
-                    new BigDecimal("0.00523827"),
-                    Currency.USD
-                )
-            )
+            related
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -81,6 +83,16 @@ class   HitBtcBeanV1Test {
         final String row
             = "\"2018-10-29 12:41:32\",\"ETH/USD\",\"0\",\"6\",\"sell\",\"0.2700\",\"194.01\"," +
             "\"52.38270000\",\"0.00000000\",\"0.00523827\",\"52.38793827\"";
+        List<ImportedTransactionBean> related = new ArrayList<>();
+        related.add(new FeeRebateImportedTransactionBean(
+            "0" + REBATE_UID_PART,
+            Instant.parse("2018-10-29T12:41:32Z"),
+            Currency.USD,
+            Currency.USD,
+            TransactionType.REBATE,
+            new BigDecimal("0.00523827"),
+            Currency.USD
+        ));
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
             new BuySellImportedTransactionBean(
@@ -92,17 +104,7 @@ class   HitBtcBeanV1Test {
                 new BigDecimal("0.27"),
                 new BigDecimal("194.01")
             ),
-            List.of(
-                new FeeRebateImportedTransactionBean(
-                    "0" + REBATE_UID_PART,
-                    Instant.parse("2018-10-29T12:41:32Z"),
-                    Currency.ETH,
-                    Currency.USD,
-                    TransactionType.REBATE,
-                    new BigDecimal("0.00523827"),
-                    Currency.USD
-                )
-            )
+            related
         );
         ParserTestUtils.checkEqual(expected, actual);
     }

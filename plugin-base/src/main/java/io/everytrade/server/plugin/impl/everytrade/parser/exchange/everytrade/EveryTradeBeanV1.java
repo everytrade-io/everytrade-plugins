@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
 import static java.math.BigDecimal.ZERO;
 
 @Headers(sequence = {"UID", "DATE", "SYMBOL", "ACTION", "QUANTY", "PRICE", "FEE"}, extract = true)
@@ -102,8 +103,8 @@ public class EveryTradeBeanV1 extends ExchangeBean {
             buySell,
             related
         );
-        if (ZERO.compareTo(fee) == 0) {
-            transactionCluster.setIgnoredFee(1, "Fee amount is 0 " + (symbolQuote != null ? symbolQuote.code() : ""));
+        if (nullOrZero(fee)) {
+//            transactionCluster.setIgnoredFee(1, "Fee amount is 0 " + (symbolQuote != null ? symbolQuote.code() : ""));
         }
         return transactionCluster;
     }

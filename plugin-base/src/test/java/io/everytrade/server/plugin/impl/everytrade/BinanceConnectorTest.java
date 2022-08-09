@@ -36,8 +36,8 @@ class BinanceConnectorTest {
     @Test
     void testBuySellDepositWithdrawal() {
         List<UserTrade> trades = List.of(
-            userTrade(BUY, TEN, PAIR, new BigDecimal("10000"), TEN, USD),
-            userTrade(SELL, ONE, PAIR, new BigDecimal("20000"), TEN, USD)
+            userTrade(String.valueOf(100), BUY, TEN, PAIR, new BigDecimal("10000"), TEN, USD),
+            userTrade(String.valueOf(101), SELL, ONE, PAIR, new BigDecimal("20000"), TEN, USD)
         );
 
         List<FundingRecord> records = List.of(

@@ -72,7 +72,7 @@ class CoinbaseBeanV1Test {
                 new FeeRebateImportedTransactionBean(
                     null,
                     Instant.parse("2020-09-27T18:36:58Z"),
-                    Currency.BTC,
+                    Currency.EUR,
                     Currency.EUR,
                     TransactionType.FEE,
                     new BigDecimal("4.40"),
@@ -104,7 +104,7 @@ class CoinbaseBeanV1Test {
                 new FeeRebateImportedTransactionBean(
                     null,
                     Instant.parse("2017-12-22T08:28:33Z"),
-                    Currency.BTC,
+                    Currency.CZK,
                     Currency.CZK,
                     TransactionType.FEE,
                     new BigDecimal("197.46"),
@@ -134,7 +134,7 @@ class CoinbaseBeanV1Test {
                 new FeeRebateImportedTransactionBean(
                     null,
                     Instant.parse("2020-03-09T05:17:11Z"),
-                    Currency.BTC,
+                    Currency.EUR,
                     Currency.EUR,
                     TransactionType.FEE,
                     new BigDecimal("3.58"),

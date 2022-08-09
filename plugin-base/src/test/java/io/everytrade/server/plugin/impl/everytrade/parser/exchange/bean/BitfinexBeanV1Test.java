@@ -53,7 +53,7 @@ class BitfinexBeanV1Test {
                     "0-fee",
                     Instant.parse("2020-02-04T16:52:06Z"),
                     Currency.BTC,
-                    Currency.USD,
+                    Currency.BTC,
                     TransactionType.FEE,
                     new BigDecimal("0.00002097"),
                     Currency.BTC
@@ -82,7 +82,7 @@ class BitfinexBeanV1Test {
                     "0-fee",
                     Instant.parse("2020-02-04T16:52:06Z"),
                     Currency.BTC,
-                    Currency.USD,
+                    Currency.BTC,
                     TransactionType.FEE,
                     new BigDecimal("0.00002097"),
                     Currency.BTC
@@ -110,7 +110,7 @@ class BitfinexBeanV1Test {
                 new FeeRebateImportedTransactionBean(
                     "0-fee",
                     Instant.parse("2020-02-04T16:52:06Z"),
-                    Currency.BTC,
+                    Currency.USD,
                     Currency.USD,
                     TransactionType.FEE,
                     new BigDecimal("0.00002097"),
@@ -140,7 +140,7 @@ class BitfinexBeanV1Test {
                 new FeeRebateImportedTransactionBean(
                     "0-fee",
                     Instant.parse("2020-02-04T16:49:55Z"),
-                    Currency.BTC,
+                    Currency.USD,
                     Currency.USD,
                     TransactionType.FEE,
                     new BigDecimal("0.1750793"),
@@ -170,7 +170,7 @@ class BitfinexBeanV1Test {
                     "0-fee",
                     Instant.parse("2020-02-04T16:49:55Z"),
                     Currency.BTC,
-                    Currency.USD,
+                    Currency.BTC,
                     TransactionType.FEE,
                     new BigDecimal("0.000000123"),
                     Currency.BTC
@@ -238,7 +238,7 @@ class BitfinexBeanV1Test {
                     "0-fee",
                     Instant.parse("2020-12-02T16:52:06Z"),
                     Currency.BTC,
-                    Currency.USD,
+                    Currency.BTC,
                     TransactionType.FEE,
                     new BigDecimal("0.00002097"),
                     Currency.BTC
@@ -268,7 +268,7 @@ class BitfinexBeanV1Test {
                     "0-fee",
                     Instant.parse("2020-12-02T16:52:06.123Z"),
                     Currency.BTC,
-                    Currency.USD,
+                    Currency.BTC,
                     TransactionType.FEE,
                     new BigDecimal("0.00002097"),
                     Currency.BTC
@@ -282,6 +282,6 @@ class BitfinexBeanV1Test {
     void testIgnoredFee() {
         final String row = "0,BTC/USD,0.01048537,9212.82428,-0.00002097,XXX,04-02-20 16:52:06,1\n";
         final TransactionCluster transactionCluster = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
-        assertEquals(1, transactionCluster.getIgnoredFeeTransactionCount());
+        assertEquals(1, transactionCluster.getFailedFeeTransactionCount());
     }
 }

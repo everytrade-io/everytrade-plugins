@@ -62,7 +62,7 @@ class BitmexBeanV1Test {
                 new FeeRebateImportedTransactionBean(
                     "2da-01-fee",
                     Instant.parse("2020-01-24T17:48:15Z"),
-                    Currency.BTC,
+                    Currency.USD,
                     Currency.USD,
                     TransactionType.FEE,
                     new BigDecimal("0.00001505"),

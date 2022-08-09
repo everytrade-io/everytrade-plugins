@@ -51,9 +51,18 @@ class BinanceBeanV2Test {
                 new BigDecimal("0.041600"),
                 new BigDecimal("6236.39")
             ),
-           Collections.emptyList()
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    null,
+                    Instant.parse("2020-03-19T17:02:52Z"),
+                    Currency.BNB,
+                    Currency.BNB,
+                    TransactionType.FEE,
+                    new BigDecimal("0.01612653"),
+                    Currency.BNB
+                )
+            )
         );
-        expected.setFailedFee(1, null);
         ParserTestUtils.checkEqual(expected, actual);
     }
 
@@ -80,7 +89,7 @@ class BinanceBeanV2Test {
                     null,
                     Instant.parse("2020-03-19T17:02:52Z"),
                     Currency.BTC,
-                    Currency.USDT,
+                    Currency.BTC,
                     TransactionType.FEE,
                     new BigDecimal("0.0001612653"),
                     Currency.BTC
@@ -112,7 +121,7 @@ class BinanceBeanV2Test {
                 new FeeRebateImportedTransactionBean(
                     null,
                     Instant.parse("2020-03-19T17:02:52Z"),
-                    Currency.BTC,
+                    Currency.USDT,
                     Currency.USDT,
                     TransactionType.FEE,
                     new BigDecimal("0.1612653"),
@@ -141,9 +150,17 @@ class BinanceBeanV2Test {
                 new BigDecimal("0.041600"),
                 new BigDecimal("6236.39")
             ),
-            Collections.emptyList()
-        );
-        expected.setFailedFee(1, "");
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    null,
+                    Instant.parse("2020-03-19T17:02:52Z"),
+                    Currency.BNB,
+                    Currency.BNB,
+                    TransactionType.FEE,
+                    new BigDecimal("0.01612653"),
+                    Currency.BNB
+                )
+            ));
         ParserTestUtils.checkEqual(expected, actual);
     }
 
@@ -172,7 +189,7 @@ class BinanceBeanV2Test {
                 new FeeRebateImportedTransactionBean(
                     null,
                     Instant.parse("2021-11-01T06:01:00Z"),
-                    Currency.ETH,
+                    Currency.USDT,
                     Currency.USDT,
                     TransactionType.FEE,
                     new BigDecimal("0.11999397"),
@@ -205,7 +222,7 @@ class BinanceBeanV2Test {
                     null,
                     Instant.parse("2020-03-19T17:02:52Z"),
                     Currency.BTC,
-                    Currency.USDT,
+                    Currency.BTC,
                     TransactionType.FEE,
                     new BigDecimal("0.001612653"),
                     Currency.BTC
@@ -237,7 +254,7 @@ class BinanceBeanV2Test {
                 new FeeRebateImportedTransactionBean(
                     null,
                     Instant.parse("2020-03-19T17:02:52Z"),
-                    Currency.BTC,
+                    Currency.USDT,
                     Currency.USDT,
                     TransactionType.FEE,
                     new BigDecimal("0.1612653"),
@@ -259,16 +276,6 @@ class BinanceBeanV2Test {
             = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row0 + row1 + row2);
         final String error = parsingProblem.getMessage();
         assertTrue(error.contains(UNSUPPORTED_CURRENCY_PAIR.concat("USDTBTC")));
-    }
-
-    @Test
-    void testIgnoredFee() {
-        final String row0 = "2020-03-19 17:02:52;BTCUSDT;BUY;0.0;0.041600;6236.39;0.041600;259.44;Filled\n";
-        final String row1 = ";Date(UTC);Trading Price;Filled;Total;Fee;;;\n";
-        final String row2 = ";2020-03-19 17:02:52;6236.39;0.041600;259.43382400;0.1612653BNB;;;\n";
-        final TransactionCluster transactionCluster
-            = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row0 + row1 + row2);
-        assertEquals(1, transactionCluster.getIgnoredFeeTransactionCount());
     }
 
     @Test

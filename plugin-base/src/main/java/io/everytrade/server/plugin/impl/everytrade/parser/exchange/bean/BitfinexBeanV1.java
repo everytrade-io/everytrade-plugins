@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.equalsToZero;
+import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
 
 //MIN> BFX-001:|#|PAIR|AMOUNT|PRICE|FEE|FEE CURRENCY|DATE|
 //FULL> BFX-001:|#|PAIR|AMOUNT|PRICE|FEE|FEE CURRENCY|DATE|ORDER ID|
@@ -132,8 +133,8 @@ public class BitfinexBeanV1 extends ExchangeBean {
         );
         if (isIncorrectFeeCurr) {
             cluster.setFailedFee(1, "Fee " + (feeCurrency != null ? feeCurrency.code() : "null") + " currency is neither base or quote");
-        } else if (equalsToZero(fee)) {
-            cluster.setIgnoredFee(1, "Fee amount is 0 " + (feeCurrency != null ? feeCurrency.code() : ""));
+        } else if (nullOrZero(fee)) {
+//            cluster.setIgnoredFee(1, "Fee amount is 0 " + (feeCurrency != null ? feeCurrency.code() : ""));
         }
         return cluster;
     }

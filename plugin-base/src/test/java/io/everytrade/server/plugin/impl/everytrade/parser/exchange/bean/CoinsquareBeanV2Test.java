@@ -67,11 +67,4 @@ class CoinsquareBeanV2Test {
         ParserTestUtils.checkEqual(expected, actual);
     }
 
-    @Test
-    void testUnsupportedTransactionPair() {
-        final String row = "10-11-17;XMR;0.11040202;XRP;958.76\n";
-        final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
-        final String error = parsingProblem.getMessage();
-        assertTrue(error.contains(UNSUPPORTED_CURRENCY_PAIR.concat("XMR/XRP")));
-    }
 }

@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.equalsToZero;
+import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
 
 @Headers(sequence = {"Time","Type","Pair","Side","Amount","Total","Fee"}, extract = true)
 public class HuobiBeanV1 extends ExchangeBean {
@@ -125,8 +126,8 @@ public class HuobiBeanV1 extends ExchangeBean {
         );
         if (isIncorrectFeeCoin) {
             cluster.setFailedFee(1, "Fee " + (feeCurrency != null ? feeCurrency.code() : "null") + " currency is neither base or quote");
-        } else if (equalsToZero(fee)) {
-            cluster.setIgnoredFee(1, "Fee amount is 0 " + (feeCurrency != null ? feeCurrency.code() : ""));
+        } else if (nullOrZero(fee)) {
+//            cluster.setIgnoredFee(1, "Fee amount is 0 " + (feeCurrency != null ? feeCurrency.code() : ""));
         }
         return cluster;
     }
