@@ -77,7 +77,7 @@ public class EveryTradeBeanV2 extends ExchangeBean {
 
     @Override
     public TransactionCluster toTransactionCluster() {
-        validateCurrencyPair(symbolBase, symbolQuote);
+        validateCurrencyPair(symbolBase, symbolQuote, action);
 
         List<ImportedTransactionBean> related;
         if (equalsToZero(fee)) {
