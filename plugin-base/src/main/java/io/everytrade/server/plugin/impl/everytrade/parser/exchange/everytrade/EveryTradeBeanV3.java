@@ -94,7 +94,7 @@ public class EveryTradeBeanV3 extends ExchangeBean {
 
     @Override
     public TransactionCluster toTransactionCluster() {
-        validateCurrencyPair(symbolBase, symbolQuote);
+        validateCurrencyPair(symbolBase, symbolQuote, action);
         validatePositivity(quantity, price, fee, rebate);
         switch (action) {
             case BUY:

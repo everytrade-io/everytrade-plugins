@@ -68,6 +68,14 @@ public abstract class ExchangeBean implements IImportableBean {
         }
     }
 
+    public static void validateCurrencyPair(Currency base, Currency quote, TransactionType type) {
+            var currencyPair = new CurrencyPair(base, quote);
+            if (type.isBuyOrSell() && base.equals(quote)) {
+                throw new DataValidationException(UNSUPPORTED_CURRENCY_PAIR.concat(currencyPair.toString()));
+            }
+            validateCurrencyPair(base, quote);
+    }
+
     protected void validatePositivity(BigDecimal... values) {
         List<Integer> negativeValues = new ArrayList<>();
         for (int i = 0; i < values.length; i++) {
@@ -105,7 +113,7 @@ public abstract class ExchangeBean implements IImportableBean {
         try {
             type =  TransactionType.valueOf(value.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new DataIgnoredException(UNSUPPORTED_TRANSACTION_TYPE.concat(value));
+            throw new DataValidationException(UNSUPPORTED_TRANSACTION_TYPE.concat(value));
         }
         return type;
     }
