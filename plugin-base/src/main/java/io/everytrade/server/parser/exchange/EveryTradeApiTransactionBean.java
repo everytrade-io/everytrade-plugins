@@ -1,9 +1,8 @@
 package io.everytrade.server.parser.exchange;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
+import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
@@ -18,20 +17,15 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
+import static java.math.BigDecimal.ZERO;
 import static lombok.AccessLevel.PRIVATE;
 
 @Data
 @NoArgsConstructor
 @FieldDefaults(level = PRIVATE)
-@JsonFormat(shape = JsonFormat.Shape.ARRAY)
-@JsonPropertyOrder({
-    "uid", "timestamp", "base", "quote", "action", "quantity", "volume", "fee", "feeCurrency", "rebate", "rebateCurrency",
-    "addressFrom", "addressTo"
-})
 public class EveryTradeApiTransactionBean {
 
     String uid;
@@ -74,14 +68,14 @@ public class EveryTradeApiTransactionBean {
     }
 
     private TransactionCluster createDepositOrWithdrawalTxCluster() {
-        if (quantity.compareTo(BigDecimal.ZERO) == 0) {
+        if (quantity.compareTo(ZERO) == 0) {
             throw new DataValidationException("Quantity can not be zero.");
         }
         var tx = ImportedTransactionBean.createDepositWithdrawal(
             uid,
             timestamp,
             Currency.fromCode(base),
-            Currency.fromCode(quote),
+            Currency.fromCode(base),
             action,
             quantity,
             action == DEPOSIT ? addressFrom : addressTo
@@ -90,10 +84,12 @@ public class EveryTradeApiTransactionBean {
     }
 
     private TransactionCluster createBuySellTransactionCluster() {
-        if (quantity.compareTo(BigDecimal.ZERO) == 0) {
+        if (quantity.compareTo(ZERO) == 0) {
             throw new DataValidationException("Quantity can not be zero.");
         }
 
+        // try to validate pair
+        new CurrencyPair(base, quote);
         var tx = new ImportedTransactionBean(
             uid,
             timestamp,
@@ -108,31 +104,22 @@ public class EveryTradeApiTransactionBean {
 
     private List<ImportedTransactionBean> getRelatedTxs() {
         var related = new ArrayList<ImportedTransactionBean>();
-        if (fee.compareTo(BigDecimal.ZERO) > 0) {
+        if (fee != null && fee.compareTo(ZERO) > 0) {
             related.add(createFeeTransactionBean(false));
         }
 
-        if (rebate.compareTo(BigDecimal.ZERO) > 0) {
+        if (rebate != null && rebate.compareTo(ZERO) > 0) {
             related.add(createRebateTransactionBean(false));
         }
         return related;
     }
 
     private FeeRebateImportedTransactionBean createFeeTransactionBean(boolean unrelated) {
-        var feeCurrencyIsBase = Objects.equals(feeCurrency, base);
-        var feeCurrencyIsQuote = Objects.equals(feeCurrency, quote);
-
-        if (!feeCurrencyIsBase && !feeCurrencyIsQuote) {
-            throw new DataValidationException(
-                String.format("Fee currency '%s' differs to base '%s' and to quote '%s'.", feeCurrency, base, quote)
-            );
-        }
-
         return new FeeRebateImportedTransactionBean(
             unrelated ? uid : uid + FEE_UID_PART,
             timestamp,
-            Currency.fromCode(base),
-            Currency.fromCode(quote),
+            Currency.fromCode(feeCurrency),
+            Currency.fromCode(feeCurrency),
             TransactionType.FEE,
             fee,
             Currency.fromCode(feeCurrency)
@@ -140,19 +127,11 @@ public class EveryTradeApiTransactionBean {
     }
 
     private FeeRebateImportedTransactionBean createRebateTransactionBean(boolean unrelated) {
-        var rebateCurrencyIsBase = Objects.equals(rebateCurrency, base);
-        var rebateCurrencyIsQuote = Objects.equals(rebateCurrency, quote);
-        if (!rebateCurrencyIsBase && !rebateCurrencyIsQuote) {
-            throw new DataValidationException(
-                String.format("Rebate currency '%s' differs to base '%s' and to quote '%s'.", rebateCurrency, base, quote)
-            );
-        }
-
         return new FeeRebateImportedTransactionBean(
             unrelated ? uid : uid + FEE_UID_PART,
             timestamp,
-            Currency.fromCode(base),
-            Currency.fromCode(quote),
+            Currency.fromCode(rebateCurrency),
+            Currency.fromCode(rebateCurrency),
             TransactionType.REBATE,
             rebate,
             Currency.fromCode(rebateCurrency)
