@@ -3,8 +3,6 @@ package io.everytrade.server.plugin.impl.everytrade;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.connector.DownloadResult;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.DepositWithdrawalImportedTransaction;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.etherscan.EtherScanClient;
@@ -163,7 +161,7 @@ class BlockchainEthDownloaderTest {
     private void assertDepositWithdrawal(TransactionCluster cluster, TransactionType type, BigDecimal volume) {
         assertEquals(0, cluster.getIgnoredFeeTransactionCount());
         assertNull(cluster.getIgnoredFeeReason());
-        var tx = (DepositWithdrawalImportedTransaction) cluster.getMain();
+        var tx = cluster.getMain();
         bigDecimalEquals(volume, tx.getVolume());
         assertNotNull(tx.getAddress());
         assertNotNull(tx.getUid());
@@ -177,8 +175,8 @@ class BlockchainEthDownloaderTest {
     private void assertBuySell(TransactionCluster cluster, TransactionType type, BigDecimal volume) {
         assertEquals(0, cluster.getIgnoredFeeTransactionCount());
         assertNull(cluster.getIgnoredFeeReason());
-        var tx = (BuySellImportedTransactionBean) cluster.getMain();
-        bigDecimalEquals(volume, tx.getBaseQuantity());
+        var tx = cluster.getMain();
+        bigDecimalEquals(volume, tx.getVolume());
         assertNotNull(tx.getUid());
         assertNotNull(tx.getExecuted());
         assertEquals(Currency.ETH, tx.getBase());
@@ -190,7 +188,7 @@ class BlockchainEthDownloaderTest {
     private void assertFees(TransactionCluster cluster) {
         assertEquals(1, cluster.getRelated().size());
         var fee = (FeeRebateImportedTransactionBean) cluster.getRelated().get(0);
-        assertNotNull(fee.getFeeRebate());
+        assertNotNull(fee.getVolume());
         assertEquals(Currency.ETH, fee.getFeeRebateCurrency());
         assertNotNull(fee.getUid());
         assertNotNull(fee.getExecuted());

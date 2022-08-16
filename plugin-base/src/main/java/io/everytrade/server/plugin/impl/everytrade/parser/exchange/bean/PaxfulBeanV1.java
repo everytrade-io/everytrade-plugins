@@ -6,7 +6,6 @@ import com.univocity.parsers.annotations.Replace;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
@@ -84,7 +83,7 @@ public class PaxfulBeanV1 extends ExchangeBean {
     public TransactionCluster toTransactionCluster() {
         validateCurrencyPair(Currency.BTC, fiatCurrency);
         return new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 tradeHash,               //uuid
                 completedAt,             //executed
                 Currency.BTC,            //base

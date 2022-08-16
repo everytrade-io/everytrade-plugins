@@ -2,7 +2,7 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
@@ -35,7 +35,7 @@ class CoinsquareBeanV1Test {
         final String row = "23-02-20;buy;CAD;BTC;0,00007663;1,674.86;0.12823291\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 null,
                 Instant.parse("2020-02-23T00:00:00Z"),
                 Currency.BTC,
@@ -54,7 +54,7 @@ class CoinsquareBeanV1Test {
         final String row = "23-02-20;buy;CAD;BTC;0,00007663;1 674.86$;0.128,232,91\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 null,
                 Instant.parse("2020-02-23T00:00:00Z"),
                 Currency.BTC,
@@ -73,7 +73,7 @@ class CoinsquareBeanV1Test {
         final String row = "27-12-19;sell;CAD;BTC;0,00010604;2,271.66;0.24064597\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 null,
                 Instant.parse("2019-12-27T00:00:00Z"),
                 Currency.BTC,
@@ -92,7 +92,7 @@ class CoinsquareBeanV1Test {
         final String row = "27-12-19;sell;CAD;BTC;0,00010604;2,271.66;-0.24064597\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 null,
                 Instant.parse("2019-12-27T00:00:00Z"),
                 Currency.BTC,

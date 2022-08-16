@@ -2,7 +2,7 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
@@ -50,7 +50,7 @@ class GeneralBytesBeanV1Test {
             ";IC;ERROR (EXCHANGE PURCHASE);;76;\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "L-R",
                 Instant.parse("2018-08-06T05:35:35.0Z"),
                 Currency.BTC,
@@ -58,7 +58,8 @@ class GeneralBytesBeanV1Test {
                 TransactionType.SELL,
                 new BigDecimal("0.031637"),
                 new BigDecimal("158042.7979896956"),
-                "R"
+                "R",
+                null
             ),
             List.of()
         );
@@ -71,7 +72,7 @@ class GeneralBytesBeanV1Test {
             ";IA;PAYMENT ARRIVED;7;;\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "L-R",
                 Instant.parse("2018-08-06T04:44:44.0Z"),
                 Currency.BTC,
@@ -79,7 +80,8 @@ class GeneralBytesBeanV1Test {
                 TransactionType.BUY,
                 new BigDecimal("0.052674"),
                 new BigDecimal("151877.5866651479"),
-                "R"
+                "R",
+                null
             ),
             List.of()
         );
@@ -92,7 +94,7 @@ class GeneralBytesBeanV1Test {
             ";IA;PAYMENT ARRIVED;7;;\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "L-R",
                 Instant.parse("2018-08-06T06:38:43Z"),
                 Currency.BTC,
@@ -100,7 +102,8 @@ class GeneralBytesBeanV1Test {
                 TransactionType.BUY,
                 new BigDecimal("0.052674"),
                 new BigDecimal("151877.5866651479"),
-                "R"
+                "R",
+                null
             ),
             List.of()
         );
@@ -113,7 +116,7 @@ class GeneralBytesBeanV1Test {
             ";IA;PAYMENT ARRIVED;7;;\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "L-R",
                 Instant.parse("2018-08-06T06:38:00Z"),
                 Currency.BTC,
@@ -121,7 +124,8 @@ class GeneralBytesBeanV1Test {
                 TransactionType.BUY,
                 new BigDecimal("0.052674"),
                 new BigDecimal("151877.5866651479"),
-                "R"
+                "R",
+                null
             ),
             List.of()
         );

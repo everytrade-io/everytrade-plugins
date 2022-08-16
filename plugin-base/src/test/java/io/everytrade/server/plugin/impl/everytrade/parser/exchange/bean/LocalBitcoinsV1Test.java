@@ -2,7 +2,7 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
@@ -40,7 +40,7 @@ class LocalBitcoinsV1Test {
             "0.00674761,0.66801349,0.66801349,5000,50,7484.88,CAD,7410.03,2020-03-17 17:39:50+00:00,I,L6\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "0",
                 Instant.parse("2020-03-17T17:39:50Z"),
                 Currency.BTC,
@@ -60,7 +60,7 @@ class LocalBitcoinsV1Test {
             ".00674761,0.66801349,0.66801349,5000,50,7484.88,XRP,7410.03,2020-03-17 17:39:50+00:00,I,L6\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "0",
                 Instant.parse("2020-03-17T17:39:50Z"),
                 Currency.XRP,
@@ -80,7 +80,7 @@ class LocalBitcoinsV1Test {
             "0.01500236,0.00015002,0.01500236,0.01515238,125,1.24,8332.02,CAD,8332.02,2020-03-17 18:05:15+00:00,I,LX\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "0",
                 Instant.parse("2020-03-17T18:05:15Z"),
                 Currency.BTC,

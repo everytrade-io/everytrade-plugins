@@ -2,8 +2,8 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
@@ -50,7 +50,7 @@ class BittrexBeanV3Test {
             "28.54470380,57.08940760,False,,0.00000000,True,7/31/2020 11:32:59 AM,2,\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "d-01",
                 Instant.parse("2020-07-31T11:32:59Z"),
                 Currency.LTC,
@@ -80,7 +80,7 @@ class BittrexBeanV3Test {
             "28.43078222,57.14699999,False,,0.00000000,True,7/31/2020 11:35:21 AM,2,\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "d-01",
                 Instant.parse("2020-07-31T11:35:21Z"),
                 Currency.LTC,

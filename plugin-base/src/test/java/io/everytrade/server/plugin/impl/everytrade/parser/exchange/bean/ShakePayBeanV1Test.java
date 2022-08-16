@@ -2,7 +2,7 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
@@ -36,7 +36,7 @@ class ShakePayBeanV1Test {
         final String row = "exchange,2020-03-11T19:59:23+00,\"1,000\",CAD,0.09172307,BTC,10902.3826,,\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 null,
                 Instant.parse("2020-03-11T19:59:23Z"),
                 Currency.BTC,
@@ -55,7 +55,7 @@ class ShakePayBeanV1Test {
         final String row = "exchange,2020-03-11T19:59:23+00,0.09172307,BTC,\"1,000\",CAD,10902.3826,,\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 null,
                 Instant.parse("2020-03-11T19:59:23Z"),
                 Currency.BTC,

@@ -5,7 +5,7 @@ import com.univocity.parsers.annotations.Parsed;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
@@ -101,7 +101,7 @@ public class GeneralBytesBeanV1 extends ExchangeBean {
         validateCurrencyPair(cryptoCurrency, cashCurrency);
 
         return new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 localTransactionId.concat("-").concat(remoteTransactionId),   //uuid
                 serverTime,                 //executed
                 cryptoCurrency,             //base
@@ -109,7 +109,8 @@ public class GeneralBytesBeanV1 extends ExchangeBean {
                 type,                       //action
                 cryptoAmount,               //base quantity
                 evalUnitPrice(cashAmount, cryptoAmount),//unit price
-                remoteTransactionId         //note
+                remoteTransactionId,         //note
+                null
             ),
             List.of()
         );

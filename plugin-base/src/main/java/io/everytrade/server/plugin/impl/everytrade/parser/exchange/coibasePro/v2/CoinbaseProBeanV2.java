@@ -7,8 +7,6 @@ import com.univocity.parsers.annotations.Replace;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.DepositWithdrawalImportedTransaction;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
@@ -22,7 +20,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -193,7 +190,7 @@ public class CoinbaseProBeanV2 extends ExchangeBean {
         }
         if (transactionType.isBuyOrSell()) {
             transactionCluster = new TransactionCluster(
-                new BuySellImportedTransactionBean(
+                new ImportedTransactionBean(
                     tradeId,             //uuid
                     time,           //executed
                     base,         //base
@@ -212,7 +209,7 @@ public class CoinbaseProBeanV2 extends ExchangeBean {
                 setPrice(amount);
             }
             transactionCluster = new TransactionCluster(
-                new DepositWithdrawalImportedTransaction(
+                ImportedTransactionBean.createDepositWithdrawal(
                     transferId,
                     time,
                     currency,

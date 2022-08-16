@@ -2,25 +2,40 @@ package io.everytrade.server.plugin.api.parser;
 
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 import static lombok.AccessLevel.PRIVATE;
 
 @Getter
 @ToString
-@RequiredArgsConstructor
+@AllArgsConstructor
 @FieldDefaults(level = PRIVATE, makeFinal = true)
-public abstract class ImportedTransactionBean {
+public class ImportedTransactionBean {
+
     String uid;
     Instant executed;
     Currency base;
     Currency quote;
     TransactionType action;
+    BigDecimal volume;
+    BigDecimal unitPrice;
     Instant imported = Instant.now();
     String note;
+    String address;
+
+    public ImportedTransactionBean(String id, Instant executed, Currency base, Currency quote, TransactionType action, BigDecimal volume,
+                                   BigDecimal unitPrice) {
+        this(id, executed, base, quote, action, volume, unitPrice, null, null);
+    }
+
+    public static ImportedTransactionBean createDepositWithdrawal(String id, Instant timestamp, Currency base, Currency quote,
+                                                                  TransactionType type, BigDecimal amount, String address) {
+        return new ImportedTransactionBean(id, timestamp, base, quote, type, amount, null, null, address);
+    }
 }

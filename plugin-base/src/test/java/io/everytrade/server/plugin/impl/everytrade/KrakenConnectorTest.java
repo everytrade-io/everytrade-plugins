@@ -2,8 +2,6 @@ package io.everytrade.server.plugin.impl.everytrade;
 
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.CurrencyPair;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.DepositWithdrawalImportedTransaction;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.test.mock.KrakenExchangeMock;
 import org.junit.jupiter.api.Test;
@@ -71,11 +69,9 @@ class KrakenConnectorTest {
         assertEquals(0, cluster.getIgnoredFeeTransactionCount());
 
         if (type.isDepositOrWithdrawal()) {
-            var depositWithdrawal = (DepositWithdrawalImportedTransaction) tx;
-            assertEquals(volume, depositWithdrawal.getVolume());
+            assertEquals(volume, tx.getVolume());
         } else if (type.isBuyOrSell()) {
-            var buySell  = (BuySellImportedTransactionBean) cluster.getMain();
-            assertEquals(volume, buySell.getBaseQuantity());
+            assertEquals(volume, tx.getVolume());
             assertEquals(Currency.USD, tx.getQuote());
         }
     }

@@ -98,7 +98,7 @@ public class Tester {
         log.info("done testing parsers");
         log.info("--------------------------------------------------------------------------------");
         log.info("testing rate providers...");
-        testRateProviders(plugin);
+        //testRateProviders(plugin);
         log.info("done testing rate providers");
         log.info("--------------------------------------------------------------------------------");
         log.info("done testing plugin " + plugin.getId());

@@ -6,7 +6,6 @@ import com.univocity.parsers.annotations.Replace;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
@@ -102,7 +101,7 @@ public class LocalBitcoinsBeanV1 extends ExchangeBean {
         final BigDecimal baseQuantity = isReverseTrade ? fiatAmount.abs() : btcFinal.abs();
         final BigDecimal volume = isReverseTrade ? btcFinal.abs() : fiatAmount.abs();
         return new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 id,                      //uuid
                 transactionReleasedAt,   //executed
                 isReverseTrade ? currency : Currency.BTC,            //base

@@ -2,8 +2,8 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.List;
 
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.UNSUPPORTED_CURRENCY_PAIR;
@@ -42,7 +41,7 @@ class BinanceBeanV2Test {
         final TransactionCluster actual
             = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row0 + row1 + row2);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 null,
                 Instant.parse("2020-03-19T17:02:52Z"),
                 Currency.BTC,
@@ -75,7 +74,7 @@ class BinanceBeanV2Test {
         final TransactionCluster actual
             = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row0 + row1 + row2);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 null,
                 Instant.parse("2020-03-19T17:02:52Z"),
                 Currency.BTC,
@@ -108,7 +107,7 @@ class BinanceBeanV2Test {
         final TransactionCluster actual
             = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row0 + row1 + row2);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 null,
                 Instant.parse("2020-03-19T17:02:52Z"),
                 Currency.BTC,
@@ -141,7 +140,7 @@ class BinanceBeanV2Test {
         final TransactionCluster actual
             = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row0 + row1 + row2);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 null,
                 Instant.parse("2020-03-19T17:02:52Z"),
                 Currency.BTC,
@@ -176,7 +175,7 @@ class BinanceBeanV2Test {
         final TransactionCluster actual
             = ParserTestUtils.getTransactionCluster(header + row0 + row1 + row2);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 null,
                 Instant.parse("2021-11-01T06:01:00Z"),
                 Currency.ETH,
@@ -208,7 +207,7 @@ class BinanceBeanV2Test {
         final TransactionCluster actual
             = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row0 + row1 + row2);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 null,
                 Instant.parse("2020-03-19T17:02:52Z"),
                 Currency.BTC,
@@ -241,7 +240,7 @@ class BinanceBeanV2Test {
         final TransactionCluster actual
             = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row0 + row1 + row2);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 null,
                 Instant.parse("2020-03-19T17:02:52Z"),
                 Currency.BTC,

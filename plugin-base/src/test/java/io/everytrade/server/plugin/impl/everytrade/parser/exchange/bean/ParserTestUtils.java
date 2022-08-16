@@ -1,7 +1,5 @@
 package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.DepositWithdrawalImportedTransaction;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParseResult;
@@ -9,12 +7,14 @@ import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.EverytradeCsvMultiParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
+import io.everytrade.server.test.TestUtils;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
+import static io.everytrade.server.test.TestUtils.bigDecimalEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -70,23 +70,13 @@ public class ParserTestUtils {
         assertEquals(expected.getQuote(), actual.getQuote());
         assertEquals(expected.getAction(), actual.getAction());
 
-        if (expected instanceof BuySellImportedTransactionBean) {
-            var a = ((BuySellImportedTransactionBean) actual);
-            var e = ((BuySellImportedTransactionBean) expected);
-            assertEquals(0, e.getBaseQuantity().compareTo(a.getBaseQuantity()));
-            assertEquals(0, e.getUnitPrice().compareTo(a.getUnitPrice()));
-        } else if (expected instanceof DepositWithdrawalImportedTransaction) {
-            var a = ((DepositWithdrawalImportedTransaction) actual);
-            var e = ((DepositWithdrawalImportedTransaction) expected);
-            assertEquals(0, e.getVolume().compareTo(a.getVolume()));
-        }
+        bigDecimalEquals(expected.getVolume(), actual.getVolume());
+        bigDecimalEquals(expected.getUnitPrice(), actual.getUnitPrice());
+
         assertEquals(expected.getNote(), actual.getNote());
     }
 
-    public static void checkEqualRelated(
-        FeeRebateImportedTransactionBean expected,
-        FeeRebateImportedTransactionBean actual
-    ) {
+    public static void checkEqualRelated(FeeRebateImportedTransactionBean expected, FeeRebateImportedTransactionBean actual) {
         assertNotNull(expected);
         assertNotNull(actual);
         assertNotNull(actual);
@@ -95,7 +85,7 @@ public class ParserTestUtils {
         assertEquals(expected.getBase(), actual.getBase());
         assertEquals(expected.getQuote(), actual.getQuote());
         assertEquals(expected.getAction(), actual.getAction());
-        assertEquals(0, expected.getFeeRebate().compareTo(actual.getFeeRebate()));
+        assertEquals(0, expected.getVolume().compareTo(actual.getVolume()));
         assertEquals(expected.getFeeRebateCurrency(), actual.getFeeRebateCurrency());
         assertEquals(expected.getNote(), actual.getNote());
     }

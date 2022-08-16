@@ -2,7 +2,7 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
@@ -40,7 +40,7 @@ class PaxfulBeanV1Test {
             "successful,2020-03-17T16:31:07-04:00,s91,w01\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "s91",
                 Instant.parse("2020-03-17T16:31:07Z"),
                 Currency.BTC,
@@ -60,7 +60,7 @@ class PaxfulBeanV1Test {
             "2020-03-16T16:51:28-04:00,s91,7x\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "s91",
                 Instant.parse("2020-03-16T16:51:28Z"),
                 Currency.BTC,

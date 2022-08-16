@@ -2,8 +2,8 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
@@ -39,7 +39,7 @@ class BitfinexBeanV1Test {
         final String row = "0,BTC/USD,0.01048537,9212.82428,-0.00002097,BTC,04-02-20 16:52:06,1\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "0",
                 Instant.parse("2020-02-04T16:52:06Z"),
                 Currency.BTC,
@@ -68,7 +68,7 @@ class BitfinexBeanV1Test {
         final String row = "0,BTC/USD,0.01048537$,9 212.82428$,-0.00002097,BTC,04-02-20 16:52:06,1\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "0",
                 Instant.parse("2020-02-04T16:52:06Z"),
                 Currency.BTC,
@@ -97,7 +97,7 @@ class BitfinexBeanV1Test {
         final String row = "0,BTC/USD,0.01048537,9212.82428,-0.00002097,USD,04-02-20 16:52:06,1\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "0",
                 Instant.parse("2020-02-04T16:52:06Z"),
                 Currency.BTC,
@@ -127,7 +127,7 @@ class BitfinexBeanV1Test {
         final String row = "0,BTC/USD,-0.0095,9214.7,-0.1750793,USD,04-02-20 16:49:55,3\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "0",
                 Instant.parse("2020-02-04T16:49:55Z"),
                 Currency.BTC,
@@ -156,7 +156,7 @@ class BitfinexBeanV1Test {
         final String row = "0,BTC/USD,-0.0095,9214.7,-0.000000123,BTC,04-02-20 16:49:55,3\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "0",
                 Instant.parse("2020-02-04T16:49:55Z"),
                 Currency.BTC,
@@ -194,7 +194,7 @@ class BitfinexBeanV1Test {
         final String row = "0,BTC/USD,0.01048537,9212.82428,-0.00002097,XXX,04-02-20 16:52:06,1\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "0",
                 Instant.parse("2020-02-04T16:52:06Z"),
                 Currency.BTC,
@@ -224,7 +224,7 @@ class BitfinexBeanV1Test {
         final String row2 = "0,BTC/USD,0.01048537,9212.82428,-0.00002097,BTC,12-20-20 16:52:06,1\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row + row2);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "0",
                 Instant.parse("2020-12-02T16:52:06Z"),
                 Currency.BTC,
@@ -254,7 +254,7 @@ class BitfinexBeanV1Test {
         final String row2 = "0,BTC/USD,0.01048537,9212.82428,-0.00002097,BTC,12-20-20 16:52:06.123,1\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row + row2);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "0",
                 Instant.parse("2020-12-02T16:52:06.123Z"),
                 Currency.BTC,

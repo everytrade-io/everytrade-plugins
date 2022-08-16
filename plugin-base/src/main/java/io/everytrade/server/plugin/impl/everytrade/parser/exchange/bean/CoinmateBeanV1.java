@@ -4,8 +4,6 @@ import com.univocity.parsers.annotations.Format;
 import com.univocity.parsers.annotations.Parsed;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.DepositWithdrawalImportedTransaction;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
@@ -141,7 +139,7 @@ public class CoinmateBeanV1 extends ExchangeBean {
             );
         }
         TransactionCluster cluster = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 id,             //uuid
                 date,           //executed
                 amountCurrency, //base
@@ -164,7 +162,7 @@ public class CoinmateBeanV1 extends ExchangeBean {
     }
 
     private TransactionCluster createDepositOrWithdrawalTxCluster() {
-        var tx = new DepositWithdrawalImportedTransaction(
+        var tx = ImportedTransactionBean.createDepositWithdrawal(
             id,
             date,
             amountCurrency, //base

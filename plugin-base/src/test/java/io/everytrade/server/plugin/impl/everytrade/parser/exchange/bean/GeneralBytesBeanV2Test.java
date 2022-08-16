@@ -2,8 +2,8 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
@@ -56,7 +56,7 @@ class GeneralBytesBeanV2Test {
             "PAYMENT ARRIVED;;;;1854.582209;1854.57753657;0;0;0;ltc  ltc ltc;;0.0053;LTC;\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "L-R",
                 Instant.parse("2020-12-07T15:33:55Z"),
                 Currency.LTC,
@@ -64,7 +64,8 @@ class GeneralBytesBeanV2Test {
                 TransactionType.BUY,
                 new BigDecimal("0.107841"),
                 new BigDecimal("1854.5822089929"),
-                "R"
+                "R",
+                null
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -88,7 +89,7 @@ class GeneralBytesBeanV2Test {
             "COMPLETED (0);;;;2176.097183;2176.0974;0;0;0;LTC test;;0.0001;LTC;\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "L-R",
                 Instant.parse("2020-12-10T15:02:41Z"),
                 Currency.LTC,
@@ -96,7 +97,8 @@ class GeneralBytesBeanV2Test {
                 TransactionType.SELL,
                 new BigDecimal("0.04595383"),
                 new BigDecimal("2176.0971827593"),
-                "R"
+                "R",
+                null
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -120,7 +122,7 @@ class GeneralBytesBeanV2Test {
             "COMPLETED (0);;;;2176.097183;2176.0974;0;0;0;LTC test;;0.0001;LTC;\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "L-R",
                 Instant.parse("2018-08-06T06:38:43Z"),
                 Currency.LTC,
@@ -128,7 +130,8 @@ class GeneralBytesBeanV2Test {
                 TransactionType.SELL,
                 new BigDecimal("0.04595383"),
                 new BigDecimal("2176.0971827593"),
-                "R"
+                "R",
+                null
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -152,7 +155,7 @@ class GeneralBytesBeanV2Test {
             "COMPLETED (0);;;;2176.097183;2176.0974;0;0;0;LTC test;;0.0001;LTC;\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "L-R",
                 Instant.parse("2018-08-06T06:38:00Z"),
                 Currency.LTC,
@@ -160,7 +163,8 @@ class GeneralBytesBeanV2Test {
                 TransactionType.SELL,
                 new BigDecimal("0.04595383"),
                 new BigDecimal("2176.0971827593"),
-                "R"
+                "R",
+                null
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(

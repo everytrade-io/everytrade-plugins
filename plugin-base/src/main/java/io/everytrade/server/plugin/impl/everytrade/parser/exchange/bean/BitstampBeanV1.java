@@ -6,8 +6,6 @@ import com.univocity.parsers.annotations.Parsed;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.DepositWithdrawalImportedTransaction;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
@@ -143,7 +141,7 @@ public class BitstampBeanV1 extends ExchangeBean {
             );
         }
         return new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 null,          //uuid
                 dateTime,           //executed
                 amountCurrency,     //base
@@ -157,7 +155,7 @@ public class BitstampBeanV1 extends ExchangeBean {
     }
 
     private TransactionCluster createDepositOrWithdrawalTxCluster() {
-        var tx = new DepositWithdrawalImportedTransaction(
+        var tx = ImportedTransactionBean.createDepositWithdrawal(
             null,
             dateTime,
             amountCurrency, //base

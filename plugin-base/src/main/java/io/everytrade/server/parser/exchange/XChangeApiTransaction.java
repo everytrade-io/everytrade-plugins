@@ -4,12 +4,9 @@ import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.DepositWithdrawalImportedTransaction;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
-import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import lombok.Builder;
 import lombok.Value;
 import org.knowm.xchange.dto.Order;
@@ -22,7 +19,6 @@ import java.time.Instant;
 import java.util.List;
 
 import static io.everytrade.server.model.TransactionType.FEE;
-import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.equalsToZero;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 import static java.util.Collections.emptyList;
@@ -69,7 +65,7 @@ public class XChangeApiTransaction {
         return XChangeApiTransaction.builder()
             .id(record.getInternalId())
             .timestamp(record.getDate().toInstant())
-            .type(fundingTypeToTxType(record.getType()))
+            .type(fundingTypeToTxType(record))
             .base(currency)
             .quote(null)
             .originalAmount(record.getAmount())
@@ -107,10 +103,10 @@ public class XChangeApiTransaction {
         }
 
         TransactionCluster cluster;
-        if (type.isBuyOrSell()) {
-            cluster = createBuySellTx(related);
-        } else if (type.isDepositOrWithdrawal()) {
+        if (type.isDepositOrWithdrawal()) {
             cluster = createDepositWithdrawalTx(related);
+        } else if (type.isBuyOrSell() || type.isZeroCostGain() || type.isStaking()) {
+            cluster = createTx(related);
         } else {
             throw new DataValidationException("Unsupported type " + type.name());
         }
@@ -125,7 +121,7 @@ public class XChangeApiTransaction {
 
     private TransactionCluster createDepositWithdrawalTx(List<ImportedTransactionBean> related) {
         return new TransactionCluster(
-            new DepositWithdrawalImportedTransaction(
+            ImportedTransactionBean.createDepositWithdrawal(
                 id,
                 timestamp,
                 base,
@@ -138,9 +134,9 @@ public class XChangeApiTransaction {
         );
     }
 
-    private TransactionCluster createBuySellTx(List<ImportedTransactionBean> related) {
+    private TransactionCluster createTx(List<ImportedTransactionBean> related) {
         return new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 id,
                 timestamp,
                 base,
@@ -163,14 +159,28 @@ public class XChangeApiTransaction {
                 throw new DataValidationException("ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE ".concat(orderType.name()));
         }
     }
-    private static TransactionType fundingTypeToTxType(FundingRecord.Type type) {
-        switch (type) {
+    private static TransactionType fundingTypeToTxType(FundingRecord record) {
+        switch (record.getType()) {
             case WITHDRAWAL:
                 return TransactionType.WITHDRAWAL;
             case DEPOSIT:
                 return TransactionType.DEPOSIT;
+            case OTHER_INFLOW:
+                // TODO this is binance specific - move it elsewhere
+                if (isAirdrop(record)) {
+                    return TransactionType.AIRDROP;
+                }
+                if (isStake(record)) {
+                    return TransactionType.STAKE;
+                }
+                if (isUnstake(record)) {
+                    return TransactionType.UNSTAKE;
+                }
+                if (isStakingReward(record)) {
+                    return TransactionType.STAKING_REWARD;
+                }
             default:
-                throw new DataValidationException("ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE ".concat(type.name()));
+                throw new DataValidationException("ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE ".concat(record.getType().name()));
         }
     }
 
@@ -182,5 +192,21 @@ public class XChangeApiTransaction {
                 org.knowm.xchange.currency.Currency.getInstance(currency.getCurrencyCode()).getCommonlyUsedCurrency();
             return Currency.fromCode(currencyConverted.getCurrencyCode());
         }
+    }
+
+    private static boolean isAirdrop(FundingRecord r) {
+        return r.getDescription() != null && r.getDescription().toLowerCase().endsWith("airdrop");
+    }
+
+    private static boolean isStake(FundingRecord r) {
+        return r.getDescription() != null && r.getDescription().toLowerCase().startsWith("staking");
+    }
+
+    private static boolean isUnstake(FundingRecord r) {
+        return false; // TODO dont know how this looks in API
+    }
+
+    private static boolean isStakingReward(FundingRecord r) {
+        return r.getDescription() != null && r.getDescription().toLowerCase().endsWith("distribution");
     }
 }
