@@ -7,12 +7,9 @@ import com.generalbytes.bitrafael.tools.transaction.Transaction;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.DepositWithdrawalImportedTransaction;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
-import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import lombok.AccessLevel;
 import lombok.ToString;
 import lombok.experimental.FieldDefaults;
@@ -123,7 +120,7 @@ public class BlockchainApiTransactionBean {
 
     private ImportedTransactionBean createTx() {
         if (type == BUY || type == SELL) {
-            return new BuySellImportedTransactionBean(
+            return new ImportedTransactionBean(
                 id,
                 timestamp,
                 base,
@@ -133,7 +130,7 @@ public class BlockchainApiTransactionBean {
                 price
             );
         } else if (type == DEPOSIT || type == WITHDRAWAL) {
-            return new DepositWithdrawalImportedTransaction(
+            return ImportedTransactionBean.createDepositWithdrawal(
                 id,
                 timestamp,
                 base,

@@ -7,11 +7,9 @@ import com.univocity.parsers.annotations.Replace;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
-import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
@@ -113,7 +111,7 @@ public class HuobiBeanV1 extends ExchangeBean {
         validatePositivity(baseQuantity, quoteVolume, unitPrice);
 
         TransactionCluster cluster = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 null,
                 time,
                 pairBase,

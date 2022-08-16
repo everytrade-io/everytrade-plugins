@@ -2,8 +2,8 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
@@ -48,7 +48,7 @@ class KrakenBeanV1Test {
             "0,,\"LX,JX\"\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "TTT",
                 Instant.parse("2019-07-29T17:04:41Z"),
                 Currency.BTC,
@@ -79,7 +79,7 @@ class KrakenBeanV1Test {
             "0,,\"LX,JX\"\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "TTT",
                 Instant.parse("2019-07-29T17:04:41.51Z"),
                 Currency.BTC,
@@ -109,7 +109,7 @@ class KrakenBeanV1Test {
             "0,,\"LX,JX\"\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "TTT",
                 Instant.parse("2019-07-29T17:04:41.51Z"),
                 Currency.DOGE,
@@ -148,7 +148,7 @@ class KrakenBeanV1Test {
             "limit,9480.3,18.9606,0.0493,0.002,0,,\"LX,JX\"\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "TTT",
                 Instant.parse("2019-07-29T12:04:41.1451Z"),
                 Currency.BTC,

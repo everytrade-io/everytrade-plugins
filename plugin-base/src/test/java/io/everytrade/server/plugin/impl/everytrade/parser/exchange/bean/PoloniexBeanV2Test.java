@@ -2,8 +2,8 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
@@ -41,7 +41,7 @@ class PoloniexBeanV2Test {
             "441050233396,-5304.67654579,0.56673303,BTC,3.9785074\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 null,
                 Instant.parse("2020-01-31T10:56:44Z"),
                 Currency.BTC,
@@ -71,7 +71,7 @@ class PoloniexBeanV2Test {
             "436733958991,2921.36033415,-0.32647158,USDT,2.19266474\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 null,
                 Instant.parse("2020-01-27T20:39:14Z"),
                 Currency.BTC,

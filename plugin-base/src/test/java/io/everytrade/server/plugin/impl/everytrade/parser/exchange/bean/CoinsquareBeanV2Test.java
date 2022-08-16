@@ -2,8 +2,7 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.ParsingProblem;
+import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
 import org.junit.jupiter.api.Test;
@@ -12,7 +11,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Collections;
 
-import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.UNSUPPORTED_CURRENCY_PAIR;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -34,7 +32,7 @@ class CoinsquareBeanV2Test {
         final String row = "29-05-19;CAD;2,000.00;BTC;0.16625219\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 null,
                 Instant.parse("2019-05-29T00:00:00Z"),
                 Currency.BTC,
@@ -53,7 +51,7 @@ class CoinsquareBeanV2Test {
         final String row = "10-11-17;BTC;0.11040202;CAD;958.76\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 null,
                 Instant.parse("2017-11-10T00:00:00Z"),
                 Currency.BTC,

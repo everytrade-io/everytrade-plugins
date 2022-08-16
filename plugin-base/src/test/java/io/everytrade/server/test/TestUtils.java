@@ -14,11 +14,16 @@ import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestUtils {
 
     public static void bigDecimalEquals(BigDecimal expected, BigDecimal actual) {
+        if (expected == null || actual == null) {
+            assertEquals(expected, actual);
+            return;
+        }
         assertTrue(expected.compareTo(actual) == 0);
     }
 

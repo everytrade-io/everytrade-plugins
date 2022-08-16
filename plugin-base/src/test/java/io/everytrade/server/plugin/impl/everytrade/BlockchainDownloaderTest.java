@@ -8,8 +8,6 @@ import com.generalbytes.bitrafael.server.api.dto.TxInfo;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.connector.DownloadResult;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.DepositWithdrawalImportedTransaction;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import org.junit.jupiter.api.Test;
@@ -175,7 +173,7 @@ class BlockchainDownloaderTest {
     private void assertDepositWithdrawal(TransactionCluster cluster, TransactionType type, BigDecimal volume) {
         assertEquals(0, cluster.getIgnoredFeeTransactionCount());
         assertNull(cluster.getIgnoredFeeReason());
-        var tx = (DepositWithdrawalImportedTransaction) cluster.getMain();
+        var tx = cluster.getMain();
         assertEquals(volume, tx.getVolume());
         assertNotNull(tx.getAddress());
         assertNotNull(tx.getUid());
@@ -189,8 +187,8 @@ class BlockchainDownloaderTest {
     private void assertBuySell(TransactionCluster cluster, TransactionType type, BigDecimal volume) {
         assertEquals(0, cluster.getIgnoredFeeTransactionCount());
         assertNull(cluster.getIgnoredFeeReason());
-        var tx = (BuySellImportedTransactionBean) cluster.getMain();
-        bigDecimalEquals(volume, tx.getBaseQuantity());
+        var tx = cluster.getMain();
+        bigDecimalEquals(volume, tx.getVolume());
         assertNotNull(tx.getUid());
         assertNotNull(tx.getExecuted());
         assertEquals(Currency.BTC, tx.getBase());
@@ -202,7 +200,7 @@ class BlockchainDownloaderTest {
     private void assertFees(TransactionCluster cluster) {
         assertEquals(1, cluster.getRelated().size());
         var fee = (FeeRebateImportedTransactionBean) cluster.getRelated().get(0);
-        assertNotNull(fee.getFeeRebate());
+        assertNotNull(fee.getVolume());
         assertEquals(Currency.BTC, fee.getFeeRebateCurrency());
         assertNotNull(fee.getUid());
         assertNotNull(fee.getExecuted());

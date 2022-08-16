@@ -2,8 +2,8 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
@@ -48,7 +48,7 @@ class OkxBeanV1Test {
             "-104.976405810000002816 USDT,taker,-0.0034105395 LTC,LTC\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "0",
                 Instant.parse("2020-09-25T17:27:02Z"),
                 Currency.LTC,
@@ -78,7 +78,7 @@ class OkxBeanV1Test {
             "105.446919269999995095 USDT,taker,-0.158170378905 USDT,LTC\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "1",
                 Instant.parse("2020-09-25T16:58:58Z"),
                 Currency.LTC,

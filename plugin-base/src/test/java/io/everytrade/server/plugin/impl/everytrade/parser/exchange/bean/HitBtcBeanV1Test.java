@@ -2,7 +2,6 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
@@ -64,7 +63,7 @@ class   HitBtcBeanV1Test {
         ));
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "0",
                 Instant.parse("2018-10-29T12:41:32Z"),
                 Currency.ETH,
@@ -95,7 +94,7 @@ class   HitBtcBeanV1Test {
         ));
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "0",
                 Instant.parse("2018-10-29T12:41:32Z"),
                 Currency.ETH,

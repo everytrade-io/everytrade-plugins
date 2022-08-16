@@ -2,9 +2,8 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.ParsingProblem;
+import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
 import org.junit.jupiter.api.Test;
@@ -47,7 +46,7 @@ class BitflyerBeanV1Test {
         final String row = "2020/09/29 17:55:30;LTC/USD;Buy;46.43;LTC;0.9;0.4;46.43;USD;-41.79;BF-01;\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "BF-01",
                 Instant.parse("2020-09-29T17:55:30Z"),
                 Currency.LTC,
@@ -76,7 +75,7 @@ class BitflyerBeanV1Test {
         final String row = "2020/09/29 17:53:28;LTC/USD;Sell;44.16;LTC;-1;0.2;44.16;USD;44.16;BF-02;\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "BF-02",
                 Instant.parse("2020-09-29T17:53:28Z"),
                 Currency.LTC,

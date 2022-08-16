@@ -2,8 +2,8 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
@@ -46,7 +46,7 @@ class EveryTradeBeanV2Test {
         final String row = "1;1.9.2019 14:43:18;BTC/CZK;BUY;0.066506;14000;0.2\n";
         final TransactionCluster acual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "1",
                 Instant.parse("2019-09-01T14:43:18Z"),
                 Currency.BTC,
@@ -75,7 +75,7 @@ class EveryTradeBeanV2Test {
         final String row = "1;2019-9-1 14:43:18;BTC/CZK;BUY;0.066506;14000;0.2\n";
         final TransactionCluster acual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "1",
                 Instant.parse("2019-09-01T14:43:18Z"),
                 Currency.BTC,
@@ -104,7 +104,7 @@ class EveryTradeBeanV2Test {
         final String row = "1;1.9.2019 14:43:18;BTC/CZK;BUY;0.066506;14000;\n";
         final TransactionCluster acual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "1",
                 Instant.parse("2019-09-01T14:43:18Z"),
                 Currency.BTC,

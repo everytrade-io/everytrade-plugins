@@ -10,7 +10,12 @@ public enum TransactionType {
     DEPOSIT(6),
     WITHDRAWAL(7),
     FEE(4),
-    REBATE(5)
+    REBATE(5),
+    STAKE(8),
+    UNSTAKE(9),
+    STAKING_REWARD(10),
+    AIRDROP(11),
+    EARNING(12)
     ;
 
     private final int code;
@@ -53,5 +58,13 @@ public enum TransactionType {
 
     public boolean isFeeOrRebate() {
         return this == FEE || this == REBATE;
+    }
+
+    public boolean isZeroCostGain() {
+        return this == STAKING_REWARD || this == AIRDROP || this == EARNING;
+    }
+
+    public boolean isStaking() {
+        return this == STAKE || this == UNSTAKE || this == STAKING_REWARD;
     }
 }

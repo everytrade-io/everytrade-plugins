@@ -2,8 +2,8 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
@@ -50,7 +50,7 @@ class CoinmateBeanV2Test {
             "-0.047668;EUR;9011.62834249;EUR;0.85913259;EUR;428.70716724;;OK;BTC;1.99655368;EUR;83230.41972657\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "1",
                 Instant.parse("2020-02-10T19:08:30Z"),
                 Currency.BTC,
@@ -80,7 +80,7 @@ class CoinmateBeanV2Test {
             "0.047668;EUR;9011.62834249;EUR;0.85913259;EUR;428.70716724;;OK;BTC;1.99655368;EUR;83230.41972657\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "1",
                 Instant.parse("2020-02-10T19:08:30Z"),
                 Currency.BTC,
@@ -110,7 +110,7 @@ class CoinmateBeanV2Test {
             "BTC;-0.047668;EUR;9011.62834249;EUR;0.85913259;EUR;428.70716724;;OK;BTC;1.99655368;EUR;83230.41972657\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "1",
                 Instant.parse("2020-02-10T19:08:30Z"),
                 Currency.BTC,

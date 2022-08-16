@@ -344,7 +344,7 @@ class EverytradeCsvMultiParserTest {
 
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(header + row);
         final TransactionCluster expected = new TransactionCluster(
-            new DepositWithdrawalImportedTransaction(
+            ImportedTransactionBean.createDepositWithdrawal(
                 "TTT",
                 Instant.parse("2019-07-29T17:04:41Z"),
                 Currency.LTC,

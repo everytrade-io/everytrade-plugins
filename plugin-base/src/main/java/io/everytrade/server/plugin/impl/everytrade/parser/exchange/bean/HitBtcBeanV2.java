@@ -5,7 +5,6 @@ import com.univocity.parsers.annotations.Headers;
 import com.univocity.parsers.annotations.Parsed;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
@@ -106,7 +105,7 @@ public class HitBtcBeanV2 extends ExchangeBean {
         }
 
         return new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 tradeId,            //uuid
                 date,               //executed
                 instrumentBase,     //base

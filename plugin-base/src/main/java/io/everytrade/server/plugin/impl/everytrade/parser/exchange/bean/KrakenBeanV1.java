@@ -6,7 +6,6 @@ import com.univocity.parsers.annotations.Parsed;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
@@ -17,9 +16,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Headers(sequence = {"txid", "pair", "time", "type", "cost", "fee", "vol"}, extract = true)
@@ -103,7 +100,7 @@ public class KrakenBeanV1 extends ExchangeBean {
         }
 
         return new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 txid,             //uuid
                 time,             //executed
                 pairBase,         //base

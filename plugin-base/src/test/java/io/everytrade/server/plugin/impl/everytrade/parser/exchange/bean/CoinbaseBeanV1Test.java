@@ -2,8 +2,8 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
@@ -59,7 +59,7 @@ class CoinbaseBeanV1Test {
         var row = "2020-09-27T18:36:58Z,Buy,BTC,0.03182812,9287.38,295.60,300.00,4.40,Bought 0.03182812 BTC for € 300.00 EUR\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 null,
                 Instant.parse("2020-09-27T18:36:58Z"),
                 Currency.BTC,
@@ -91,7 +91,7 @@ class CoinbaseBeanV1Test {
             "CZK\"\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(header + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 null,
                 Instant.parse("2017-12-22T08:28:33Z"),
                 Currency.BTC,
@@ -121,7 +121,7 @@ class CoinbaseBeanV1Test {
             "3.58,Sold 0.03517833 BTC for €236.74 EUR";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 null,
                 Instant.parse("2020-03-09T05:17:11Z"),
                 Currency.BTC,

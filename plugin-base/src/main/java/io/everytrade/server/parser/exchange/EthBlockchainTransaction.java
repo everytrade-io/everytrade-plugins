@@ -4,8 +4,6 @@ import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.DepositWithdrawalImportedTransaction;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
@@ -123,9 +121,9 @@ public class EthBlockchainTransaction {
 
     private ImportedTransactionBean createMainTx() {
         if (type.isBuyOrSell()) {
-            return new BuySellImportedTransactionBean(id, timestamp, base, quote, type, baseAmount, unitPrice);
+            return new ImportedTransactionBean(id, timestamp, base, quote, type, baseAmount, unitPrice);
         } else if (type.isDepositOrWithdrawal()) {
-            return new DepositWithdrawalImportedTransaction(id, timestamp, base, quote, type, baseAmount, relatedAddress);
+            return ImportedTransactionBean.createDepositWithdrawal(id, timestamp, base, quote, type, baseAmount, relatedAddress);
         } else {
             throw new IllegalArgumentException("Unsupported tx type " + type);
         }

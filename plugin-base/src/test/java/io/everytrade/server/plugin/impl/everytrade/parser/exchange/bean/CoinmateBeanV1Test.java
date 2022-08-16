@@ -2,8 +2,8 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
@@ -50,7 +50,7 @@ class CoinmateBeanV1Test {
         final String row = "4;2019-08-30 05:05:24;BUY;0.0019;BTC;8630.7;EUR;0.03443649;EUR;16.43276649;EUR;;OK\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "4",
                 Instant.parse("2019-08-30T05:05:24Z"),
                 Currency.BTC,
@@ -82,7 +82,7 @@ class CoinmateBeanV1Test {
             "0.01574751;BTC;0.00591488;CZK\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(czechHeader + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "7722246",
                 Instant.parse("2021-03-21T18:54:15Z"),
                 Currency.BTC,
@@ -112,7 +112,7 @@ class CoinmateBeanV1Test {
             "EUR;;OK\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "4",
                 Instant.parse("2019-08-30T05:05:24Z"),
                 Currency.BTC,

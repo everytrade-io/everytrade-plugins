@@ -6,7 +6,6 @@ import com.univocity.parsers.annotations.Parsed;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
@@ -74,7 +73,7 @@ public class EveryTradeBeanV1 extends ExchangeBean {
     @Override
     public TransactionCluster toTransactionCluster() {
         validateCurrencyPair(symbolBase, symbolQuote);
-        final ImportedTransactionBean buySell = new BuySellImportedTransactionBean(
+        var buySell = new ImportedTransactionBean(
             uid,               //uuid
             date,               //executed
             symbolBase,         //base
@@ -99,10 +98,7 @@ public class EveryTradeBeanV1 extends ExchangeBean {
                 )
             );
         }
-        TransactionCluster transactionCluster = new TransactionCluster(
-            buySell,
-            related
-        );
+        var transactionCluster = new TransactionCluster(buySell, related);
         if (nullOrZero(fee)) {
 //            transactionCluster.setIgnoredFee(1, "Fee amount is 0 " + (symbolQuote != null ? symbolQuote.code() : ""));
         }

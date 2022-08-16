@@ -2,8 +2,8 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
@@ -12,10 +12,8 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.List;
 
-import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.UNSUPPORTED_CURRENCY_PAIR;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.HuobiBeanV1.UNSUPPORTED_TYPE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -42,7 +40,7 @@ class HuobiBeanV1Test {
         final String row = "2020-03-31 21:31:43,Exchange,LTC/BTC,Buy,0.006040,0.8940,0.0053,0.00178800LTC,\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 null,
                 Instant.parse("2020-03-31T21:31:43Z"),
                 Currency.LTC,
@@ -72,7 +70,7 @@ class HuobiBeanV1Test {
         final String row = "2020-03-31 21:31:43,Exchange,LTC/BTC,Buy,0.006040,0.8940,0.0053,0.00178800BTC,\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 null,
                 Instant.parse("2020-03-31T21:31:43Z"),
                 Currency.LTC,
@@ -103,7 +101,7 @@ class HuobiBeanV1Test {
         final String row = "2020-03-31 21:31:24,Exchange,LTC/BTC,Sell,0.006036,0.7362,0.0044,0.00000888BTC,\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 null,
                 Instant.parse("2020-03-31T21:31:24Z"),
                 Currency.LTC,
@@ -133,7 +131,7 @@ class HuobiBeanV1Test {
         final String row = "2020-03-31 21:31:24,Exchange,LTC/BTC,Sell,0.006036,0.7362,0.0044,0.00000888LTC,\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 null,
                 Instant.parse("2020-03-31T21:31:24Z"),
                 Currency.LTC,

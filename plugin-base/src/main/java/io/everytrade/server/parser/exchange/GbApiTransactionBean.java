@@ -6,7 +6,6 @@ import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
@@ -90,7 +89,7 @@ public class GbApiTransactionBean {
         }
 
         TransactionCluster cluster = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 uid,
                 timestamp,
                 baseCurrency,
@@ -98,7 +97,8 @@ public class GbApiTransactionBean {
                 actionToTransactionType(),
                 quantity,
                 volume.divide(quantity, 10, RoundingMode.HALF_UP),
-                getRemoteUid()
+                getRemoteUid(),
+                null
             ),
             related
         );

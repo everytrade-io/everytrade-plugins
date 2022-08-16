@@ -6,7 +6,6 @@ import com.univocity.parsers.annotations.Replace;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
@@ -78,7 +77,7 @@ public class ShakePayBeanV1 extends ExchangeBean {
         final BigDecimal baseQuantity = isBuy ? amountCredited.abs() : amountDebited.abs();
         final BigDecimal transactionPrice = isBuy ? amountDebited.abs() : amountCredited.abs();
         return new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 null,                                //uuid
                 date,                                     //executed
                 isBuy ? creditCurrency : debitCurrency,   //base

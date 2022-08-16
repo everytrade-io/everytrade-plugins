@@ -1,7 +1,6 @@
 package io.everytrade.server.parser.exchange;
 
 import io.everytrade.server.model.Currency;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import org.junit.jupiter.api.Test;
 
@@ -26,7 +25,7 @@ class GbApiTransactionBeanTest {
         assertNotNull(cluster);
         assertEquals(1, cluster.getRelated().size());
 
-        var main = (BuySellImportedTransactionBean) cluster.getMain();
+        var main = cluster.getMain();
         var fee = (FeeRebateImportedTransactionBean) cluster.getRelated().get(0);
 
         assertEquals(SELL, main.getAction());
@@ -34,14 +33,14 @@ class GbApiTransactionBeanTest {
         assertEquals(Currency.USD, main.getQuote());
         assertEquals("UID", main.getUid());
         assertEquals(dto.getTimestamp(), main.getExecuted());
-        bigDecimalEquals(dto.getQuantity(), main.getBaseQuantity());
+        bigDecimalEquals(dto.getQuantity(), main.getVolume());
         bigDecimalEquals(TEN, main.getUnitPrice());
 
         assertEquals(FEE, fee.getAction());
         assertEquals(Currency.USD, fee.getFeeRebateCurrency());
         assertEquals("UID-fee", fee.getUid());
         assertEquals(dto.getTimestamp(), fee.getExecuted());
-        bigDecimalEquals(dto.getExpense(), fee.getFeeRebate());
+        bigDecimalEquals(dto.getExpense(), fee.getVolume());
     }
 
     @Test
@@ -51,7 +50,7 @@ class GbApiTransactionBeanTest {
         assertNotNull(cluster);
         assertEquals(1, cluster.getRelated().size());
 
-        var main = (BuySellImportedTransactionBean) cluster.getMain();
+        var main = cluster.getMain();
         var fee = (FeeRebateImportedTransactionBean) cluster.getRelated().get(0);
 
         assertEquals(BUY, main.getAction());
@@ -59,14 +58,14 @@ class GbApiTransactionBeanTest {
         assertEquals(Currency.USD, main.getQuote());
         assertEquals("UID", main.getUid());
         assertEquals(dto.getTimestamp(), main.getExecuted());
-        bigDecimalEquals(dto.getQuantity(), main.getBaseQuantity());
+        bigDecimalEquals(dto.getQuantity(), main.getVolume());
         bigDecimalEquals(TEN, main.getUnitPrice());
 
         assertEquals(FEE, fee.getAction());
         assertEquals(Currency.USD, fee.getFeeRebateCurrency());
         assertEquals("UID-fee", fee.getUid());
         assertEquals(dto.getTimestamp(), fee.getExecuted());
-        bigDecimalEquals(dto.getExpense(), fee.getFeeRebate());
+        bigDecimalEquals(dto.getExpense(), fee.getVolume());
     }
 
     private GbApiTransactionBean tx(String action) {

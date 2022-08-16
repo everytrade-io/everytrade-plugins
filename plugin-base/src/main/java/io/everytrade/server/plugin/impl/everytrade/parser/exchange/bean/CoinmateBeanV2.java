@@ -5,7 +5,6 @@ import com.univocity.parsers.annotations.Headers;
 import com.univocity.parsers.annotations.Parsed;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
@@ -119,7 +118,7 @@ public class CoinmateBeanV2 extends ExchangeBean {
         }
 
         TransactionCluster cluster = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 transactionId,             //uuid
                 date,           //executed
                 currencyAmount, //base

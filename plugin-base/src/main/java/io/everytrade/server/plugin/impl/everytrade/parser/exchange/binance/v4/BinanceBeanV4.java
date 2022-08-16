@@ -5,8 +5,6 @@ import com.univocity.parsers.annotations.Headers;
 import com.univocity.parsers.annotations.Parsed;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.DepositWithdrawalImportedTransaction;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
@@ -172,15 +170,14 @@ public class BinanceBeanV4 extends ExchangeBean {
 
         if (List.of(TransactionType.DEPOSIT, TransactionType.WITHDRAWAL).contains(this.type)) {
             TransactionCluster cluster = new TransactionCluster(
-                new DepositWithdrawalImportedTransaction(
+                ImportedTransactionBean.createDepositWithdrawal(
                     usedIds.toString(),
                     date,
                     marketBase,
                     marketBase,
                     type,
                     amountBase,
-                    remark,
-                    null
+                    remark
                 ),
                 related
             );
@@ -188,7 +185,7 @@ public class BinanceBeanV4 extends ExchangeBean {
         } else {
             validateCurrencyPair(marketBase, marketQuote);
             TransactionCluster cluster = new TransactionCluster(
-                new BuySellImportedTransactionBean(
+                new ImportedTransactionBean(
                     usedIds.toString(),
                     date,
                     marketBase,
@@ -196,7 +193,8 @@ public class BinanceBeanV4 extends ExchangeBean {
                     type,
                     amountBase.setScale(ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE),
                     evalUnitPrice(amountQuote, amountBase),
-                    remark
+                    remark,
+                    null
                 ),
                 related
             );

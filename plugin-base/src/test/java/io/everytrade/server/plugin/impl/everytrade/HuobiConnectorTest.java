@@ -2,8 +2,6 @@ package io.everytrade.server.plugin.impl.everytrade;
 
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.CurrencyPair;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.DepositWithdrawalImportedTransaction;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.test.mock.HuobiExchangeMock;
 import org.junit.jupiter.api.Test;
@@ -73,14 +71,11 @@ class HuobiConnectorTest {
         assertNotNull(tx.getImported());
         assertNull(cluster.getIgnoredFeeReason());
         assertEquals(0, cluster.getIgnoredFeeTransactionCount());
+        assertEquals(volume, tx.getVolume());
 
         if (type.isDepositOrWithdrawal()) {
-            var depositWithdrawal = (DepositWithdrawalImportedTransaction) tx;
-            assertEquals(volume, depositWithdrawal.getVolume());
-            assertNotNull(depositWithdrawal.getAddress());
+            assertNotNull(tx.getAddress());
         } else if (type.isBuyOrSell()) {
-            var buySell  = (BuySellImportedTransactionBean) cluster.getMain();
-            assertEquals(volume, buySell.getBaseQuantity());
             assertEquals(Currency.USD, tx.getQuote());
         }
     }

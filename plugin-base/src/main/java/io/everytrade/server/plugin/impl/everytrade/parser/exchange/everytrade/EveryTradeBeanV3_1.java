@@ -7,8 +7,6 @@ import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.DepositWithdrawalImportedTransaction;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
@@ -123,7 +121,7 @@ public class EveryTradeBeanV3_1 extends ExchangeBean {
         if (quantity.compareTo(ZERO) == 0) {
             throw new DataValidationException("Quantity can not be zero.");
         }
-        var tx = new DepositWithdrawalImportedTransaction(
+        var tx = ImportedTransactionBean.createDepositWithdrawal(
             uid,
             date,
             symbolBase,
@@ -144,7 +142,7 @@ public class EveryTradeBeanV3_1 extends ExchangeBean {
             throw new DataValidationException("Price can not be zero.");
         }
 
-        var tx = new BuySellImportedTransactionBean(
+        var tx = new ImportedTransactionBean(
             uid,               //uuid
             date,               //executed
             symbolBase,         //base

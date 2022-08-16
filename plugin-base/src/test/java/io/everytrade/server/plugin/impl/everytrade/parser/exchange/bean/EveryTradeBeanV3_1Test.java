@@ -2,8 +2,6 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.DepositWithdrawalImportedTransaction;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
@@ -48,7 +46,7 @@ class EveryTradeBeanV3_1Test {
         final String row = "1;27.7.2021 14:43:18;BTC/CZK;BUY;0.066506;210507.3226;;;;;;\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "1",
                 Instant.parse("2021-07-27T14:43:18Z"),
                 Currency.BTC,
@@ -67,7 +65,7 @@ class EveryTradeBeanV3_1Test {
         final String row = "1;27.7.2021 14:43:18;BTC/CZK;BUY;0.066506;210507.3226;140;CZK;;;;\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "1",
                 Instant.parse("2021-07-27T14:43:18Z"),
                 Currency.BTC,
@@ -96,7 +94,7 @@ class EveryTradeBeanV3_1Test {
         final String row = "1;27.7.2021 14:43:18;BTC/CZK;BUY;0.066506;210507.3226;0.001;BTC;;;;\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "1",
                 Instant.parse("2021-07-27T14:43:18Z"),
                 Currency.BTC,
@@ -125,7 +123,7 @@ class EveryTradeBeanV3_1Test {
         final String row = "1;27.7.2021 14:59:21;BTC/EUR;SELL;0.066306;8736.534094;;;;;;\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "1",
                 Instant.parse("2021-07-27T14:59:21Z"),
                 Currency.BTC,
@@ -153,7 +151,7 @@ class EveryTradeBeanV3_1Test {
             Currency.EUR));
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "1",
                 Instant.parse("2021-07-27T14:59:21Z"),
                 Currency.BTC,
@@ -172,7 +170,7 @@ class EveryTradeBeanV3_1Test {
         final String row = "1;27.7.2021 14:59:21;BTC/EUR;SELL;0.066306;8736.534094;;;0.001;BTC;;\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "1",
                 Instant.parse("2021-07-27T14:59:21Z"),
                 Currency.BTC,
@@ -275,7 +273,7 @@ class EveryTradeBeanV3_1Test {
         final String row = "1;2021-07-27 14:43:18;BTC/CZK;BUY;0.066506;210507.3226;;;;;;\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 "1",
                 Instant.parse("2021-07-27T14:43:18Z"),
                 Currency.BTC,
@@ -311,7 +309,7 @@ class EveryTradeBeanV3_1Test {
         final String row = "1;27.7.2021 14:43:18;BTC;DEPOSIT;0.066506;;;;;;xxx;\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new DepositWithdrawalImportedTransaction(
+            ImportedTransactionBean.createDepositWithdrawal(
                 "1",
                 Instant.parse("2021-07-27T14:43:18Z"),
                 Currency.BTC,
@@ -330,7 +328,7 @@ class EveryTradeBeanV3_1Test {
         var row = "1;27.7.2021 14:43:18;BTC;DEPOSIT;0.066506;;0.000001;BTC;;;xxx;\n";
         var actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         var expected = new TransactionCluster(
-            new DepositWithdrawalImportedTransaction(
+            ImportedTransactionBean.createDepositWithdrawal(
                 "1",
                 Instant.parse("2021-07-27T14:43:18Z"),
                 Currency.BTC,
@@ -359,7 +357,7 @@ class EveryTradeBeanV3_1Test {
         final String row = "1;27.7.2021 14:43:18;BTC;WITHDRAWAL;0.066506;;;;;;;xxx\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
-            new DepositWithdrawalImportedTransaction(
+            ImportedTransactionBean.createDepositWithdrawal(
                 "1",
                 Instant.parse("2021-07-27T14:43:18Z"),
                 Currency.BTC,
@@ -378,7 +376,7 @@ class EveryTradeBeanV3_1Test {
         var row = "1;27.7.2021 14:43:18;BTC;WITHDRAWAL;0.066506;;0.000001;BTC;;;;xxx\n";
         var actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         var expected = new TransactionCluster(
-            new DepositWithdrawalImportedTransaction(
+            ImportedTransactionBean.createDepositWithdrawal(
                 "1",
                 Instant.parse("2021-07-27T14:43:18Z"),
                 Currency.BTC,

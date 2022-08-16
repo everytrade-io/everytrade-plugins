@@ -6,7 +6,7 @@ import com.univocity.parsers.annotations.Parsed;
 import com.univocity.parsers.annotations.Replace;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.BuySellImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
@@ -62,7 +62,7 @@ public class CoinsquareBeanV1 extends ExchangeBean {
         validateCurrencyPair(baseCurrenncy, currenncy);
 
         return new TransactionCluster(
-            new BuySellImportedTransactionBean(
+            new ImportedTransactionBean(
                 null,             //uuid
                 date,                 //executed
                 baseCurrenncy,        //base
