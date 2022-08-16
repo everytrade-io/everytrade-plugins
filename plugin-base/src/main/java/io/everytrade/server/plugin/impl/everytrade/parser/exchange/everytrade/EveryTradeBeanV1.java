@@ -72,7 +72,7 @@ public class EveryTradeBeanV1 extends ExchangeBean {
 
     @Override
     public TransactionCluster toTransactionCluster() {
-        validateCurrencyPair(symbolBase, symbolQuote);
+        validateCurrencyPair(symbolBase, symbolQuote, action);
         var buySell = new ImportedTransactionBean(
             uid,               //uuid
             date,               //executed

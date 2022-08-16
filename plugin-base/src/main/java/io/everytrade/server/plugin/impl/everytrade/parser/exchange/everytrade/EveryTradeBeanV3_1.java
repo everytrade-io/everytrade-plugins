@@ -39,9 +39,11 @@ public class EveryTradeBeanV3_1 extends ExchangeBean {
     BigDecimal price;
     BigDecimal quantity;
     BigDecimal fee;
+    Currency feeCurrency;
     BigDecimal rebate;
     Currency rebateCurrency;
     TransactionType action;
+
     @Parsed(field = "QUANTY", defaultNullRead = "0")
     public void setQuanty(String value) {
         quantity = EverytradeCSVParserValidator.parserNumber(value);
@@ -51,15 +53,17 @@ public class EveryTradeBeanV3_1 extends ExchangeBean {
     public void setPrice(String value) {
         price = EverytradeCSVParserValidator.parserNumber(value);
     }
+
     @Parsed(field = "FEE", defaultNullRead = "0")
     public void setFee(String value){
         fee = EverytradeCSVParserValidator.parserNumber(value);
     }
-    Currency feeCurrency;
+
     @Parsed(field = "REBATE", defaultNullRead = "0")
     public void setRebate(String value){
         rebate = EverytradeCSVParserValidator.parserNumber(value);
     }
+
     @Parsed(field = "ADDRESS_FROM")
     String addressFrom;
     @Parsed(field = "ADDRESS_TO")
@@ -95,7 +99,7 @@ public class EveryTradeBeanV3_1 extends ExchangeBean {
 
     @Override
     public TransactionCluster toTransactionCluster() {
-        validateCurrencyPair(symbolBase, symbolQuote);
+        validateCurrencyPair(symbolBase, symbolQuote, action);
         validatePositivity(quantity, price, fee, rebate);
         switch (action) {
             case BUY:
@@ -118,9 +122,6 @@ public class EveryTradeBeanV3_1 extends ExchangeBean {
     }
 
     private TransactionCluster createDepositOrWithdrawalTxCluster() {
-        if (quantity.compareTo(ZERO) == 0) {
-            throw new DataValidationException("Quantity can not be zero.");
-        }
         var tx = ImportedTransactionBean.createDepositWithdrawal(
             uid,
             date,
@@ -153,19 +154,19 @@ public class EveryTradeBeanV3_1 extends ExchangeBean {
         );
 
         TransactionCluster transactionCluster = new TransactionCluster(tx, getRelatedTxs());
-        if(nullOrZero(fee)) {
-//            transactionCluster.setIgnoredFee(1, "Fee amount is 0 " + (feeCurrency != null ? feeCurrency.code() : ""));
+        if (!nullOrZero(fee) && feeCurrency == null) {
+            transactionCluster.setFailedFee(1, "Fee currency is null. ");
         }
         return transactionCluster;
     }
 
     private List<ImportedTransactionBean> getRelatedTxs() {
         var related = new ArrayList<ImportedTransactionBean>();
-        if (fee.compareTo(ZERO) > 0) {
+        if (!nullOrZero(fee) && feeCurrency != null) {
             related.add(createFeeTransactionBean(false));
         }
 
-        if (rebate.compareTo(ZERO) > 0) {
+        if (!nullOrZero(rebate) && rebateCurrency != null) {
             related.add(createRebateTransactionBean(false));
         }
         return related;
