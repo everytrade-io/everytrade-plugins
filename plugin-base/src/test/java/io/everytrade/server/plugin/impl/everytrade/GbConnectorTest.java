@@ -24,7 +24,7 @@ class GbConnectorTest {
     String url = "http://localhost:5555";
 
     @Test
-    void testIgnoreZeroValueAndQuantity() {
+    void testIgnoreZeroVolumeAndQuantity() {
         var apiData = getDummyData();
         var mockIGBApi = mock(IGbApi.class);
 
