@@ -23,6 +23,7 @@ import si.mazi.rescu.RestProxyFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import java.math.BigDecimal;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -184,4 +185,13 @@ public class GbConnector implements IConnector {
             throw new IllegalStateException(e);
         }
     }
+
+    public static void validateBuySell(GbApiTransactionBean bean) {
+        if (bean.actionToTransactionType().isBuyOrSell()) {
+            if (bean.getVolume().equals(BigDecimal.ZERO) || bean.getQuantity().equals(BigDecimal.ZERO)) {
+                throw new DataIgnoredException("Volume or Quantity is zero. ");
+            }
+        }
+    }
+
 }

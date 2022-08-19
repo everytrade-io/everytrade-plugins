@@ -43,14 +43,10 @@ class GbConnectorTest {
         GbApiDto dataApi = new GbApiDto();
         dataApi.setHeader(getGBApiHeader());
         List<GbApiTransactionBean> txs = new ArrayList<>();
-        var tx1 = createDummyTx("BTC", "USD", "BUY", "0.000959",
-            "5.00", "0.0000728", "BTC");
-        var tx2WrongQuantity = createDummyTx("BTC", "USD", "BUY", "0",
-            "5.00", "0.0000728", "BTC");
-        var tx3WrongVolume = createDummyTx("BTC", "USD", "BUY", "0.000959",
-            "0", "0.0000728", "BTC");
-        var tx4 = createDummyTx("BTC", "USD", "BUY", "0.000959",
-            "6", "0.0000728", "BTC");
+        var tx1 = createDummyTx("BTC", "USD", "BUY", "0.000959","5.00", "0.0000728", "BTC");
+        var tx2WrongQuantity = createDummyTx("BTC", "USD", "BUY", "0","5.00", "0.0000728", "BTC");
+        var tx3WrongVolume = createDummyTx("BTC", "USD", "BUY", "0.000959","0", "0.0000728", "BTC");
+        var tx4 = createDummyTx("BTC", "USD", "BUY", "0.000959","6", "0.0000728", "BTC");
         txs.add(tx1);
         txs.add(tx2WrongQuantity);
         txs.add(tx3WrongVolume);
@@ -60,10 +56,8 @@ class GbConnectorTest {
     }
 
     private String[] getGBApiHeader() {
-        String[] headerArray = {"uid", "timestamp", "base", "quote", "action", "quantity",
-            "volume", "expense", "expensecurrency", "status",
-            "classification"};
-        return headerArray;
+        return new String[]{"uid", "timestamp", "base", "quote", "action", "quantity",
+            "volume", "expense", "expensecurrency", "status", "classification"};
     }
 
     private GbApiTransactionBean createDummyTx(String base, String quote, String action, String quantity, String volume, String expense,
