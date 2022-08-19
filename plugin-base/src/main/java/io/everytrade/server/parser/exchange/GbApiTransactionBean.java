@@ -10,6 +10,7 @@ import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
+import io.everytrade.server.plugin.impl.generalbytes.GbConnector;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -70,6 +71,7 @@ public class GbApiTransactionBean {
         } catch (CurrencyPair.FiatCryptoCombinationException e) {
             throw new DataValidationException(e.getMessage());
         }
+        GbConnector.validateBuySell(this);
         final boolean isIncorrectFee = !(base.equals(expenseCurrency) || quote.equals(expenseCurrency));
         List<ImportedTransactionBean> related;
         if (equalsToZero(expense) || isIncorrectFee) {
@@ -163,7 +165,7 @@ public class GbApiTransactionBean {
         return split[1];
     }
 
-    private TransactionType actionToTransactionType() {
+    public TransactionType actionToTransactionType() {
         if ("SELL".equals(action)) {
             return TransactionType.BUY;
         } else if("BUY".equals(action)) {

@@ -13,6 +13,7 @@ import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.ParsingProblemType;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.EveryTradeApiDigest;
+import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import si.mazi.rescu.ClientConfig;
@@ -22,6 +23,7 @@ import si.mazi.rescu.RestProxyFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import java.math.BigDecimal;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -33,7 +35,7 @@ import java.util.Objects;
 
 
 public class GbConnector implements IConnector {
-    private final IGbApi api;
+    private IGbApi api;
     private final String apiKey;
     private final ParamsDigest signer;
     private final Logger log = LoggerFactory.getLogger(this.getClass());
@@ -96,6 +98,10 @@ public class GbConnector implements IConnector {
         signer = new EveryTradeApiDigest(Objects.requireNonNull(apiSecret));
     }
 
+    public void setApi(IGbApi api) {
+        this.api = api;
+    }
+
     @Override
     public String getId() {
         return ID;
@@ -123,6 +129,10 @@ public class GbConnector implements IConnector {
                         new ParsingProblem(transaction.toString(), transaction.getIgnoreReason(), ParsingProblemType.PARSED_ROW_IGNORED)
                     );
                 }
+            } catch (DataIgnoredException e) {
+                parsingProblems.add(
+                    new ParsingProblem(transaction.toString(), e.getMessage(), ParsingProblemType.PARSED_ROW_IGNORED)
+                );
             } catch (Exception e) {
                 log.error("Error converting to ImportedTransactionBean: {}", e.getMessage());
                 log.debug("Exception by converting to ImportedTransactionBean.", e);
@@ -175,4 +185,13 @@ public class GbConnector implements IConnector {
             throw new IllegalStateException(e);
         }
     }
+
+    public static void validateBuySell(GbApiTransactionBean bean) {
+        if (bean.actionToTransactionType().isBuyOrSell()) {
+            if (bean.getVolume().equals(BigDecimal.ZERO) || bean.getQuantity().equals(BigDecimal.ZERO)) {
+                throw new DataIgnoredException("Volume or Quantity is zero. ");
+            }
+        }
+    }
+
 }
