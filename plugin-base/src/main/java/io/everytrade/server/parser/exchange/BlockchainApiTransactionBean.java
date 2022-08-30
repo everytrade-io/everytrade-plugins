@@ -25,6 +25,7 @@ import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.equalsToZero;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
+import static java.math.BigDecimal.ZERO;
 
 @ToString
 @FieldDefaults(makeFinal=true, level= AccessLevel.PRIVATE)
@@ -106,6 +107,8 @@ public class BlockchainApiTransactionBean {
             cluster.setFailedFee(1, "Fee " + (feeCurrency != null ? feeCurrency.code() : "null") + " currency is not base or quote");
         } else if (equalsToZero(feeAmount)) {
 //            cluster.setIgnoredFee(1, "Fee amount is 0 " + (feeCurrency != null ? feeCurrency.code() : ""));
+        } else if (feeAmount.compareTo(ZERO) > 0 && feeCurrency == null) {
+            cluster.setIgnoredFee(1, "Fee currency has to be defined. ");
         }
         return cluster;
     }
