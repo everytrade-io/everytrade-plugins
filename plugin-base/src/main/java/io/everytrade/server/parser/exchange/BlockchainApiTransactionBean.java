@@ -106,9 +106,9 @@ public class BlockchainApiTransactionBean {
         if (isIncorrectFee) {
             cluster.setFailedFee(1, "Fee " + (feeCurrency != null ? feeCurrency.code() : "null") + " currency is not base or quote");
         } else if (equalsToZero(feeAmount)) {
-//            cluster.setIgnoredFee(1, "Fee amount is 0 " + (feeCurrency != null ? feeCurrency.code() : "")); // skip
+//            cluster.setIgnoredFee(1, "Fee amount is 0 " + (feeCurrency != null ? feeCurrency.code() : ""));
         } else if (feeAmount.compareTo(ZERO) > 0 && feeCurrency == null) {
-            cluster.setFailedFee(1, "Fee currency has to be defined. ");
+            cluster.setIgnoredFee(1, "Fee currency has to be defined. ");
         }
         return cluster;
     }
