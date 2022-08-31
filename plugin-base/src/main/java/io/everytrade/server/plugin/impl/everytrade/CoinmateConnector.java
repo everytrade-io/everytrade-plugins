@@ -148,7 +148,7 @@ public class CoinmateConnector implements IConnector {
         while (sentRequests < MAX_REQUEST_COUNT) {
             final List<FundingRecord> fundingBlock;
             try {
-                fundingBlock = accountService.getFundingHistory(params);
+                fundingBlock = new CoinmateAccountService(exchange).getTransfersHistory(params);
             } catch (IOException e) {
                 throw new IllegalStateException("Download user funding history failed.", e);
             }
