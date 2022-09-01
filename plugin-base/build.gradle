@@ -45,7 +45,7 @@ dependencies {
      * only for temporary use till pull request confirmation https://github.com/knowm/XChange/pull/4402
      */
     //    pluginCompile "org.knowm.xchange:xchange-coinmate:$xchangeVersion"
-    pluginCompile "com.github.martinkyov.Xchange:xchange-coinmate:f80f587e10faaf92839055a7e6154dd509c7d0c4"
+    pluginCompile "com.github.martinkyov.Xchange:xchange-coinmate:eb87b858ff861db863793bd92c6d8b8e0a662b8c"
 
     /*
      * only for temporary use till pull request confirmation https://github.com/knowm/XChange/pull/4448
