@@ -22,6 +22,7 @@ public class KrakenDownloadState {
     String tradeLastTxUidAfterGap;
     Long depositFromTimestamp;
     Long withdrawalFromTimestamp;
+    Long stakeLastTimestamp;
 
     public String serialize() {
         final String result = new StringBuilder()
@@ -29,7 +30,8 @@ public class KrakenDownloadState {
             .append(tradeFirstTxUidAfterGap == null ? "" : tradeFirstTxUidAfterGap).append(SERIALIZATION_SEPARATOR)
             .append(tradeLastTxUidAfterGap == null ? "" : tradeLastTxUidAfterGap).append(SERIALIZATION_SEPARATOR)
             .append(depositFromTimestamp == null ? "" :  depositFromTimestamp).append(SERIALIZATION_SEPARATOR)
-            .append(withdrawalFromTimestamp == null ? "" :  withdrawalFromTimestamp)
+            .append(withdrawalFromTimestamp == null ? "" :  withdrawalFromTimestamp).append(SERIALIZATION_SEPARATOR)
+            .append(stakeLastTimestamp == null ? "" : stakeLastTimestamp)
             .toString();
 
         if (result.length() > MAX_LENGTH_DOWNLOADED_TXUID) {
@@ -53,12 +55,14 @@ public class KrakenDownloadState {
 
         String depositTimestamp = getGroupValueOrNull(splitValues, 4);
         String withdrawalTimestamp = getGroupValueOrNull(splitValues, 5);
+        String stakeLastTimestamp = getGroupValueOrNull(splitValues, 6);
         return new KrakenDownloadState(
             getGroupValueOrNull(splitValues, 1),
             getGroupValueOrNull(splitValues, 2),
             getGroupValueOrNull(splitValues, 3),
             depositTimestamp == null ? null : Long.valueOf(depositTimestamp),
-            withdrawalTimestamp == null ? null : Long.valueOf(withdrawalTimestamp)
+            withdrawalTimestamp == null ? null : Long.valueOf(withdrawalTimestamp),
+            stakeLastTimestamp == null ? null : Long.valueOf(stakeLastTimestamp)
         );
     }
 
@@ -67,7 +71,8 @@ public class KrakenDownloadState {
             tradeFirstTxUidAfterGap == null &&
             tradeLastTxUidAfterGap == null &&
             depositFromTimestamp == null &&
-            withdrawalFromTimestamp == null;
+            withdrawalFromTimestamp == null &&
+            stakeLastTimestamp == null;
     }
 
     private static String getGroupValueOrNull(String[] values, int group) {

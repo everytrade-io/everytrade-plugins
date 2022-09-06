@@ -7,6 +7,7 @@ import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.util.KrakenCurrencyUtil;
 import lombok.Builder;
 import lombok.Value;
 import org.knowm.xchange.dto.Order;
@@ -25,7 +26,7 @@ import static java.util.Collections.emptyList;
 
 @Value
 @Builder
-public class XChangeApiTransaction implements IXChangeApiTransaction {
+public class KrakenXChangeApiTransaction implements IXChangeApiTransaction {
 
     String id;
     Instant timestamp;
@@ -60,20 +61,6 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
             .build();
     }
 
-    public static XChangeApiTransaction fromFunding(FundingRecord record) {
-        var currency = convert(record.getCurrency());
-        return XChangeApiTransaction.builder()
-            .id(record.getInternalId())
-            .timestamp(record.getDate().toInstant())
-            .type(fundingTypeToTxType(record))
-            .base(currency)
-            .quote(null)
-            .originalAmount(record.getAmount())
-            .feeAmount(record.getFee())
-            .feeCurrency(currency)
-            .address(record.getAddress())
-            .build();
-    }
 
     public TransactionCluster toTransactionCluster() {
         if (type.isBuyOrSell()) {
@@ -159,6 +146,17 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
                 throw new DataValidationException("ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE ".concat(orderType.name()));
         }
     }
+
+    private static Currency convert(org.knowm.xchange.currency.Currency currency) {
+        try {
+            return KrakenCurrencyUtil.findCurrencyByCode(currency.getCurrencyCode());
+        } catch (IllegalArgumentException e) {
+            final org.knowm.xchange.currency.Currency currencyConverted =
+                org.knowm.xchange.currency.Currency.getInstance(currency.getCurrencyCode()).getCommonlyUsedCurrency();
+            return Currency.fromCode(currencyConverted.getCurrencyCode());
+        }
+    }
+
     private static TransactionType fundingTypeToTxType(FundingRecord record) {
         switch (record.getType()) {
             case WITHDRAWAL:
@@ -167,9 +165,6 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
                 return TransactionType.DEPOSIT;
             case OTHER_INFLOW:
                 // TODO this is binance specific - move it elsewhere
-                if (isAirdrop(record)) {
-                    return TransactionType.AIRDROP;
-                }
                 if (isStake(record)) {
                     return TransactionType.STAKE;
                 }
@@ -184,29 +179,39 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
         }
     }
 
-    protected static Currency convert(org.knowm.xchange.currency.Currency currency) {
-        try {
-            return Currency.fromCode(currency.getCurrencyCode());
-        } catch (IllegalArgumentException e) {
-            final org.knowm.xchange.currency.Currency currencyConverted =
-                org.knowm.xchange.currency.Currency.getInstance(currency.getCurrencyCode()).getCommonlyUsedCurrency();
-            return Currency.fromCode(currencyConverted.getCurrencyCode());
-        }
-    }
-
-    private static boolean isAirdrop(FundingRecord r) {
-        return r.getDescription() != null && r.getDescription().toLowerCase().endsWith("airdrop");
-    }
-
     private static boolean isStake(FundingRecord r) {
-        return r.getDescription() != null && r.getDescription().toLowerCase().startsWith("staking");
+        if (r.getDescription().equals("bonding")) {
+            return true;
+        }
+        return false;
     }
 
     private static boolean isUnstake(FundingRecord r) {
-        return false; // TODO dont know how this looks in API
+        if (r.getDescription().equals("unbonding")) {
+            return true;
+        }
+        return false;
     }
 
     private static boolean isStakingReward(FundingRecord r) {
-        return r.getDescription() != null && r.getDescription().toLowerCase().endsWith("distribution");
+        if (r.getDescription().equals("reward")) {
+            return true;
+        }
+        return false;
+    }
+
+    public static IXChangeApiTransaction fromFunding(FundingRecord record) {
+        var currency = convert(record.getCurrency());
+        return XChangeApiTransaction.builder()
+            .id(record.getInternalId())
+            .timestamp(record.getDate().toInstant())
+            .type(fundingTypeToTxType(record))
+            .base(currency)
+            .quote(null)
+            .originalAmount(record.getAmount())
+            .feeAmount(record.getFee())
+            .feeCurrency(currency)
+            .address(record.getAddress())
+            .build();
     }
 }

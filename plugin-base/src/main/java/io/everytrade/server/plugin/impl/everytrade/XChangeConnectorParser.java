@@ -1,6 +1,8 @@
 package io.everytrade.server.plugin.impl.everytrade;
 
 import io.everytrade.server.model.Currency;
+import io.everytrade.server.model.SupportedExchange;
+import io.everytrade.server.parser.exchange.KrakenXChangeApiTransaction;
 import io.everytrade.server.parser.exchange.XChangeApiTransaction;
 import io.everytrade.server.plugin.api.parser.ParseResult;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
@@ -17,12 +19,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import static io.everytrade.server.model.SupportedExchange.KRAKEN;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static java.util.stream.Collectors.toList;
 
 public class XChangeConnectorParser {
-
+    private SupportedExchange exchange;
     private static final Logger LOG = LoggerFactory.getLogger(XChangeConnectorParser.class);
 
     public ParseResult getParseResult(List<UserTrade> userTrades, List<FundingRecord> funding) {
@@ -59,8 +62,11 @@ public class XChangeConnectorParser {
     protected List<TransactionCluster> fundingToCluster( List<FundingRecord> funding, List<ParsingProblem> problems) {
         return funding.stream().map(f -> {
             try {
-                XChangeApiTransaction xchangeApiTransaction = XChangeApiTransaction.fromFunding(f);
-                return xchangeApiTransaction.toTransactionCluster();
+                if (exchange.equals(KRAKEN) ) {
+                    return KrakenXChangeApiTransaction.fromFunding(f).toTransactionCluster();
+                } else {
+                    return XChangeApiTransaction.fromFunding(f).toTransactionCluster();
+                }
             } catch (Exception e) {
                 logParsingError(e, problems, f.toString());
             }
@@ -119,11 +125,15 @@ public class XChangeConnectorParser {
             .collect(toList());
     }
 
-    private void logParsingError(Exception e, List<ParsingProblem> parsingProblems, String row) {
+    protected void logParsingError(Exception e, List<ParsingProblem> parsingProblems, String row) {
         LOG.error("Error converting to ImportedTransactionBean: {}", e.getMessage());
         LOG.debug("Exception by converting to ImportedTransactionBean.", e);
         parsingProblems.add(
             new ParsingProblem(row, e.getMessage(), ParsingProblemType.ROW_PARSING_FAILED)
         );
+    }
+
+    public void setExchange(SupportedExchange exchange) {
+        this.exchange = exchange;
     }
 }
