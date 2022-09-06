@@ -62,7 +62,7 @@ public class XChangeConnectorParser {
     protected List<TransactionCluster> fundingToCluster( List<FundingRecord> funding, List<ParsingProblem> problems) {
         return funding.stream().map(f -> {
             try {
-                if (exchange.equals(KRAKEN) ) {
+                if (KRAKEN == exchange) {
                     return KrakenXChangeApiTransaction.fromFunding(f).toTransactionCluster();
                 } else {
                     return XChangeApiTransaction.fromFunding(f).toTransactionCluster();
