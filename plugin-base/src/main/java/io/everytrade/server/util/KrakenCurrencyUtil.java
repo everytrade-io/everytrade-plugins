@@ -41,6 +41,11 @@ public class KrakenCurrencyUtil {
     }
 
     public static Currency findCurrencyByCode(String code) {
+        // Staking
+        code = code.replace(".M", "")
+            .replace(".S", "")
+            .replace(".P", "");
+
         final Currency currencyLong = CURRENCY_LONG_CODES.get(code);
         if (currencyLong != null) {
             return currencyLong;
@@ -48,6 +53,11 @@ public class KrakenCurrencyUtil {
         final Currency currencyShort = CURRENCY_SHORT_CODES.get(code);
         if (currencyShort != null) {
             return currencyShort;
+        }
+        try {
+            return Currency.fromCode(code);
+        } catch (IllegalArgumentException e) {
+
         }
         throw new IllegalStateException(String.format("Currency not found for code %s.", code));
     }

@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static io.everytrade.server.model.SupportedExchange.*;
 import static java.util.Collections.emptyList;
 import static lombok.AccessLevel.PRIVATE;
 import static org.knowm.xchange.dto.account.FundingRecord.Type.DEPOSIT;
@@ -118,13 +119,17 @@ public class KrakenConnector implements IConnector {
             ++sentRequests;
         }
 
-        var downloadResult = downloadDepositsAndWithdrawals(downloadState);
-        funding.addAll(downloadResult);
+        var depositsWithdrawals = downloadDepositsAndWithdrawals(downloadState);
+        var stakings = downloadStakings(downloadState);
+        funding.addAll(depositsWithdrawals);
+        funding.addAll(stakings);
+        return getResult(userTrades,funding, downloadState);
+    }
 
-        return new DownloadResult(
-            new XChangeConnectorParser().getParseResult(userTrades, funding),
-            downloadState.serialize()
-        );
+    private DownloadResult getResult(List<UserTrade> trades, List<FundingRecord> funding, KrakenDownloadState state ) {
+        var xchangeParser = new XChangeConnectorParser();
+        xchangeParser.setExchange(KRAKEN);
+        return new DownloadResult(xchangeParser.getParseResult(trades, funding), state.serialize());
     }
 
     private List<UserTrade> downloadTrades(KrakenDownloadState state) {
@@ -238,6 +243,33 @@ public class KrakenConnector implements IConnector {
             result.addAll(downloadedBlock);
         }
         return result;
+    }
+
+    private List<FundingRecord> removeOldStakes(List<FundingRecord> block, KrakenDownloadState state) {
+        var lastDate = state.getStakeLastTimestamp() == null ? 0 : state.getStakeLastTimestamp();
+        return block.stream().filter(r -> r.getDate().getTime() > lastDate).collect(Collectors.toList());
+    }
+
+    private List<FundingRecord> downloadStakings(KrakenDownloadState state) {
+        var accountService = (KrakenAccountService) exchange.getAccountService();
+        List<FundingRecord> downloadedBlock = new ArrayList<>();
+        try {
+            // download all stakes inc old one
+            downloadedBlock = accountService.getStakingHistory();
+            if (downloadedBlock.isEmpty()) {
+                return downloadedBlock;
+            }
+            // remove the old one
+            downloadedBlock = removeOldStakes(downloadedBlock, state);
+        } catch (IOException e) {
+            throw new IllegalStateException("Download user staking history failed.", e);
+        }
+        if(downloadedBlock.isEmpty()) {
+            return downloadedBlock;
+        }
+        var lastDate = downloadedBlock.stream().map(it -> it.getDate().getTime()).max(Long::compare).get() + 1000;
+        state.setStakeLastTimestamp(lastDate);
+        return downloadedBlock;
     }
 
     public Set<Currency> getListOfAssets(final List<FundingRecord> fundings) {
