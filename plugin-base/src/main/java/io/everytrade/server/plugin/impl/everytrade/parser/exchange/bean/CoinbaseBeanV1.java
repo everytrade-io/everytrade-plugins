@@ -9,6 +9,7 @@ import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
+import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
@@ -42,12 +43,21 @@ public class CoinbaseBeanV1 extends ExchangeBean {
             value = value.replace("Advanced Trade ", "");
             advancedTrade = true;
         }
-        transactionType = detectTransactionType(value);
+        if(value.contains("Coinbase Earn")){
+            transactionType = TransactionType.EARNING;
+        } else {
+            transactionType = detectTransactionType(value);
+        }
     }
 
     @Parsed(field = "Asset")
     public void setAsset(String value) {
-        asset = Currency.fromCode(value);
+        try {
+            Currency asset = Currency.fromCode(value);
+            this.asset = asset;
+        } catch (IllegalArgumentException e) {
+            throw new DataIgnoredException("Unsupported type of asset " + value + ". ");
+        }
     }
 
     @Parsed(field = "Spot Price Currency")
@@ -120,10 +130,14 @@ public class CoinbaseBeanV1 extends ExchangeBean {
             if(advancedTrade) {
                 return Currency.fromCode(spotPriceCurrency);
             }
+            if(note.contains(" from Coinbase Earn")){
+                note = note.replace(" from Coinbase Earn", "");
+            }
             if (note != null) {
                 var lastSpace = note.lastIndexOf(" ");
                 if (lastSpace > -1) {
-                    return Currency.fromCode(note.substring(lastSpace + 1));
+                    String substring = note.substring(lastSpace + 1);
+                    return Currency.fromCode(substring);
                 }
             }
         } catch (Exception e) {

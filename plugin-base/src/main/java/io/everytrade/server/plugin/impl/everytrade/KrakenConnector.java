@@ -34,7 +34,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static io.everytrade.server.model.SupportedExchange.*;
+import static io.everytrade.server.model.SupportedExchange.KRAKEN;
 import static java.util.Collections.emptyList;
 import static lombok.AccessLevel.PRIVATE;
 import static org.knowm.xchange.dto.account.FundingRecord.Type.DEPOSIT;
@@ -73,7 +73,7 @@ public class KrakenConnector implements IConnector {
         ID,
         "Kraken Connector",
         "",
-        SupportedExchange.KRAKEN.getInternalId(),
+        KRAKEN.getInternalId(),
         List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET)
     );
 
