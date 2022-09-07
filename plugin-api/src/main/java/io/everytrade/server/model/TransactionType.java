@@ -15,7 +15,9 @@ public enum TransactionType {
     UNSTAKE(9),
     STAKING_REWARD(10),
     AIRDROP(11),
-    EARNING(12)
+    EARNING(12),
+    REWARD(13),
+    FORK(14)
     ;
 
     private final int code;
@@ -61,7 +63,7 @@ public enum TransactionType {
     }
 
     public boolean isZeroCostGain() {
-        return this == STAKING_REWARD || this == AIRDROP || this == EARNING;
+        return this == STAKING_REWARD || this == AIRDROP || this == EARNING || this == REWARD || this == FORK;
     }
 
     public boolean isStaking() {
