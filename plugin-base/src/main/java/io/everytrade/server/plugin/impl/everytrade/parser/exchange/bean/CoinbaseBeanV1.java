@@ -55,7 +55,7 @@ public class CoinbaseBeanV1 extends ExchangeBean {
         try {
             Currency asset = Currency.fromCode(value);
             this.asset = asset;
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
             throw new DataIgnoredException("Unsupported type of asset " + value + ". ");
         }
     }
