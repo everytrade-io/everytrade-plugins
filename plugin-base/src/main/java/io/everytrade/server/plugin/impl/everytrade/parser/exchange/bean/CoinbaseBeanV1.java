@@ -77,7 +77,7 @@ public class CoinbaseBeanV1 extends ExchangeBean {
         subtotal = value;
     }
 
-    @Parsed(field = "Fees")
+    @Parsed(field = {"Fees", "Fees and/or Spread"})
     @Replace(expression = IGNORED_CHARS_IN_NUMBER, replacement = "")
     public void setFees(BigDecimal value) {
         fees = value;
