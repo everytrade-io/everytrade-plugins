@@ -36,12 +36,13 @@ public class CoinmateExchangeMock extends KnowmExchangeMock {
     }
 
     protected AccountService mockAccountService() throws Exception {
-        var mock = mock(AccountService.class);
+        var mock = mock(CoinmateAccountService.class);
 
+        CoinmateAccountService.CoinmateFundingHistoryParams value = new CoinmateAccountService.CoinmateFundingHistoryParams();
         when(mock.createFundingHistoryParams())
-            .thenReturn(new CoinmateAccountService.CoinmateFundingHistoryParams());
+            .thenReturn(value);
 
-        when(mock.getFundingHistory(any()))
+        when(mock.getTransfersHistory(any()))
             .thenReturn(fundingRecords)
             .thenReturn(emptyList());
 

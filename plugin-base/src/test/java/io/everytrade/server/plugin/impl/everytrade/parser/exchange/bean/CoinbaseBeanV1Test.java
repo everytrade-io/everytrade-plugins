@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -24,6 +25,10 @@ class CoinbaseBeanV1Test {
     private static final String HEADER_CORRECT_SEK
         = "Timestamp,Transaction Type,Asset,Quantity Transacted,SEK Spot Price at Transaction,SEK Subtotal,SEK Total " +
         "(inclusive of fees),SEK Fees,Notes\n";
+
+    private static final String HEADER_CORRECT_SPOT
+        = "Timestamp,Transaction Type,Asset,Quantity Transacted,Spot Price Currency,Spot Price at Transaction,Subtotal," +
+        "Total (inclusive of fees),Fees,Notes\n";
 
     @Test
     void testCorrectHeader() {
@@ -80,6 +85,24 @@ class CoinbaseBeanV1Test {
                 )
             )
         );
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
+    void testCorrectParsingRawTransactionEarning() {
+        var row = "2021-03-03T18:55:26Z,Coinbase Earn,XLM,4.674612,EUR,0.350000,1.64,1.64,0.00,Received 4.674612 XLM from Coinbase Earn\n";
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT_SPOT + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2021-03-03T18:55:26Z"),
+                Currency.XLM,
+                Currency.XLM,
+                TransactionType.EARNING,
+                new BigDecimal("4.6746120000"),
+                new BigDecimal("0.3508312562")
+            ),
+            Collections.emptyList());
         ParserTestUtils.checkEqual(expected, actual);
     }
 
