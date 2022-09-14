@@ -107,6 +107,37 @@ class CoinbaseBeanV1Test {
     }
 
     @Test
+    void testCorrectParsingRawTransactionConvert() {
+        var row = "2019-09-25T14:37:00Z,Convert,BTC,0.05413984,USD,194436.11," +
+            "10415.01,10526.74,111.73,Converted 0.05413984 BTC to 451.212148 USDC\n";
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT_SPOT + row);
+        BigDecimal quotePrice = new BigDecimal("0.05413984");
+        BigDecimal basePrice = new BigDecimal("451.212148");
+        BigDecimal unitPrice = quotePrice.divide(basePrice, 10, 3);
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2019-09-25T14:37:00Z"),
+                Currency.USDC,
+                Currency.BTC,
+                TransactionType.BUY,
+                new BigDecimal("451.2121480000"),
+                unitPrice
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    null,
+                    Instant.parse("2019-09-25T14:37:00Z"),
+                    Currency.USD,
+                    Currency.USD,
+                    TransactionType.FEE,
+                    new BigDecimal("111.73"),
+                    Currency.USD
+                )));
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
     void testCorrectParsingRawTransactionBuy2() {
         var header = "Timestamp,Transaction Type,Asset,Quantity Transacted,Spot Price Currency,Spot Price at Transaction,Subtotal,Total " +
             "(inclusive of fees),Fees,Notes\n";
@@ -179,10 +210,10 @@ class CoinbaseBeanV1Test {
 
     @Test
     void testIgnoredTransactionType() {
-        final String row = "2020-09-27T18:36:58Z,Convert,BTC,0.03182812,9287.38,295.60,300.00," +
-            "4.40,Bought 0,03182812 BTC for € 300,00 EUR\n";
+        final String row = "2020-09-27T18:36:58Z,Send,BTC,0.03182812,9287.38,295.60,300.00," +
+            "4.40,Send 0,03182812 BTC for € 300,00 EUR\n";
         final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
         final String error = parsingProblem.getMessage();
-        assertTrue(error.contains(ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE.concat("Convert")));
+        assertTrue(error.contains(ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE.concat("Send")));
     }
 }
