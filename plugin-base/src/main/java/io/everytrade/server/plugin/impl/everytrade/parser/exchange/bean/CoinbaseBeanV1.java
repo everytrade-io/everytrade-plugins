@@ -2,7 +2,6 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
 import com.univocity.parsers.annotations.Parsed;
 import com.univocity.parsers.annotations.Replace;
-import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
@@ -18,7 +17,6 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 
-
 public class CoinbaseBeanV1 extends ExchangeBean {
     private Instant timeStamp;
     private TransactionType transactionType;
@@ -30,6 +28,7 @@ public class CoinbaseBeanV1 extends ExchangeBean {
     private String notes;
     private String type;
     private boolean advancedTrade;
+    private boolean converted;
 
     @Parsed(field = "Timestamp")
     public void setTimeStamp(String value) {
@@ -39,12 +38,15 @@ public class CoinbaseBeanV1 extends ExchangeBean {
     @Parsed(field = "Transaction Type")
     public void setTransactionType(String value) {
         type = value;
-        if(value.contains("Advanced Trade ")){
+        if (value.contains("Advanced Trade ")) {
             value = value.replace("Advanced Trade ", "");
             advancedTrade = true;
         }
-        if(value.contains("Coinbase Earn")){
+        if (value.contains("Coinbase Earn")) {
             transactionType = TransactionType.EARNING;
+        } else if (value.contains("Convert")) {
+            converted = true;
+            transactionType = TransactionType.BUY;
         } else {
             transactionType = detectTransactionType(value);
         }
@@ -62,7 +64,7 @@ public class CoinbaseBeanV1 extends ExchangeBean {
 
     @Parsed(field = "Spot Price Currency")
     public void setSpotPriceCurrency(String value) {
-            spotPriceCurrency = value;
+        spotPriceCurrency = value;
     }
 
     @Parsed(field = "Quantity Transacted")
@@ -90,9 +92,12 @@ public class CoinbaseBeanV1 extends ExchangeBean {
 
     @Override
     public TransactionCluster toTransactionCluster() {
-        final Currency quoteCurrency = detectQuote(notes);
+        final Currency quoteCurrency = detectQuoteCurrency(notes);
+        final Currency baseCurrency = detectBaseCurrency(notes);
+        final Currency feeCurrency = detectFeeCurrency(quoteCurrency);
+        final BigDecimal volume = detectBasePrice(notes);
 
-        validateCurrencyPair(asset, quoteCurrency);
+        validateCurrencyPair(baseCurrency, quoteCurrency);
 
         List<ImportedTransactionBean> related;
         if (ParserUtils.nullOrZero(fees)) {
@@ -102,11 +107,11 @@ public class CoinbaseBeanV1 extends ExchangeBean {
                 new FeeRebateImportedTransactionBean(
                     null,
                     timeStamp,
-                    quoteCurrency,
-                    quoteCurrency,
+                    feeCurrency,
+                    feeCurrency,
                     TransactionType.FEE,
                     fees.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
-                    quoteCurrency
+                    feeCurrency
                 )
             );
         }
@@ -115,22 +120,65 @@ public class CoinbaseBeanV1 extends ExchangeBean {
             new ImportedTransactionBean(
                 null,
                 timeStamp,
-                asset,
+                baseCurrency,
                 quoteCurrency,
                 transactionType,
-                quantityTransacted.abs().setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
-                evalUnitPrice(subtotal, quantityTransacted)
+                volume.abs().setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
+                (!converted) ? evalUnitPrice(subtotal, volume) : evalConvertUnitPrice(volume, quantityTransacted)
             ),
             related
         );
     }
 
-    private Currency detectQuote(String note) {
+    private BigDecimal evalConvertUnitPrice(BigDecimal basePrice, BigDecimal quotePrice) {
+        return quotePrice.divide(basePrice, ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE);
+    }
+
+    private Currency detectBaseCurrency(String note) {
+        if (converted) {
+            if (note != null) {
+                var lastSpace = note.lastIndexOf(" ");
+                if (lastSpace > -1) {
+                    String substring = note.substring(lastSpace + 1);
+                    return Currency.fromCode(substring);
+                }
+            }
+            throw new DataIgnoredException("Base currency not find. ");
+        } else {
+            return asset;
+        }
+    }
+
+    private BigDecimal detectBasePrice(String note) {
+        if (converted) {
+            if (note != null) {
+                var lastSpace = note.lastIndexOf(" ");
+                if (lastSpace > -1) {
+                    String substringWithCurrency = note.substring(lastSpace + 1);
+                    String substringWithoutCurrency = note.replace(" " + substringWithCurrency, "");
+                    lastSpace = substringWithoutCurrency.lastIndexOf(" ");
+                    if (lastSpace > -1) {
+                        String base = substringWithoutCurrency.substring(lastSpace + 1);
+                        BigDecimal basePrice = new BigDecimal(base);
+                        return basePrice;
+                    }
+                }
+            }
+            throw new DataIgnoredException("Unsupported quote currency in 'Notes': " + note);
+        } else {
+            return quantityTransacted;
+        }
+    }
+
+    private Currency detectQuoteCurrency(String note) {
         try {
-            if(advancedTrade) {
+            if (advancedTrade) {
                 return Currency.fromCode(spotPriceCurrency);
             }
-            if(note.contains(" from Coinbase Earn")){
+            if (converted) {
+                return asset;
+            }
+            if (note.contains(" from Coinbase Earn")) {
                 note = note.replace(" from Coinbase Earn", "");
             }
             if (note != null) {
@@ -142,6 +190,18 @@ public class CoinbaseBeanV1 extends ExchangeBean {
             }
         } catch (Exception e) {
         }
-        throw new DataValidationException("Unsupported quote currency in 'Notes': " + note);
+        throw new DataIgnoredException("Unsupported quote currency in 'Notes': " + note);
+    }
+
+    private Currency detectFeeCurrency(Currency quote) {
+        try {
+            if (converted) {
+                return Currency.fromCode(spotPriceCurrency);
+            } else {
+                return quote;
+            }
+        } catch (IllegalArgumentException e) {
+        }
+        throw new DataIgnoredException("Unsupported fee currency " + spotPriceCurrency + ". ");
     }
 }
