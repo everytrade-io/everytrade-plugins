@@ -30,6 +30,7 @@ import static java.math.BigDecimal.ZERO;
 @ToString
 @FieldDefaults(makeFinal=true, level= AccessLevel.PRIVATE)
 public class BlockchainApiTransactionBean {
+
     String id;
     Instant timestamp;
     TransactionType type;

@@ -42,8 +42,8 @@ public class EveryTradeApiTransactionBean {
     String addressFrom;
     String addressTo;
 
-    public void setTimestamp(Date timestamp) {
-        this.timestamp = timestamp.toInstant();
+    public void setTimestamp(Long timestamp) {
+        this.timestamp = new Date(timestamp * 1000).toInstant();
     }
 
     public void setAction(String action) {
