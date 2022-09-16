@@ -36,7 +36,7 @@ public class CoinmateConnector implements IConnector {
 
     private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "coinmateApiConnector";
     // MAX 100 request per minute per user, https://coinmate.docs.apiary.io/#reference/request-limits
-    private static final int MAX_REQUEST_COUNT = 5;
+    private static final int MAX_REQUEST_COUNT = 3;
     // https://coinmate.docs.apiary.io/#reference/transaction-history/get-transaction-history
     private static final int TX_PER_REQUEST = 1000;
 
