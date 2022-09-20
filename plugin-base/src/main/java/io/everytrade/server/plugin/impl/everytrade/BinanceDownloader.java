@@ -4,14 +4,17 @@ import lombok.experimental.FieldDefaults;
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.binance.service.BinanceFundingHistoryParams;
 import org.knowm.xchange.binance.service.BinanceTradeHistoryParams;
+import org.knowm.xchange.binance.service.BinanceTradeService;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.account.FundingRecord;
 import org.knowm.xchange.dto.trade.UserTrade;
+import org.knowm.xchange.dto.trade.UserTrades;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -37,13 +40,25 @@ public class BinanceDownloader {
     private static final Duration TRADE_HISTORY_WAIT_DURATION = Duration.ofMillis(250);
     private static final Duration FUNDING_HISTORY_WAIT_DURATION = Duration.ofMillis(100);
     private static final int TXS_PER_REQUEST = 1000;
+
+    //Funding
     private static final int FUNDING_PER_REQUEST = 1000;
     private static final Date EXCHANGE_OPENING_DATE = new GregorianCalendar(2017,06,01).getTime();
     private static long FUNDING_PERIOD_REQUEST = 88;
     private static final int MAX_FUNDING_REQUESTS = 25;
 
+    //Convert
+    private static final Date EXCHANGE_CONVERT_START_DATE =
+        new GregorianCalendar(2017, 06, 1, 0, 0).getTime();
+    private static final int CONVERT_MAX_REQUESTS = 12;
+    private static final int CONVERT_MAX_TX_LIMIT = 1000;
+    private static final long CONVERT_RANGE_OF_DAYS = 30L;
+    private long convertStartTimestamp;
+    private long convertEndTimestamp;
+
     Map<String, String> currencyPairLastIds = new HashMap<>();
     Date lastFundingDownloadedTimestamp = null;
+    Date lastConvertDownloadedTimestamp = null;
     Exchange exchange;
 
     public BinanceDownloader(Exchange exchange, String downloadState) {
@@ -85,6 +100,71 @@ public class BinanceDownloader {
             currencyPairLastIds.put(pair.toString(), lastDownloadedTx);
         }
         return userTrades;
+    }
+
+    private void setNextConvertDates(long startId) {
+        this.convertStartTimestamp = startId;
+        this.convertEndTimestamp = startId + (1000L * 60 * 60 * 24 * CONVERT_RANGE_OF_DAYS);
+    }
+
+    public List<UserTrade> downloadConvertedTrades() {
+        long now = Instant.now().getEpochSecond() * 1000L;
+        if (lastConvertDownloadedTimestamp == null) {
+            lastConvertDownloadedTimestamp = EXCHANGE_CONVERT_START_DATE;
+        }
+        setNextConvertDates(lastConvertDownloadedTimestamp.getTime());
+        var params = (BinanceTradeHistoryParams) exchange.getTradeService().createTradeHistoryParams();
+        params.setLimit(CONVERT_MAX_TX_LIMIT);
+
+        final List<UserTrade> converts = new ArrayList<>();
+        int request = 0;
+        while (request < CONVERT_MAX_REQUESTS) {
+             params.setStartTime(new Date(convertStartTimestamp));
+            params.setEndTime(new Date(convertEndTimestamp));
+            sleepBetweenRequests(TRADE_HISTORY_WAIT_DURATION);
+            final List<UserTrade> convertBlock;
+            try {
+                var service = (BinanceTradeService) exchange.getTradeService();
+                UserTrades convertHistory = service.getConvertHistory(params);
+                convertBlock = convertHistory.getUserTrades();
+            } catch (Exception e) {
+                throw new IllegalStateException("User trade history download failed. ", e);
+            }
+            if (convertBlock.isEmpty()) {
+                if (convertEndTimestamp > now) {
+                    lastConvertDownloadedTimestamp = new Date(now);
+                    break;
+                } else {
+                    lastConvertDownloadedTimestamp = new Date(convertEndTimestamp);
+                    setNextConvertDates(convertEndTimestamp);
+                    request++;
+                }
+            } else {
+
+                if (convertBlock.size() < CONVERT_MAX_TX_LIMIT) {
+                    if (convertEndTimestamp > now) {
+                        lastConvertDownloadedTimestamp = new Date(now);
+                        converts.addAll(convertBlock);
+                        break;
+                    } else {
+                        lastConvertDownloadedTimestamp = new Date(convertEndTimestamp);
+                        setNextConvertDates(convertEndTimestamp);
+                        converts.addAll(convertBlock);
+                        request++;
+                    }
+                } else {
+                    long time = convertBlock.stream().max(comparing(trade -> trade.getTimestamp()
+                        .getTime())).get().getTimestamp().getTime();
+                    long lastTimestamp =
+                        time + 1L;
+                    converts.addAll(convertBlock);
+                    setNextConvertDates(lastTimestamp);
+                    lastConvertDownloadedTimestamp = new Date(lastTimestamp);
+                    request++;
+                }
+            }
+        }
+        return converts;
     }
 
     public List<FundingRecord> downloadDepositsAndWithdrawals(int maxCount) {
@@ -138,7 +218,9 @@ public class BinanceDownloader {
             .filter(key -> currencyPairLastIds.get(key) != null)
             .map(key -> key + "=" + currencyPairLastIds.get(key))
             .collect(joining(":")) + STATE_SEPARATOR
-            + (lastFundingDownloadedTimestamp == null ? EXCHANGE_OPENING_DATE.getTime() : lastFundingDownloadedTimestamp.getTime());
+            + (lastFundingDownloadedTimestamp == null ? EXCHANGE_OPENING_DATE.getTime() : lastFundingDownloadedTimestamp.getTime())
+            + STATE_SEPARATOR
+            + (lastConvertDownloadedTimestamp == null ? EXCHANGE_CONVERT_START_DATE.getTime() : lastConvertDownloadedTimestamp.getTime());
     }
 
     // deserialize last downloaded IDs and timestamps to be able to continue where left off
@@ -155,6 +237,13 @@ public class BinanceDownloader {
 
         if (array.length > 1) {
             this.lastFundingDownloadedTimestamp = new Date(Long.parseLong(array[1]));
+        } else {
+            this.lastFundingDownloadedTimestamp = EXCHANGE_OPENING_DATE;
+        }
+        if (array.length > 2) {
+            this.lastConvertDownloadedTimestamp = new Date(Long.parseLong(array[2]));
+        } else {
+            this.lastConvertDownloadedTimestamp = EXCHANGE_CONVERT_START_DATE;
         }
     }
 }
