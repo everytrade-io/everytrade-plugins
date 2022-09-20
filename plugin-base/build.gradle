@@ -30,7 +30,13 @@ dependencies {
     compileOnly project(':plugin-api')
     compileOnly 'org.slf4j:slf4j-api:1.7.30'
     pluginCompile "com.univocity:univocity-parsers:2.8.4"
-    pluginCompile "org.knowm.xchange:xchange-binance:$xchangeVersion"
+
+    /*
+     * ETD: 424
+     * original: pluginCompile "org.knowm.xchange:xchange-binance:$xchangeVersion"
+     */
+    pluginCompile "com.github.martinkyov.Xchange:xchange-binance:39cf013bdf91813a486c53f7f71234324085c700"
+
     pluginCompile "org.knowm.xchange:xchange-bittrex:$xchangeVersion"
     pluginCompile "org.knowm.xchange:xchange-bitstamp:$xchangeVersion"
     pluginCompile "org.knowm.xchange:xchange-bitfinex:$xchangeVersion"

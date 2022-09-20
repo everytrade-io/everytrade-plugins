@@ -56,7 +56,7 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
             .originalAmount(trade.getOriginalAmount())
             .price(trade.getPrice())
             .feeAmount(trade.getFeeAmount())
-            .feeCurrency(convert(trade.getFeeCurrency()))
+            .feeCurrency((trade.getFeeCurrency() == null) ? null : convert(trade.getFeeCurrency()))
             .build();
     }
 

@@ -95,7 +95,8 @@ public class BinanceConnector implements IConnector {
 
             List<FundingRecord> funding = binanceDownloader.downloadDepositsAndWithdrawals(MAX_DOWNLOADED_TXS);
             List<UserTrade> userTrades = binanceDownloader.downloadTrades(currencyPairs, MAX_DOWNLOADED_TXS - funding.size());
-
+            List<UserTrade> convertedTrades = binanceDownloader.downloadConvertedTrades();
+            userTrades.addAll(convertedTrades);
             return DownloadResult.builder()
                 .parseResult(parser.getParseResult(userTrades, funding))
                 .downloadStateData(binanceDownloader.serializeState())
