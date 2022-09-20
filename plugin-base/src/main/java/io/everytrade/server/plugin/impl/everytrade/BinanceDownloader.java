@@ -8,6 +8,7 @@ import org.knowm.xchange.binance.service.BinanceTradeService;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.account.FundingRecord;
 import org.knowm.xchange.dto.trade.UserTrade;
+import org.knowm.xchange.dto.trade.UserTrades;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +49,7 @@ public class BinanceDownloader {
 
     //Convert
     private static final Date EXCHANGE_CONVERT_START_DATE =
-        new GregorianCalendar(2017, 6, 1, 0, 0).getTime();
+        new GregorianCalendar(2017, 06, 1, 0, 0).getTime();
     private static final int CONVERT_MAX_REQUESTS = 12;
     private static final int CONVERT_MAX_TX_LIMIT = 1000;
     private static final long CONVERT_RANGE_OF_DAYS = 30L;
@@ -124,7 +125,8 @@ public class BinanceDownloader {
             final List<UserTrade> convertBlock;
             try {
                 var service = (BinanceTradeService) exchange.getTradeService();
-                convertBlock = service.getConvertHistory(params).getUserTrades();
+                UserTrades convertHistory = service.getConvertHistory(params);
+                convertBlock = convertHistory.getUserTrades();
             } catch (Exception e) {
                 throw new IllegalStateException("User trade history download failed. ", e);
             }
