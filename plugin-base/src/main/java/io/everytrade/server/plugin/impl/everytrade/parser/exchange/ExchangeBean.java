@@ -126,4 +126,18 @@ public abstract class ExchangeBean implements IImportableBean {
             return null;
         }
     }
+
+    protected static BigDecimal setAmountFromString(String value) {
+        try {
+            if (value != null) {
+                String amount = value.replace("-", "").replace(",", ".");
+                return new BigDecimal(amount).abs().setScale(ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE);
+            } else {
+                return null;
+            }
+        } catch (NumberFormatException e) {
+            throw new DataIgnoredException(String.format("Value %s is unsupported. ", value));
+        }
+    }
+
 }
