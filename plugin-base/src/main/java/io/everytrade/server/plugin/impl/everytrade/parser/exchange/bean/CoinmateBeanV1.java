@@ -55,6 +55,8 @@ public class CoinmateBeanV1 extends ExchangeBean {
             this.type = TransactionType.DEPOSIT;
         } else if ("WITHDRAWAL".equals(type)) {
             this.type = TransactionType.WITHDRAWAL;
+        } else if (type == null) {
+            this.type = TransactionType.REBATE;
         } else {
             throw new DataIgnoredException(UNSUPPORTED_TRANSACTION_TYPE.concat(type));
         }
@@ -108,6 +110,8 @@ public class CoinmateBeanV1 extends ExchangeBean {
     @Override
     public TransactionCluster toTransactionCluster() {
         switch (this.type) {
+            case REBATE:
+                return createRebateTransactionCluster();
             case BUY:
             case SELL:
                 return createBuySellTransactionCluster();
@@ -158,6 +162,23 @@ public class CoinmateBeanV1 extends ExchangeBean {
         } else if(nullOrZero(fee)) {
 //            cluster.setIgnoredFee(1, "Fee amount is 0 " + (auxFeeCurrency != null ? auxFeeCurrency.code() : ""));
         }
+        return cluster;
+    }
+
+    private TransactionCluster createRebateTransactionCluster() {
+        TransactionCluster cluster = new TransactionCluster(
+            new FeeRebateImportedTransactionBean(
+                id,             //uuid
+                date,           //executed
+                amountCurrency, //base
+                amountCurrency,  //quote
+                TransactionType.REBATE,           //action
+                amount,         //base quantity
+                amountCurrency,
+                null//unit price
+            ),
+            Collections.emptyList()
+        );
         return cluster;
     }
 

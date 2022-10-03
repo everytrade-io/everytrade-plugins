@@ -12,10 +12,10 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -23,6 +23,10 @@ class CoinmateBeanV1Test {
     private static final String HEADER_CORRECT = "ID;Date;Type;Amount;Amount Currency;Price;Price Currency;Fee;" +
         "Fee Currency;Total;" +
         "Total Currency;Description;Status\n";
+
+    private static final String HEADER_TWO = "ID;Date;Account;Type;Amount;Amount Currency;Price;Price Currency;Fee;" +
+        "Fee Currency;Total;Total Currency;Description;Status;First balance after;" +
+        "First balance after Currency;Second balance after;Second balance after Currency\n";
 
     @Test
     void testCorrectHeader() {
@@ -132,6 +136,27 @@ class CoinmateBeanV1Test {
                     Currency.EUR
                 )
             )
+        );
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
+    void testTransactionRebate() {
+        final String row = "8477834;16.08.2021 9:42;M;;1.84599318;CZK; ; ; ; ; ; ;" +
+            "User: georgesoft (ID: 85425, Account ID: 88299);OK;913180.69082074;CZK; ; ";
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_TWO + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new FeeRebateImportedTransactionBean(
+                "8477834",
+                Instant.parse("2021-08-16T09:42:00Z"),
+                Currency.CZK,
+                Currency.CZK,
+                TransactionType.REBATE,
+                new BigDecimal("1.84599318"),
+                Currency.CZK,
+                null
+            ),
+            Collections.emptyList()
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
