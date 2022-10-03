@@ -47,6 +47,8 @@ public class CoinbaseBeanV1 extends ExchangeBean {
         } else if (value.contains("Convert")) {
             converted = true;
             transactionType = TransactionType.BUY;
+        } else if ("Send".equalsIgnoreCase(value)) {
+            transactionType = TransactionType.WITHDRAWAL;
         } else {
             transactionType = detectTransactionType(value);
         }
@@ -92,12 +94,13 @@ public class CoinbaseBeanV1 extends ExchangeBean {
 
     @Override
     public TransactionCluster toTransactionCluster() {
-        final Currency quoteCurrency = detectQuoteCurrency(notes);
-        final Currency baseCurrency = detectBaseCurrency(notes);
-        final Currency feeCurrency = detectFeeCurrency(quoteCurrency);
-        final BigDecimal volume = detectBasePrice(notes);
 
-        validateCurrencyPair(baseCurrency, quoteCurrency);
+        Currency quoteCurrency = null;
+        Currency feeCurrency = null;
+        if (!transactionType.equals(TransactionType.WITHDRAWAL)) {
+            quoteCurrency = detectQuoteCurrency(notes);
+            feeCurrency = detectFeeCurrency(quoteCurrency);
+        }
 
         List<ImportedTransactionBean> related;
         if (ParserUtils.nullOrZero(fees)) {
@@ -115,9 +118,23 @@ public class CoinbaseBeanV1 extends ExchangeBean {
                 )
             );
         }
+        final ImportedTransactionBean main;
+        if (transactionType.isDepositOrWithdrawal()) {
+            main = ImportedTransactionBean.createDepositWithdrawal(
+                null,
+                timeStamp,
+                asset,
+                asset,
+                transactionType,
+                quantityTransacted,
+                notes.substring(notes.lastIndexOf("to ") + 1)
+            );
+        } else {
+            final Currency baseCurrency = detectBaseCurrency(notes);
+            final BigDecimal volume = detectBasePrice(notes);
+            validateCurrencyPair(baseCurrency, quoteCurrency);
 
-        return new TransactionCluster(
-            new ImportedTransactionBean(
+            main = new ImportedTransactionBean(
                 null,
                 timeStamp,
                 baseCurrency,
@@ -125,7 +142,10 @@ public class CoinbaseBeanV1 extends ExchangeBean {
                 transactionType,
                 volume.abs().setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
                 (!converted) ? evalUnitPrice(subtotal, volume) : evalConvertUnitPrice(volume, quantityTransacted)
-            ),
+            );
+        }
+        return new TransactionCluster(
+            main,
             related
         );
     }

@@ -107,6 +107,29 @@ class CoinbaseBeanV1Test {
     }
 
     @Test
+    void testSendAsWithdrawal() {
+        var row = "2021-02-01T09:28:38Z,Send,XRP,40.002654,EUR,0.550000,\"\",\"\",\"\"," +
+            "Sent 40.002654 XRP to rDsbeomae4FXwgQTJp9Rs64Qg9vDiTCdBv (11150057)";
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT_SPOT + row);
+        BigDecimal quantityTransacted = new BigDecimal("40.002654");
+        Currency asset = Currency.fromCode("XRP");
+        String note = "rDsbeomae4FXwgQTJp9Rs64Qg9vDiTCdBv (11150057)";
+
+        final TransactionCluster expected = new TransactionCluster(
+            ImportedTransactionBean.createDepositWithdrawal(
+                null,
+                Instant.parse("2021-02-01T09:28:38Z"),
+                asset,
+                asset,
+                TransactionType.WITHDRAWAL,
+                quantityTransacted,
+                note
+            ),
+            Collections.emptyList());
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
     void testCorrectParsingRawTransactionConvert() {
         var row = "2019-09-25T14:37:00Z,Convert,BTC,0.05413984,USD,194436.11," +
             "10415.01,10526.74,111.73,Converted 0.05413984 BTC to 451.212148 USDC\n";
@@ -210,10 +233,10 @@ class CoinbaseBeanV1Test {
 
     @Test
     void testIgnoredTransactionType() {
-        final String row = "2020-09-27T18:36:58Z,Send,BTC,0.03182812,9287.38,295.60,300.00," +
+        final String row = "2020-09-27T18:36:58Z,Sending,BTC,0.03182812,9287.38,295.60,300.00," +
             "4.40,Send 0,03182812 BTC for € 300,00 EUR\n";
         final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
         final String error = parsingProblem.getMessage();
-        assertTrue(error.contains(ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE.concat("Send")));
+        assertTrue(error.contains(ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE.concat("Sending")));
     }
 }
