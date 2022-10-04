@@ -1,6 +1,7 @@
 package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
 import com.univocity.parsers.annotations.Format;
+import com.univocity.parsers.annotations.Headers;
 import com.univocity.parsers.annotations.Parsed;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
@@ -14,13 +15,21 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import static io.everytrade.server.model.TransactionType.BUY;
+import static io.everytrade.server.model.TransactionType.DEPOSIT;
+import static io.everytrade.server.model.TransactionType.REBATE;
+import static io.everytrade.server.model.TransactionType.SELL;
+import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.equalsToZero;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
+import static java.util.Collections.emptyList;
 
+@Headers(sequence = {"ID", "Date", "Description", "Popisek", "Type", "Typ", "Amount", "Částka", "Amount Currency", "Částka měny",
+    "Price", "Cena", "Price Currency", "Cena měny", "Fee", "Poplatek", "Fee Currency", "Poplatek měny", "Status"},
+    extract = true)
 public class CoinmateBeanV1 extends ExchangeBean {
     // auxiliary field for validation
     private Currency auxFeeCurrency;
@@ -48,13 +57,15 @@ public class CoinmateBeanV1 extends ExchangeBean {
     @Parsed(field = {"Type", "Typ"})
     public void setType(String type) {
         if ("BUY".equals(type) || "QUICK_BUY".equals(type)) {
-            this.type = TransactionType.BUY;
+            this.type = BUY;
         } else if ("SELL".equals(type) || "QUICK_SELL".equals(type)) {
-            this.type = TransactionType.SELL;
+            this.type = SELL;
         } else if ("DEPOSIT".equals(type)) {
-            this.type = TransactionType.DEPOSIT;
+            this.type = DEPOSIT;
         } else if ("WITHDRAWAL".equals(type)) {
-            this.type = TransactionType.WITHDRAWAL;
+            this.type = WITHDRAWAL;
+        } else if (type == null && address.contains("User:") && address.contains("(ID:") && address.contains("Account ID:")) {
+            this.type = REBATE;
         } else {
             throw new DataIgnoredException(UNSUPPORTED_TRANSACTION_TYPE.concat(type));
         }
@@ -108,6 +119,8 @@ public class CoinmateBeanV1 extends ExchangeBean {
     @Override
     public TransactionCluster toTransactionCluster() {
         switch (this.type) {
+            case REBATE:
+                return createRebateTransactionCluster();
             case BUY:
             case SELL:
                 return createBuySellTransactionCluster();
@@ -124,7 +137,7 @@ public class CoinmateBeanV1 extends ExchangeBean {
         final boolean isIncorrectFee = (auxFeeCurrency == null);
         List<ImportedTransactionBean> related;
         if (equalsToZero(fee) || isIncorrectFee) {
-            related = Collections.emptyList();
+            related = emptyList();
         } else {
             related = List.of(
                 new FeeRebateImportedTransactionBean(
@@ -146,7 +159,7 @@ public class CoinmateBeanV1 extends ExchangeBean {
                 priceCurrency,  //quote
                 type,           //action
                 amount,         //base quantity
-                price          //unit price
+                price
             ),
             related
         );
@@ -155,9 +168,26 @@ public class CoinmateBeanV1 extends ExchangeBean {
                 1,
                 "Fee " + (auxFeeCurrency != null ? auxFeeCurrency.code() : "null") + " currency is neither base or quote"
             );
-        } else if(nullOrZero(fee)) {
+        } else if (nullOrZero(fee)) {
 //            cluster.setIgnoredFee(1, "Fee amount is 0 " + (auxFeeCurrency != null ? auxFeeCurrency.code() : ""));
         }
+        return cluster;
+    }
+
+    private TransactionCluster createRebateTransactionCluster() {
+        TransactionCluster cluster = new TransactionCluster(
+            new FeeRebateImportedTransactionBean(
+                id,                 //uuid
+                date,               //executed
+                amountCurrency,     //base
+                amountCurrency,     //quote
+                REBATE,             //action
+                amount,             //base quantity
+                amountCurrency,     //fee rebate
+                null
+            ),
+            emptyList()
+        );
         return cluster;
     }
 
@@ -177,7 +207,7 @@ public class CoinmateBeanV1 extends ExchangeBean {
     private List<ImportedTransactionBean> getRelatedFeeTransaction() {
         List<ImportedTransactionBean> related;
         if (equalsToZero(fee)) {
-            related = Collections.emptyList();
+            related = emptyList();
         } else {
             related = List.of(
                 new FeeRebateImportedTransactionBean(
