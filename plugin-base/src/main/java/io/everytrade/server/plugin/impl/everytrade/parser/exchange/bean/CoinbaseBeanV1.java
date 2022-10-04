@@ -14,8 +14,13 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.List;
+
+import static io.everytrade.server.model.TransactionType.BUY;
+import static io.everytrade.server.model.TransactionType.EARNING;
+import static io.everytrade.server.model.TransactionType.FEE;
+import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
+import static java.util.Collections.emptyList;
 
 public class CoinbaseBeanV1 extends ExchangeBean {
     private Instant timeStamp;
@@ -43,12 +48,12 @@ public class CoinbaseBeanV1 extends ExchangeBean {
             advancedTrade = true;
         }
         if (value.contains("Coinbase Earn")) {
-            transactionType = TransactionType.EARNING;
+            transactionType = EARNING;
         } else if (value.contains("Convert")) {
             converted = true;
-            transactionType = TransactionType.BUY;
+            transactionType = BUY;
         } else if ("Send".equalsIgnoreCase(value)) {
-            transactionType = TransactionType.WITHDRAWAL;
+            transactionType = WITHDRAWAL;
         } else {
             transactionType = detectTransactionType(value);
         }
@@ -97,14 +102,14 @@ public class CoinbaseBeanV1 extends ExchangeBean {
 
         Currency quoteCurrency = null;
         Currency feeCurrency = null;
-        if (!transactionType.equals(TransactionType.WITHDRAWAL)) {
+        if (!transactionType.equals(WITHDRAWAL)) {
             quoteCurrency = detectQuoteCurrency(notes);
             feeCurrency = detectFeeCurrency(quoteCurrency);
         }
 
         List<ImportedTransactionBean> related;
         if (ParserUtils.nullOrZero(fees)) {
-            related = Collections.emptyList();
+            related = emptyList();
         } else {
             related = List.of(
                 new FeeRebateImportedTransactionBean(
@@ -112,7 +117,7 @@ public class CoinbaseBeanV1 extends ExchangeBean {
                     timeStamp,
                     feeCurrency,
                     feeCurrency,
-                    TransactionType.FEE,
+                    FEE,
                     fees.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
                     feeCurrency
                 )
