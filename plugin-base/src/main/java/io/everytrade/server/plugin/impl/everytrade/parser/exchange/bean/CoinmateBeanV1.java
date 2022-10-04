@@ -1,6 +1,7 @@
 package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
 import com.univocity.parsers.annotations.Format;
+import com.univocity.parsers.annotations.Headers;
 import com.univocity.parsers.annotations.Parsed;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
@@ -14,7 +15,6 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -27,6 +27,9 @@ import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.equ
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
 import static java.util.Collections.emptyList;
 
+@Headers(sequence = {"ID", "Date", "Description", "Popisek", "Type", "Typ", "Amount", "Částka", "Amount Currency", "Částka měny",
+    "Price", "Cena", "Price Currency", "Cena měny", "Fee", "Poplatek", "Fee Currency", "Poplatek měny", "Status"},
+    extract = true)
 public class CoinmateBeanV1 extends ExchangeBean {
     // auxiliary field for validation
     private Currency auxFeeCurrency;
@@ -61,7 +64,7 @@ public class CoinmateBeanV1 extends ExchangeBean {
             this.type = DEPOSIT;
         } else if ("WITHDRAWAL".equals(type)) {
             this.type = WITHDRAWAL;
-        } else if (type == null) {
+        } else if (type == null && address.contains("User:") && address.contains("(ID:") && address.contains("Account ID:")) {
             this.type = REBATE;
         } else {
             throw new DataIgnoredException(UNSUPPORTED_TRANSACTION_TYPE.concat(type));
@@ -165,7 +168,7 @@ public class CoinmateBeanV1 extends ExchangeBean {
                 1,
                 "Fee " + (auxFeeCurrency != null ? auxFeeCurrency.code() : "null") + " currency is neither base or quote"
             );
-        } else if(nullOrZero(fee)) {
+        } else if (nullOrZero(fee)) {
 //            cluster.setIgnoredFee(1, "Fee amount is 0 " + (auxFeeCurrency != null ? auxFeeCurrency.code() : ""));
         }
         return cluster;
