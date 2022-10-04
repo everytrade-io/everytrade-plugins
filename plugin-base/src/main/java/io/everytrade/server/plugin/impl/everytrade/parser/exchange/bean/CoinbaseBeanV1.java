@@ -132,7 +132,7 @@ public class CoinbaseBeanV1 extends ExchangeBean {
                 asset,
                 transactionType,
                 quantityTransacted,
-                notes.substring(notes.lastIndexOf("to ") + 1)
+                extractAddressFromNote()
             );
         } else {
             final Currency baseCurrency = detectBaseCurrency(notes);
@@ -153,6 +153,15 @@ public class CoinbaseBeanV1 extends ExchangeBean {
             main,
             related
         );
+    }
+
+    private String extractAddressFromNote() {
+        try {
+            String address = notes.substring(notes.lastIndexOf("to ") + 3);
+            return address.substring(0, address.indexOf(" ("));
+        } catch (IndexOutOfBoundsException e) {
+            return "";
+        }
     }
 
     private BigDecimal evalConvertUnitPrice(BigDecimal basePrice, BigDecimal quotePrice) {

@@ -124,7 +124,7 @@ class CoinbaseBeanV1Test {
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT_SPOT + row);
         BigDecimal quantityTransacted = new BigDecimal("40.002654");
         Currency asset = Currency.fromCode("XRP");
-        String note = "rDsbeomae4FXwgQTJp9Rs64Qg9vDiTCdBv (11150057)";
+        String note = "rDsbeomae4FXwgQTJp9Rs64Qg9vDiTCdBv";
 
         final TransactionCluster expected = new TransactionCluster(
             ImportedTransactionBean.createDepositWithdrawal(
