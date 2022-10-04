@@ -18,8 +18,14 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import static io.everytrade.server.model.TransactionType.BUY;
+import static io.everytrade.server.model.TransactionType.DEPOSIT;
+import static io.everytrade.server.model.TransactionType.REBATE;
+import static io.everytrade.server.model.TransactionType.SELL;
+import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.equalsToZero;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
+import static java.util.Collections.emptyList;
 
 public class CoinmateBeanV1 extends ExchangeBean {
     // auxiliary field for validation
@@ -48,15 +54,15 @@ public class CoinmateBeanV1 extends ExchangeBean {
     @Parsed(field = {"Type", "Typ"})
     public void setType(String type) {
         if ("BUY".equals(type) || "QUICK_BUY".equals(type)) {
-            this.type = TransactionType.BUY;
+            this.type = BUY;
         } else if ("SELL".equals(type) || "QUICK_SELL".equals(type)) {
-            this.type = TransactionType.SELL;
+            this.type = SELL;
         } else if ("DEPOSIT".equals(type)) {
-            this.type = TransactionType.DEPOSIT;
+            this.type = DEPOSIT;
         } else if ("WITHDRAWAL".equals(type)) {
-            this.type = TransactionType.WITHDRAWAL;
+            this.type = WITHDRAWAL;
         } else if (type == null) {
-            this.type = TransactionType.REBATE;
+            this.type = REBATE;
         } else {
             throw new DataIgnoredException(UNSUPPORTED_TRANSACTION_TYPE.concat(type));
         }
@@ -128,7 +134,7 @@ public class CoinmateBeanV1 extends ExchangeBean {
         final boolean isIncorrectFee = (auxFeeCurrency == null);
         List<ImportedTransactionBean> related;
         if (equalsToZero(fee) || isIncorrectFee) {
-            related = Collections.emptyList();
+            related = emptyList();
         } else {
             related = List.of(
                 new FeeRebateImportedTransactionBean(
@@ -172,12 +178,12 @@ public class CoinmateBeanV1 extends ExchangeBean {
                 date,           //executed
                 amountCurrency, //base
                 amountCurrency,  //quote
-                TransactionType.REBATE,           //action
+                REBATE,           //action
                 amount,         //base quantity
                 amountCurrency,
                 null//unit price
             ),
-            Collections.emptyList()
+            emptyList()
         );
         return cluster;
     }
@@ -198,7 +204,7 @@ public class CoinmateBeanV1 extends ExchangeBean {
     private List<ImportedTransactionBean> getRelatedFeeTransaction() {
         List<ImportedTransactionBean> related;
         if (equalsToZero(fee)) {
-            related = Collections.emptyList();
+            related = emptyList();
         } else {
             related = List.of(
                 new FeeRebateImportedTransactionBean(
