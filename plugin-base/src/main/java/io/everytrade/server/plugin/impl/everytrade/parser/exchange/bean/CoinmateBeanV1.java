@@ -159,7 +159,7 @@ public class CoinmateBeanV1 extends ExchangeBean {
                 priceCurrency,  //quote
                 type,           //action
                 amount,         //base quantity
-                price          //unit price
+                price
             ),
             related
         );
@@ -177,14 +177,14 @@ public class CoinmateBeanV1 extends ExchangeBean {
     private TransactionCluster createRebateTransactionCluster() {
         TransactionCluster cluster = new TransactionCluster(
             new FeeRebateImportedTransactionBean(
-                id,             //uuid
-                date,           //executed
-                amountCurrency, //base
-                amountCurrency,  //quote
-                REBATE,           //action
-                amount,         //base quantity
-                amountCurrency,
-                null//unit price
+                id,                 //uuid
+                date,               //executed
+                amountCurrency,     //base
+                amountCurrency,     //quote
+                REBATE,             //action
+                amount,             //base quantity
+                amountCurrency,     //fee rebate
+                null
             ),
             emptyList()
         );
