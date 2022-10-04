@@ -12,11 +12,10 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.List;
 
 import static io.everytrade.server.model.Currency.CZK;
-import static io.everytrade.server.model.TransactionType.REBATE;
+import static io.everytrade.server.model.TransactionType.REWARD;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -149,14 +148,13 @@ class CoinmateBeanV1Test {
             "User: georgesoft (ID: 85425, Account ID: 88299);OK;913180.69082074;CZK; ; ";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_TWO + row);
         final TransactionCluster expected = new TransactionCluster(
-            new FeeRebateImportedTransactionBean(
+            new ImportedTransactionBean(
                 "8477834",
                 Instant.parse("2021-08-16T09:42:00Z"),
                 CZK,
                 CZK,
-                REBATE,
+                REWARD,
                 new BigDecimal("1.84599318"),
-                CZK,
                 null
             ),
             emptyList()

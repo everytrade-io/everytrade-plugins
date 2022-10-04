@@ -20,14 +20,14 @@ import java.util.List;
 
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
-import static io.everytrade.server.model.TransactionType.REBATE;
+import static io.everytrade.server.model.TransactionType.REWARD;
 import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.equalsToZero;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
 import static java.util.Collections.emptyList;
 
-@Headers(sequence = {"ID", "Date", "Description", "Popisek", "Type", "Typ", "Amount", "Částka", "Amount Currency", "Částka měny",
+@Headers(sequence = {"ID", "Date", "Datum", "Description", "Popisek", "Type", "Typ", "Amount", "Částka", "Amount Currency", "Částka měny",
     "Price", "Cena", "Price Currency", "Cena měny", "Fee", "Poplatek", "Fee Currency", "Poplatek měny", "Status"},
     extract = true)
 public class CoinmateBeanV1 extends ExchangeBean {
@@ -65,7 +65,7 @@ public class CoinmateBeanV1 extends ExchangeBean {
         } else if ("WITHDRAWAL".equals(type)) {
             this.type = WITHDRAWAL;
         } else if (type == null && address.contains("User:") && address.contains("(ID:") && address.contains("Account ID:")) {
-            this.type = REBATE;
+            this.type = REWARD;
         } else {
             throw new DataIgnoredException(UNSUPPORTED_TRANSACTION_TYPE.concat(type));
         }
@@ -119,8 +119,8 @@ public class CoinmateBeanV1 extends ExchangeBean {
     @Override
     public TransactionCluster toTransactionCluster() {
         switch (this.type) {
-            case REBATE:
-                return createRebateTransactionCluster();
+            case REWARD:
+                return createRewardTransactionCluster();
             case BUY:
             case SELL:
                 return createBuySellTransactionCluster();
@@ -174,17 +174,16 @@ public class CoinmateBeanV1 extends ExchangeBean {
         return cluster;
     }
 
-    private TransactionCluster createRebateTransactionCluster() {
+    private TransactionCluster createRewardTransactionCluster() {
         TransactionCluster cluster = new TransactionCluster(
-            new FeeRebateImportedTransactionBean(
+            new ImportedTransactionBean(
                 id,                 //uuid
                 date,               //executed
                 amountCurrency,     //base
                 amountCurrency,     //quote
-                REBATE,             //action
+                REWARD,             //action
                 amount,             //base quantity
-                amountCurrency,     //fee rebate
-                null
+                null     //fee rebate
             ),
             emptyList()
         );
