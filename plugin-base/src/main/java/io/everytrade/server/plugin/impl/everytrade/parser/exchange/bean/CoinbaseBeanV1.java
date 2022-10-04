@@ -14,8 +14,13 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.List;
+
+import static io.everytrade.server.model.TransactionType.BUY;
+import static io.everytrade.server.model.TransactionType.EARNING;
+import static io.everytrade.server.model.TransactionType.FEE;
+import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
+import static java.util.Collections.emptyList;
 
 public class CoinbaseBeanV1 extends ExchangeBean {
     private Instant timeStamp;
@@ -43,10 +48,12 @@ public class CoinbaseBeanV1 extends ExchangeBean {
             advancedTrade = true;
         }
         if (value.contains("Coinbase Earn")) {
-            transactionType = TransactionType.EARNING;
+            transactionType = EARNING;
         } else if (value.contains("Convert")) {
             converted = true;
-            transactionType = TransactionType.BUY;
+            transactionType = BUY;
+        } else if ("Send".equalsIgnoreCase(value)) {
+            transactionType = WITHDRAWAL;
         } else {
             transactionType = detectTransactionType(value);
         }
@@ -92,16 +99,17 @@ public class CoinbaseBeanV1 extends ExchangeBean {
 
     @Override
     public TransactionCluster toTransactionCluster() {
-        final Currency quoteCurrency = detectQuoteCurrency(notes);
-        final Currency baseCurrency = detectBaseCurrency(notes);
-        final Currency feeCurrency = detectFeeCurrency(quoteCurrency);
-        final BigDecimal volume = detectBasePrice(notes);
 
-        validateCurrencyPair(baseCurrency, quoteCurrency);
+        Currency quoteCurrency = null;
+        Currency feeCurrency = null;
+        if (!transactionType.equals(WITHDRAWAL)) {
+            quoteCurrency = detectQuoteCurrency(notes);
+            feeCurrency = detectFeeCurrency(quoteCurrency);
+        }
 
         List<ImportedTransactionBean> related;
         if (ParserUtils.nullOrZero(fees)) {
-            related = Collections.emptyList();
+            related = emptyList();
         } else {
             related = List.of(
                 new FeeRebateImportedTransactionBean(
@@ -109,15 +117,29 @@ public class CoinbaseBeanV1 extends ExchangeBean {
                     timeStamp,
                     feeCurrency,
                     feeCurrency,
-                    TransactionType.FEE,
+                    FEE,
                     fees.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
                     feeCurrency
                 )
             );
         }
+        final ImportedTransactionBean main;
+        if (transactionType.isDepositOrWithdrawal()) {
+            main = ImportedTransactionBean.createDepositWithdrawal(
+                null,
+                timeStamp,
+                asset,
+                asset,
+                transactionType,
+                quantityTransacted,
+                notes.substring(notes.lastIndexOf("to ") + 1)
+            );
+        } else {
+            final Currency baseCurrency = detectBaseCurrency(notes);
+            final BigDecimal volume = detectBasePrice(notes);
+            validateCurrencyPair(baseCurrency, quoteCurrency);
 
-        return new TransactionCluster(
-            new ImportedTransactionBean(
+            main = new ImportedTransactionBean(
                 null,
                 timeStamp,
                 baseCurrency,
@@ -125,7 +147,10 @@ public class CoinbaseBeanV1 extends ExchangeBean {
                 transactionType,
                 volume.abs().setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
                 (!converted) ? evalUnitPrice(subtotal, volume) : evalConvertUnitPrice(volume, quantityTransacted)
-            ),
+            );
+        }
+        return new TransactionCluster(
+            main,
             related
         );
     }
