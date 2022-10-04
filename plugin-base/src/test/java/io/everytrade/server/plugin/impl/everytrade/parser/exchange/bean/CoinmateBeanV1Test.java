@@ -15,7 +15,10 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 
+import static io.everytrade.server.model.Currency.CZK;
+import static io.everytrade.server.model.TransactionType.REBATE;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
+import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -90,7 +93,7 @@ class CoinmateBeanV1Test {
                 "7722246",
                 Instant.parse("2021-03-21T18:54:15Z"),
                 Currency.BTC,
-                Currency.CZK,
+                CZK,
                 TransactionType.BUY,
                 new BigDecimal("0.01574751"),
                 new BigDecimal("1265612.25778996")
@@ -99,11 +102,11 @@ class CoinmateBeanV1Test {
                 new FeeRebateImportedTransactionBean(
                     "7722246" + FEE_UID_PART,
                     Instant.parse("2021-03-21T18:54:15Z"),
-                    Currency.CZK,
-                    Currency.CZK,
+                    CZK,
+                    CZK,
                     TransactionType.FEE,
                     new BigDecimal("69.75584587"),
-                    Currency.CZK
+                    CZK
                 )
             )
         );
@@ -149,14 +152,14 @@ class CoinmateBeanV1Test {
             new FeeRebateImportedTransactionBean(
                 "8477834",
                 Instant.parse("2021-08-16T09:42:00Z"),
-                Currency.CZK,
-                Currency.CZK,
-                TransactionType.REBATE,
+                CZK,
+                CZK,
+                REBATE,
                 new BigDecimal("1.84599318"),
-                Currency.CZK,
+                CZK,
                 null
             ),
-            Collections.emptyList()
+            emptyList()
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
