@@ -14,8 +14,8 @@ subprojects {
         maven { url 'https://jitpack.io' }
     }
     tasks.withType(JavaCompile) {
-        project.sourceCompatibility = JavaVersion.VERSION_11
-        project.targetCompatibility = JavaVersion.VERSION_11
+        project.sourceCompatibility = JavaVersion.VERSION_17
+        project.targetCompatibility = JavaVersion.VERSION_17
         options.encoding = StandardCharsets.UTF_8
         options.incremental = true
     }
@@ -80,7 +80,7 @@ subprojects {
 
 wrapper {
     distributionType = Wrapper.DistributionType.ALL
-    gradleVersion = "6.6.1"
+    gradleVersion = "7.5.1"
 }
 
 final File privatePropertyFile = new File(project.rootDir, 'private/gradle.properties')
