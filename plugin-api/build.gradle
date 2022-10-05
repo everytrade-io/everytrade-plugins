@@ -8,8 +8,8 @@ group 'io.everytrade'
 version projectVersion
 
 tasks.withType(JavaCompile) {
-    project.sourceCompatibility = JavaVersion.VERSION_11
-    project.targetCompatibility = JavaVersion.VERSION_11
+    project.sourceCompatibility = JavaVersion.VERSION_17
+    project.targetCompatibility = JavaVersion.VERSION_17
     options.encoding = StandardCharsets.UTF_8
     options.incremental = true
 }
