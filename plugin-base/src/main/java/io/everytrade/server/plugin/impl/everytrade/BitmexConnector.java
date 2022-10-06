@@ -13,6 +13,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.apache.commons.lang3.StringUtils;
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.ExchangeFactory;
 import org.knowm.xchange.bitmex.BitmexExchange;
@@ -41,7 +42,7 @@ import static io.everytrade.server.plugin.impl.everytrade.ConnectorUtils.findDup
 import static io.everytrade.server.plugin.impl.everytrade.ConnectorUtils.findDuplicateTransaction;
 import static java.util.stream.Collectors.joining;
 import static lombok.AccessLevel.PRIVATE;
-import static org.springframework.util.StringUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 @RequiredArgsConstructor
 @FieldDefaults(level = PRIVATE, makeFinal = true)

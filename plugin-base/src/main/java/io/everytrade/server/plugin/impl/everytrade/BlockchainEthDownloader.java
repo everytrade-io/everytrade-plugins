@@ -25,7 +25,6 @@ import static java.time.Instant.now;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static lombok.AccessLevel.PRIVATE;
-import static org.apache.commons.collections.CollectionUtils.isEmpty;
 
 @AllArgsConstructor
 @FieldDefaults(makeFinal = true, level = PRIVATE)
@@ -91,7 +90,7 @@ public class BlockchainEthDownloader {
                     apiKeyToken)
                 .getResult();
 
-            if (isEmpty(etherscanErc20Txs)) {
+            if (etherscanErc20Txs == null || etherscanErc20Txs.isEmpty()) {
                 return emptyList();
             }
 
@@ -128,7 +127,7 @@ public class BlockchainEthDownloader {
                     apiKeyToken)
                 .getResult();
 
-            if (isEmpty(etherscanTxs)) {
+            if (etherscanTxs == null || etherscanTxs.isEmpty()) {
                 return emptyList();
             }
 

@@ -36,7 +36,7 @@ import static io.everytrade.server.plugin.impl.everytrade.ConnectorUtils.findDup
 import static io.everytrade.server.plugin.impl.everytrade.ConnectorUtils.findDuplicateTransaction;
 import static io.everytrade.server.plugin.impl.everytrade.ConnectorUtils.occurrenceCount;
 import static lombok.AccessLevel.PRIVATE;
-import static org.springframework.util.StringUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 @AllArgsConstructor
 @FieldDefaults(makeFinal = true, level = PRIVATE)
