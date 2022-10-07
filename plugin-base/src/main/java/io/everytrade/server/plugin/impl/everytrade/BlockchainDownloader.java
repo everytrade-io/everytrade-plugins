@@ -115,7 +115,7 @@ public class BlockchainDownloader {
             page = 0;
         }
         if (isXpub(source)) {
-            final Collection<AddressInfo> addressInfos = client.getXpubTransactions(source, lastTxTimestamp, LIMIT, SORT_ASC);;
+            final Collection<AddressInfo> addressInfos = client.getAddressesInfoFromXpub(source, lastTxTimestamp, LIMIT, SORT_ASC);
             if (addressInfos == null) {
                 throw new IllegalArgumentException(String.format(
                     "No addresses info found for crypto '%s' and key '%s'",
