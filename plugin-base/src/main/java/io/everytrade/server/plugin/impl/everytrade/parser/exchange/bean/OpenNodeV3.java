@@ -10,6 +10,7 @@ import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
+import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -23,27 +24,29 @@ import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
 import static java.util.Collections.emptyList;
+import static lombok.AccessLevel.PRIVATE;
 
+@FieldDefaults(level = PRIVATE)
 public class OpenNodeV3 extends ExchangeBean {
 
-    private String openNodeID;
-    private String date;
-    private String time;
-    private String fromAmount;
-    private String fromCurrency;
-    private String toAmount;
-    private String toCurrency;
-    private String fromToExchangeRate;
-    private String conversionFeesPaid;
-    private String status;
+    String openNodeID;
+    String date;
+    String time;
+    String fromAmount;
+    String fromCurrency;
+    String toAmount;
+    String toCurrency;
+    String fromToExchangeRate;
+    String conversionFeesPaid;
+    String status;
 
-    private BigDecimal baseAmount;
-    private BigDecimal quoteAmount;
-    private BigDecimal feeAmount;
-    private Currency baseCurrency;
-    private Currency quoteCurrency;
-    private Currency feeCurrency;
-    private TransactionType type;
+    BigDecimal baseAmount;
+    BigDecimal quoteAmount;
+    BigDecimal feeAmount;
+    Currency baseCurrency;
+    Currency quoteCurrency;
+    Currency feeCurrency;
+    TransactionType type;
     Instant createdAt;
 
     @Parsed(field = "OpenNode ID")

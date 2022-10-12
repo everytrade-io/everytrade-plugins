@@ -12,6 +12,8 @@ import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
+import lombok.experimental.FieldDefaults;
+import static lombok.AccessLevel.PRIVATE;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -27,40 +29,17 @@ import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
 import static java.util.Collections.emptyList;
 
+@FieldDefaults(level = PRIVATE)
 public class OpenNodeV1 extends ExchangeBean {
 
-    private String openNodeID;
-    private String description;
-//    private String paymentRequestDate;
-//    private String paymentRequestTime;
-    private String settlementDate;
-    private String settlementTime;
-    private String paymentAmount;
-//    private String originatingAmount;
-//    private String originatingCurrency;
-    private String merchantCurrencyAmount;
-    private String merchantAccountCurrency;
-    private String processingFeesPaidAmount;
-//    private String processingFeesPaidCurrency;
-//    private String netSettledAmount;
-//    private String settlementCurrency;
-//    private String automaticallyConvertedCurrency;
-//    private String paymentMethod;
-//    private String orderId;
-//    private String metadata;
-//    private String metadataEmail;
-
-//    private String internalId;
-//    private String note;
-//    private Instant time;
-
-//    Currency base;
-//    BigDecimal baseAmount;
-//    Currency quote;
-//    BigDecimal quoteAmount;
-//    Currency feeCurrency;
-//    BigDecimal feeAmount;
-//    TransactionType type;
+    String openNodeID;
+    String description;
+    String settlementDate;
+    String settlementTime;
+    String paymentAmount;
+    String merchantCurrencyAmount;
+    String merchantAccountCurrency;
+    String processingFeesPaidAmount;
 
     @Parsed(field = "OpenNode ID")
     public void setOrderNodeId(String s) {
@@ -72,20 +51,7 @@ public class OpenNodeV1 extends ExchangeBean {
         description = s;
     }
 
-//    @Parsed(field = "\"Payment request date (mm/dd/yyyy UTC)\"")
-//    @Format(formats = {"\"MM/dd/yyyy\""}, options = {"locale=EN", "timezone=UTC"})
-//    public void setPaymentRequestDate(Date value) {
-//        paymentRequestDate = value;
-//    }
-//
-//    @Parsed(field = "\"Payment request time (UTC)\"")
-//    @Format(formats = {"\"hh:mm aa\""}, options = {"locale=EN", "timezone=UTC"})
-//    public void setPaymentRequestTime(Date value) {
-//        paymentRequestTime = value;
-//    }
-
     @Parsed(field = "Settlement date (mm/dd/yyyy UTC)")
-//    @Format(formats = {"\"MM/dd/yyyy\""}, options = {"locale=EN", "timezone=UTC"})
     public void setSettlementDate(String value) {
         settlementDate = value;
     }
@@ -132,13 +98,10 @@ public class OpenNodeV1 extends ExchangeBean {
         TransactionType type = findTransactionType();
         Instant date = combineDateAndTime(settlementDate, settlementTime);
 
-        switch (type) {
-            case BUY: {
-                return createBuy(date);
-            }
-            default: {
-                throw new DataValidationException("Unsupported transaction type. ");
-            }
+        if (type.equals(BUY)) {
+            return createBuy(date);
+        } else {
+            throw new DataValidationException("Unsupported transaction type. ");
         }
     }
 

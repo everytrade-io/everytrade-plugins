@@ -10,6 +10,7 @@ import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
+import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -22,17 +23,19 @@ import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
 import static java.util.Collections.emptyList;
+import static lombok.AccessLevel.PRIVATE;
 
+@FieldDefaults(level = PRIVATE)
 public class OpenNodeV2 extends ExchangeBean {
 
-    private String openNodeID;
-    private String typeOfTransfer;
-    private String statusOfTransfer;
-    private String date;
-    private String time;
-    private String amount;
-    private String transferFeesPaid;
-    private String currency;
+    String openNodeID;
+    String typeOfTransfer;
+    String statusOfTransfer;
+    String date;
+    String time;
+    String amount;
+    String transferFeesPaid;
+    String currency;
 
     @Parsed(field = "OpenNode ID")
     public void setOrderNodeId(String s) {
