@@ -31,6 +31,9 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexB
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexBeanV3;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseProBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OpenNodeV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OpenNodeV2;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OpenNodeV3;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.coibasePro.v2.CoinbaseProBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinmateBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinmateBeanV2;
@@ -86,6 +89,7 @@ import static io.everytrade.server.model.SupportedExchange.HUOBI;
 import static io.everytrade.server.model.SupportedExchange.KRAKEN;
 import static io.everytrade.server.model.SupportedExchange.LOCALBITCOINS;
 import static io.everytrade.server.model.SupportedExchange.OKX;
+import static io.everytrade.server.model.SupportedExchange.OPEN_NODE;
 import static io.everytrade.server.model.SupportedExchange.PAXFUL;
 import static io.everytrade.server.model.SupportedExchange.POLONIEX;
 import static io.everytrade.server.model.SupportedExchange.SHAKEPAY;
@@ -540,6 +544,44 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 .supportedExchange(SIMPLE_COIN)
                 .build());
 
+            /* OpenNode */
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader
+                        .of("\"OpenNode ID\"", "\"Description\"", "\"Payment request date (mm/dd/yyyy UTC)\"",
+                            "\"Payment request time (UTC)\"", "\"Settlement date (mm/dd/yyyy UTC)\"", "\"Settlement time (UTC)\"",
+                            "\"Payment amount (BTC)\"", "\"Originating amount\"", "\"Originating currency\"",
+                            "\"Merchant currency amount\"", "\"Merchant account currency\"", "\"Processing fees paid (BTC)\"",
+                            "\"Processing fees paid (in merchant account currency)\"", "\"Net settled amount\"",
+                            "\"Settlement currency\"", "\"Automatically converted to merchant account currency\"",
+                            "\"Payment method\"", "\"Order ID\"", "\"Metadata\"", "\"Metadata \"\"email\"\"\"")
+                        .withSeparator(delimiter)
+                ))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(OpenNodeV1.class, delimiter))
+                .supportedExchange(OPEN_NODE)
+                .build());
+
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader
+                        .of("OpenNode ID", "Type of transfer", "Status of transfer", "Date (mm/dd/yyyy UTC)", "Time (UTC)", "Amount",
+                            "Transfer fees paid", "Currency")
+                        .withSeparator(delimiter)
+                ))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(OpenNodeV2.class, delimiter))
+                .supportedExchange(OPEN_NODE)
+                .build());
+
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader
+                        .of("OpenNode ID", "Date (mm/dd/yyyy UTC)", "Time (UTC)", "From amount", "From currency", "To amount",
+                            "To currency", "From/To exchange rate", "Conversion fees paid (BTC)", "Status")
+                        .withSeparator(delimiter)
+                ))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(OpenNodeV3.class, delimiter))
+                .supportedExchange(OPEN_NODE)
+                .build());
         });
 
         /* EVERYTRADE */
