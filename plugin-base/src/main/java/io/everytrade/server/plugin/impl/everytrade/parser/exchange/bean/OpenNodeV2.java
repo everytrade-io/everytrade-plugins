@@ -91,8 +91,8 @@ public class OpenNodeV2 extends ExchangeBean {
     @Override
     public TransactionCluster toTransactionCluster() {
         if (!"confirmed".equalsIgnoreCase(statusOfTransfer)) {
-                throw new DataIgnoredException(String.format("Unfinished status: %s. ", statusOfTransfer));
-            }
+            throw new DataIgnoredException(String.format("Unfinished status: %s. ", statusOfTransfer));
+        }
         TransactionType type = findTransactionType();
         Instant date = combineDateAndTime(this.date, time);
         if (!type.equals(WITHDRAWAL)) {
