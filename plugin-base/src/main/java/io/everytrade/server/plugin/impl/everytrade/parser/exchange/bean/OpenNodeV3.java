@@ -29,7 +29,7 @@ import static lombok.AccessLevel.PRIVATE;
 @FieldDefaults(level = PRIVATE)
 public class OpenNodeV3 extends ExchangeBean {
 
-    String openNodeID;
+    String openNodeId;
     String date;
     String time;
     String fromAmount;
@@ -51,7 +51,7 @@ public class OpenNodeV3 extends ExchangeBean {
 
     @Parsed(field = "OpenNode ID")
     public void setOrderNodeId(String s) {
-        this.openNodeID = s;
+        this.openNodeId = s;
     }
 
     @Parsed(field = "Date (mm/dd/yyyy UTC)")
@@ -135,14 +135,12 @@ public class OpenNodeV3 extends ExchangeBean {
                 baseCurrency = Currency.fromCode(toCurrency);
                 quoteAmount = new BigDecimal(fromAmount);
                 quoteCurrency = Currency.fromCode(fromCurrency);
-                break;
             }
             case SELL -> {
                 baseAmount = new BigDecimal(fromAmount);
                 baseCurrency = Currency.fromCode(fromCurrency);
                 quoteAmount = new BigDecimal(toAmount);
                 quoteCurrency = Currency.fromCode(toCurrency);
-                break;
             }
             default -> {
                 throw new DataValidationException("Unsupported transaction type. ");
@@ -182,7 +180,7 @@ public class OpenNodeV3 extends ExchangeBean {
             }
             cluster = new TransactionCluster(
                 new ImportedTransactionBean(
-                    openNodeID,
+                    openNodeId,
                     createdAt,
                     baseCurrency,
                     quoteCurrency,

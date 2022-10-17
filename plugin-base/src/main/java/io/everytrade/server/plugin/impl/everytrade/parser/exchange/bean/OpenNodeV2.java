@@ -28,7 +28,7 @@ import static lombok.AccessLevel.PRIVATE;
 @FieldDefaults(level = PRIVATE)
 public class OpenNodeV2 extends ExchangeBean {
 
-    String openNodeID;
+    String openNodeId;
     String typeOfTransfer;
     String statusOfTransfer;
     String date;
@@ -39,7 +39,7 @@ public class OpenNodeV2 extends ExchangeBean {
 
     @Parsed(field = "OpenNode ID")
     public void setOrderNodeId(String s) {
-        this.openNodeID = s;
+        this.openNodeId = s;
     }
 
     @Parsed(field = "Type of transfer")
@@ -92,15 +92,10 @@ public class OpenNodeV2 extends ExchangeBean {
     public TransactionCluster toTransactionCluster() {
         TransactionType type = findTransactionType();
         Instant date = combineDateAndTime(this.date, time);
-
-        switch (type) {
-            case WITHDRAWAL: {
-                return createWithdrawal(date);
-            }
-            default: {
-                throw new DataValidationException("Unsupported transaction type. ");
-            }
+        if (!type.equals(WITHDRAWAL)) {
+            throw new DataValidationException("Unsupported transaction type. ");
         }
+        return createWithdrawal(date);
     }
 
     private TransactionType findTransactionType() {
@@ -138,7 +133,7 @@ public class OpenNodeV2 extends ExchangeBean {
             }
             cluster = new TransactionCluster(
                 ImportedTransactionBean.createDepositWithdrawal(
-                    openNodeID,
+                    openNodeId,
                     createdAt,
                     currency,
                     currency,

@@ -1,7 +1,6 @@
 package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
 import com.univocity.parsers.annotations.Format;
-import com.univocity.parsers.annotations.Headers;
 import com.univocity.parsers.annotations.Parsed;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
@@ -20,7 +19,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.List;
 
 import static io.everytrade.server.model.Currency.BTC;
@@ -32,7 +30,7 @@ import static java.util.Collections.emptyList;
 @FieldDefaults(level = PRIVATE)
 public class OpenNodeV1 extends ExchangeBean {
 
-    String openNodeID;
+    String openNodeId;
     String description;
     String settlementDate;
     String settlementTime;
@@ -43,7 +41,7 @@ public class OpenNodeV1 extends ExchangeBean {
 
     @Parsed(field = "OpenNode ID")
     public void setOrderNodeId(String s) {
-        this.openNodeID = s;
+        this.openNodeId = s;
     }
 
     @Parsed(field = "Description")
