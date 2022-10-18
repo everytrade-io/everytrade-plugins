@@ -24,7 +24,7 @@ import java.util.List;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.equalsToZero;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
 
-@Headers(sequence = {"UID", "DATE", "SYMBOL", "ACTION", "QUANTY", "QUANTITY", "VOLUME", "FEE", "NOTE", "LABELS"}, extract = true)
+@Headers(sequence = {"UID", "DATE", "SYMBOL", "ACTION", "QUANTY", "VOLUME", "FEE"}, extract = true)
 public class EveryTradeBeanV2 extends ExchangeBean {
     private String uid;
     private Instant date;
@@ -34,8 +34,6 @@ public class EveryTradeBeanV2 extends ExchangeBean {
     private BigDecimal quantity;
     private BigDecimal volume;
     private BigDecimal fee;
-    private String note;
-    private String labels;
     private static final Logger LOG = LoggerFactory.getLogger(OkxConnectorParser.class);
 
     @Parsed(field = "UID")
@@ -61,7 +59,7 @@ public class EveryTradeBeanV2 extends ExchangeBean {
         this.action = detectTransactionType(action);
     }
 
-    @Parsed(field = {"QUANTY","QUANTITY"}, defaultNullRead = "0")
+    @Parsed(field = "QUANTY", defaultNullRead = "0")
     public void setQuantity(String quantity) {
         this.quantity = EverytradeCSVParserValidator.parserNumber(quantity);
     }
@@ -74,16 +72,6 @@ public class EveryTradeBeanV2 extends ExchangeBean {
     @Parsed(field = "FEE", defaultNullRead = "0")
     public void setFee(String fee) {
         this.fee = EverytradeCSVParserValidator.parserNumber(fee);
-    }
-
-    @Parsed(field = "NOTE", defaultNullRead = "0")
-    public void setNote(String value) {
-        note = value;
-    }
-
-    @Parsed(field = "LABELS", defaultNullRead = "0")
-    public void setLabels(String value) {
-        labels = value;
     }
 
     @Override
@@ -117,7 +105,7 @@ public class EveryTradeBeanV2 extends ExchangeBean {
             ),
             related
         );
-        if (nullOrZero(fee)) {
+        if(nullOrZero(fee)) {
 //            transactionCluster.setIgnoredFee(1, "Fee amount is 0 " + (symbolQuote != null ? symbolQuote.code() : ""));
         }
         return transactionCluster;

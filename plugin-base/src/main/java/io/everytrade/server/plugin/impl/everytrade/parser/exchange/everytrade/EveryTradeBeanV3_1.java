@@ -44,12 +44,12 @@ public class EveryTradeBeanV3_1 extends ExchangeBean {
     Currency rebateCurrency;
     TransactionType action;
 
-    @Parsed(field = {"QUANTY", "QUANTITY"}, defaultNullRead = "0")
+    @Parsed(field = "QUANTY", defaultNullRead = "0")
     public void setQuanty(String value) {
         quantity = EverytradeCSVParserValidator.parserNumber(value);
     }
 
-    @Parsed(field = {"PRICE", "UNIT_PRICE"}, defaultNullRead = "0")
+    @Parsed(field = "PRICE", defaultNullRead = "0")
     public void setPrice(String value) {
         price = EverytradeCSVParserValidator.parserNumber(value);
     }
@@ -104,7 +104,7 @@ public class EveryTradeBeanV3_1 extends ExchangeBean {
         switch (action) {
             case BUY:
             case SELL:
-              return createBuySellTransactionCluster();
+                return createBuySellTransactionCluster();
             case DEPOSIT:
             case WITHDRAWAL:
                 return createDepositOrWithdrawalTxCluster();

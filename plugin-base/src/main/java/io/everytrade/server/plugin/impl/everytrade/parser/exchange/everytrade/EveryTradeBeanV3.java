@@ -23,8 +23,7 @@ import java.util.Objects;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
 
 @Headers(sequence = {
-    "UID", "DATE", "SYMBOL", "ACTION", "QUANTY", "QUANTITY", "PRICE", "UNIT_PRICE", "FEE", "FEE_CURRENCY", "REBATE", "REBATE_CURRENCY",
-    "NOTE", "LABELS"
+    "UID", "DATE", "SYMBOL", "ACTION", "QUANTY", "PRICE", "FEE", "FEE_CURRENCY", "REBATE", "REBATE_CURRENCY"
 }, extract = true)
 public class EveryTradeBeanV3 extends ExchangeBean {
     private String uid;
@@ -38,8 +37,6 @@ public class EveryTradeBeanV3 extends ExchangeBean {
     private Currency feeCurrency;
     private BigDecimal rebate;
     private Currency rebateCurrency;
-    private String note;
-    private String labels;
 
     @Parsed(field = "UID")
     public void setUid(String value) {
@@ -64,12 +61,12 @@ public class EveryTradeBeanV3 extends ExchangeBean {
         action = detectTransactionType(value);
     }
 
-    @Parsed(field = {"QUANTY", "QUANTITY"}, defaultNullRead = "0")
+    @Parsed(field = "QUANTY", defaultNullRead = "0")
     public void setQuantityBase(String value) {
         quantity = EverytradeCSVParserValidator.parserNumber(value);
     }
 
-    @Parsed(field = {"PRICE", "UNIT_PRICE"}, defaultNullRead = "0")
+    @Parsed(field = "PRICE", defaultNullRead = "0")
     public void setPrice(String value) {
         price = EverytradeCSVParserValidator.parserNumber(value);
     }
@@ -86,22 +83,12 @@ public class EveryTradeBeanV3 extends ExchangeBean {
 
     @Parsed(field = "REBATE", defaultNullRead = "0")
     public void setRebate(String value) {
-        rebate = EverytradeCSVParserValidator.parserNumber(value);
+        rebate =  EverytradeCSVParserValidator.parserNumber(value);
     }
 
     @Parsed(field = "REBATE_CURRENCY")
     public void setRebateCurrency(String value) {
         rebateCurrency = value == null ? null : Currency.fromCode(EverytradeCSVParserValidator.correctCurrency(value));
-    }
-
-    @Parsed(field = "NOTE", defaultNullRead = "0")
-    public void setNote(String value) {
-        note = value;
-    }
-
-    @Parsed(field = "LABELS", defaultNullRead = "0")
-    public void setLabels(String value) {
-        labels = value;
     }
 
     @Override
@@ -149,7 +136,7 @@ public class EveryTradeBeanV3 extends ExchangeBean {
         }
 
         TransactionCluster transactionCluster = new TransactionCluster(buySell, related);
-        if (nullOrZero(fee)) {
+        if(nullOrZero(fee)) {
 //            transactionCluster.setIgnoredFee(1, "Fee amount is 0 " + (feeCurrency != null ? feeCurrency.code() : ""));
         }
         return transactionCluster;
