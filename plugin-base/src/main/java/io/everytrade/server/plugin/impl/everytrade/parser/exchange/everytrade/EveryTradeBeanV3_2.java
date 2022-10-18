@@ -22,6 +22,7 @@ import java.util.List;
 
 import static io.everytrade.server.model.TransactionType.AIRDROP;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
+import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
 import static java.math.BigDecimal.ZERO;
@@ -79,10 +80,13 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
 
     @Parsed(field = "ACTION")
     public void setAction(String value) {
-        if(value.equalsIgnoreCase("STAKING REWARD")) {
+        if(value.equalsIgnoreCase("STAKING REWARD")
+        || value.equalsIgnoreCase("STAKE REWARD")) {
             action = STAKING_REWARD;
         } else if (value.equalsIgnoreCase("AIRDROP")) {
             action = AIRDROP;
+        } else if (value.equalsIgnoreCase("EARN")) {
+            action = EARNING;
         } else {
             action = detectTransactionType(value);
         }
