@@ -23,6 +23,7 @@ import java.util.List;
 import static io.everytrade.server.model.TransactionType.AIRDROP;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.EARNING;
+import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
 import static java.math.BigDecimal.ZERO;
@@ -241,7 +242,7 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
             date,
             rebateCurrency != null ? rebateCurrency : symbolBase,
             rebateCurrency != null ? rebateCurrency : symbolQuote,
-            action,
+            TransactionType.REBATE,
             rebate,
             rebateCurrency
         );
