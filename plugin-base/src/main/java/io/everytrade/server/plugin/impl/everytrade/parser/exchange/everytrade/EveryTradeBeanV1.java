@@ -21,7 +21,8 @@ import java.util.List;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
 import static java.math.BigDecimal.ZERO;
 
-@Headers(sequence = {"UID", "DATE", "SYMBOL", "ACTION", "QUANTY", "PRICE", "FEE"}, extract = true)
+@Headers(sequence = {"UID", "DATE", "SYMBOL", "ACTION", "QUANTY", "QUANTITY", "PRICE", "UNIT_PRICE", "FEE", "NOTE", "LABELS"}, extract =
+    true)
 public class EveryTradeBeanV1 extends ExchangeBean {
     private String uid;
     private Instant date;
@@ -31,6 +32,8 @@ public class EveryTradeBeanV1 extends ExchangeBean {
     private BigDecimal quantity;
     private BigDecimal price;
     private BigDecimal fee;
+    private String note;
+    private String labels;
 
     @Parsed(field = "UID")
     public void setUid(String uid) {
@@ -55,12 +58,12 @@ public class EveryTradeBeanV1 extends ExchangeBean {
         this.action = detectTransactionType(action);
     }
 
-    @Parsed(field = "QUANTY", defaultNullRead = "0")
+    @Parsed(field = {"QUANTY", "QUANTITY"}, defaultNullRead = "0")
     public void setQuantityBase(String quantity) {
         this.quantity = EverytradeCSVParserValidator.parserNumber(quantity);
     }
 
-    @Parsed(field = "PRICE", defaultNullRead = "0")
+    @Parsed(field = {"PRICE", "UNIT_PRICE"}, defaultNullRead = "0")
     public void setPrice(String price) {
         this.price = EverytradeCSVParserValidator.parserNumber(price);
     }
@@ -68,6 +71,16 @@ public class EveryTradeBeanV1 extends ExchangeBean {
     @Parsed(field = "FEE", defaultNullRead = "0")
     public void setFee(String fee) {
         this.fee = EverytradeCSVParserValidator.parserNumber(fee);
+    }
+
+    @Parsed(field = "NOTE", defaultNullRead = "0")
+    public void setNote(String value) {
+        note = value;
+    }
+
+    @Parsed(field = "LABELS", defaultNullRead = "0")
+    public void setLabels(String value) {
+        labels = value;
     }
 
     @Override

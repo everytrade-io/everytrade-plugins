@@ -61,6 +61,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v2.Bi
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v3.BinanceExchangeSpecificParserV3;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceBeanV4;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.everytrade.EveryTradeBeanV3_1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.everytrade.EveryTradeBeanV3_2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -587,6 +588,15 @@ public class EverytradeCsvMultiParser implements ICsvParser {
         /* EVERYTRADE */
 
         DELIMITERS.forEach(delimiter -> {
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader.of(
+                        "UID","DATE","SYMBOL","ACTION","QUANTITY","UNIT_PRICE","FEE","FEE_CURRENCY","REBATE","REBATE_CURRENCY",
+                        "ADDRESS_FROM","ADDRESS_TO","NOTE","LABELS"
+                    ).withSeparator(delimiter)))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(EveryTradeBeanV3_2.class, delimiter)) //
+                .supportedExchange(EVERYTRADE)
+                .build());
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
                 .headers(List.of(
                     CsvHeader.of(
