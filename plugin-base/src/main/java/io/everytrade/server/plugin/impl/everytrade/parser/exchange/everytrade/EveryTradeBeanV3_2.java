@@ -20,18 +20,20 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static io.everytrade.server.model.TransactionType.AIRDROP;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
+import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
 import static java.math.BigDecimal.ZERO;
 import static lombok.AccessLevel.PRIVATE;
 
 @Headers(sequence = {
-    "UID", "DATE", "SYMBOL", "ACTION", "QUANTY", "PRICE", "FEE", "FEE_CURRENCY", "REBATE", "REBATE_CURRENCY", "ADDRESS_FROM", "ADDRESS_TO"
+    "UID", "DATE", "SYMBOL", "ACTION", "QUANTITY", "UNIT_PRICE", "FEE", "FEE_CURRENCY", "REBATE", "REBATE_CURRENCY",
+    "ADDRESS_FROM", "ADDRESS_TO", "NOTE", "LABELS"
 }, extract = true)
 @FieldDefaults(level = PRIVATE)
-public class EveryTradeBeanV3_1 extends ExchangeBean {
+public class EveryTradeBeanV3_2 extends ExchangeBean {
 
-    @Parsed(field = "UID")
     String uid;
     Instant date;
     Currency symbolBase;
@@ -43,31 +45,16 @@ public class EveryTradeBeanV3_1 extends ExchangeBean {
     BigDecimal rebate;
     Currency rebateCurrency;
     TransactionType action;
+    String note;
+    String labels;
 
-    @Parsed(field = "QUANTY", defaultNullRead = "0")
-    public void setQuanty(String value) {
-        quantity = EverytradeCSVParserValidator.parserNumber(value);
+    ImportedTransactionBean main;
+    List<ImportedTransactionBean> related;
+
+    @Parsed(field = "UID")
+    public void setUid(String value) {
+        uid = value;
     }
-
-    @Parsed(field = "PRICE", defaultNullRead = "0")
-    public void setPrice(String value) {
-        price = EverytradeCSVParserValidator.parserNumber(value);
-    }
-
-    @Parsed(field = "FEE", defaultNullRead = "0")
-    public void setFee(String value){
-        fee = EverytradeCSVParserValidator.parserNumber(value);
-    }
-
-    @Parsed(field = "REBATE", defaultNullRead = "0")
-    public void setRebate(String value){
-        rebate = EverytradeCSVParserValidator.parserNumber(value);
-    }
-
-    @Parsed(field = "ADDRESS_FROM")
-    String addressFrom;
-    @Parsed(field = "ADDRESS_TO")
-    String addressTo;
 
     @Parsed(field = "DATE")
     @Format(formats = {"dd.MM.yy HH:mm:ss", "yyyy-MM-dd HH:mm:ss"}, options = {"locale=US", "timezone=UTC"})
@@ -77,14 +64,43 @@ public class EveryTradeBeanV3_1 extends ExchangeBean {
 
     @Parsed(field = "SYMBOL")
     public void setSymbol(String value) {
-        CurrencyPair symbolParts = EverytradeCSVParserValidator.parseSymbol(value);
-        symbolBase = symbolParts.getBase();
-        symbolQuote = symbolParts.getQuote();
+        try {
+            CurrencyPair symbolParts = EverytradeCSVParserValidator.parseSymbol(value);
+            symbolBase = symbolParts.getBase();
+            symbolQuote = symbolParts.getQuote();
+        } catch (Exception ex) {
+            try {
+                symbolBase = Currency.fromCode(value);
+            } catch (Exception e) {
+                throw new DataValidationException("Cannot find transaction currency");
+            }
+        }
     }
 
     @Parsed(field = "ACTION")
     public void setAction(String value) {
-        action = detectTransactionType(value);
+        if(value.equalsIgnoreCase("STAKING REWARD")) {
+            action = STAKING_REWARD;
+        } else if (value.equalsIgnoreCase("AIRDROP")) {
+            action = AIRDROP;
+        } else {
+            action = detectTransactionType(value);
+        }
+    }
+
+    @Parsed(field = {"QUANTY", "QUANTITY"}, defaultNullRead = "0")
+    public void setQuanty(String value) {
+        quantity = EverytradeCSVParserValidator.parserNumber(value);
+    }
+
+    @Parsed(field = {"PRICE", "UNIT_PRICE"}, defaultNullRead = "0")
+    public void setPrice(String value) {
+        price = EverytradeCSVParserValidator.parserNumber(value);
+    }
+
+    @Parsed(field = "FEE", defaultNullRead = "0")
+    public void setFee(String value) {
+        fee = EverytradeCSVParserValidator.parserNumber(value);
     }
 
     @Parsed(field = "FEE_CURRENCY")
@@ -92,15 +108,38 @@ public class EveryTradeBeanV3_1 extends ExchangeBean {
         feeCurrency = value == null ? null : Currency.fromCode(EverytradeCSVParserValidator.correctCurrency(value));
     }
 
+    @Parsed(field = "REBATE", defaultNullRead = "0")
+    public void setRebate(String value) {
+        rebate = EverytradeCSVParserValidator.parserNumber(value);
+    }
+
     @Parsed(field = "REBATE_CURRENCY")
     public void setRebateCurrency(String value) {
         rebateCurrency = value == null ? null : Currency.fromCode(EverytradeCSVParserValidator.correctCurrency(value));
     }
 
+    @Parsed(field = "ADDRESS_FROM")
+    String addressFrom;
+    @Parsed(field = "ADDRESS_TO")
+    String addressTo;
+
+    @Parsed(field = "NOTE")
+    public void setNote(String value) {
+        note = value;
+    }
+
+    @Parsed(field = "LABELS")
+    public void setLabel(String value) {
+        labels = value;
+    }
+
     @Override
     public TransactionCluster toTransactionCluster() {
-        validateCurrencyPair(symbolBase, symbolQuote, action);
+        if(symbolBase != null && symbolQuote != null){
+            validateCurrencyPair(symbolBase, symbolQuote, action);
+        }
         validatePositivity(quantity, price, fee, rebate);
+
         switch (action) {
             case BUY:
             case SELL:
@@ -111,10 +150,18 @@ public class EveryTradeBeanV3_1 extends ExchangeBean {
             case FEE:
                 return new TransactionCluster(createFeeTransactionBean(true), List.of());
             case REBATE:
-                try{
-                    return new TransactionCluster(createRebateTransactionBean(true), List.of());
+                return new TransactionCluster(createRebateTransactionBean(true), getRelatedTxs());
+            case STAKE:
+            case UNSTAKE:
+            case STAKING_REWARD:
+            case REWARD:
+            case EARNING:
+            case FORK:
+            case AIRDROP:
+                try {
+                    return createOtherTransactionCluster();
                 } catch (Exception e) {
-                    throw new DataValidationException(String.format("Wrong rebate data: %s", e.getMessage()));
+                    throw new DataValidationException(String.format("Wrong transaction type data: %s", e.getMessage()));
                 }
             default:
                 throw new IllegalStateException(String.format("Unsupported transaction type %s.", action));
@@ -129,7 +176,7 @@ public class EveryTradeBeanV3_1 extends ExchangeBean {
             symbolQuote,
             action,
             quantity,
-            action == DEPOSIT ? addressFrom : addressTo
+            action.equals(DEPOSIT) ? addressFrom : addressTo
         );
 
         return new TransactionCluster(tx, getRelatedTxs());
@@ -140,17 +187,17 @@ public class EveryTradeBeanV3_1 extends ExchangeBean {
             throw new DataValidationException("Quantity can not be zero.");
         }
         if (price.compareTo(ZERO) == 0) {
-            throw new DataValidationException("Price can not be zero.");
+            throw new DataValidationException("Unit price can not be zero.");
         }
 
         var tx = new ImportedTransactionBean(
-            uid,               //uuid
-            date,               //executed
-            symbolBase,         //base
-            symbolQuote,        //quote
-            action,             //action
-            quantity,           //base quantity
-            price              //unit price
+            uid,
+            date,
+            symbolBase,
+            symbolQuote,
+            action,
+            quantity,
+            price
         );
 
         TransactionCluster transactionCluster = new TransactionCluster(tx, getRelatedTxs());
@@ -190,9 +237,24 @@ public class EveryTradeBeanV3_1 extends ExchangeBean {
             date,
             rebateCurrency != null ? rebateCurrency : symbolBase,
             rebateCurrency != null ? rebateCurrency : symbolQuote,
-            TransactionType.REBATE,
+            action,
             rebate,
             rebateCurrency
         );
+    }
+
+    private TransactionCluster createOtherTransactionCluster() {
+        var tx = new ImportedTransactionBean(
+            uid,
+            date,
+            symbolBase,
+            symbolBase,
+            action,
+            quantity,
+            null,
+            null,
+            null
+        );
+        return new TransactionCluster(tx, getRelatedTxs());
     }
 }

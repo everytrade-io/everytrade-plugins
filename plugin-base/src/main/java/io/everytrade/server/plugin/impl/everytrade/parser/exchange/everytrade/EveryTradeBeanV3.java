@@ -98,7 +98,7 @@ public class EveryTradeBeanV3 extends ExchangeBean {
         switch (action) {
             case BUY:
             case SELL:
-              return createBuySellTransactionCluster();
+                return createBuySellTransactionCluster();
             case FEE:
                 return new TransactionCluster(createFeeTransactionBean(true), List.of());
             case REBATE:
