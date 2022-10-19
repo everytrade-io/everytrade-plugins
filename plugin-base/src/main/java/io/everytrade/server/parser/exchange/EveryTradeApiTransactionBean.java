@@ -56,7 +56,7 @@ public class EveryTradeApiTransactionBean {
             case DEPOSIT, WITHDRAWAL -> createDepositOrWithdrawalTxCluster();
             case FEE -> new TransactionCluster(createFeeTransactionBean(true), List.of());
             case REBATE -> new TransactionCluster(createRebateTransactionBean(true), List.of());
-            case STAKE, UNSTAKE, STAKING_REWARD, AIRDROP, EARNING, REWARD, FORK -> createOtherTransactionBean();
+            case STAKE, UNSTAKE, STAKING_REWARD, AIRDROP, EARNING, REWARD, FORK -> createOtherTransactionCluster();
             default -> throw new IllegalStateException(String.format("Unsupported transaction type %s.", action));
         };
     }
@@ -96,7 +96,7 @@ public class EveryTradeApiTransactionBean {
         return new TransactionCluster(tx, getRelatedTxs());
     }
 
-    private TransactionCluster createOtherTransactionBean() {
+    private TransactionCluster createOtherTransactionCluster() {
         if (quantity.compareTo(ZERO) == 0) {
             throw new DataValidationException("Quantity can not be zero.");
         }
