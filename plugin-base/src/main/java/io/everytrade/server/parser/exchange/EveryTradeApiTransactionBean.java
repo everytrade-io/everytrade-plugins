@@ -51,20 +51,14 @@ public class EveryTradeApiTransactionBean {
     }
 
     public TransactionCluster toTransactionCluster() {
-        switch (action) {
-            case BUY:
-            case SELL:
-                return createBuySellTransactionCluster();
-            case DEPOSIT:
-            case WITHDRAWAL:
-                return createDepositOrWithdrawalTxCluster();
-            case FEE:
-                return new TransactionCluster(createFeeTransactionBean(true), List.of());
-            case REBATE:
-                return new TransactionCluster(createRebateTransactionBean(true), List.of());
-            default:
-                throw new IllegalStateException(String.format("Unsupported transaction type %s.", action));
-        }
+        return switch (action) {
+            case BUY, SELL -> createBuySellTransactionCluster();
+            case DEPOSIT, WITHDRAWAL -> createDepositOrWithdrawalTxCluster();
+            case FEE -> new TransactionCluster(createFeeTransactionBean(true), List.of());
+            case REBATE -> new TransactionCluster(createRebateTransactionBean(true), List.of());
+            case STAKE, UNSTAKE, STAKING_REWARD, AIRDROP, EARNING, REWARD, FORK -> createOtherTransactionBean();
+            default -> throw new IllegalStateException(String.format("Unsupported transaction type %s.", action));
+        };
     }
 
     private TransactionCluster createDepositOrWithdrawalTxCluster() {
@@ -95,6 +89,32 @@ public class EveryTradeApiTransactionBean {
             timestamp,
             Currency.fromCode(base),
             Currency.fromCode(quote),
+            action,
+            quantity,
+            volume.divide(quantity, 10, RoundingMode.HALF_UP)
+        );
+        return new TransactionCluster(tx, getRelatedTxs());
+    }
+
+    private TransactionCluster createOtherTransactionBean() {
+        if (quantity.compareTo(ZERO) == 0) {
+            throw new DataValidationException("Quantity can not be zero.");
+        }
+        Currency txCurrency;
+        try {
+             txCurrency = Currency.fromCode(this.base);
+        } catch (Exception e) {
+            try {
+                txCurrency =  Currency.fromCode(this.quote);
+            } catch (Exception ex) {
+                throw new DataValidationException(String.format("Cannot find currency for transaction type %s. ", action));
+            }
+        }
+        var tx = new ImportedTransactionBean(
+            uid,
+            timestamp,
+            txCurrency,
+            txCurrency,
             action,
             quantity,
             volume.divide(quantity, 10, RoundingMode.HALF_UP)
