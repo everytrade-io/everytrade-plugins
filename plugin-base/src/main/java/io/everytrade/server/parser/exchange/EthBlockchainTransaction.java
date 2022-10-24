@@ -9,6 +9,7 @@ import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.etherscan.EtherScanErc20TransactionDto;
 import io.everytrade.server.plugin.impl.everytrade.etherscan.EtherScanTransactionDto;
+import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import lombok.Value;
 
 import java.math.BigDecimal;
@@ -104,7 +105,7 @@ public class EthBlockchainTransaction {
         }
 
         if (equalsToZero(baseAmount)) {
-            throw new IllegalArgumentException("Crypto amount can't be zero.");
+            throw new DataIgnoredException(String.format("Ignored transaction id - %s : Base amount is zero. ", id));
         }
 
         var withFee = (List.of(BUY, DEPOSIT).contains(type) && importFeesFromDeposits)

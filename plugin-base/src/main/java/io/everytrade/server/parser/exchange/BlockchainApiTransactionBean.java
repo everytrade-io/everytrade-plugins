@@ -10,6 +10,7 @@ import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import lombok.AccessLevel;
 import lombok.ToString;
 import lombok.experimental.FieldDefaults;
@@ -77,7 +78,7 @@ public class BlockchainApiTransactionBean {
         }
 
         if (equalsToZero(originalAmount)) {
-            throw new IllegalArgumentException("Crypto amount can't be zero.");
+            throw new DataIgnoredException(String.format("Ignored transaction id - %s : Crypto amount is zero. ", id));
         }
         final boolean withFee =
             (importFeesFromDeposits && TransactionType.BUY.equals(type))

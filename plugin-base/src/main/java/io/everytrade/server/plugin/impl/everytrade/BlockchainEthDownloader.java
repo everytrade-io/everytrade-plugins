@@ -8,6 +8,7 @@ import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.etherscan.EtherScanClient;
 import io.everytrade.server.plugin.impl.everytrade.etherscan.EtherScanErc20TransactionDto;
 import io.everytrade.server.plugin.impl.everytrade.etherscan.EtherScanTransactionDto;
+import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
@@ -20,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static io.everytrade.server.plugin.api.parser.ParsingProblemType.PARSED_ROW_IGNORED;
 import static io.everytrade.server.plugin.api.parser.ParsingProblemType.ROW_PARSING_FAILED;
 import static java.time.Instant.now;
 import static java.util.Collections.emptyList;
@@ -174,6 +176,8 @@ public class BlockchainEthDownloader {
                         importFeesFromWithdrawals
                     ).toTransactionCluster()
                 );
+            } catch (DataIgnoredException e) {
+                parsingProblems.add(new ParsingProblem(transactionDto.toString(), e.getMessage(), PARSED_ROW_IGNORED));
             } catch (Exception e) {
                 LOG.error("Error converting to BlockchainApiTransactionBean: {}", e.getMessage());
                 LOG.debug("Exception by converting to BlockchainApiTransactionBean.", e);
