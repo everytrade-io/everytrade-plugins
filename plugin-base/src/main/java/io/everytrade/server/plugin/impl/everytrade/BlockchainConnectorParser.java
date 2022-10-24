@@ -6,6 +6,7 @@ import io.everytrade.server.plugin.api.parser.ParseResult;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.ParsingProblemType;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,6 +43,10 @@ public class BlockchainConnectorParser {
                     importFeesFromWithdrawals
                 );
                 transactionClusters.add(blockchainApiTransactionBean.toTransactionCluster());
+            } catch (DataIgnoredException e) {
+                parsingProblems.add(
+                    new ParsingProblem(transaction.toString(), e.getMessage(), ParsingProblemType.PARSED_ROW_IGNORED)
+                );
             } catch (Exception e) {
                 LOG.error("Error converting to BlockchainApiTransactionBean: {}", e.getMessage());
                 LOG.debug("Exception by converting to BlockchainApiTransactionBean.", e);
