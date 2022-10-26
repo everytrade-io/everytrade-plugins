@@ -15,6 +15,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.REBATE_UID_PART;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -142,7 +143,7 @@ class EveryTradeBeanV3_1Test {
         final String row = "1;27.7.2021 14:59:21;BTC/EUR;SELL;0.066306;8736.534094;;;5.7;EUR;;\n";
         List<ImportedTransactionBean>related = new ArrayList<>();
         related.add(new FeeRebateImportedTransactionBean(
-            "1-fee",
+            "1" + REBATE_UID_PART,
             Instant.parse("2021-07-27T14:59:21Z"),
             Currency.EUR,
             Currency.EUR,
@@ -180,7 +181,7 @@ class EveryTradeBeanV3_1Test {
                 new BigDecimal("8736.534094")
             ),
             List.of(new FeeRebateImportedTransactionBean(
-                "1-fee",
+                "1" + REBATE_UID_PART,
                 Instant.parse("2021-07-27T14:59:21Z"),
                 Currency.BTC,
                 Currency.BTC,

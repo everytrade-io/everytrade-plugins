@@ -59,6 +59,7 @@ abstract class BaseBeanV1 extends ExchangeBean {
             case BUY, SELL -> cluster = createBuySellTransactionCluster();
             case DEPOSIT, WITHDRAWAL -> cluster = createDepositOrWithdrawalTxCluster();
             case STAKE, UNSTAKE, STAKING_REWARD, EARNING, FORK, AIRDROP -> cluster = createOtherTransactionCluster();
+            case FEE, REBATE -> cluster = createUnrelatedFeeOrRebate();
             default -> throw new DataValidationException(String.format("Unsupported transaction type %s.", transactionType.name()));
         }
         if (ignoredFee) {
@@ -169,6 +170,19 @@ abstract class BaseBeanV1 extends ExchangeBean {
             ignoredOrFailedFeeMessage += e.getMessage();
         }
         return related;
+    }
+
+    private TransactionCluster createUnrelatedFeeOrRebate() {
+        var cluster = new TransactionCluster(new FeeRebateImportedTransactionBean(
+            uid,
+            executed,
+            base,
+            base,
+            transactionType,
+            volume,
+            base
+        ), getRelatedTransactions());
+        return cluster;
     }
 
     private TransactionCluster createOtherTransactionCluster() {
