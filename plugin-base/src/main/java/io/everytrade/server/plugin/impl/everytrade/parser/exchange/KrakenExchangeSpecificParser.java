@@ -45,7 +45,6 @@ public class KrakenExchangeSpecificParser extends DefaultUnivocityExchangeSpecif
             r.setRowNumber((long) r.getRowId());
         });
         result.addAll(unSupportedRows);
-        // result.addAll(duplicities); To be removed - issue 570
         return rowsReadyForTxs;
     }
 

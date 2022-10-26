@@ -53,15 +53,15 @@ abstract class BaseBeanV1 extends ExchangeBean {
 
     @Override
     public TransactionCluster toTransactionCluster() {
-        TransactionCluster cluster;
-        switch (transactionType) {
-            case REWARD -> cluster = createRewardTransactionCluster();
-            case BUY, SELL -> cluster = createBuySellTransactionCluster();
-            case DEPOSIT, WITHDRAWAL -> cluster = createDepositOrWithdrawalTxCluster();
-            case STAKE, UNSTAKE, STAKING_REWARD, EARNING, FORK, AIRDROP -> cluster = createOtherTransactionCluster();
-            case FEE, REBATE -> cluster = createUnrelatedFeeOrRebate();
-            default -> throw new DataValidationException(String.format("Unsupported transaction type %s.", transactionType.name()));
-        }
+        TransactionCluster cluster =
+            switch (transactionType) {
+                case REWARD -> createRewardTransactionCluster();
+                case BUY, SELL -> createBuySellTransactionCluster();
+                case DEPOSIT, WITHDRAWAL -> createDepositOrWithdrawalTxCluster();
+                case STAKE, UNSTAKE, STAKING_REWARD, EARNING, FORK, AIRDROP -> createOtherTransactionCluster();
+                case FEE, REBATE -> createUnrelatedFeeOrRebate();
+                default -> throw new DataValidationException(String.format("Unsupported transaction type %s.", transactionType.name()));
+            };
         if (ignoredFee) {
             cluster.setIgnoredFee(1, ignoredOrFailedFeeMessage);
         }
@@ -85,7 +85,7 @@ abstract class BaseBeanV1 extends ExchangeBean {
     }
 
     private TransactionCluster createRewardTransactionCluster() {
-        TransactionCluster cluster = new TransactionCluster(
+        return new TransactionCluster(
             new ImportedTransactionBean(
                 uid,
                 executed,
@@ -97,7 +97,6 @@ abstract class BaseBeanV1 extends ExchangeBean {
             ),
             emptyList()
         );
-        return cluster;
     }
 
     private void validateBuySellTx() {
@@ -173,7 +172,7 @@ abstract class BaseBeanV1 extends ExchangeBean {
     }
 
     private TransactionCluster createUnrelatedFeeOrRebate() {
-        var cluster = new TransactionCluster(new FeeRebateImportedTransactionBean(
+        return new TransactionCluster(new FeeRebateImportedTransactionBean(
             uid,
             executed,
             base,
@@ -182,7 +181,6 @@ abstract class BaseBeanV1 extends ExchangeBean {
             volume,
             base
         ), getRelatedTransactions());
-        return cluster;
     }
 
     private TransactionCluster createOtherTransactionCluster() {
