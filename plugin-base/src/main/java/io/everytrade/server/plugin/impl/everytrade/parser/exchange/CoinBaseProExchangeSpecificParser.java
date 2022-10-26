@@ -27,7 +27,7 @@ public class CoinBaseProExchangeSpecificParser extends DefaultUnivocityExchangeS
     public List<? extends ExchangeBean> convertMultipleRowsToTransactions(List<CoinbaseProBeanV2> rows) {
         List<CoinbaseProBeanV2> result;
 //        this.rows = setRowsWithIds(rows);
-        var groupedRowsByTradeId = createGroupedRows(rows);
+        var groupedRowsByTradeId = createGroupsFromRows(rows);
         // clean groups of rows from unsupported rubbish
         var cleanUnsupportedGroups = removeGroupsWithUnsupportedRows(groupedRowsByTradeId);
         // clean group of rows from duplicities
@@ -45,7 +45,8 @@ public class CoinBaseProExchangeSpecificParser extends DefaultUnivocityExchangeS
         return rowsReadyForTxs;
     }
 
-    private Map<String, List<CoinbaseProBeanV2>> createGroupedRows(List<CoinbaseProBeanV2> rows) {
+    @Override
+    public Map<String, List<CoinbaseProBeanV2>> createGroupsFromRows(List<CoinbaseProBeanV2> rows) {
         return rows.stream().collect(groupingBy(CoinbaseProBeanV2::getTradeId));
     }
 

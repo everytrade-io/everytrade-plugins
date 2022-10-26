@@ -29,7 +29,7 @@ public class KrakenExchangeSpecificParser extends DefaultUnivocityExchangeSpecif
     public List<? extends ExchangeBean> convertMultipleRowsToTransactions(List<KrakenBeanV2> rows) {
         List<KrakenBeanV2> result;
         this.rows = setRowsWithIds(rows);
-        var groupedRowsByRefId = rows.stream().collect(groupingBy(KrakenBeanV2::getRefid));
+        var groupedRowsByRefId = createGroupsFromRows(rows);
         // clean groups of rows from unsupported rubbish
         var cleanUnsupportedGroups = removeGroupsWithUnsupportedRows(groupedRowsByRefId);
         var rowsWithoutDuplicities = removeDepositWithdrawalDuplicities(cleanUnsupportedGroups);
@@ -45,7 +45,6 @@ public class KrakenExchangeSpecificParser extends DefaultUnivocityExchangeSpecif
             r.setRowNumber((long) r.getRowId());
         });
         result.addAll(unSupportedRows);
-        result.addAll(duplicities);
         return rowsReadyForTxs;
     }
 
@@ -128,5 +127,10 @@ public class KrakenExchangeSpecificParser extends DefaultUnivocityExchangeSpecif
             }
         }
         return result;
+    }
+
+    @Override
+    public Map<String,List<KrakenBeanV2>> createGroupsFromRows(List<KrakenBeanV2> rows) {
+        return rows.stream().collect(groupingBy(KrakenBeanV2::getRefid));
     }
 }

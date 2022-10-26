@@ -29,7 +29,7 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
         List<BinanceBeanV4> result;
         rows = setRowsWithIds(rows);
         this.rows = rows;
-        var groupedRowsByTime = this.rows.stream().collect(groupingBy(BinanceBeanV4::getDate));
+        var groupedRowsByTime = createGroupsFromRows(rows);
         Map<Instant, List<BinanceBeanV4>> sortedGroupsByDate = new TreeMap<>(groupedRowsByTime);
         // merging rows nearly in the same time
         var mergedGroups = mergeGroupsInTimeWithinTolerance(sortedGroupsByDate);
@@ -127,4 +127,10 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
         }
         return result;
     }
+
+    @Override
+    public Map<Instant,List<BinanceBeanV4>> createGroupsFromRows(List<BinanceBeanV4> rows) {
+        return rows.stream().collect(groupingBy(BinanceBeanV4::getDate));
+    }
+
 }

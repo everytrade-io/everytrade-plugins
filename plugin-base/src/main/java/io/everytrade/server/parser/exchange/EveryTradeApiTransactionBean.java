@@ -20,6 +20,7 @@ import java.util.List;
 
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.REBATE_UID_PART;
 import static java.math.BigDecimal.ZERO;
 import static lombok.AccessLevel.PRIVATE;
 
@@ -148,7 +149,7 @@ public class EveryTradeApiTransactionBean {
 
     private FeeRebateImportedTransactionBean createRebateTransactionBean(boolean unrelated) {
         return new FeeRebateImportedTransactionBean(
-            unrelated ? uid : uid + FEE_UID_PART,
+            unrelated ? uid : uid + REBATE_UID_PART,
             timestamp,
             Currency.fromCode(rebateCurrency),
             Currency.fromCode(rebateCurrency),
