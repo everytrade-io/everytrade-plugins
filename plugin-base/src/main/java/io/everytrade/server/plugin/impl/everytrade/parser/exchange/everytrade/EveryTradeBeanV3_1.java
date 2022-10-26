@@ -186,7 +186,7 @@ public class EveryTradeBeanV3_1 extends ExchangeBean {
 
     private FeeRebateImportedTransactionBean createRebateTransactionBean(boolean unrelated) {
         return new FeeRebateImportedTransactionBean(
-            unrelated ? uid : uid + FEE_UID_PART,
+            unrelated ? uid : uid + REBATE_UID_PART,
             date,
             rebateCurrency != null ? rebateCurrency : symbolBase,
             rebateCurrency != null ? rebateCurrency : symbolQuote,

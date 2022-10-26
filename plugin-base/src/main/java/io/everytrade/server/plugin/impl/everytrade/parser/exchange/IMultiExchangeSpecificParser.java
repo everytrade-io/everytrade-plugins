@@ -7,6 +7,8 @@ public interface IMultiExchangeSpecificParser<T extends ExchangeBean> {
 
     List<? extends ExchangeBean> convertMultipleRowsToTransactions(List<T> rows);
 
+    Map<?,List<T>> createGroupsFromRows(List<T> rows);
+
     Map<?, List<T>> removeGroupsWithUnsupportedRows(Map<?, List<T>> rowGroups);
 
     List<T> createTransactionFromGroupOfRows(Map<?, List<T>> groups);

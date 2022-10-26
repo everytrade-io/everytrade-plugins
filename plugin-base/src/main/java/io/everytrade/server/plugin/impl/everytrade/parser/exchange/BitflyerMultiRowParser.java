@@ -25,7 +25,7 @@ public class BitflyerMultiRowParser extends DefaultUnivocityExchangeSpecificPars
     public List<? extends ExchangeBean> convertMultipleRowsToTransactions(List<BitflyerBeanV2> rows) {
         List<BitflyerBeanV2> result;
         this.rows = setRowsWithIds(rows);
-        var groupedRowsByTradeId = createGroupedRows(rows);
+        var groupedRowsByTradeId = createGroupsFromRows(rows);
         var cleanUnsupportedGroups = removeGroupsWithUnsupportedRows(groupedRowsByTradeId);
         // creating transaction
         List<BitflyerBeanV2> rowsReadyForTxs = createTransactionFromGroupOfRows(groupedRowsByTradeId);
@@ -37,7 +37,8 @@ public class BitflyerMultiRowParser extends DefaultUnivocityExchangeSpecificPars
         return rowsReadyForTxs;
     }
 
-    private Map<String, List<BitflyerBeanV2>> createGroupedRows(List<BitflyerBeanV2> rows) {
+    @Override
+    public Map<String, List<BitflyerBeanV2>> createGroupsFromRows(List<BitflyerBeanV2> rows) {
         return rows.stream().collect(groupingBy( r -> {
             String orderId = r.getOrderID();
             if (orderId.endsWith("F")) {
