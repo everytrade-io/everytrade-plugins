@@ -23,6 +23,8 @@ import java.util.List;
 import static io.everytrade.server.model.TransactionType.AIRDROP;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.EARNING;
+import static io.everytrade.server.model.TransactionType.FEE;
+import static io.everytrade.server.model.TransactionType.REBATE;
 import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
@@ -81,8 +83,8 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
 
     @Parsed(field = "ACTION")
     public void setAction(String value) {
-        if(value.equalsIgnoreCase("STAKING REWARD")
-        || value.equalsIgnoreCase("STAKE REWARD")) {
+        if (value.equalsIgnoreCase("STAKING REWARD")
+            || value.equalsIgnoreCase("STAKE REWARD")) {
             action = STAKING_REWARD;
         } else if (value.equalsIgnoreCase("AIRDROP")) {
             action = AIRDROP;
@@ -140,7 +142,7 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
 
     @Override
     public TransactionCluster toTransactionCluster() {
-        if(symbolBase != null && symbolQuote != null){
+        if (symbolBase != null && symbolQuote != null) {
             validateCurrencyPair(symbolBase, symbolQuote, action);
         }
         validatePositivity(quantity, price, fee, rebate);
@@ -202,7 +204,9 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
             symbolQuote,
             action,
             quantity,
-            price
+            price,
+            (note.length() > 0) ? note : null,
+            null
         );
 
         TransactionCluster transactionCluster = new TransactionCluster(tx, getRelatedTxs());
@@ -230,9 +234,10 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
             date,
             feeCurrency != null ? feeCurrency : symbolBase,
             feeCurrency != null ? feeCurrency : symbolQuote,
-            TransactionType.FEE,
+            FEE,
             fee,
-            feeCurrency
+            feeCurrency,
+            unrelated ? note : null
         );
     }
 
@@ -242,9 +247,10 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
             date,
             rebateCurrency != null ? rebateCurrency : symbolBase,
             rebateCurrency != null ? rebateCurrency : symbolQuote,
-            TransactionType.REBATE,
+            REBATE,
             rebate,
-            rebateCurrency
+            rebateCurrency,
+            unrelated ? note : null
         );
     }
 
@@ -257,7 +263,7 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
             action,
             quantity,
             null,
-            null,
+            (note.length() > 0) ? note : null,
             null
         );
         return new TransactionCluster(tx, getRelatedTxs());
