@@ -62,6 +62,9 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v3.Bi
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceBeanV4;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.everytrade.EveryTradeBeanV3_1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.everytrade.EveryTradeBeanV3_2;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.v1.KuCoinBuySellV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.v1.KuCoinDepositV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.v1.KuCoinWithdrawalV1;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,6 +91,7 @@ import static io.everytrade.server.model.SupportedExchange.GENERAL_BYTES;
 import static io.everytrade.server.model.SupportedExchange.HITBTC;
 import static io.everytrade.server.model.SupportedExchange.HUOBI;
 import static io.everytrade.server.model.SupportedExchange.KRAKEN;
+import static io.everytrade.server.model.SupportedExchange.KUCOIN;
 import static io.everytrade.server.model.SupportedExchange.LOCALBITCOINS;
 import static io.everytrade.server.model.SupportedExchange.OKX;
 import static io.everytrade.server.model.SupportedExchange.OPEN_NODE;
@@ -650,6 +654,33 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 ).withSeparator(delimiter)))
                 .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(GeneralBytesBeanV1.class, delimiter))
                 .supportedExchange(GENERAL_BYTES)
+                .build());
+        });
+
+        /* KUKOIN */
+        DELIMITERS.forEach(delimiter -> {
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(CsvHeader.of(
+                    "tradeCreatedAt","orderId","symbol","side","price","size","funds","fee","liquidity","feeCurrency","orderType"
+                ).withSeparator(delimiter)))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(KuCoinBuySellV1.class, DELIMITER_SEMICOLON))
+                .supportedExchange(KUCOIN)
+                .build());
+
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(CsvHeader.of(
+                    "Time","Coin","Amount","Type","Wallet Address","Remark"
+                ).withSeparator(delimiter)))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(KuCoinWithdrawalV1.class, delimiter))
+                .supportedExchange(KUCOIN)
+                .build());
+
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(CsvHeader.of(
+                    "Time","Coin","Amount","Type","Remark"
+                ).withSeparator(delimiter)))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(KuCoinDepositV1.class, delimiter))
+                .supportedExchange(KUCOIN)
                 .build());
         });
 

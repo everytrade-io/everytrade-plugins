@@ -7,6 +7,9 @@ import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -19,8 +22,12 @@ import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.DEC
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
 import static java.math.RoundingMode.HALF_UP;
 import static java.util.Collections.emptyList;
+import static lombok.AccessLevel.PUBLIC;
 
-abstract class BaseBeanV1 extends ExchangeBean {
+@Setter
+@Getter
+@FieldDefaults(level = PUBLIC)
+public abstract class BaseBeanV1 extends ExchangeBean {
     String uid;
     Instant executed;
     Currency base;
@@ -37,7 +44,6 @@ abstract class BaseBeanV1 extends ExchangeBean {
     String rebate;
     Currency rebateCurrency;
 
-    List<ImportedTransactionBean> otherTransactions;
     BigDecimal quoteAmount;
     String address;
     String label;
@@ -47,12 +53,13 @@ abstract class BaseBeanV1 extends ExchangeBean {
     boolean failedFee;
     String ignoredOrFailedFeeMessage;
 
-    abstract TransactionType findTransactionType();
+    protected abstract TransactionType findTransactionType();
 
-    abstract void mapData();
+    protected abstract void mapData();
 
     @Override
     public TransactionCluster toTransactionCluster() {
+        mapData();
         TransactionCluster cluster =
             switch (transactionType) {
                 case REWARD -> createRewardTransactionCluster();
@@ -102,7 +109,7 @@ abstract class BaseBeanV1 extends ExchangeBean {
     private void validateBuySellTx() {
         validateCurrencyPair(base, quote);
         validateCurrencyPair(base, quote, transactionType);
-        if (!base.isFiat()) {
+        if (base.isFiat()) {
             throw new DataValidationException(String.format("Base currency is not crypto: %s", base.code()));
         }
     }
@@ -135,7 +142,7 @@ abstract class BaseBeanV1 extends ExchangeBean {
             if (!nullOrZero(feeAmount)) {
                 feeCurrency = Currency.fromCode(fee);
                 var feeTx = new FeeRebateImportedTransactionBean(
-                    uid + FEE_UID_PART,
+                    (uid != null) ? uid + FEE_UID_PART : null,
                     executed,
                     feeCurrency,
                     feeCurrency,
@@ -148,7 +155,7 @@ abstract class BaseBeanV1 extends ExchangeBean {
             if (!nullOrZero(rebateAmount)) {
                 rebateCurrency = Currency.fromCode(rebate);
                 var rebateTx = new FeeRebateImportedTransactionBean(
-                    uid + REBATE_UID_PART,
+                    (uid != null) ? uid + REBATE_UID_PART : null,
                     executed,
                     rebateCurrency,
                     rebateCurrency,
@@ -157,9 +164,6 @@ abstract class BaseBeanV1 extends ExchangeBean {
                     rebateCurrency
                 );
                 related.add(rebateTx);
-            }
-            if (otherTransactions.size() > 0) {
-                related.addAll(otherTransactions);
             }
         } catch (IllegalArgumentException e) {
             ignoredFee = true;

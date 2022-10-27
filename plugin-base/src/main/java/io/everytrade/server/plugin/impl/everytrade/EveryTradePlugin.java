@@ -109,6 +109,9 @@ public class EveryTradePlugin implements IPlugin {
         if (connectorId.equals(BlockchainEthConnector.DESCRIPTOR.getId())) {
             return new BlockchainEthConnector(parameters);
         }
+        if (connectorId.equals(KuCoinConnector.DESCRIPTOR.getId())) {
+            return new KuCoinConnector(parameters);
+        }
         return null;
     }
 
