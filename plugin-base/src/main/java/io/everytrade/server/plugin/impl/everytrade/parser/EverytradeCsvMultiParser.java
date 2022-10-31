@@ -663,7 +663,7 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 .headers(List.of(CsvHeader.of(
                     "tradeCreatedAt","orderId","symbol","side","price","size","funds","fee","liquidity","feeCurrency","orderType"
                 ).withSeparator(delimiter)))
-                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(KuCoinBuySellV1.class, DELIMITER_SEMICOLON))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(KuCoinBuySellV1.class, delimiter))
                 .supportedExchange(KUCOIN)
                 .build());
 

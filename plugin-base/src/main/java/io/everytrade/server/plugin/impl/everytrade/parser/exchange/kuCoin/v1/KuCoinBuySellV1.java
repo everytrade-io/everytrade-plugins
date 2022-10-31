@@ -6,13 +6,14 @@ import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BaseBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BaseClusterData;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BaseTransactionMapperV1;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Date;
 
-public class KuCoinBuySellV1 extends BaseBeanV1 {
+public class KuCoinBuySellV1 extends BaseTransactionMapperV1 {
     Instant tradeCreatedAt;
     String orderId;
     CurrencyPair symbol;
@@ -24,9 +25,8 @@ public class KuCoinBuySellV1 extends BaseBeanV1 {
     Currency baseCurrency;
     Currency quoteCurrency;
 
-    //    @Parsed(field = "tradeCreatedAt")
-    @Parsed(index = 0)
-    @Format(formats = {"dd.MM.yyyy HH:mm:ss"}, options = {"locale=US", "timezone=UTC"})
+    @Parsed(field = "tradeCreatedAt")
+    @Format(formats = {"dd.MM.yyyy HH:mm:ss", "yyyy-MM-dd HH:mm:ss"}, options = {"locale=US", "timezone=UTC"})
     public void setTradeCreatedAt(Date date) {
         tradeCreatedAt = date.toInstant();
     }
@@ -86,15 +86,17 @@ public class KuCoinBuySellV1 extends BaseBeanV1 {
     }
 
     @Override
-    protected void mapData() {
-        transactionType = findTransactionType();
-        executed = tradeCreatedAt;
-        note = orderId;
-        base = baseCurrency;
-        quote = quoteCurrency;
-        unitPrice = price;
-        volume = size;
-        fee = feeCurrency;
-        feeAmount = feeValue;
+    protected BaseClusterData mapData() {
+        return BaseClusterData.builder()
+            .transactionType(findTransactionType())
+            .executed(tradeCreatedAt)
+            .note(orderId)
+            .base(baseCurrency)
+            .quote(quoteCurrency)
+            .unitPrice(price)
+            .volume(size)
+            .fee(feeCurrency)
+            .feeAmount(feeValue)
+            .build();
     }
 }
