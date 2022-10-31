@@ -22,11 +22,11 @@ import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.DEC
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
 import static java.math.RoundingMode.HALF_UP;
 import static java.util.Collections.emptyList;
-import static lombok.AccessLevel.PUBLIC;
+import static lombok.AccessLevel.PROTECTED;
 
 @Setter
 @Getter
-@FieldDefaults(level = PUBLIC)
+@FieldDefaults(level = PROTECTED)
 public abstract class BaseBeanV1 extends ExchangeBean {
     String uid;
     Instant executed;

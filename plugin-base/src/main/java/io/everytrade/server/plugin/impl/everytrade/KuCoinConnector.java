@@ -8,17 +8,17 @@ import io.everytrade.server.plugin.api.connector.ConnectorParameterDescriptor;
 import io.everytrade.server.plugin.api.connector.ConnectorParameterType;
 import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.connector.IConnector;
-import org.knowm.xchange.Exchange;
+import lombok.experimental.FieldDefaults;
 import org.knowm.xchange.ExchangeFactory;
-import org.knowm.xchange.ExchangeSpecification;
 import org.knowm.xchange.coinbasepro.CoinbaseProExchange;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import static java.util.Collections.emptyList;
+import static lombok.AccessLevel.PRIVATE;
 
+@FieldDefaults(makeFinal = true, level = PRIVATE)
 public class KuCoinConnector implements IConnector {
     private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "kuCoinApiConnector";
     private static final SupportedExchange SUPPORTED_EXCHANGE = SupportedExchange.KUCOIN;
@@ -58,9 +58,9 @@ public class KuCoinConnector implements IConnector {
         List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET, PARAMETER_PASS_PHRASE)
     );
 
-    private final String apiKey;
-    private final String apiSecret;
-    private final String passPhrase;
+    String apiKey;
+    String apiSecret;
+    String passPhrase;
 
     public KuCoinConnector(Map<String, String> parameters) {
         Objects.requireNonNull(this.apiKey = parameters.get(PARAMETER_API_KEY.getId()));
@@ -75,14 +75,11 @@ public class KuCoinConnector implements IConnector {
 
     @Override
     public DownloadResult getTransactions(String downloadState) {
-        final ExchangeSpecification exSpec = new CoinbaseProExchange().getDefaultExchangeSpecification();
+        var exSpec = new CoinbaseProExchange().getDefaultExchangeSpecification();
         exSpec.setApiKey(apiKey);
         exSpec.setSecretKey(apiSecret);
         exSpec.setExchangeSpecificParametersItem("passphrase", passPhrase);
-        final Exchange exchange = ExchangeFactory.INSTANCE.createExchange(exSpec);
-
-        final KuCoinDownloader kuCoinDownloader = new KuCoinDownloader(exchange, downloadState);
-        DownloadResult download = kuCoinDownloader.download();
-        return download;
+        var exchange = ExchangeFactory.INSTANCE.createExchange(exSpec);
+        return new KuCoinDownloader(exchange, downloadState).download();
     }
 }

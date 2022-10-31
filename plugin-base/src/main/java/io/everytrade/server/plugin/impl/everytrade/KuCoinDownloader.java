@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
 import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 // Current state is just for preparing frontend
-@FieldDefaults(makeFinal = false, level = PRIVATE)
 public class KuCoinDownloader {
     private DownloadState state;
     Exchange exchange;
