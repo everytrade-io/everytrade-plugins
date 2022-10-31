@@ -40,7 +40,8 @@ public enum SupportedExchange {
     DVCHAIN("DV Chain", "dvchain"),
     AQUANOW("Aquanow", "aquanow"),
     SIMPLE_COIN("SimpleCoin", "simplecoin"),
-    OPEN_NODE("OpenNode", "opennode");
+    OPEN_NODE("OpenNode", "opennode"),
+    KUCOIN("KuCoin", "kucoin");
 
     String displayName;
     String internalId;
