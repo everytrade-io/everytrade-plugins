@@ -601,6 +601,17 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(EveryTradeBeanV3_2.class, delimiter)) //
                 .supportedExchange(EVERYTRADE)
                 .build());
+
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader.of(
+                        "UID","DATE","SYMBOL","ACTION","QUANTITY","UNIT_PRICE","VOLUME","FEE","FEE_CURRENCY","REBATE","REBATE_CURRENCY",
+                        "ADDRESS_FROM","ADDRESS_TO","NOTE","LABELS"
+                    ).withSeparator(delimiter)))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(EveryTradeBeanV3_2.class, delimiter)) //
+                .supportedExchange(EVERYTRADE)
+                .build());
+
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
                 .headers(List.of(
                     CsvHeader.of(
