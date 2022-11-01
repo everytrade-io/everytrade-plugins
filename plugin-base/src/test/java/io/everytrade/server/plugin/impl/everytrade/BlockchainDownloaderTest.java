@@ -68,7 +68,7 @@ class BlockchainDownloaderTest {
 
         var sellCluster = findOneCluster(result, SELL);
         assertEquals(0, sellCluster.getRelated().size());
-        assertBuySell(sellCluster, SELL, new BigDecimal("0.000999"));
+        assertBuySell(sellCluster, SELL, new BigDecimal("0.000998"));
     }
 
     @Test
@@ -100,7 +100,7 @@ class BlockchainDownloaderTest {
         assertFees(buyCluster);
 
         var sellCluster = findOneCluster(result, SELL);
-        assertBuySell(sellCluster, SELL, new BigDecimal("0.000999"));
+        assertBuySell(sellCluster, SELL, new BigDecimal("0.000998"));
         assertFees(sellCluster);
     }
 
@@ -134,7 +134,7 @@ class BlockchainDownloaderTest {
 
         var withdrawalCluster = findOneCluster(result, WITHDRAWAL);
         assertEquals(0, withdrawalCluster.getRelated().size());
-        assertDepositWithdrawal(withdrawalCluster, WITHDRAWAL, new BigDecimal("0.000999"));
+        assertDepositWithdrawal(withdrawalCluster, WITHDRAWAL, new BigDecimal("0.000998"));
     }
 
     @Test
@@ -167,7 +167,7 @@ class BlockchainDownloaderTest {
 
         var withdrawalCluster = findOneCluster(result, WITHDRAWAL);
         assertEquals(1, withdrawalCluster.getRelated().size());
-        assertDepositWithdrawal(withdrawalCluster, WITHDRAWAL, new BigDecimal("0.000999"));
+        assertDepositWithdrawal(withdrawalCluster, WITHDRAWAL, new BigDecimal("0.000998"));
     }
 
     private void assertDepositWithdrawal(TransactionCluster cluster, TransactionType type, BigDecimal volume) {
