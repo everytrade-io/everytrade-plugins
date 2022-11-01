@@ -1,6 +1,5 @@
 package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
-import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
@@ -15,6 +14,20 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.everytrade.server.model.Currency.BTC;
+import static io.everytrade.server.model.Currency.CZK;
+import static io.everytrade.server.model.Currency.EUR;
+import static io.everytrade.server.model.TransactionType.AIRDROP;
+import static io.everytrade.server.model.TransactionType.BUY;
+import static io.everytrade.server.model.TransactionType.EARNING;
+import static io.everytrade.server.model.TransactionType.FEE;
+import static io.everytrade.server.model.TransactionType.FORK;
+import static io.everytrade.server.model.TransactionType.REBATE;
+import static io.everytrade.server.model.TransactionType.REWARD;
+import static io.everytrade.server.model.TransactionType.SELL;
+import static io.everytrade.server.model.TransactionType.STAKE;
+import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
+import static io.everytrade.server.model.TransactionType.UNSTAKE;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.REBATE_UID_PART;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -51,9 +64,9 @@ class EveryTradeBeanV3_2Test {
             new ImportedTransactionBean(
                 "1",
                 Instant.parse("2022-01-12T14:01:00Z"),
-                Currency.BTC,
-                Currency.CZK,
-                TransactionType.BUY,
+                BTC,
+                CZK,
+                BUY,
                 new BigDecimal("0.13"),
                 new BigDecimal("500000.00000000"),
                 "nnnnnn",
@@ -73,9 +86,9 @@ class EveryTradeBeanV3_2Test {
             new ImportedTransactionBean(
                 "2",
                 Instant.parse("2022-01-12T14:02:00Z"),
-                Currency.BTC,
-                Currency.CZK,
-                TransactionType.BUY,
+                BTC,
+                CZK,
+                BUY,
                 new BigDecimal("0.13"),
                 new BigDecimal("500000.00000000"),
                 "nnnnnn",
@@ -86,11 +99,11 @@ class EveryTradeBeanV3_2Test {
                 new FeeRebateImportedTransactionBean(
                     "2-fee",
                     Instant.parse("2022-01-12T14:02:00Z"),
-                    Currency.CZK,
-                    Currency.CZK,
-                    TransactionType.FEE,
+                    CZK,
+                    CZK,
+                    FEE,
                     new BigDecimal("140"),
-                    Currency.CZK,
+                    CZK,
                     null,
                     null,
                     "Label1"
@@ -108,9 +121,9 @@ class EveryTradeBeanV3_2Test {
             new ImportedTransactionBean(
                 "5",
                 Instant.parse("2022-01-12T14:05:00Z"),
-                Currency.BTC,
-                Currency.EUR,
-                TransactionType.SELL,
+                BTC,
+                EUR,
+                SELL,
                 new BigDecimal("0.06"),
                 new BigDecimal("20000.00000000"),
                 "nnnnnn",
@@ -129,11 +142,11 @@ class EveryTradeBeanV3_2Test {
         related.add(new FeeRebateImportedTransactionBean(
             "6" + REBATE_UID_PART,
             Instant.parse("2022-01-12T14:06:00Z"),
-            Currency.EUR,
-            Currency.EUR,
-            TransactionType.REBATE,
+            EUR,
+            EUR,
+            REBATE,
             new BigDecimal("5.7"),
-            Currency.EUR,
+            EUR,
             null,
             null,
             "Label1"
@@ -143,9 +156,9 @@ class EveryTradeBeanV3_2Test {
             new ImportedTransactionBean(
                 "6",
                 Instant.parse("2022-01-12T14:06:00Z"),
-                Currency.BTC,
-                Currency.EUR,
-                TransactionType.SELL,
+                BTC,
+                EUR,
+                SELL,
                 new BigDecimal("0.06"),
                 new BigDecimal("20000.00000000"),
                 "nnnnnn",
@@ -165,11 +178,11 @@ class EveryTradeBeanV3_2Test {
             new FeeRebateImportedTransactionBean(
                 "9",
                 Instant.parse("2022-01-12T14:09:00Z"),
-                Currency.CZK,
-                Currency.CZK,
-                TransactionType.FEE,
+                CZK,
+                CZK,
+                FEE,
                 new BigDecimal("100"),
-                Currency.CZK,
+                CZK,
                 "nnnnnn",
                 null,
                 "Label1"
@@ -187,11 +200,11 @@ class EveryTradeBeanV3_2Test {
             new FeeRebateImportedTransactionBean(
                 "11",
                 Instant.parse("2022-01-12T14:11:00Z"),
-                Currency.CZK,
-                Currency.CZK,
-                TransactionType.REBATE,
+                CZK,
+                CZK,
+                REBATE,
                 new BigDecimal("100"),
-                Currency.CZK,
+                CZK,
                 "nnnnnn",
                 null,
                 "Label1"
@@ -226,8 +239,8 @@ class EveryTradeBeanV3_2Test {
             ImportedTransactionBean.createDepositWithdrawal(
                 "14",
                 Instant.parse("2022-01-12T14:14:00Z"),
-                Currency.BTC,
-                Currency.BTC,
+                BTC,
+                BTC,
                 TransactionType.DEPOSIT,
                 new BigDecimal("0.01"),
                 "xxxxxxx",
@@ -247,8 +260,8 @@ class EveryTradeBeanV3_2Test {
             ImportedTransactionBean.createDepositWithdrawal(
                 "15",
                 Instant.parse("2022-01-12T14:15:00Z"),
-                Currency.CZK,
-                Currency.CZK,
+                CZK,
+                CZK,
                 TransactionType.DEPOSIT,
                 new BigDecimal("90"),
                 "xxxxxxx",
@@ -260,11 +273,11 @@ class EveryTradeBeanV3_2Test {
                 new FeeRebateImportedTransactionBean(
                     "15-fee",
                     Instant.parse("2022-01-12T14:15:00Z"),
-                    Currency.CZK,
-                    Currency.CZK,
-                    TransactionType.FEE,
+                    CZK,
+                    CZK,
+                    FEE,
                     new BigDecimal("10"),
-                    Currency.CZK,
+                    CZK,
                     null,
                     null,
                     "Label1"
@@ -282,8 +295,8 @@ class EveryTradeBeanV3_2Test {
             ImportedTransactionBean.createDepositWithdrawal(
                 "18",
                 Instant.parse("2022-01-12T14:18:00Z"),
-                Currency.CZK,
-                Currency.CZK,
+                CZK,
+                CZK,
                 TransactionType.WITHDRAWAL,
                 new BigDecimal("90"),
                 "xxxxxxx",
@@ -304,8 +317,8 @@ class EveryTradeBeanV3_2Test {
             ImportedTransactionBean.createDepositWithdrawal(
                 "20",
                 Instant.parse("2022-01-12T14:20:00Z"),
-                Currency.CZK,
-                Currency.CZK,
+                CZK,
+                CZK,
                 TransactionType.WITHDRAWAL,
                 new BigDecimal("100"),
                 "xxxxxxx",
@@ -316,11 +329,11 @@ class EveryTradeBeanV3_2Test {
                 new FeeRebateImportedTransactionBean(
                     "20-fee",
                     Instant.parse("2022-01-12T14:20:00Z"),
-                    Currency.CZK,
-                    Currency.CZK,
-                    TransactionType.FEE,
+                    CZK,
+                    CZK,
+                    FEE,
                     new BigDecimal("10"),
-                    Currency.CZK,
+                    CZK,
                     null,
                     null,
                     "Label1"
@@ -338,9 +351,9 @@ class EveryTradeBeanV3_2Test {
             ImportedTransactionBean.createDepositWithdrawal(
                 "23",
                 Instant.parse("2022-01-12T14:23:00Z"),
-                Currency.BTC,
-                Currency.BTC,
-                TransactionType.STAKE,
+                BTC,
+                BTC,
+                STAKE,
                 new BigDecimal("0.01"),
                 null,
                 "nnnnnn",
@@ -359,9 +372,9 @@ class EveryTradeBeanV3_2Test {
             ImportedTransactionBean.createDepositWithdrawal(
                 "23",
                 Instant.parse("2022-01-12T14:23:00Z"),
-                Currency.BTC,
-                Currency.BTC,
-                TransactionType.UNSTAKE,
+                BTC,
+                BTC,
+                UNSTAKE,
                 new BigDecimal("0.01"),
                 null,
                 "nnnnnn",
@@ -380,9 +393,9 @@ class EveryTradeBeanV3_2Test {
             ImportedTransactionBean.createDepositWithdrawal(
                 "23",
                 Instant.parse("2022-01-12T14:23:00Z"),
-                Currency.BTC,
-                Currency.BTC,
-                TransactionType.STAKING_REWARD,
+                BTC,
+                BTC,
+                STAKING_REWARD,
                 new BigDecimal("0.01"),
                 null,
                 "nnnnnn",
@@ -401,9 +414,9 @@ class EveryTradeBeanV3_2Test {
             ImportedTransactionBean.createDepositWithdrawal(
                 "23",
                 Instant.parse("2022-01-12T14:23:00Z"),
-                Currency.BTC,
-                Currency.BTC,
-                TransactionType.REWARD,
+                BTC,
+                BTC,
+                REWARD,
                 new BigDecimal("0.01"),
                 null,
                 "nnnnnn",
@@ -422,9 +435,9 @@ class EveryTradeBeanV3_2Test {
             ImportedTransactionBean.createDepositWithdrawal(
                 "23",
                 Instant.parse("2022-01-12T14:23:00Z"),
-                Currency.BTC,
-                Currency.BTC,
-                TransactionType.AIRDROP,
+                BTC,
+                BTC,
+                AIRDROP,
                 new BigDecimal("0.01"),
                 null,
                 "nnnnnn",
@@ -443,9 +456,9 @@ class EveryTradeBeanV3_2Test {
             ImportedTransactionBean.createDepositWithdrawal(
                 "23",
                 Instant.parse("2022-01-12T14:23:00Z"),
-                Currency.BTC,
-                Currency.BTC,
-                TransactionType.EARNING,
+                BTC,
+                BTC,
+                EARNING,
                 new BigDecimal("0.01"),
                 null,
                 "nnnnnn",
@@ -464,9 +477,9 @@ class EveryTradeBeanV3_2Test {
             ImportedTransactionBean.createDepositWithdrawal(
                 "23",
                 Instant.parse("2022-01-12T14:23:00Z"),
-                Currency.BTC,
-                Currency.BTC,
-                TransactionType.FORK,
+                BTC,
+                BTC,
+                FORK,
                 new BigDecimal("0.01"),
                 null,
                 "nnnnnn",
@@ -485,9 +498,9 @@ class EveryTradeBeanV3_2Test {
             ImportedTransactionBean.createDepositWithdrawal(
                 "24",
                 Instant.parse("2022-01-12T14:24:00Z"),
-                Currency.BTC,
-                Currency.BTC,
-                TransactionType.STAKE,
+                BTC,
+                BTC,
+                STAKE,
                 new BigDecimal("0.01"),
                 null,
                 "nnnnnn",
@@ -497,11 +510,11 @@ class EveryTradeBeanV3_2Test {
                 new FeeRebateImportedTransactionBean(
                     "24-fee",
                     Instant.parse("2022-01-12T14:24:00Z"),
-                    Currency.BTC,
-                    Currency.BTC,
-                    TransactionType.FEE,
+                    BTC,
+                    BTC,
+                    FEE,
                     new BigDecimal("0.001"),
-                    Currency.BTC,
+                    BTC,
                     null,
                     null,
                     "Label1"
@@ -520,9 +533,9 @@ class EveryTradeBeanV3_2Test {
             ImportedTransactionBean.createDepositWithdrawal(
                 "24",
                 Instant.parse("2022-01-12T14:24:00Z"),
-                Currency.BTC,
-                Currency.BTC,
-                TransactionType.UNSTAKE,
+                BTC,
+                BTC,
+                UNSTAKE,
                 new BigDecimal("0.01"),
                 null,
                 "nnnnnn",
@@ -532,11 +545,11 @@ class EveryTradeBeanV3_2Test {
                 new FeeRebateImportedTransactionBean(
                     "24-fee",
                     Instant.parse("2022-01-12T14:24:00Z"),
-                    Currency.BTC,
-                    Currency.BTC,
-                    TransactionType.FEE,
+                    BTC,
+                    BTC,
+                    FEE,
                     new BigDecimal("0.001"),
-                    Currency.BTC,
+                    BTC,
                     null,
                     null,
                     "Label1"
@@ -555,9 +568,9 @@ class EveryTradeBeanV3_2Test {
             ImportedTransactionBean.createDepositWithdrawal(
                 "24",
                 Instant.parse("2022-01-12T14:24:00Z"),
-                Currency.BTC,
-                Currency.BTC,
-                TransactionType.STAKING_REWARD,
+                BTC,
+                BTC,
+                STAKING_REWARD,
                 new BigDecimal("0.01"),
                 null,
                 "nnnnnn",
@@ -567,11 +580,11 @@ class EveryTradeBeanV3_2Test {
                 new FeeRebateImportedTransactionBean(
                     "24-fee",
                     Instant.parse("2022-01-12T14:24:00Z"),
-                    Currency.BTC,
-                    Currency.BTC,
-                    TransactionType.FEE,
+                    BTC,
+                    BTC,
+                    FEE,
                     new BigDecimal("0.001"),
-                    Currency.BTC,
+                    BTC,
                     null,
                     null,
                     "Label1"
@@ -590,9 +603,9 @@ class EveryTradeBeanV3_2Test {
             ImportedTransactionBean.createDepositWithdrawal(
                 "24",
                 Instant.parse("2022-01-12T14:24:00Z"),
-                Currency.BTC,
-                Currency.BTC,
-                TransactionType.REWARD,
+                BTC,
+                BTC,
+                REWARD,
                 new BigDecimal("0.01"),
                 null,
                 "nnnnnn",
@@ -602,11 +615,11 @@ class EveryTradeBeanV3_2Test {
                 new FeeRebateImportedTransactionBean(
                     "24-fee",
                     Instant.parse("2022-01-12T14:24:00Z"),
-                    Currency.BTC,
-                    Currency.BTC,
-                    TransactionType.FEE,
+                    BTC,
+                    BTC,
+                    FEE,
                     new BigDecimal("0.001"),
-                    Currency.BTC,
+                    BTC,
                     null,
                     null,
                     "Label1"
@@ -625,9 +638,9 @@ class EveryTradeBeanV3_2Test {
             ImportedTransactionBean.createDepositWithdrawal(
                 "24",
                 Instant.parse("2022-01-12T14:24:00Z"),
-                Currency.BTC,
-                Currency.BTC,
-                TransactionType.AIRDROP,
+                BTC,
+                BTC,
+                AIRDROP,
                 new BigDecimal("0.01"),
                 null,
                 "nnnnnn",
@@ -637,11 +650,11 @@ class EveryTradeBeanV3_2Test {
                 new FeeRebateImportedTransactionBean(
                     "24-fee",
                     Instant.parse("2022-01-12T14:24:00Z"),
-                    Currency.BTC,
-                    Currency.BTC,
-                    TransactionType.FEE,
+                    BTC,
+                    BTC,
+                    FEE,
                     new BigDecimal("0.001"),
-                    Currency.BTC,
+                    BTC,
                     null,
                     null,
                     "Label1"
@@ -660,9 +673,9 @@ class EveryTradeBeanV3_2Test {
             ImportedTransactionBean.createDepositWithdrawal(
                 "24",
                 Instant.parse("2022-01-12T14:24:00Z"),
-                Currency.BTC,
-                Currency.BTC,
-                TransactionType.EARNING,
+                BTC,
+                BTC,
+                EARNING,
                 new BigDecimal("0.01"),
                 null,
                 "nnnnnn",
@@ -672,11 +685,11 @@ class EveryTradeBeanV3_2Test {
                 new FeeRebateImportedTransactionBean(
                     "24-fee",
                     Instant.parse("2022-01-12T14:24:00Z"),
-                    Currency.BTC,
-                    Currency.BTC,
-                    TransactionType.FEE,
+                    BTC,
+                    BTC,
+                    FEE,
                     new BigDecimal("0.001"),
-                    Currency.BTC,
+                    BTC,
                     null,
                     null,
                     "Label1"
@@ -695,9 +708,9 @@ class EveryTradeBeanV3_2Test {
             ImportedTransactionBean.createDepositWithdrawal(
                 "24",
                 Instant.parse("2022-01-12T14:24:00Z"),
-                Currency.BTC,
-                Currency.BTC,
-                TransactionType.FORK,
+                BTC,
+                BTC,
+                FORK,
                 new BigDecimal("0.01"),
                 null,
                 "nnnnnn",
@@ -707,11 +720,11 @@ class EveryTradeBeanV3_2Test {
                 new FeeRebateImportedTransactionBean(
                     "24-fee",
                     Instant.parse("2022-01-12T14:24:00Z"),
-                    Currency.BTC,
-                    Currency.BTC,
-                    TransactionType.FEE,
+                    BTC,
+                    BTC,
+                    FEE,
                     new BigDecimal("0.001"),
-                    Currency.BTC,
+                    BTC,
                     null,
                     null,
                     "Label1"
