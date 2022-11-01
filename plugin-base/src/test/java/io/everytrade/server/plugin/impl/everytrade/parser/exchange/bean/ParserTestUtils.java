@@ -74,6 +74,8 @@ public class ParserTestUtils {
         bigDecimalEquals(expected.getUnitPrice(), actual.getUnitPrice());
 
         assertEquals(expected.getNote(), actual.getNote());
+        assertEquals(expected.getLabels(), actual.getLabels());
+        assertEquals(expected.getAddress(), actual.getAddress());
     }
 
     public static void checkEqualRelated(FeeRebateImportedTransactionBean expected, FeeRebateImportedTransactionBean actual) {
@@ -88,6 +90,7 @@ public class ParserTestUtils {
         assertEquals(0, expected.getVolume().compareTo(actual.getVolume()));
         assertEquals(expected.getFeeRebateCurrency(), actual.getFeeRebateCurrency());
         assertEquals(expected.getNote(), actual.getNote());
+        assertEquals(expected.getLabels(), actual.getLabels());
     }
 
 
