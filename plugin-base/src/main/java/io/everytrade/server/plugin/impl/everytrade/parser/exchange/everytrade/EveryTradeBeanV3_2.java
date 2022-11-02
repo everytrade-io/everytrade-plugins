@@ -25,14 +25,13 @@ import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.REBATE;
-import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
 import static java.math.BigDecimal.ZERO;
 import static lombok.AccessLevel.PRIVATE;
 
 @Headers(sequence = {
-    "UID", "DATE", "SYMBOL", "ACTION", "QUANTITY", "UNIT_PRICE", "FEE", "FEE_CURRENCY", "REBATE", "REBATE_CURRENCY",
+    "UID", "DATE", "SYMBOL", "ACTION", "QUANTITY", "UNIT_PRICE", "VOLUME_QUOTE", "FEE", "FEE_CURRENCY", "REBATE", "REBATE_CURRENCY",
     "ADDRESS_FROM", "ADDRESS_TO", "NOTE", "LABELS"
 }, extract = true)
 @FieldDefaults(level = PRIVATE)
@@ -45,6 +44,7 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
     BigDecimal price;
     BigDecimal quantity;
     BigDecimal fee;
+    BigDecimal volumeQuote;
     Currency feeCurrency;
     BigDecimal rebate;
     Currency rebateCurrency;
@@ -105,6 +105,11 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
         price = EverytradeCSVParserValidator.parserNumber(value);
     }
 
+    @Parsed(field = "VOLUME_QUOTE", defaultNullRead = "0")
+    public void setVolumeQuote(String value) {
+        volumeQuote = EverytradeCSVParserValidator.parserNumber(value);
+    }
+
     @Parsed(field = "FEE", defaultNullRead = "0")
     public void setFee(String value) {
         fee = EverytradeCSVParserValidator.parserNumber(value);
@@ -157,7 +162,7 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
             case FEE:
                 return new TransactionCluster(createFeeTransactionBean(true), List.of());
             case REBATE:
-                return new TransactionCluster(createRebateTransactionBean(true), getRelatedTxs());
+                return new TransactionCluster(createRebateTransactionBean(true), List.of());
             case STAKE:
             case UNSTAKE:
             case STAKING_REWARD:
@@ -183,7 +188,9 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
             symbolQuote,
             action,
             quantity,
-            action.equals(DEPOSIT) ? addressFrom : addressTo
+            action.equals(DEPOSIT) ? addressFrom : addressTo,
+            note,
+            labels
         );
 
         return new TransactionCluster(tx, getRelatedTxs());
@@ -204,9 +211,10 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
             symbolQuote,
             action,
             quantity,
-            price,
-            (note.length() > 0) ? note : null,
-            null
+            (volumeQuote.compareTo(ZERO) > 0) ? evalUnitPrice(volumeQuote,quantity) : price,
+            note,
+            null,
+            labels
         );
 
         TransactionCluster transactionCluster = new TransactionCluster(tx, getRelatedTxs());
@@ -237,20 +245,24 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
             FEE,
             fee,
             feeCurrency,
-            unrelated ? note : null
+            unrelated ? note : null,
+            null,
+            labels
         );
     }
 
     private FeeRebateImportedTransactionBean createRebateTransactionBean(boolean unrelated) {
         return new FeeRebateImportedTransactionBean(
-            unrelated ? uid : uid + FEE_UID_PART,
+            unrelated ? uid : uid + REBATE_UID_PART,
             date,
             rebateCurrency != null ? rebateCurrency : symbolBase,
             rebateCurrency != null ? rebateCurrency : symbolQuote,
             REBATE,
             rebate,
             rebateCurrency,
-            unrelated ? note : null
+            unrelated ? note : null,
+            null,
+            labels
         );
     }
 
@@ -264,7 +276,8 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
             quantity,
             null,
             (note.length() > 0) ? note : null,
-            null
+            null,
+            labels
         );
         return new TransactionCluster(tx, getRelatedTxs());
     }
