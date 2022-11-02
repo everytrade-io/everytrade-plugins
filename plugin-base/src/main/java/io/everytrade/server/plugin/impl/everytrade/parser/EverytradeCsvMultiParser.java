@@ -605,7 +605,8 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
                 .headers(List.of(
                     CsvHeader.of(
-                        "UID","DATE","SYMBOL","ACTION","QUANTITY","UNIT_PRICE","VOLUME","FEE","FEE_CURRENCY","REBATE","REBATE_CURRENCY",
+                        "UID","DATE","SYMBOL","ACTION","QUANTITY","UNIT_PRICE","VOLUME_QUOTE","FEE","FEE_CURRENCY","REBATE",
+                        "REBATE_CURRENCY",
                         "ADDRESS_FROM","ADDRESS_TO","NOTE","LABELS"
                     ).withSeparator(delimiter)))
                 .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(EveryTradeBeanV3_2.class, delimiter)) //
