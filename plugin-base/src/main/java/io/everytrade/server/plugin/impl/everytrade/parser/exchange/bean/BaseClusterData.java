@@ -3,11 +3,16 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import lombok.Builder;
+import lombok.Value;
+import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 
+import static lombok.AccessLevel.PRIVATE;
+
 @Builder
+@Value
 public class BaseClusterData {
     String uid;
     Instant executed;

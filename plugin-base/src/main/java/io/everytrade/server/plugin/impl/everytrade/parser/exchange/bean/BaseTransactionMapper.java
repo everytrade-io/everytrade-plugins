@@ -12,6 +12,7 @@ import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 import static io.everytrade.server.model.TransactionType.FEE;
@@ -26,7 +27,7 @@ import static lombok.AccessLevel.PROTECTED;
 @Setter
 @Getter
 @FieldDefaults(level = PROTECTED)
-public abstract class BaseTransactionMapperV1 extends ExchangeBean {
+public abstract class BaseTransactionMapper extends ExchangeBean {
     boolean ignoredFee;
     boolean failedFee;
     String ignoredOrFailedFeeMessage;
@@ -39,14 +40,14 @@ public abstract class BaseTransactionMapperV1 extends ExchangeBean {
     public TransactionCluster toTransactionCluster() {
         var data = mapData();
         TransactionCluster cluster =
-            switch (data.transactionType) {
+            switch (data.getTransactionType()) {
                 case REWARD -> createRewardTransactionCluster(data);
                 case BUY, SELL -> createBuySellTransactionCluster(data);
                 case DEPOSIT, WITHDRAWAL -> createDepositOrWithdrawalTxCluster(data);
                 case STAKE, UNSTAKE, STAKING_REWARD, EARNING, FORK, AIRDROP -> createOtherTransactionCluster(data);
                 case FEE, REBATE -> createUnrelatedFeeOrRebate(data);
                 default -> throw new DataValidationException(String.format("Unsupported transaction type %s.",
-                    data.transactionType.name()));
+                    data.getTransactionType().name()));
             };
         if (ignoredFee) {
             cluster.setIgnoredFee(1, ignoredOrFailedFeeMessage);
@@ -59,13 +60,13 @@ public abstract class BaseTransactionMapperV1 extends ExchangeBean {
 
     private TransactionCluster createDepositOrWithdrawalTxCluster(BaseClusterData data) {
         var tx = ImportedTransactionBean.createDepositWithdrawal(
-            data.uid,
-            data.executed,
-            data.base, //base
-            data.quote,  //quote
-            data.transactionType,
-            data.volume,
-            data.base.isFiat() ? null : data.address
+            data.getUid(),
+            data.getExecuted(),
+            data.getBase(), //base
+            data.getQuote(),  //quote
+            data.getTransactionType(),
+            data.getVolume(),
+            data.getBase().isFiat() ? null : data.getAddress()
         );
         return new TransactionCluster(tx, getRelatedTransactions(data));
     }
@@ -73,12 +74,12 @@ public abstract class BaseTransactionMapperV1 extends ExchangeBean {
     private TransactionCluster createRewardTransactionCluster(BaseClusterData data) {
         return new TransactionCluster(
             new ImportedTransactionBean(
-                data.uid,
-                data.executed,
-                data.base,
-                data.base,
+                data.getUid(),
+                data.getExecuted(),
+                data.getBase(),
+                data.getBase(),
                 REWARD,
-                data.volume,
+                data.getVolume(),
                 null
             ),
             emptyList()
@@ -86,10 +87,9 @@ public abstract class BaseTransactionMapperV1 extends ExchangeBean {
     }
 
     private void validateBuySellTx(BaseClusterData data) {
-        validateCurrencyPair(data.base, data.quote);
-        validateCurrencyPair(data.base, data.quote, data.transactionType);
-        if (data.base.isFiat()) {
-            throw new DataValidationException(String.format("Base currency is not crypto: %s", data.base.code()));
+        validateCurrencyPair(data.getBase(), data.getQuote(), data.getTransactionType());
+        if (data.getBase().isFiat()) {
+            throw new DataValidationException(String.format("Base currency is not crypto: %s", data.getBase().code()));
         }
     }
 
@@ -98,13 +98,13 @@ public abstract class BaseTransactionMapperV1 extends ExchangeBean {
         TransactionCluster cluster;
         cluster = new TransactionCluster(
             new ImportedTransactionBean(
-                data.uid,
-                data.executed,
-                data.base,
-                data.quote,
-                data.transactionType,
-                data.volume,
-                data.unitPrice
+                data.getUid(),
+                data.getExecuted(),
+                data.getBase(),
+                data.getQuote(),
+                data.getTransactionType(),
+                data.getVolume(),
+                data.getUnitPrice()
             ),
             getRelatedTransactions(data)
         );
@@ -112,35 +112,35 @@ public abstract class BaseTransactionMapperV1 extends ExchangeBean {
     }
 
     public BigDecimal countUnitPrice(BaseClusterData data) {
-        return evalUnitPrice(data.quoteAmount, data.volume);
+        return evalUnitPrice(data.getQuoteAmount(), data.getVolume());
     }
 
     private List<ImportedTransactionBean> getRelatedTransactions(BaseClusterData data) {
-        List<ImportedTransactionBean> related = new java.util.ArrayList<>(emptyList());
+        List<ImportedTransactionBean> related = new ArrayList<>();
         try {
-            if (!nullOrZero(data.feeAmount)) {
-                data.feeCurrency = Currency.fromCode(data.fee);
+            if (!nullOrZero(data.getFeeAmount())) {
+                var feeCurrency = Currency.fromCode(data.getFee());
                 var feeTx = new FeeRebateImportedTransactionBean(
-                    (data.uid != null) ? data.uid + FEE_UID_PART : null,
-                    data.executed,
-                    data.feeCurrency,
-                    data.feeCurrency,
+                    (data.getUid() != null) ? data.getUid() + FEE_UID_PART : null,
+                    data.getExecuted(),
+                    feeCurrency,
+                    feeCurrency,
                     FEE,
-                    data.feeAmount.setScale(DECIMAL_DIGITS, HALF_UP),
-                    data.feeCurrency
+                    data.getFeeAmount().setScale(DECIMAL_DIGITS, HALF_UP),
+                    feeCurrency
                 );
                 related.add(feeTx);
             }
-            if (!nullOrZero(data.rebateAmount)) {
-                data.rebateCurrency = Currency.fromCode(data.rebate);
+            if (!nullOrZero(data.getRebateAmount())) {
+                var rebateCurrency = Currency.fromCode(data.getRebate());
                 var rebateTx = new FeeRebateImportedTransactionBean(
-                    (data.uid != null) ? data.uid + REBATE_UID_PART : null,
-                    data.executed,
-                    data.rebateCurrency,
-                    data.rebateCurrency,
+                    (data.getUid() != null) ? data.getUid() + REBATE_UID_PART : null,
+                    data.getExecuted(),
+                    rebateCurrency,
+                    rebateCurrency,
                     REBATE,
-                    data.rebateAmount.setScale(DECIMAL_DIGITS, HALF_UP),
-                    data.rebateCurrency
+                    data.getRebateAmount().setScale(DECIMAL_DIGITS, HALF_UP),
+                    rebateCurrency
                 );
                 related.add(rebateTx);
             }
@@ -155,28 +155,29 @@ public abstract class BaseTransactionMapperV1 extends ExchangeBean {
     }
 
     private TransactionCluster createUnrelatedFeeOrRebate(BaseClusterData data) {
-        return new TransactionCluster(new FeeRebateImportedTransactionBean(
-            data.uid,
-            data.executed,
-            data.base,
-            data.base,
-            data.transactionType,
-            data.volume,
-            data.base
-        ), getRelatedTransactions(data));
+        return new TransactionCluster(
+            new FeeRebateImportedTransactionBean(
+                data.getUid(),
+                data.getExecuted(),
+                data.getBase(),
+                data.getBase(),
+                data.getTransactionType(),
+                data.getVolume(),
+                data.getBase()
+            ), getRelatedTransactions(data));
     }
 
     private TransactionCluster createOtherTransactionCluster(BaseClusterData data) {
         var tx = new ImportedTransactionBean(
-            data.uid,
-            data.executed,
-            data.base,
-            data.base,
-            data.transactionType,
-            data.volume,
-            data.unitPrice,
-            data.note,
-            data.address
+            data.getUid(),
+            data.getExecuted(),
+            data.getBase(),
+            data.getBase(),
+            data.getTransactionType(),
+            data.getVolume(),
+            data.getUnitPrice(),
+            data.getNote(),
+            data.getAddress()
         );
         return new TransactionCluster(tx, getRelatedTransactions(data));
     }

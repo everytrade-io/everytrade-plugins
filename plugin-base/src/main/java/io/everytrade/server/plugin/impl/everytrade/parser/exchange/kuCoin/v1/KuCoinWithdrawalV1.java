@@ -6,13 +6,13 @@ import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BaseClusterData;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BaseTransactionMapperV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BaseTransactionMapper;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Date;
 
-public class KuCoinWithdrawalV1 extends BaseTransactionMapperV1 {
+public class KuCoinWithdrawalV1 extends BaseTransactionMapper {
     Instant time;
     Currency coin;
     BigDecimal amount;
