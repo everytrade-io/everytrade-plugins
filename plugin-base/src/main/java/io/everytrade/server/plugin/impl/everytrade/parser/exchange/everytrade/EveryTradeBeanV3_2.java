@@ -31,7 +31,7 @@ import static java.math.BigDecimal.ZERO;
 import static lombok.AccessLevel.PRIVATE;
 
 @Headers(sequence = {
-    "UID", "DATE", "SYMBOL", "ACTION", "QUANTITY", "UNIT_PRICE", "VOLUME", "FEE", "FEE_CURRENCY", "REBATE", "REBATE_CURRENCY",
+    "UID", "DATE", "SYMBOL", "ACTION", "QUANTITY", "UNIT_PRICE", "VOLUME_QUOTE", "FEE", "FEE_CURRENCY", "REBATE", "REBATE_CURRENCY",
     "ADDRESS_FROM", "ADDRESS_TO", "NOTE", "LABELS"
 }, extract = true)
 @FieldDefaults(level = PRIVATE)
@@ -44,7 +44,7 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
     BigDecimal price;
     BigDecimal quantity;
     BigDecimal fee;
-    BigDecimal volume;
+    BigDecimal volumeQuote;
     Currency feeCurrency;
     BigDecimal rebate;
     Currency rebateCurrency;
@@ -105,9 +105,9 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
         price = EverytradeCSVParserValidator.parserNumber(value);
     }
 
-    @Parsed(field = "VOLUME", defaultNullRead = "0")
-    public void setVolume(String value) {
-        volume = EverytradeCSVParserValidator.parserNumber(value);
+    @Parsed(field = "VOLUME_QUOTE", defaultNullRead = "0")
+    public void setVolumeQuote(String value) {
+        volumeQuote = EverytradeCSVParserValidator.parserNumber(value);
     }
 
     @Parsed(field = "FEE", defaultNullRead = "0")
@@ -211,7 +211,7 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
             symbolQuote,
             action,
             quantity,
-            (volume.compareTo(ZERO) > 0) ? evalUnitPrice(volume,quantity) : price,
+            (volumeQuote.compareTo(ZERO) > 0) ? evalUnitPrice(volumeQuote,quantity) : price,
             note,
             null,
             labels
