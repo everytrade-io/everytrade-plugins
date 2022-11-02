@@ -69,11 +69,11 @@ public abstract class ExchangeBean implements IImportableBean {
     }
 
     public static void validateCurrencyPair(Currency base, Currency quote, TransactionType type) {
-            var currencyPair = new CurrencyPair(base, quote);
-            if (type.isBuyOrSell() && base.equals(quote)) {
-                throw new DataValidationException(UNSUPPORTED_CURRENCY_PAIR.concat(currencyPair.toString()));
-            }
-            validateCurrencyPair(base, quote);
+        var currencyPair = new CurrencyPair(base, quote);
+        if (type.isBuyOrSell() && base.equals(quote)) {
+            throw new DataValidationException(UNSUPPORTED_CURRENCY_PAIR.concat(currencyPair.toString()));
+        }
+        validateCurrencyPair(base, quote);
     }
 
     protected void validatePositivity(BigDecimal... values) {
@@ -111,7 +111,7 @@ public abstract class ExchangeBean implements IImportableBean {
     protected static TransactionType detectTransactionType(String value) {
         TransactionType type;
         try {
-            type =  TransactionType.valueOf(value.toUpperCase());
+            type = TransactionType.valueOf(value.toUpperCase());
         } catch (IllegalArgumentException e) {
             throw new DataValidationException(UNSUPPORTED_TRANSACTION_TYPE.concat(value));
         }
@@ -130,6 +130,10 @@ public abstract class ExchangeBean implements IImportableBean {
     protected static BigDecimal setAmountFromString(String value) {
         try {
             if (value != null) {
+                if (value.contains(",") && value.contains(".")) {
+                    String amount = value.replace(",", "");
+                    return new BigDecimal(amount).abs().setScale(ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE);
+                }
                 String amount = value.replace("-", "").replace(",", ".");
                 return new BigDecimal(amount).abs().setScale(ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE);
             } else {

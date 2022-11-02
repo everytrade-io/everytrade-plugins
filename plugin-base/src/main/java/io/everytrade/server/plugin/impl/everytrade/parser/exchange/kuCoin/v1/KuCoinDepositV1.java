@@ -5,7 +5,8 @@ import com.univocity.parsers.annotations.Parsed;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BaseBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BaseClusterData;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BaseTransactionMapper;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -13,7 +14,7 @@ import java.util.Date;
 
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 
-public class KuCoinDepositV1 extends BaseBeanV1 {
+public class KuCoinDepositV1 extends BaseTransactionMapper {
     Instant time;
     Currency coin;
     BigDecimal amount;
@@ -59,12 +60,14 @@ public class KuCoinDepositV1 extends BaseBeanV1 {
     }
 
     @Override
-    protected void mapData() {
-        transactionType = findTransactionType();
-        executed = time;
-        base = coin;
-        quote = coin;
-        volume = amount;
-        note = type;
+    protected BaseClusterData mapData() {
+        return BaseClusterData.builder()
+            .transactionType(findTransactionType())
+            .executed(time)
+            .base(coin)
+            .quote(coin)
+            .volume(amount)
+            .note(type)
+            .build();
     }
 }
