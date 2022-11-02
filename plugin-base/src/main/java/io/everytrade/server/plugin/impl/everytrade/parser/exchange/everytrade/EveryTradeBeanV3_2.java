@@ -61,7 +61,7 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
     }
 
     @Parsed(field = "DATE")
-    @Format(formats = {"dd.MM.yy HH:mm:ss", "yyyy-MM-dd HH:mm:ss"}, options = {"locale=US", "timezone=UTC"})
+    @Format(formats = {"dd.MM.yy HH:mm:ss", "dd.MM.yy HH:mm", "yyyy-MM-dd HH:mm:ss"}, options = {"locale=US", "timezone=UTC"})
     public void setDate(Date value) {
         date = value.toInstant();
     }
@@ -200,8 +200,8 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
         if (quantity.compareTo(ZERO) == 0) {
             throw new DataValidationException("Quantity can not be zero.");
         }
-        if (price.compareTo(ZERO) == 0) {
-            throw new DataValidationException("Unit price can not be zero.");
+        if (price.compareTo(ZERO) == 0 && volumeQuote.compareTo(ZERO) == 0) {
+            throw new DataValidationException("\"Unit price\" or \"volume quote\" can not be zero ");
         }
 
         var tx = new ImportedTransactionBean(
@@ -211,7 +211,7 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
             symbolQuote,
             action,
             quantity,
-            (volumeQuote.compareTo(ZERO) > 0) ? evalUnitPrice(volumeQuote,quantity) : price,
+            (volumeQuote.compareTo(ZERO) > 0) ? evalUnitPrice(volumeQuote, quantity) : price,
             note,
             null,
             labels
