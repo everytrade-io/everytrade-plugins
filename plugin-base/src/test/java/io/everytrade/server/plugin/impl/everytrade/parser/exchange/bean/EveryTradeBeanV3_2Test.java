@@ -34,7 +34,8 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 class EveryTradeBeanV3_2Test {
     private static final String HEADER_CORRECT =
-        "UID;DATE;SYMBOL;ACTION;QUANTITY;UNIT_PRICE;VOLUME;FEE;FEE_CURRENCY;REBATE;REBATE_CURRENCY;ADDRESS_FROM;ADDRESS_TO;NOTE;LABELS\n";
+        "UID;DATE;SYMBOL;ACTION;QUANTITY;UNIT_PRICE;VOLUME_QUOTE;FEE;FEE_CURRENCY;REBATE;REBATE_CURRENCY;ADDRESS_FROM;ADDRESS_TO;NOTE;" +
+            "LABELS\n";
 
     @Test
     void testCorrectHeader() {
