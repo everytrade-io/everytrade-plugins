@@ -36,7 +36,8 @@ public class EveryTradePlugin implements IPlugin {
             CoinbaseConnector.DESCRIPTOR,
             BlockchainBtcConnector.DESCRIPTOR,
             BlockchainLtcConnector.DESCRIPTOR,
-            BlockchainEthConnector.DESCRIPTOR
+            BlockchainEthConnector.DESCRIPTOR,
+            KuCoinConnector.DESCRIPTOR
         ).stream()
             .collect(Collectors.toMap(ConnectorDescriptor::getId, it -> it));
 
