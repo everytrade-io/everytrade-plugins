@@ -26,7 +26,7 @@ public class KuCoinDownloader {
     private static final Logger LOG = LoggerFactory.getLogger(KuCoinConnector.class);
 
     private DownloadState state;
-    private long now = Instant.now().getEpochSecond() * 1000L;
+    private long now = Instant.now().toEpochMilli();
     Exchange exchange;
     private static final Date EXCHANGE_START_DATE =
         new GregorianCalendar(2021, 02, 18, 0, 0).getTime();
@@ -73,9 +73,6 @@ public class KuCoinDownloader {
 
         final List<UserTrade> userTrades = new ArrayList<>();
         var params = (KucoinTradeHistoryParams) tradeService.createTradeHistoryParams();
-        var test = now - 25 * WEEK;
-        var testTwo = test - WEEK;
-        var Three = testTwo;
 
         // When all old trades are downloaded, old dates are set to EXCHANGE_START_DATE
         if (state.oldLastTradeStartDate == EXCHANGE_START_DATE.getTime()
@@ -98,7 +95,7 @@ public class KuCoinDownloader {
                 if (newStartDate < state.oldFirstTradeDate) {
                     newStartDate = state.oldFirstTradeDate;
                 }
-            // case not finished download
+                // case not finished download
             } else if (state.newLastTradeStartDate > 0 && state.newLastTradeEndDate > 0
                 && state.newLastTradeStartDate != state.newLastTradeEndDate) {
                 newEndDate = state.newLastTradeStartDate;
@@ -133,8 +130,8 @@ public class KuCoinDownloader {
                 }
                 // case too much txs
                 if (userTradesBlock.size() > PAGE_LIMIT) {
-                    throw new IllegalStateException(String.format("User trade history download failed.  Txs in response exceeds limit %s",
-                        PAGE_LIMIT));
+                    throw new IllegalStateException(
+                        String.format("User trade history download failed.  Txs in response exceeds limit %s", PAGE_LIMIT));
                 }
                 // case standard empty response
                 if (userTradesBlock.isEmpty() && newStartDate != state.oldFirstTradeDate) {
@@ -160,7 +157,6 @@ public class KuCoinDownloader {
                     userTrades.addAll(userTradesBlock);
                     continue;
                 }
-
 
                 // case last response in EXCHANGE_START_DATE
                 if (newStartDate == state.oldFirstTradeDate && state.newLastTradeEndDate < now) {
@@ -218,8 +214,8 @@ public class KuCoinDownloader {
 
                 // case too much txs
                 if (userTradesBlock.size() > PAGE_LIMIT) {
-                    throw new IllegalStateException(String.format("User trade history download failed.  Txs in response exceeds limit %s",
-                        PAGE_LIMIT));
+                    throw new IllegalStateException(
+                        String.format("User trade history download failed.  Txs in response exceeds limit %s", PAGE_LIMIT));
                 }
 
                 // case standard empty response
@@ -262,7 +258,7 @@ public class KuCoinDownloader {
      * When you use it for the first time,
      * the method starts downloading data from today until EXCHANGE_START_DATE.
      * Once this is done, the method only downloads the new data in the next update;
-     *
+     * <p>
      * To avoid duplicities with fresh txs in state PROCESSING/COMPLETED...We have decided to  download only 1 day old txs
      *
      * @return List<UserTrade>
@@ -307,7 +303,7 @@ public class KuCoinDownloader {
                 if (newStartDate < oldFirstFundingDate) {
                     newStartDate = oldFirstFundingDate;
                 }
-            // case not finished download
+                // case not finished download
             } else if (newLastFundingStartDate > 0 && newLastFundingEndDate > 0
                 && newLastFundingStartDate != newLastFundingEndDate) {
                 newEndDate = newLastFundingStartDate;
@@ -343,8 +339,8 @@ public class KuCoinDownloader {
                 }
                 // case too much txs
                 if (userDepositsBlock.size() > PAGE_LIMIT) {
-                    throw new IllegalStateException(String.format("User trade history download failed.  Txs in response exceed limit %s",
-                        PAGE_LIMIT));
+                    throw new IllegalStateException(
+                        String.format("User trade history download failed.  Txs in response exceed limit %s", PAGE_LIMIT));
                 }
                 // case standard empty response
                 if (userDepositsBlock.isEmpty() && newStartDate != oldFirstFundingDate) {
@@ -428,8 +424,8 @@ public class KuCoinDownloader {
 
                 // case too much txs
                 if (userDepositsBlock.size() > PAGE_LIMIT) {
-                    throw new IllegalStateException(String.format("User trade history download failed.  Txs in response exceeds limit %s",
-                        PAGE_LIMIT));
+                    throw new IllegalStateException(
+                        String.format("User trade history download failed.  Txs in response exceeds limit %s", PAGE_LIMIT));
                 }
 
                 // case standard empty response
