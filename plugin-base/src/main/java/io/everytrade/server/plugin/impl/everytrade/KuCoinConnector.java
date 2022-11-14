@@ -10,7 +10,7 @@ import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.connector.IConnector;
 import lombok.experimental.FieldDefaults;
 import org.knowm.xchange.ExchangeFactory;
-import org.knowm.xchange.coinbasepro.CoinbaseProExchange;
+import org.knowm.xchange.kucoin.KucoinExchange;
 
 import java.util.List;
 import java.util.Map;
@@ -68,6 +68,12 @@ public class KuCoinConnector implements IConnector {
         Objects.requireNonNull(this.passPhrase = parameters.get(PARAMETER_PASS_PHRASE.getId()));
     }
 
+    public KuCoinConnector(String apiKey, String apiSecret, String passPhrase) {
+        Objects.requireNonNull(this.apiKey = apiKey);
+        Objects.requireNonNull(this.apiSecret = apiSecret);
+        Objects.requireNonNull(this.passPhrase = passPhrase);
+    }
+
     @Override
     public String getId() {
         return ID;
@@ -75,7 +81,7 @@ public class KuCoinConnector implements IConnector {
 
     @Override
     public DownloadResult getTransactions(String downloadState) {
-        var exSpec = new CoinbaseProExchange().getDefaultExchangeSpecification();
+        var exSpec = new KucoinExchange().getDefaultExchangeSpecification();
         exSpec.setApiKey(apiKey);
         exSpec.setSecretKey(apiSecret);
         exSpec.setExchangeSpecificParametersItem("passphrase", passPhrase);
