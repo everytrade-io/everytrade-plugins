@@ -29,7 +29,7 @@ public class KuCoinDownloader {
     private long now = Instant.now().toEpochMilli();
     Exchange exchange;
     private static final Date EXCHANGE_START_DATE =
-        new GregorianCalendar(2021, 02, 18, 0, 0).getTime();
+        new GregorianCalendar(2019, 02, 18, 0, 0).getTime();
 
     private static final int MAX_TRADE_REQUEST_COUNT = 500;
     private static final int SLEEP_BETWEEN_REQUESTS = 350;
