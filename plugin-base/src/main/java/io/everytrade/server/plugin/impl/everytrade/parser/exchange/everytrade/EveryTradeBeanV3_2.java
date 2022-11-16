@@ -275,7 +275,7 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
             action,
             quantity,
             null,
-            (note.length() > 0) ? note : null,
+            (note != null && note.length() > 0) ? note : null,
             null,
             labels
         );
