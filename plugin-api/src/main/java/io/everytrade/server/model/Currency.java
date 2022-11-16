@@ -589,7 +589,10 @@ public enum Currency {
     VEN(false, Instant.parse("2018-01-01T00:00:00Z"), "VeChain [Token]"),
     WETH(false, Instant.parse("2018-01-10T00:00:00Z"), "WETH"),
     GXC(false, Instant.parse("2017-06-22T00:00:00Z"), "GXChain"),
-    WLUNA(false, Instant.parse("2021-01-27T00:00:00Z"), "Wrapped LUNA Token");
+    WLUNA(false, Instant.parse("2021-01-27T00:00:00Z"), "Wrapped LUNA Token"),
+    ALEPH(false, Instant.parse("2020-07-22T00:00:00Z"), "Aleph.im"),
+    HTR(false, Instant.parse("2020-09-30T00:00:00Z"), "Hathor Network"),
+    MELOS(false, Instant.parse("2022-03-14T00:00:00Z"), "Melos Studio");
 
     String code;
     int decimalDigits;
