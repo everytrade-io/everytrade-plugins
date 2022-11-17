@@ -94,9 +94,7 @@ public abstract class ExchangeBean implements IImportableBean {
 
     protected void validateDate(long date, long now) {
         if (date > now) {
-            throw new DataValidationException(
-                String.format(WRONG_TRANSACTION_DATE + "%s", date)
-            );
+            throw new DataValidationException(WRONG_TRANSACTION_DATE);
         }
     }
 
