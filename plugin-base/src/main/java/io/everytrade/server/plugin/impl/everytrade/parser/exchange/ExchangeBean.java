@@ -21,6 +21,7 @@ public abstract class ExchangeBean implements IImportableBean {
     public static final String FEE_UID_PART = "-fee";
     public static final String REBATE_UID_PART = "-rebate";
     public static final String ILLEGAL_NEGATIVE_VALUES = "Illegal negative value(s) at index(es): ";
+    public static final String WRONG_TRANSACTION_DATE = "Wrong transaction date";
 
     protected List<String> rowValues;
     private long rowNumber;
@@ -87,6 +88,14 @@ public abstract class ExchangeBean implements IImportableBean {
         if (!negativeValues.isEmpty()) {
             throw new DataValidationException(
                 String.format(ILLEGAL_NEGATIVE_VALUES + "%s", negativeValues)
+            );
+        }
+    }
+
+    protected void validateDate(long date, long now) {
+        if (date > now) {
+            throw new DataValidationException(
+                String.format(WRONG_TRANSACTION_DATE + "%s", date)
             );
         }
     }
