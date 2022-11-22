@@ -266,7 +266,7 @@ public class KuCoinDownloader {
      */
     public List<FundingRecord> downloadFundings(FundingRecord.Type type) throws InterruptedException {
         long now = this.now - 24 * 60 * 60 * 1000L;
-        LOG.info(String.format("KuCoin - starting funding type %s download", type));
+        LOG.info("KuCoin - starting funding type {} download", type);
         var accountService = exchange.getAccountService();
         int sentRequests = 0;
         var oldLastFundingStartDate = type.equals(FundingRecord.Type.WITHDRAWAL) ? state.oldLastWithdrawalStartDate :
