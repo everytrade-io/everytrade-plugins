@@ -9,6 +9,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -21,6 +22,7 @@ public abstract class ExchangeBean implements IImportableBean {
     public static final String FEE_UID_PART = "-fee";
     public static final String REBATE_UID_PART = "-rebate";
     public static final String ILLEGAL_NEGATIVE_VALUES = "Illegal negative value(s) at index(es): ";
+    public static final String WRONG_TRANSACTION_DATE = "Wrong transaction date";
 
     protected List<String> rowValues;
     private long rowNumber;
@@ -88,6 +90,13 @@ public abstract class ExchangeBean implements IImportableBean {
             throw new DataValidationException(
                 String.format(ILLEGAL_NEGATIVE_VALUES + "%s", negativeValues)
             );
+        }
+    }
+
+    protected void validateDate(Instant date) {
+        Instant oneDayAhead = Instant.now().plusMillis(1 * 24 * 60 * 60 * 1000L);
+        if (date.isAfter(oneDayAhead)) {
+            throw new DataValidationException(WRONG_TRANSACTION_DATE);
         }
     }
 
