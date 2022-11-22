@@ -93,8 +93,8 @@ public abstract class ExchangeBean implements IImportableBean {
         }
     }
 
-    protected void validateDate(Instant date, Instant now) {
-        Instant oneDayAhead = now.plusMillis(1 * 24 * 60 * 60 * 1000L);
+    protected void validateDate(Instant date) {
+        Instant oneDayAhead = Instant.now().plusMillis(1 * 24 * 60 * 60 * 1000L);
         if (date.isAfter(oneDayAhead)) {
             throw new DataValidationException(WRONG_TRANSACTION_DATE);
         }

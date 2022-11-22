@@ -51,7 +51,6 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
     TransactionType action;
     String note;
     String labels;
-    Instant now = Instant.now();
 
     ImportedTransactionBean main;
     List<ImportedTransactionBean> related;
@@ -152,7 +151,7 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
             validateCurrencyPair(symbolBase, symbolQuote, action);
         }
         validatePositivity(quantity, price, fee, rebate);
-        validateDate(date, now);
+        validateDate(date);
 
         switch (action) {
             case BUY:
