@@ -9,6 +9,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -92,8 +93,9 @@ public abstract class ExchangeBean implements IImportableBean {
         }
     }
 
-    protected void validateDate(long date, long now) {
-        if (date > now) {
+    protected void validateDate(Instant date, Instant now) {
+        Instant oneDayAhead = now.plusMillis(1 * 24 * 60 * 60 * 1000L);
+        if (date.isAfter(oneDayAhead)) {
             throw new DataValidationException(WRONG_TRANSACTION_DATE);
         }
     }

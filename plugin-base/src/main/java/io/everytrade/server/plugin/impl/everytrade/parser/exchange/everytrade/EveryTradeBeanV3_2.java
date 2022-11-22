@@ -152,7 +152,7 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
             validateCurrencyPair(symbolBase, symbolQuote, action);
         }
         validatePositivity(quantity, price, fee, rebate);
-        validateDate(date.toEpochMilli(), now.toEpochMilli());
+        validateDate(date, now);
 
         switch (action) {
             case BUY:
