@@ -42,7 +42,14 @@ public class BlockchainConnectorParser {
                     importFeesFromDeposits,
                     importFeesFromWithdrawals
                 );
-                transactionClusters.add(blockchainApiTransactionBean.toTransactionCluster());
+
+                // buy or deposit
+                if(transaction.isDirectionSend()) {
+                    transactionClusters.add(blockchainApiTransactionBean.toTransactionCluster());
+                } else {
+                    List<TransactionCluster> clusters = splitInfosToClusters();
+                    transactionClusters.addAll(clusters);
+                }
             } catch (DataIgnoredException e) {
                 parsingProblems.add(
                     new ParsingProblem(transaction.toString(), e.getMessage(), ParsingProblemType.PARSED_ROW_IGNORED)
