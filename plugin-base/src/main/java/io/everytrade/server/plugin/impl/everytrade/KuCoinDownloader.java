@@ -266,7 +266,7 @@ public class KuCoinDownloader {
      */
     public List<FundingRecord> downloadFundings(FundingRecord.Type type) throws InterruptedException {
         long now = this.now - 24 * 60 * 60 * 1000L;
-        LOG.info("KuCoin - starting funding download");
+        LOG.info("KuCoin - starting funding type {} download", type);
         var accountService = exchange.getAccountService();
         int sentRequests = 0;
         var oldLastFundingStartDate = type.equals(FundingRecord.Type.WITHDRAWAL) ? state.oldLastWithdrawalStartDate :
@@ -274,7 +274,7 @@ public class KuCoinDownloader {
         var oldLastFundingEndDate = type.equals(FundingRecord.Type.WITHDRAWAL) ? state.oldLastWithdrawalEndDate :
             state.oldLastDepositEndDate;
         var newLastFundingStartDate = type.equals(FundingRecord.Type.WITHDRAWAL) ? state.newLastWithdrawalStartDate :
-            state.oldLastDepositStartDate;
+            state.newLastDepositStartDate;
         var newLastFundingEndDate = type.equals(FundingRecord.Type.WITHDRAWAL) ? state.newLastWithdrawalEndDate :
             state.newLastDepositEndDate;
         var oldFirstFundingDate = type.equals(FundingRecord.Type.WITHDRAWAL) ? state.oldFirstWithdrawalDate :
@@ -283,8 +283,7 @@ public class KuCoinDownloader {
         final List<FundingRecord> userDeposits = new ArrayList<>();
         var params = (KucoinTradeHistoryParams) accountService.createFundingHistoryParams();
         // When all old deposits are downloaded - old dates are set to EXCHANGE_START_DATE
-        if (oldLastFundingStartDate == EXCHANGE_START_DATE.getTime()
-            && oldLastFundingEndDate == EXCHANGE_START_DATE.getTime()) {
+        if (oldLastFundingStartDate == EXCHANGE_START_DATE.getTime() && oldLastFundingEndDate == EXCHANGE_START_DATE.getTime()) {
             long newStartDate;
             long newEndDate;
             // case very first download
@@ -478,24 +477,6 @@ public class KuCoinDownloader {
         return userDeposits;
     }
 
-    private long setNextTradeDate(long currentDate, long now) {
-        long nextDate = currentDate + (7 * 24 * 60 * 60 * 1000L);
-        if (nextDate > now) {
-            return now;
-        }
-        return nextDate;
-    }
-
-    public List<FundingRecord> downloadWithdrawals() {
-        //TODO: download fundings
-        final List<FundingRecord> records = new ArrayList<>();
-        return records;
-    }
-
-    public String getLastTransactionId() {
-        return state.serialize();
-    }
-
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
@@ -548,7 +529,7 @@ public class KuCoinDownloader {
                 + oldLastWithdrawalEndDate + SEPARATOR
                 + oldLastWithdrawalStartDate + SEPARATOR
                 + newLastWithdrawalEndDate + SEPARATOR
-                + newLastWithdrawalStartDate + SEPARATOR;
+                + newLastWithdrawalStartDate;
         }
     }
 }
