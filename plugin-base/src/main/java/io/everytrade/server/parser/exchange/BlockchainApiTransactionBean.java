@@ -17,7 +17,6 @@ import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -71,72 +70,26 @@ public class BlockchainApiTransactionBean {
         this.address = oppositeAddress(transaction);
     }
 
-    private BigDecimal getFeeAmountByBoundAverage(BigDecimal outputTxValue) {
-        var feeAmountTotal = feeAmount;
-        var outputTxTotal =
-
-
-
-    }
-
-    public List<TransactionCluster> splitOutputTransactions(Transaction transaction){
-        validateData();
-
-        List<TransactionCluster> clusters = new ArrayList<>();
-        List<ImportedTransactionBean> related;
-        for(OutputInfo outputTx : transaction.getOutputInfos()) {
-            if (!isFee()) {
-                related = Collections.emptyList();
-            } else {
-                var feeAmount = getFeeAmountByBoundAverage(outputTx.getValue());
-
-                related = List.of(new FeeRebateImportedTransactionBean(
-                        id + FEE_UID_PART,
-                        timestamp,
-                        base,
-                        quote,
-                        TransactionType.FEE,
-                        feeAmount,
-                        feeCurrency
-                    )
-                );
-            }
-
-        }
-
-    }
-
-    private void validateData() {
+    public TransactionCluster toTransactionCluster() {
         try {
             new CurrencyPair(base, quote);
         } catch (CurrencyPair.FiatCryptoCombinationException e) {
             throw new IllegalArgumentException(e.getMessage());
         }
+
         if (equalsToZero(originalAmount)) {
             throw new DataIgnoredException(String.format("Ignored transaction id - %s : Crypto amount is zero. ", id));
         }
-    }
-
-    private boolean isFee() {
         final boolean withFee =
             (importFeesFromDeposits && TransactionType.BUY.equals(type))
                 || (importFeesFromWithdrawals && SELL.equals(type))
                 || (importFeesFromWithdrawals && WITHDRAWAL.equals(type))
                 || (importFeesFromDeposits && DEPOSIT.equals(type)
             );
+
         final boolean isIncorrectFee = !(base.equals(feeCurrency) || quote.equals(feeCurrency));
-        if (equalsToZero(feeAmount) || isIncorrectFee || !withFee) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-
-
-    public TransactionCluster toTransactionCluster() {
-        validateData();
         List<ImportedTransactionBean> related;
-        if (!isFee()) {
+        if (equalsToZero(feeAmount) || isIncorrectFee || !withFee) {
             related = Collections.emptyList();
         } else {
             related = List.of(new FeeRebateImportedTransactionBean(

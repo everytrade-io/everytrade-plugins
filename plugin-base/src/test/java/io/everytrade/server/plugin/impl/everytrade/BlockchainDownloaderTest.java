@@ -1,7 +1,5 @@
 package io.everytrade.server.plugin.impl.everytrade;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.generalbytes.bitrafael.client.Client;
 import com.generalbytes.bitrafael.server.api.dto.AddressInfo;
 import com.generalbytes.bitrafael.server.api.dto.InputInfo;
@@ -11,16 +9,10 @@ import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.ParseResult;
-import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static io.everytrade.server.model.TransactionType.BUY;
@@ -45,103 +37,6 @@ class BlockchainDownloaderTest {
     private static final String BTC = "BTC";
     private static final String FIAT = "USD";
     private static final String ADDRESS = "addr1";
-    private static final String LTC = "LTC";
-
-
-
-    private List<TxInfo> createDummyData() throws JsonProcessingException {
-        List<TxInfo> result = new ArrayList<>();
-        String dummyJsonData = "{\"txHash\":\"e0284023fea4bd3c2df0a4f3b740c2b77384111489669f1172c35e6ce4fe7301\"," +
-            "\"blockHash\":\"a61c9e9d3fe24d86a9e06f76548b57830a751707570ef0777b3c1ad6d4510a6b\",\"timestamp\":1574947182000," +
-            "\"receivedTimestamp\":1574947085150,\"size\":140,\"inputInfos\":[{\"txHash\":\"e9703acb8d88a6210a2210381e01f3b9024" +
-            "449cc249955e7a5f4906a1c9fcbfd\",\"index\":0,\"address\":\"MUMbouREUxpVs1DZMCVknq9HziM95zTAyZ\",\"value\":100000000}]," +
-            "\"outputInfos\":[{\"txHash\":\"e0284023fea4bd3c2df0a4f3b740c2b77384111489669f1172c35e6ce4fe7301\",\"index\":0,\"address" +
-            "\":\"MWfsUktJrZGsUcQ619xnQGNa1sfj9BXT49\",\"value\":26135816},{\"txHash\":\"e0284023fea4bd3c2df0a4f3b740c2b773841114896" +
-            "69f1172c35e6ce4fe7301\",\"index\":1,\"address\":\"Lga4BCGieEmvq7VFSN4JJCbvJpzKnRruuN\",\"value\":73863846}],\"blockHeig" +
-            "ht\":1744138,\"confirmations\":629963}";
-        TxInfo txInfoExampleData = new ObjectMapper().readValue(dummyJsonData, TxInfo.class);
-        result.add(txInfoExampleData);
-        return result;
-    }
-
-
-    @Test
-    void ltcBuySplitWithdrawalAndSell() throws JsonProcessingException {
-        // actual downloader;
-        var infos = createDummyData();
-        var downloader = new BlockchainDownloader(
-            mockClient(infos),
-            null,
-            0L,
-            emptySet(),
-            FIAT,
-            LTC,
-            false,
-            false,
-            false,
-            true,
-            0,
-            1000);
-        var actualResult = downloader.download(ADDRESS);
-
-
-        // expected
-        var addressInfo = new AddressInfo(ADDRESS, 1L, 0L, 6900000000L, 6900000000L);
-        addressInfo.setTxInfos(infos);
-        var firstTx = new ImportedTransactionBean(
-            "e0284023fea4bd3c2df0a4f3b740c2b77384111489669f1172c35e6ce4fe7301",
-            Instant.ofEpochMilli(1574947182000L),
-            Currency.fromCode("LTC"),
-            Currency.fromCode("USD"),
-            WITHDRAWAL,
-            new BigDecimal("0.26135816"),
-            null,
-            null,
-            "MWfsUktJrZGsUcQ619xnQGNa1sfj9BXT49"
-        );
-
-        var firstFee = new FeeRebateImportedTransactionBean(
-            "e0284023fea4bd3c2df0a4f3b740c2b77384111489669f1172c35e6ce4fe7301",
-            Instant.ofEpochMilli(1574947182000L),
-            Currency.fromCode("LTC"),
-            Currency.fromCode("LTC"),
-            TransactionType.FEE,
-            new BigDecimal("0.00000088339356667"),
-            Currency.fromCode("LTC"),
-            null
-        );
-
-        var secondTx = new ImportedTransactionBean(
-            "e0284023fea4bd3c2df0a4f3b740c2b77384111489669f1172c35e6ce4fe7301",
-            Instant.ofEpochMilli(1574947182000L),
-            Currency.fromCode("LTC"),
-            Currency.fromCode("USD"),
-            WITHDRAWAL,
-            new BigDecimal("0.73863846"),
-            null,
-            null,
-            "Lga4BCGieEmvq7VFSN4JJCbvJpzKnRruuN"
-        );
-
-        var secondFee = new FeeRebateImportedTransactionBean(
-            "e0284023fea4bd3c2df0a4f3b740c2b77384111489669f1172c35e6ce4fe7301",
-            Instant.ofEpochMilli(1574947182000L),
-            Currency.fromCode("LTC"),
-            Currency.fromCode("LTC"),
-            TransactionType.FEE,
-            new BigDecimal("0.00000249660643333"),
-            Currency.fromCode("LTC"),
-            null
-        );
-
-        List<TransactionCluster> cluster = new ArrayList<>();
-        cluster.add(new TransactionCluster(firstTx, List.of(firstFee)));
-        cluster.add(new TransactionCluster(secondTx, List.of(secondFee)));
-
-        var results = new ParseResult(cluster, Collections.emptyList());
-        var result = new DownloadResult(results, null);
-
-    }
 
     @Test
     void btcBuySellWithoutFeesTest() {
@@ -335,14 +230,14 @@ class BlockchainDownloaderTest {
 
     private TxInfo depositOnAddress(String address, long value) {
         var tx = emptyTxInfo();
-        tx.addInputInfo(inputInfo(0, randomAlphanumeric(32), value));
+        tx.addInputInfo(inputInfo(0,  randomAlphanumeric(32), value));
         tx.addOutputInfo(outputInfo(0, address, value - 100));
         return tx;
     }
 
     private TxInfo withdrawalFromAddress(String address, long value) {
         var tx = emptyTxInfo();
-        tx.addInputInfo(inputInfo(0, address, value - 100));
+        tx.addInputInfo(inputInfo(0,  address, value - 100));
         tx.addOutputInfo(outputInfo(0, randomAlphanumeric(32), value));
         return tx;
     }
