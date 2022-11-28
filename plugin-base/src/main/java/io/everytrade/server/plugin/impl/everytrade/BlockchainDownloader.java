@@ -14,7 +14,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -139,12 +141,9 @@ public class BlockchainDownloader {
                     }
                 }
                 int txSize = addressInfoBlock.getTxInfos().size();
+                transactions.addAll(getNewTransactionsFromAddressInfos(List.of(addressInfoBlock)));
                 if (txSize < LIMIT || txSize == 0) {
-                    transactions.addAll(getNewTransactionsFromAddressInfos(List.of(addressInfoBlock)));
                     break;
-                }
-                if (txSize == LIMIT) {
-                    transactions.addAll(getNewTransactionsFromAddressInfos(List.of(addressInfoBlock)));
                 }
                 request++;
                 page++;
@@ -156,6 +155,28 @@ public class BlockchainDownloader {
         return downloadResult;
     }
 
+    private Map<String,Long> countFee(TxInfo, feeTotal)
+
+    private Map<String,Map<String,Long>> countFeeByBoundAvarage(TxInfo txInfo , long feeTotal){
+        Map<String,Map<String,Long>> fees = new HashMap<>();
+        fees.put("input",countFee(txInfo))
+
+    }
+
+    private List<T> createTransactions(Transaction transaction, TxInfo txInfo) {
+        List<T> result = new ArrayList<>();
+        var direction = transaction.isDirectionSend();
+        var fee = transaction.getFee();
+        var totalTxAmountWithFee = transaction.getAmount();
+        Map<String,Map<String,Long>> fees = countFeeByBoundAvarage(txInfo, long feeTotal);
+
+        if(transaction.isDirectionSend()) {
+            feeInput = countFeeInput(txInfo);
+
+        }
+    }
+
+
     private List<Transaction> getNewTransactionsFromAddressInfos(Collection<AddressInfo> addressInfos) {
         final List<Transaction> transactions = new ArrayList<>();
         long newLastTxTimestamp = 0;
@@ -163,6 +184,7 @@ public class BlockchainDownloader {
             final List<TxInfo> txInfos = addressInfo.getTxInfos();
             for (TxInfo txInfo : txInfos) {
                 final Transaction transaction = Transaction.buildTransaction(txInfo, addressInfo.getAddress());
+                List<T> txs =createTransactions(transaction, txInfo);
                 final long timestamp = transaction.getTimestamp();
                 final boolean newTimeStamp = timestamp >= lastTxTimestamp;
                 final boolean newHash = !lastTxHashes.contains(transaction.getTxHash());
