@@ -78,14 +78,4 @@ class CoinmateConnectorTest {
             assertEquals(Currency.USD, tx.getQuote());
         }
     }
-
-    @Test
-    public void connectToLtcBlockchain() {
-        String addr = "MUMbouREUxpVs1DZMCVknq9HziM95zTAyZ";
-        var connector = new BlockchainLtcConnector(addr,"USD","false","false","true","true");
-        var txs = connector.getTransactions(null);
-        var txss = txs;
-
-
-    }
 }
