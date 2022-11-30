@@ -89,15 +89,15 @@ class BlockchainDownloaderTest {
         var addressInfo = new AddressInfo(ADDRESS, 1L, 0L, 6900000000L, 6900000000L);
         addressInfo.setTxInfos(infos);
         var firstTx = new ImportedTransactionBean(
-            "e0284023fea4bd3c2df0a4f3b740c2b77384111489669f1172c35e6ce4fe7301",
+            "d5fe56406c02a3cf34ecca4712c14c65b187c286d7b23bd7e736164498858d56",
             Instant.ofEpochMilli(1574947182000L),
             Currency.fromCode("LTC"),
             Currency.fromCode("USD"),
             WITHDRAWAL,
-            new BigDecimal("0.26135816"),
+            new BigDecimal("3.64858723362856E-07\n"),
             null,
             null,
-            "MWfsUktJrZGsUcQ619xnQGNa1sfj9BXT49"
+            "MHzjjwag7pBaDgbcVKZnGHsU9bcU8dcwTz"
         );
 
         var firstFee = new FeeRebateImportedTransactionBean(
