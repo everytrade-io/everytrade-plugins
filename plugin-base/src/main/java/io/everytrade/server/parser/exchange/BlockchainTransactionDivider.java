@@ -136,7 +136,6 @@ public class BlockchainTransactionDivider {
         return result;
     }
 
-
     public List<TxInfo> createTxInfoFromBaseTransactions() {
         List<TxInfo> result = new ArrayList<>();
         for (BlockchainBaseTransaction baseTransaction : baseTransactions) {
@@ -166,7 +165,5 @@ public class BlockchainTransactionDivider {
         }
         return result;
     }
-
-
 
 }
