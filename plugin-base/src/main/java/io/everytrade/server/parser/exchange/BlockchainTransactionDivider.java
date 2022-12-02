@@ -19,7 +19,7 @@ import static java.math.RoundingMode.HALF_UP;
 @Getter
 public class BlockchainTransactionDivider {
 
-    final static int MOVE_POINT = 8;
+    final int MOVE_POINT = 8;
 
     BigDecimal feeTotal;
     BigDecimal originalValue;
@@ -50,7 +50,8 @@ public class BlockchainTransactionDivider {
         List<BlockchainBaseTransaction> result = new ArrayList<>();
         if (tx.isDirectionSend()) {
             var originTxAmount = originalValue.subtract(inputFees.get(relativeAddress));
-            var outPutInfoSum = new BigDecimal(txInfo.getOutputInfos().stream().mapToLong(i -> i.getValue()).sum()).movePointLeft(MOVE_POINT);
+            var outPutInfoSum = new BigDecimal(txInfo.getOutputInfos().stream().mapToLong(i -> i.getValue())
+                .sum()).movePointLeft(MOVE_POINT);
             for (OutputInfo info : txInfo.getOutputInfos()) {
                 var infoValue = originTxAmount.divide(outPutInfoSum, ParserUtils.DECIMAL_DIGITS, HALF_UP)
                     .multiply(new BigDecimal(info.getValue()).movePointLeft(MOVE_POINT));
@@ -72,7 +73,8 @@ public class BlockchainTransactionDivider {
             }
         } else {
             var originTxAmount = originalValue.add(outputFees.get(relativeAddress));
-            var inputInfoSum = new BigDecimal(txInfo.getInputInfos().stream().mapToLong(i -> i.getValue()).sum()).movePointLeft(MOVE_POINT);
+            var inputInfoSum = new BigDecimal(txInfo.getInputInfos().stream().mapToLong(i -> i.getValue()).sum())
+                .movePointLeft(MOVE_POINT);
             for (InputInfo info : txInfo.getInputInfos()) {
                 var infoValue = originTxAmount.divide(inputInfoSum, ParserUtils.DECIMAL_DIGITS, HALF_UP)
                     .multiply(new BigDecimal(info.getValue()).movePointLeft(MOVE_POINT));
@@ -109,8 +111,8 @@ public class BlockchainTransactionDivider {
         BigDecimal txTotalBig = new BigDecimal(sumValues).movePointLeft(MOVE_POINT);
         for (InputInfo info : inputs) {
             var value = new BigDecimal(info.getValue()).movePointLeft(MOVE_POINT);
-            BigDecimal feeBoundedAverage = value.divide(txTotalBig, ParserUtils.DECIMAL_DIGITS, HALF_UP).multiply(feeTotal);
-            result.put(info.getAddress(), feeBoundedAverage);
+            BigDecimal feeWeightedAverage = value.divide(txTotalBig, ParserUtils.DECIMAL_DIGITS, HALF_UP).multiply(feeTotal);
+            result.put(info.getAddress(), feeWeightedAverage);
         }
         return result;
     }
@@ -148,13 +150,14 @@ public class BlockchainTransactionDivider {
                 BigDecimal txValueWithFee = baseTransaction.getFee().add(baseTransaction.getValue()).movePointRight(MOVE_POINT);
                 long volume = txValueWithFee.longValue();
                 var inputInfo = new InputInfo(baseTransaction.getTrHash(), 1, relativeAddress, volume);
-                var outputInfo = new OutputInfo(baseTransaction.getTrHash(), 1, baseTransaction.getAddress(), baseTransaction.getValue().movePointRight(MOVE_POINT).longValue());
+                var outputInfo = new OutputInfo(baseTransaction.getTrHash(), 1, baseTransaction.getAddress(),
+                    baseTransaction.getValue().movePointRight(MOVE_POINT).longValue());
                 txInfo.addInputInfo(inputInfo);
                 txInfo.addOutputInfo(outputInfo);
             } else {
-//                BigDecimal txValueWithoutFee = baseTransaction.getValue().subtract(baseTransaction.getFee()).movePointRight(MOVE_POINT);
                 long volume = oldTransaction.getAmount();
-                var inputInfo = new InputInfo(baseTransaction.getTrHash(), 1, baseTransaction.getAddress(), baseTransaction.getValue().movePointRight(MOVE_POINT).longValue());
+                var inputInfo = new InputInfo(baseTransaction.getTrHash(), 1, baseTransaction.getAddress(),
+                    baseTransaction.getValue().movePointRight(MOVE_POINT).longValue());
                 var outputInfo = new OutputInfo(baseTransaction.getTrHash(), 1, relativeAddress, volume);
                 txInfo.addInputInfo(inputInfo);
                 txInfo.addOutputInfo(outputInfo);

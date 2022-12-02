@@ -86,9 +86,8 @@ public class KuCoinDownloader {
                 if (newStartDate < state.oldFirstTradeDate) {
                     newStartDate = state.oldFirstTradeDate;
                 }
-            }
             // case first download has finished and start new one
-            else if (state.newLastTradeStartDate == state.newLastTradeEndDate) {
+            } else if (state.newLastTradeStartDate == state.newLastTradeEndDate) {
                 state.oldFirstTradeDate = state.newLastTradeStartDate;
                 newEndDate = now;
                 newStartDate = newEndDate - WEEK;
@@ -178,9 +177,9 @@ public class KuCoinDownloader {
                 oldStartDate = now - WEEK;
                 oldEndDate = now;
                 state.oldFirstTradeDate = now;
-            }
-            // case not finished download
-            else if (state.oldLastTradeStartDate > 0 && state.oldLastTradeEndDate > 0 && state.oldLastTradeStartDate != state.oldLastTradeEndDate) {
+                // case not finished download
+            } else if (state.oldLastTradeStartDate > 0 && state.oldLastTradeEndDate > 0
+                && state.oldLastTradeStartDate != state.oldLastTradeEndDate) {
                 oldEndDate = state.oldLastTradeStartDate;
                 oldStartDate = oldEndDate - WEEK;
                 if (oldStartDate < EXCHANGE_START_DATE.getTime()) {
@@ -293,9 +292,8 @@ public class KuCoinDownloader {
                 if (newStartDate < oldFirstFundingDate) {
                     newStartDate = oldFirstFundingDate;
                 }
-            }
             // case first download has finished and start new one
-            else if (newLastFundingStartDate == newLastFundingEndDate) {
+            } else if (newLastFundingStartDate == newLastFundingEndDate) {
                 oldFirstFundingDate = newLastFundingStartDate;
                 newEndDate = now;
                 newStartDate = newEndDate - WEEK;
@@ -386,9 +384,8 @@ public class KuCoinDownloader {
                 oldStartDate = now - WEEK;
                 oldEndDate = now;
                 oldFirstFundingDate = now;
-            }
             // case not finished download
-            else if (oldLastFundingStartDate > 0 && oldLastFundingEndDate > 0 && oldLastFundingStartDate != oldLastFundingEndDate) {
+            } else if (oldLastFundingStartDate > 0 && oldLastFundingEndDate > 0 && oldLastFundingStartDate != oldLastFundingEndDate) {
                 oldEndDate = oldLastFundingStartDate;
                 oldStartDate = oldEndDate - WEEK;
                 if (oldStartDate < EXCHANGE_START_DATE.getTime()) {
