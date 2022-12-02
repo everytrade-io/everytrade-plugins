@@ -163,8 +163,7 @@ public class BlockchainDownloader {
         for (AddressInfo addressInfo : addressInfos) {
             final List<TxInfo> txInfos = addressInfo.getTxInfos();
             for (TxInfo txInfo : txInfos) {
-                final Transaction oldTransaction = Transaction.buildTransaction(txInfo, addressInfo.getAddress());
-//                if(txInfo.getTxHash().equalsIgnoreCase("2c585e14db6ff463d2b3595bd9637a318096df3117d9ede813a192cd7e33f366")){
+                    final Transaction oldTransaction = Transaction.buildTransaction(txInfo, addressInfo.getAddress());
                     var block = new BlockchainTransactionDivider(txInfo, oldTransaction, Currency.fromCode(cryptoCurrency));
                     for(TxInfo tx : block.createTxInfoFromBaseTransactions()){
                         final Transaction transaction = Transaction.buildTransaction(tx, addressInfo.getAddress());
@@ -180,10 +179,6 @@ public class BlockchainDownloader {
                             }
                         }
                     }
-//                } else {
-//                    transactions.add(oldTransaction);
-//                }
-
             }
         }
         return transactions;
