@@ -78,5 +78,4 @@ class CoinmateConnectorTest {
             assertEquals(Currency.USD, tx.getQuote());
         }
     }
-
 }
