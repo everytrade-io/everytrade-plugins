@@ -5,6 +5,7 @@ import com.generalbytes.bitrafael.server.api.dto.AddressInfo;
 import com.generalbytes.bitrafael.server.api.dto.TxInfo;
 import com.generalbytes.bitrafael.tools.transaction.Transaction;
 import io.everytrade.server.model.Currency;
+import io.everytrade.server.parser.exchange.BlockchainTransactionDivider;
 import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.parser.ParseResult;
 import lombok.AllArgsConstructor;
@@ -162,18 +163,23 @@ public class BlockchainDownloader {
         for (AddressInfo addressInfo : addressInfos) {
             final List<TxInfo> txInfos = addressInfo.getTxInfos();
             for (TxInfo txInfo : txInfos) {
-                final Transaction transaction = Transaction.buildTransaction(txInfo, addressInfo.getAddress());
-                final long timestamp = transaction.getTimestamp();
-                final boolean newTimeStamp = timestamp >= lastTxTimestamp;
-                final boolean newHash = !lastTxHashes.contains(transaction.getTxHash());
-                final boolean confirmed = transaction.getConfirmations() >= MIN_COINFIRMATIONS;
+                    final Transaction oldTransaction = Transaction.buildTransaction(txInfo, addressInfo.getAddress());
+                BlockchainTransactionDivider blockchainTransactionDivider = new BlockchainTransactionDivider();
+                var block = blockchainTransactionDivider.divideTransaction(txInfo, oldTransaction, Currency.fromCode(cryptoCurrency));
+                    for(TxInfo tx : blockchainTransactionDivider.createTxInfoFromBaseTransactions(block)){
+                        final Transaction transaction = Transaction.buildTransaction(tx, addressInfo.getAddress());
+                        final long timestamp = oldTransaction.getTimestamp();
+                        final boolean newTimeStamp = timestamp >= lastTxTimestamp;
+                        final boolean newHash = !lastTxHashes.contains(oldTransaction.getTxHash());
+                        final boolean confirmed = oldTransaction.getConfirmations() >= MIN_COINFIRMATIONS;
 
-                if (confirmed && newTimeStamp && newHash) {
-                    transactions.add(transaction);
-                    if (timestamp > newLastTxTimestamp) {
-                        newLastTxTimestamp = timestamp;
+                        if (confirmed && newTimeStamp && newHash) {
+                            transactions.add(transaction);
+                            if (timestamp > newLastTxTimestamp) {
+                                newLastTxTimestamp = timestamp;
+                            }
+                        }
                     }
-                }
             }
         }
         return transactions;
