@@ -164,8 +164,9 @@ public class BlockchainDownloader {
             final List<TxInfo> txInfos = addressInfo.getTxInfos();
             for (TxInfo txInfo : txInfos) {
                     final Transaction oldTransaction = Transaction.buildTransaction(txInfo, addressInfo.getAddress());
-                    var block = new BlockchainTransactionDivider(txInfo, oldTransaction, Currency.fromCode(cryptoCurrency));
-                    for(TxInfo tx : block.createTxInfoFromBaseTransactions()){
+                BlockchainTransactionDivider blockchainTransactionDivider = new BlockchainTransactionDivider();
+                var block = blockchainTransactionDivider.divideTransaction(txInfo, oldTransaction, Currency.fromCode(cryptoCurrency));
+                    for(TxInfo tx : blockchainTransactionDivider.createTxInfoFromBaseTransactions(block)){
                         final Transaction transaction = Transaction.buildTransaction(tx, addressInfo.getAddress());
                         final long timestamp = oldTransaction.getTimestamp();
                         final boolean newTimeStamp = timestamp >= lastTxTimestamp;
