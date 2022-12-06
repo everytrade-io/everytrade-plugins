@@ -6,7 +6,6 @@ import com.generalbytes.bitrafael.server.api.dto.TxInfo;
 import com.generalbytes.bitrafael.tools.transaction.Transaction;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
-import lombok.Getter;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
