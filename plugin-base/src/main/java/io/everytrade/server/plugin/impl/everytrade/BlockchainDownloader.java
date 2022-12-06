@@ -27,7 +27,7 @@ import static lombok.AccessLevel.PRIVATE;
 @FieldDefaults(level = PRIVATE)
 public class BlockchainDownloader {
 
-    private static final int TRUNCATE_LIMIT = 10;
+    private static final int TRUNCATE_LIMIT = 12;
     private static final Set<String> XPUB_PREFIXES = Set.of("xpub", "ypub", "zpub", "Ltub", "Mtub");
     private static final String COLON_SYMBOL = ":";
     private static final String PIPE_SYMBOL = "|";
@@ -164,6 +164,10 @@ public class BlockchainDownloader {
             final List<TxInfo> txInfos = addressInfo.getTxInfos();
             for (TxInfo txInfo : txInfos) {
                     final Transaction oldTransaction = Transaction.buildTransaction(txInfo, addressInfo.getAddress());
+                    if(oldTransaction.getTxHash().equals("d5fe56406c02a3cf34ecca4712c14c65b187c286d7b23bd7e736164498858d56")){
+                        var a = oldTransaction;
+                        var b = a;
+                    }
                 BlockchainTransactionDivider blockchainTransactionDivider = new BlockchainTransactionDivider();
                 var block = blockchainTransactionDivider.divideTransaction(txInfo, oldTransaction, Currency.fromCode(cryptoCurrency));
                     for(TxInfo tx : blockchainTransactionDivider.createTxInfoFromBaseTransactions(block)){
