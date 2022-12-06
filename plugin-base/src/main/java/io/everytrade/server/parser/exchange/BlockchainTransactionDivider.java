@@ -16,7 +16,6 @@ import java.util.Map;
 
 import static java.math.RoundingMode.HALF_UP;
 
-@Getter
 public class BlockchainTransactionDivider {
 
     private static final int MOVE_POINT = 8;
