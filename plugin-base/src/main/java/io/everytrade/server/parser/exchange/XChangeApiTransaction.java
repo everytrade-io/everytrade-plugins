@@ -7,8 +7,10 @@ import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.util.CoinMateDataUtil;
 import lombok.Builder;
 import lombok.Value;
+import org.knowm.xchange.coinmate.dto.trade.CoinmateTransactionHistoryEntry;
 import org.knowm.xchange.dto.Order;
 import org.knowm.xchange.dto.account.FundingRecord;
 import org.knowm.xchange.dto.trade.UserTrade;
@@ -72,6 +74,22 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
             .feeAmount(record.getFee())
             .feeCurrency(currency)
             .address(record.getAddress())
+            .build();
+    }
+
+    public static XChangeApiTransaction fromCoinMateTransactions(CoinmateTransactionHistoryEntry transaction) {
+        CoinMateDataUtil.adaptTransactionStatus(transaction.getStatus());
+        var currency = Currency.fromCode(transaction.getAmountCurrency());
+        return XChangeApiTransaction.builder()
+            .id(String.valueOf(transaction.getTransactionId()))
+            .timestamp(Instant.ofEpochMilli(transaction.getTimestamp()))
+            .type(CoinMateDataUtil.mapCoinMateType(transaction.getTransactionType()))
+            .base(currency)
+            .quote(null)
+            .originalAmount(transaction.getAmount())
+            .feeAmount(transaction.getFee())
+            .feeCurrency(currency)
+            .address(CoinMateDataUtil.getAddressFromDescription(transaction.getDescription(), transaction.getTransactionType()))
             .build();
     }
 
@@ -159,6 +177,7 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
                 throw new DataValidationException("ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE ".concat(orderType.name()));
         }
     }
+
     private static TransactionType fundingTypeToTxType(FundingRecord record) {
         switch (record.getType()) {
             case WITHDRAWAL:
@@ -209,4 +228,6 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
     private static boolean isStakingReward(FundingRecord r) {
         return r.getDescription() != null && r.getDescription().toLowerCase().endsWith("distribution");
     }
+
+
 }
