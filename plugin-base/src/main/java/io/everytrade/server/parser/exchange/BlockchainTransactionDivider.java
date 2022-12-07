@@ -150,7 +150,8 @@ public class BlockchainTransactionDivider {
         var relativeAddress = dividedTransactions.relativeAddress();
         List<BlockchainBaseTransaction> blockchainBaseTransactions = dividedTransactions.baseTransactions();
         var sortedBlockchainTransactions =
-            blockchainBaseTransactions.stream().sorted(Comparator.comparing(BlockchainBaseTransaction::getValue)).collect(Collectors.toList());
+            blockchainBaseTransactions.stream().sorted(Comparator.comparing(BlockchainBaseTransaction::getValue))
+                .collect(Collectors.toList());
 
         int i = 1;
         long actualTotalVolume = 0L;

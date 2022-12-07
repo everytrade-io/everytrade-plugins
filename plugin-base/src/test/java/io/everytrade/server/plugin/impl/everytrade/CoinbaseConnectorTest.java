@@ -79,11 +79,4 @@ class CoinbaseConnectorTest {
         }
     }
 
-    @Test
-    void testBlockCHainLTC(){
-        String address = "MUMbouREUxpVs1DZMCVknq9HziM95zTAyZ";
-        var Connector = new BlockchainDownloader(null,"LTC","USD","false","false","false","true");
-        var txs = Connector.download(address);
-        var txsss = txs;
-    }
 }

@@ -163,27 +163,23 @@ public class BlockchainDownloader {
         for (AddressInfo addressInfo : addressInfos) {
             final List<TxInfo> txInfos = addressInfo.getTxInfos();
             for (TxInfo txInfo : txInfos) {
-                    final Transaction oldTransaction = Transaction.buildTransaction(txInfo, addressInfo.getAddress());
-                    if(oldTransaction.getTxHash().equals("d5fe56406c02a3cf34ecca4712c14c65b187c286d7b23bd7e736164498858d56")){
-                        var a = oldTransaction;
-                        var b = a;
-                    }
+                final Transaction oldTransaction = Transaction.buildTransaction(txInfo, addressInfo.getAddress());
                 BlockchainTransactionDivider blockchainTransactionDivider = new BlockchainTransactionDivider();
                 var block = blockchainTransactionDivider.divideTransaction(txInfo, oldTransaction, Currency.fromCode(cryptoCurrency));
-                    for(TxInfo tx : blockchainTransactionDivider.createTxInfoFromBaseTransactions(block)){
-                        final Transaction transaction = Transaction.buildTransaction(tx, addressInfo.getAddress());
-                        final long timestamp = oldTransaction.getTimestamp();
-                        final boolean newTimeStamp = timestamp >= lastTxTimestamp;
-                        final boolean newHash = !lastTxHashes.contains(oldTransaction.getTxHash());
-                        final boolean confirmed = oldTransaction.getConfirmations() >= MIN_COINFIRMATIONS;
+                for (TxInfo tx : blockchainTransactionDivider.createTxInfoFromBaseTransactions(block)) {
+                    final Transaction transaction = Transaction.buildTransaction(tx, addressInfo.getAddress());
+                    final long timestamp = oldTransaction.getTimestamp();
+                    final boolean newTimeStamp = timestamp >= lastTxTimestamp;
+                    final boolean newHash = !lastTxHashes.contains(oldTransaction.getTxHash());
+                    final boolean confirmed = oldTransaction.getConfirmations() >= MIN_COINFIRMATIONS;
 
-                        if (confirmed && newTimeStamp && newHash) {
-                            transactions.add(transaction);
-                            if (timestamp > newLastTxTimestamp) {
-                                newLastTxTimestamp = timestamp;
-                            }
+                    if (confirmed && newTimeStamp && newHash) {
+                        transactions.add(transaction);
+                        if (timestamp > newLastTxTimestamp) {
+                            newLastTxTimestamp = timestamp;
                         }
                     }
+                }
             }
         }
         return transactions;
