@@ -379,7 +379,7 @@ class BlockchainDownloaderTest {
             Currency.fromCode("LTC"),
             Currency.fromCode("USD"),
             WITHDRAWAL,
-            new BigDecimal("26.66524768"),
+            new BigDecimal("26.66524769"),
             null,
             null,
             "LgXg2gguYRET2P8yG5JpvokZJKwvLy2Fda"

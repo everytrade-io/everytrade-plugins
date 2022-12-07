@@ -5,32 +5,33 @@ import com.generalbytes.bitrafael.server.api.dto.OutputInfo;
 import com.generalbytes.bitrafael.server.api.dto.TxInfo;
 import com.generalbytes.bitrafael.tools.transaction.Transaction;
 import io.everytrade.server.model.Currency;
-import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
-import lombok.Getter;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static java.math.RoundingMode.HALF_UP;
 
 public class BlockchainTransactionDivider {
 
     private static final int MOVE_POINT = 8;
+    private static final int DECIMAL_LIMIT = 12;
 
     public DividedBlockchainTransaction divideTransaction(TxInfo txInfo, Transaction oldTransaction, Currency currency) {
         var feeTotal = new BigDecimal(oldTransaction.getFee()).movePointLeft(MOVE_POINT);
         var relativeAddress = oldTransaction.getRelativeToAddress();
-        Map<String,BigDecimal> inputFees;
-        Map<String,BigDecimal> outputFees;
+        Map<String, BigDecimal> inputFees;
+        Map<String, BigDecimal> outputFees;
         if (oldTransaction.isDirectionSend()) {
-             inputFees = splitInputFeeByAddress(txInfo.getInputInfos(), feeTotal);
-             outputFees = splitOutputFeeByAddress(txInfo.getOutputInfos(), inputFees.get(relativeAddress));
+            inputFees = splitInputFeeByAddress(txInfo.getInputInfos(), feeTotal);
+            outputFees = splitOutputFeeByAddress(txInfo.getOutputInfos(), inputFees.get(relativeAddress));
         } else {
-             outputFees = splitOutputFeeByAddress(txInfo.getOutputInfos(), feeTotal);
-             inputFees = splitInputFeeByAddress(txInfo.getInputInfos(), outputFees.get(relativeAddress));
+            outputFees = splitOutputFeeByAddress(txInfo.getOutputInfos(), feeTotal);
+            inputFees = splitInputFeeByAddress(txInfo.getInputInfos(), outputFees.get(relativeAddress));
         }
 
         return new DividedBlockchainTransaction(
@@ -48,8 +49,8 @@ public class BlockchainTransactionDivider {
         TxInfo txInfo,
         Transaction oldTransaction,
         Currency currency,
-        Map<String,BigDecimal> inputFees,
-        Map<String,BigDecimal> outputFees
+        Map<String, BigDecimal> inputFees,
+        Map<String, BigDecimal> outputFees
     ) {
         List<BlockchainBaseTransaction> result = new ArrayList<>();
         BigDecimal oldTxValue = new BigDecimal(oldTransaction.getAmount()).movePointLeft(MOVE_POINT).abs();
@@ -58,7 +59,7 @@ public class BlockchainTransactionDivider {
             var outPutInfoSum = new BigDecimal(txInfo.getOutputInfos().stream().mapToLong(i -> i.getValue())
                 .sum()).movePointLeft(MOVE_POINT);
             for (OutputInfo info : txInfo.getOutputInfos()) {
-                var infoValue = originTxAmount.divide(outPutInfoSum, ParserUtils.DECIMAL_DIGITS, HALF_UP)
+                var infoValue = originTxAmount.divide(outPutInfoSum, DECIMAL_LIMIT, HALF_UP)
                     .multiply(new BigDecimal(info.getValue()).movePointLeft(MOVE_POINT));
                 var tFee = outputFees.get(info.getAddress());
                 var baseTransaction = BlockchainBaseTransaction.builder()
@@ -81,7 +82,7 @@ public class BlockchainTransactionDivider {
             var inputInfoSum = new BigDecimal(txInfo.getInputInfos().stream().mapToLong(i -> i.getValue()).sum())
                 .movePointLeft(MOVE_POINT);
             for (InputInfo info : txInfo.getInputInfos()) {
-                var infoValue = originTxAmount.divide(inputInfoSum, ParserUtils.DECIMAL_DIGITS, HALF_UP)
+                var infoValue = originTxAmount.divide(inputInfoSum, DECIMAL_LIMIT, HALF_UP)
                     .multiply(new BigDecimal(info.getValue()).movePointLeft(MOVE_POINT));
                 var infoFee = inputFees.get(info.getAddress());
                 var baseTransaction = BlockchainBaseTransaction.builder()
@@ -116,7 +117,7 @@ public class BlockchainTransactionDivider {
         BigDecimal txTotalBig = new BigDecimal(sumValues).movePointLeft(MOVE_POINT);
         for (InputInfo info : inputs) {
             var value = new BigDecimal(info.getValue()).movePointLeft(MOVE_POINT);
-            BigDecimal feeWeightedAverage = value.divide(txTotalBig, ParserUtils.DECIMAL_DIGITS, HALF_UP).multiply(feeTotal);
+            BigDecimal feeWeightedAverage = value.divide(txTotalBig, DECIMAL_LIMIT, HALF_UP).multiply(feeTotal);
             result.put(info.getAddress(), feeWeightedAverage);
         }
         return result;
@@ -125,17 +126,17 @@ public class BlockchainTransactionDivider {
     /**
      * Method splits fee by address and its weighted average
      *
-     * @param inputs
+     * @param outputs
      * @param feeTotal
      * @return
      */
-    private static Map<String, BigDecimal> splitOutputFeeByAddress(List<OutputInfo> inputs, BigDecimal feeTotal) {
+    private static Map<String, BigDecimal> splitOutputFeeByAddress(List<OutputInfo> outputs, BigDecimal feeTotal) {
         Map<String, BigDecimal> result = new HashMap<>();
-        var sumValues = inputs.stream().mapToLong(i -> i.getValue()).sum();
+        var sumValues = outputs.stream().mapToLong(i -> i.getValue()).sum();
         BigDecimal txTotalBig = new BigDecimal(sumValues).movePointLeft(MOVE_POINT);
-        for (OutputInfo info : inputs) {
+        for (OutputInfo info : outputs) {
             var value = new BigDecimal(info.getValue()).movePointLeft(MOVE_POINT);
-            BigDecimal feeBoundedAverage = value.divide(txTotalBig, ParserUtils.DECIMAL_DIGITS, HALF_UP).multiply(feeTotal);
+            BigDecimal feeBoundedAverage = value.divide(txTotalBig, DECIMAL_LIMIT, HALF_UP).multiply(feeTotal);
             result.put(info.getAddress(), feeBoundedAverage);
         }
         return result;
@@ -146,7 +147,15 @@ public class BlockchainTransactionDivider {
         var oldTxInfo = dividedTransactions.oldTxInfo();
         var oldTransaction = dividedTransactions.oldTransaction();
         var relativeAddress = dividedTransactions.relativeAddress();
-        for (BlockchainBaseTransaction baseTransaction : dividedTransactions.baseTransactions()) {
+        List<BlockchainBaseTransaction> blockchainBaseTransactions = dividedTransactions.baseTransactions();
+        var sortedBlockchainTransactions =
+            blockchainBaseTransactions.stream().sorted(Comparator.comparing(BlockchainBaseTransaction::getValue))
+                .collect(Collectors.toList());
+
+        int i = 1;
+        long actualTotalVolume = 0L;
+        long actualTotalVolumeWithFee = 0L;
+        for (BlockchainBaseTransaction baseTransaction : sortedBlockchainTransactions) {
             var txInfo = new TxInfo(oldTxInfo.getTxHash(), oldTxInfo.getBlockHash(), oldTxInfo.getTimestamp(),
                 oldTxInfo.getReceivedTimestamp(),
                 oldTxInfo.getSize());
@@ -154,24 +163,70 @@ public class BlockchainTransactionDivider {
             txInfo.setBlockHeight(oldTxInfo.getBlockHeight());
 
             if (oldTransaction.isDirectionSend()) {
-                BigDecimal txValueWithFee = baseTransaction.getFee().add(baseTransaction.getValue()).movePointRight(MOVE_POINT);
-                long volume = txValueWithFee.longValue();
-                var inputInfo = new InputInfo(baseTransaction.getTrHash(), 1, relativeAddress, volume);
-                var outputInfo = new OutputInfo(baseTransaction.getTrHash(), 1, baseTransaction.getAddress(),
-                    baseTransaction.getValue().movePointRight(MOVE_POINT).longValue());
+                long expectedTotalValueWithFee = Math.abs(oldTransaction.getAmount());
+                Map<String, BigDecimal> inputFees = dividedTransactions.inputFees();
+                var feeBD = inputFees.get(dividedTransactions.relativeAddress());
+                long expectedFeeTotal = feeBD.movePointRight(MOVE_POINT).setScale(0, HALF_UP).longValue();
+                long expectedTotalValue = expectedTotalValueWithFee - expectedFeeTotal;
+
+                long value = baseTransaction.getValue().movePointRight(MOVE_POINT).setScale(0, HALF_UP).longValue();
+                long fee = baseTransaction.getFee().movePointRight(MOVE_POINT).setScale(0, HALF_UP).longValue();
+                long valueWithFee = value + fee;
+
+                actualTotalVolume += value;
+                actualTotalVolumeWithFee += valueWithFee;
+
+                // +/- rest after dividing
+                if (blockchainBaseTransactions.size() == i) {
+                    var dValue = expectedTotalValue - actualTotalVolume;
+                    var dValueWithFee = expectedTotalValueWithFee - actualTotalVolumeWithFee;
+                    value += dValue;
+                    valueWithFee += dValueWithFee;
+                }
+
+                var inputInfo = new InputInfo(baseTransaction.getTrHash(), 1, relativeAddress, valueWithFee);
+                var outputInfo = new OutputInfo(baseTransaction.getTrHash(), 1, baseTransaction.getAddress(), value);
                 txInfo.addInputInfo(inputInfo);
                 txInfo.addOutputInfo(outputInfo);
+
             } else {
-                long volume = oldTransaction.getAmount();
-                var inputInfo = new InputInfo(baseTransaction.getTrHash(), 1, baseTransaction.getAddress(),
-                    baseTransaction.getValue().movePointRight(MOVE_POINT).longValue());
-                var outputInfo = new OutputInfo(baseTransaction.getTrHash(), 1, relativeAddress, volume);
+                long expectedValueTotal = oldTransaction.getAmount();
+                BigDecimal feeTotal = getFeeTotal(dividedTransactions.inputFees());
+                long expectedFeeTotal = feeTotal.movePointRight(MOVE_POINT).setScale(0, HALF_UP).longValue();
+                long expectedValueWithFeeTotal = expectedValueTotal + expectedFeeTotal;
+
+                long value = oldTransaction.getAmount();
+                long valueWithFee = baseTransaction.getValue().movePointRight(MOVE_POINT).setScale(0, HALF_UP).longValue();
+
+                actualTotalVolume += value;
+                actualTotalVolumeWithFee += valueWithFee;
+
+                // +/- rest after dividing
+                if (blockchainBaseTransactions.size() == i) {
+                    var dValue = expectedValueTotal - actualTotalVolume;
+                    var dValueWithFee = expectedValueWithFeeTotal - actualTotalVolumeWithFee;
+                    value += dValue;
+                    valueWithFee += dValueWithFee;
+                }
+
+                var inputInfo = new InputInfo(baseTransaction.getTrHash(), 1, baseTransaction.getAddress(), valueWithFee);
+                var outputInfo = new OutputInfo(baseTransaction.getTrHash(), 1, relativeAddress, value);
                 txInfo.addInputInfo(inputInfo);
                 txInfo.addOutputInfo(outputInfo);
+
             }
             result.add(txInfo);
+            i++;
         }
         return result;
+    }
+
+    private static BigDecimal getFeeTotal(Map<String, BigDecimal> fees) {
+        BigDecimal sum = new BigDecimal(0).setScale(DECIMAL_LIMIT);
+        for (BigDecimal value : fees.values()) {
+            sum = sum.setScale(DECIMAL_LIMIT, HALF_UP).add(value.setScale(DECIMAL_LIMIT, HALF_UP));
+        }
+        return sum;
     }
 
 }
