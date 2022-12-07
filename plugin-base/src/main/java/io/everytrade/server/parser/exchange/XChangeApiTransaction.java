@@ -80,12 +80,15 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
     public static XChangeApiTransaction fromCoinMateTransactions(CoinmateTransactionHistoryEntry transaction) {
         CoinMateDataUtil.adaptTransactionStatus(transaction.getStatus());
         var currency = Currency.fromCode(transaction.getAmountCurrency());
+        String priceCurrency = transaction.getPriceCurrency();
+        Currency quote = priceCurrency != null ? Currency.fromCode(priceCurrency) : null;
         return XChangeApiTransaction.builder()
             .id(String.valueOf(transaction.getTransactionId()))
             .timestamp(Instant.ofEpochMilli(transaction.getTimestamp()))
             .type(CoinMateDataUtil.mapCoinMateType(transaction.getTransactionType()))
+            .price(transaction.getPrice())
             .base(currency)
-            .quote(null)
+            .quote(quote)
             .originalAmount(transaction.getAmount())
             .feeAmount(transaction.getFee())
             .feeCurrency(currency)
