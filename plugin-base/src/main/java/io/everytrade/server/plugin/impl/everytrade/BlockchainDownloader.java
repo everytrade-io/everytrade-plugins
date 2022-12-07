@@ -27,7 +27,7 @@ import static lombok.AccessLevel.PRIVATE;
 @FieldDefaults(level = PRIVATE)
 public class BlockchainDownloader {
 
-    private static final int TRUNCATE_LIMIT = 12;
+    private static final int TRUNCATE_LIMIT = 10;
     private static final Set<String> XPUB_PREFIXES = Set.of("xpub", "ypub", "zpub", "Ltub", "Mtub");
     private static final String COLON_SYMBOL = ":";
     private static final String PIPE_SYMBOL = "|";

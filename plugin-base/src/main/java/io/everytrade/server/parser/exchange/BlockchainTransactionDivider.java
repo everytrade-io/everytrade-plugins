@@ -19,7 +19,6 @@ import static java.math.RoundingMode.HALF_UP;
 public class BlockchainTransactionDivider {
 
     private static final int MOVE_POINT = 8;
-    //    private static final int DECIMAL_LIMIT = ParserUtils.DECIMAL_DIGITS;
     private static final int DECIMAL_LIMIT = 12;
 
     public DividedBlockchainTransaction divideTransaction(TxInfo txInfo, Transaction oldTransaction, Currency currency) {
@@ -164,11 +163,10 @@ public class BlockchainTransactionDivider {
             txInfo.setBlockHeight(oldTxInfo.getBlockHeight());
 
             if (oldTransaction.isDirectionSend()) {
-
                 long expectedTotalValueWithFee = Math.abs(oldTransaction.getAmount());
                 Map<String, BigDecimal> inputFees = dividedTransactions.inputFees();
-                var bigDecimalFee = inputFees.get(dividedTransactions.relativeAddress());
-                long expectedFeeTotal = bigDecimalFee.movePointRight(MOVE_POINT).setScale(0, HALF_UP).longValue();
+                var feeBD = inputFees.get(dividedTransactions.relativeAddress());
+                long expectedFeeTotal = feeBD.movePointRight(MOVE_POINT).setScale(0, HALF_UP).longValue();
                 long expectedTotalValue = expectedTotalValueWithFee - expectedFeeTotal;
 
                 long value = baseTransaction.getValue().movePointRight(MOVE_POINT).setScale(0, HALF_UP).longValue();
@@ -187,15 +185,15 @@ public class BlockchainTransactionDivider {
                 }
 
                 var inputInfo = new InputInfo(baseTransaction.getTrHash(), 1, relativeAddress, valueWithFee);
-                var outputInfo = new OutputInfo(baseTransaction.getTrHash(), 1, baseTransaction.getAddress(),
-                    value);
+                var outputInfo = new OutputInfo(baseTransaction.getTrHash(), 1, baseTransaction.getAddress(), value);
                 txInfo.addInputInfo(inputInfo);
                 txInfo.addOutputInfo(outputInfo);
+
             } else {
-                long expectedTotalValue = oldTransaction.getAmount();
+                long expectedValueTotal = oldTransaction.getAmount();
                 BigDecimal feeTotal = getFeeTotal(dividedTransactions.inputFees());
                 long expectedFeeTotal = feeTotal.movePointRight(MOVE_POINT).setScale(0, HALF_UP).longValue();
-                long expectedTotalValueWithFee = expectedTotalValue + expectedFeeTotal;
+                long expectedValueWithFeeTotal = expectedValueTotal + expectedFeeTotal;
 
                 long value = oldTransaction.getAmount();
                 long valueWithFee = baseTransaction.getValue().movePointRight(MOVE_POINT).setScale(0, HALF_UP).longValue();
@@ -205,17 +203,17 @@ public class BlockchainTransactionDivider {
 
                 // +/- rest after dividing
                 if (blockchainBaseTransactions.size() == i) {
-                    var dValue = expectedTotalValue - actualTotalVolume;
-                    var dValueWithFee = expectedTotalValueWithFee - actualTotalVolumeWithFee;
+                    var dValue = expectedValueTotal - actualTotalVolume;
+                    var dValueWithFee = expectedValueWithFeeTotal - actualTotalVolumeWithFee;
                     value += dValue;
                     valueWithFee += dValueWithFee;
                 }
 
-                var inputInfo = new InputInfo(baseTransaction.getTrHash(), 1, baseTransaction.getAddress(),
-                    valueWithFee);
+                var inputInfo = new InputInfo(baseTransaction.getTrHash(), 1, baseTransaction.getAddress(), valueWithFee);
                 var outputInfo = new OutputInfo(baseTransaction.getTrHash(), 1, relativeAddress, value);
                 txInfo.addInputInfo(inputInfo);
                 txInfo.addOutputInfo(outputInfo);
+
             }
             result.add(txInfo);
             i++;

@@ -4,7 +4,6 @@ import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.test.mock.CoinbaseExchangeMock;
-import org.junit.jupiter.api.Test;
 import org.knowm.xchange.dto.account.FundingRecord;
 import org.knowm.xchange.dto.trade.UserTrade;
 
@@ -78,5 +77,4 @@ class CoinbaseConnectorTest {
             assertEquals(Currency.USD, tx.getQuote());
         }
     }
-
 }
