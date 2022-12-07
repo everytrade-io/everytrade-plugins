@@ -220,13 +220,13 @@ class BlockchainDownloaderTest {
         var expWithdrawals = expectedClusters.get(WITHDRAWAL);
         var firstExpWithdrawal = expWithdrawals.get(0);
         var secondExpWithdrawal = expWithdrawals.get(1);
-//        assertTxs(firstExpWithdrawal, allActualClusters.get(3), true);
-//        assertTxs(secondExpWithdrawal, allActualClusters.get(4), true);
+        assertTxs(firstExpWithdrawal, allActualClusters.get(3), true);
+        assertTxs(secondExpWithdrawal, allActualClusters.get(4), true);
 
         // deposits
         var expDeposits = expectedClusters.get(DEPOSIT);
         var expDeposit = expDeposits.get(0);
-//        assertTxs(expDeposit, allActualClusters.get(2), false);
+        assertTxs(expDeposit, allActualClusters.get(2), false);
 
     }
 
@@ -379,7 +379,7 @@ class BlockchainDownloaderTest {
             Currency.fromCode("LTC"),
             Currency.fromCode("USD"),
             WITHDRAWAL,
-            new BigDecimal("26.66524768"),
+            new BigDecimal("26.66524769"),
             null,
             null,
             "LgXg2gguYRET2P8yG5JpvokZJKwvLy2Fda"
