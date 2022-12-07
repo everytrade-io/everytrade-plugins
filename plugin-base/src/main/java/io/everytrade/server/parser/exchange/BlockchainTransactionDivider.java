@@ -162,7 +162,6 @@ public class BlockchainTransactionDivider {
             txInfo.setConfirmations(oldTxInfo.getConfirmations());
             txInfo.setBlockHeight(oldTxInfo.getBlockHeight());
 
-
             if (oldTransaction.isDirectionSend()) {
 
                 long expectedTotalValueWithFee = Math.abs(oldTransaction.getAmount());
@@ -172,8 +171,8 @@ public class BlockchainTransactionDivider {
                 long expectedTotalValue = expectedTotalValueWithFee - expectedFeeTotal;
 
                 long value = baseTransaction.getValue().movePointRight(MOVE_POINT).setScale(0, HALF_UP).longValue();
-                long valueWithFee = baseTransaction.getFee().add(baseTransaction.getValue()).movePointRight(MOVE_POINT).setScale(0, HALF_UP)
-                    .longValue();
+                long fee = baseTransaction.getFee().movePointRight(MOVE_POINT).setScale(0, HALF_UP).longValue();
+                long valueWithFee = value + fee;
 
                 actualTotalVolume += value;
                 actualTotalVolumeWithFee += valueWithFee;
@@ -182,7 +181,6 @@ public class BlockchainTransactionDivider {
                 if (blockchainBaseTransactions.size() == i) {
                     var dValue = expectedTotalValue - actualTotalVolume;
                     var dValueWithFee = expectedTotalValueWithFee - actualTotalVolumeWithFee;
-                    var dTotal = dValue-dValueWithFee;
                     value += dValue;
                     valueWithFee += dValueWithFee;
                 }
@@ -208,7 +206,8 @@ public class BlockchainTransactionDivider {
                 if (blockchainBaseTransactions.size() == i) {
                     var dValue = expectedTotalValue - actualTotalVolume;
                     var dValueWithFee = expectedTotalValueWithFee - actualTotalVolumeWithFee;
-                    var dTotal = dValue-dValueWithFee;
+                    value += dValue;
+                    valueWithFee += dValueWithFee;
                 }
 
                 var inputInfo = new InputInfo(baseTransaction.getTrHash(), 1, baseTransaction.getAddress(),
@@ -223,11 +222,10 @@ public class BlockchainTransactionDivider {
         return result;
     }
 
-
-    private static BigDecimal getFeeTotal(Map<String,BigDecimal> fees) {
+    private static BigDecimal getFeeTotal(Map<String, BigDecimal> fees) {
         BigDecimal sum = new BigDecimal(0).setScale(DECIMAL_LIMIT);
-        for(BigDecimal value : fees. values()){
-            sum = sum.setScale(DECIMAL_LIMIT,HALF_UP).add(value.setScale(DECIMAL_LIMIT,HALF_UP));
+        for (BigDecimal value : fees.values()) {
+            sum = sum.setScale(DECIMAL_LIMIT, HALF_UP).add(value.setScale(DECIMAL_LIMIT, HALF_UP));
         }
         return sum;
     }
