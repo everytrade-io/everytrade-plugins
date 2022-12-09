@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -37,8 +38,8 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 public class CoinmateConnector implements IConnector {
 
     private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "coinmateApiConnector";
-    private static final String SORT = "ASC";
-    private static final int OFFSET = 0;
+    private static final String SORT_DESC = "DESC";
+    private static final long DELAY = 24 * 60 * 60 * 1000L;
     // MAX 100 request per minute per user, https://coinmate.docs.apiary.io/#reference/request-limits
     private static final int MAX_REQUEST_COUNT = 20;
     // https://coinmate.docs.apiary.io/#reference/transaction-history/get-transaction-history
@@ -111,18 +112,59 @@ public class CoinmateConnector implements IConnector {
         return new DownloadResult(parseResult, downloadState.serialize());
     }
 
+    private List<CoinmateTransactionHistoryEntry> downloadTransactions(DownloadState state) {
+        var rawServices = new CoinmateTradeServiceRaw(exchange);
+        setTxFromTimestamp(state);
+        List<CoinmateTransactionHistoryEntry> allData = new ArrayList<>();
+
+        long now = Instant.now().toEpochMilli() - DELAY;
+        long txFrom = state.getTxFrom();
+        long txTo = state.getTxTo() == 0L ? now : state.getTxTo();
+        int offset = state.getOffset();
+        int sentRequests = 0;
+        while (sentRequests < MAX_REQUEST_COUNT) {
+            final List<CoinmateTransactionHistoryEntry> userTransactionBlock;
+            try {
+                userTransactionBlock = rawServices.getCoinmateTransactionHistory(
+                    offset, TX_PER_REQUEST, SORT_DESC, txFrom, txTo, null).getData();
+            } catch (IOException e) {
+                throw new IllegalStateException("Download user trade history failed.", e);
+            }
+            if (userTransactionBlock.isEmpty()) {
+                state.offset = 0;
+                state.txFrom = txTo;
+                state.txTo = 0L;
+                break;
+            }
+            if(userTransactionBlock.size() < TX_PER_REQUEST) {
+                state.offset = 0;
+                state.txFrom = txTo;
+                state.txTo = 0L;
+                allData.addAll(userTransactionBlock);
+                break;
+            } else {
+                txTo = now;
+                offset += TX_PER_REQUEST;
+                state.txTo = now;
+                state.offset = offset;
+                allData.addAll(userTransactionBlock);
+            }
+            ++sentRequests;
+        }
+        return allData;
+    }
+
     /**
      * We used to use two separate endpoints (tradehistory - buy/sell, transferHistory - deposit/withdrawal) but
      * switch to transactionHistory where are both data.
      *
      * @param state
-     * @param rawServices
      */
-    private void setLastTransactionTimestamp(DownloadState state, CoinmateTradeServiceRaw rawServices) {
+    private void setTxFromTimestamp(DownloadState state) {
         List<Long> timestamps = new ArrayList<>();
-        if (state.lastTxFrom == 0L) {
+        if (state.txFrom == 0L) {
             // Old tradeHistory endpoint sent lastTxId but we require timestamp
-            Long lastTradeTimestamp;
+            long lastTradeTimestamp;
             if (!"".equals(state.lastTradeId)) {
                 try {
                     var tradeService = exchange.getTradeService();
@@ -140,38 +182,9 @@ public class CoinmateConnector implements IConnector {
             }
             timestamps.add(lastTradeTimestamp);
             timestamps.add(state.fundingsFrom);
-            timestamps.add(state.lastTxFrom);
-            var maxTimestamp = timestamps.stream().max(Long::compareTo).get();
-            state.lastTxFrom = maxTimestamp;
+            timestamps.add(state.txFrom);
+            state.txFrom = timestamps.stream().max(Long::compareTo).get();
         }
-    }
-
-    private List<CoinmateTransactionHistoryEntry> downloadTransactions(DownloadState state) {
-        var rawServices = new CoinmateTradeServiceRaw(exchange);
-        setLastTransactionTimestamp(state, rawServices);
-        long lastDownloadedTx = state.getLastTxFrom();
-
-        List<CoinmateTransactionHistoryEntry> allData = new ArrayList<>();
-        int sentRequests = 0;
-
-        while (sentRequests < MAX_REQUEST_COUNT) {
-            final List<CoinmateTransactionHistoryEntry> userTransactionBlock;
-            try {
-                userTransactionBlock = rawServices.getCoinmateTransactionHistory(
-                    OFFSET, TX_PER_REQUEST, SORT, lastDownloadedTx, null, null).getData();
-            } catch (IOException e) {
-                throw new IllegalStateException("Download user trade history failed.", e);
-            }
-            if (userTransactionBlock.isEmpty()) {
-                break;
-            }
-            allData.addAll(userTransactionBlock);
-            lastDownloadedTx = userTransactionBlock.get(userTransactionBlock.size() - 1).getTimestamp();
-            ++sentRequests;
-        }
-
-        state.setLastTxFrom(lastDownloadedTx);
-        return allData;
     }
 
     @Data
@@ -182,7 +195,9 @@ public class CoinmateConnector implements IConnector {
         private static final String SEPARATOR = "=";
         String lastTradeId = "";
         Long fundingsFrom = 0L;
-        long lastTxFrom;
+        long txFrom;
+        long txTo;
+        int offset;
 
         public static DownloadState deserialize(String state) {
             if (isEmpty(state)) {
@@ -192,13 +207,15 @@ public class CoinmateConnector implements IConnector {
             return new DownloadState(
                 strA[0],
                 strA.length > 1 ? Long.parseLong(strA[1]) : 0,
-                strA.length > 2 ? Long.parseLong(strA[2]) : 0
+                strA.length > 2 ? Long.parseLong(strA[2]) : 0,
+                strA.length > 3 ? Long.parseLong(strA[3]) : 0,
+                strA.length > 4 ? Integer.parseInt(strA[4]) : 0
             );
         }
 
-        // new endpoint requires only state lastTxFrom
+        // new endpoint requires only state txFrom and txTo
         public String serialize() {
-            return lastTradeId + SEPARATOR + fundingsFrom + SEPARATOR + lastTxFrom;
+            return lastTradeId + SEPARATOR + fundingsFrom + SEPARATOR + txFrom + SEPARATOR + txTo + SEPARATOR + offset;
         }
 
     }

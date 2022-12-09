@@ -94,6 +94,7 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
             .feeCurrency(currency)
             .address(CoinMateDataUtil.getAddressFromDescription(transaction.getDescription(), transaction.getTransactionType()))
             .build();
+
     }
 
     public TransactionCluster toTransactionCluster() {
