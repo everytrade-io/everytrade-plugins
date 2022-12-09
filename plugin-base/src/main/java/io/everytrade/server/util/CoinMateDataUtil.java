@@ -3,6 +3,12 @@ package io.everytrade.server.util;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 
+import static io.everytrade.server.model.TransactionType.BUY;
+import static io.everytrade.server.model.TransactionType.DEPOSIT;
+import static io.everytrade.server.model.TransactionType.REWARD;
+import static io.everytrade.server.model.TransactionType.SELL;
+import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
+
 public class CoinMateDataUtil {
 
     public static void adaptTransactionStatus(String status) {
@@ -30,11 +36,11 @@ public class CoinMateDataUtil {
 
     public static TransactionType mapCoinMateType(String type) {
         return switch (type) {
-            case "BUY", "QUICK_BUY", ("INSTANT_BUY") -> TransactionType.BUY;
-            case ("SELL"), ("QUICK_SELL"), ("INSTANT_SELL") -> TransactionType.SELL;
-            case ("NEW_USER_REWARD"), ("REFERRAL") -> TransactionType.REWARD;
-            case ("DEPOSIT") -> TransactionType.DEPOSIT;
-            case ("WITHDRAWAL") -> TransactionType.WITHDRAWAL;
+            case "BUY", "QUICK_BUY", ("INSTANT_BUY") -> BUY;
+            case ("SELL"), ("QUICK_SELL"), ("INSTANT_SELL") -> SELL;
+            case ("NEW_USER_REWARD"), ("REFERRAL") -> REWARD;
+            case ("DEPOSIT") -> DEPOSIT;
+            case ("WITHDRAWAL") -> WITHDRAWAL;
             default -> throw new DataIgnoredException(String.format("Unsupported transaction %s", type));
         };
     }
