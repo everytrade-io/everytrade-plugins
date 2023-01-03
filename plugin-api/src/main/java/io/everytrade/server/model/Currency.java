@@ -592,7 +592,14 @@ public enum Currency {
     WLUNA(false, Instant.parse("2021-01-27T00:00:00Z"), "Wrapped LUNA Token"),
     ALEPH(false, Instant.parse("2020-07-22T00:00:00Z"), "Aleph.im"),
     HTR(false, Instant.parse("2020-09-30T00:00:00Z"), "Hathor Network"),
-    MELOS(false, Instant.parse("2022-03-14T00:00:00Z"), "Melos Studio");
+    MELOS(false, Instant.parse("2022-03-14T00:00:00Z"), "Melos Studio"),
+    CNG(false, Instant.parse("2022-01-28T00:00:00Z"), "Changer"),
+    XCN(false, Instant.parse("2022-03-18T00:00:00Z"), "Chain"),
+    CTSI(false, Instant.parse("2022-09-29T00:00:00Z"), "Cartesi"),
+    WOO(false, Instant.parse("2021-05-06T00:00:00Z"), "WOO Network"),
+    LDO(false, Instant.parse("2021-09-02T00:00:00Z"), "Lido DAO"),
+    ETHW(false, Instant.parse("2022-09-23T00:00:00Z"), "Ethereum PoW"),
+    FRONT(false, Instant.parse("2022-02-05T00:00:00Z"), "Frontier Token");
 
     String code;
     int decimalDigits;
