@@ -16,6 +16,7 @@ import org.knowm.xchange.service.account.AccountService;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -58,9 +59,9 @@ public class CoinbaseDownloader {
         return build;
     }
 
-    private List<UserTrade> downloadTrades(Map<String, WalletState> walletStatesTwo) {
-        var sortedWalletSatets = sortWalletsByTxsUpdates(walletStatesTwo);
-        var wallets = sortedWalletSatets.stream().
+    private List<UserTrade> downloadTrades(Map<String, WalletState> walletStates) {
+        var sortedWalletStates = sortWalletsByTxsUpdates(walletStates);
+        var wallets = sortedWalletStates.stream().
             collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (u, v) -> u, LinkedHashMap::new));
         final List<UserTrade> userTrades = new ArrayList<>();
         int sentRequests = 0;
@@ -71,10 +72,11 @@ public class CoinbaseDownloader {
         params.setLimit(TRANSACTIONS_PER_REQUEST_LIMIT);
 
         for (Map.Entry<String, WalletState> entry : wallets.entrySet()) {
+            final String walletId = entry.getKey();
+            final WalletState walletState = wallets.get(walletId);
             if (walletRequests < MAX_WALLET_REQUESTS) {
                 String lastBuyId = entry.getValue().lastBuyId;
                 String lastSellId = entry.getValue().lastSellId;
-                final String walletId = entry.getKey();
 
                 while (sentRequests < MAX_REQUEST_COUNT) {
                     ++sentRequests;
@@ -116,7 +118,6 @@ public class CoinbaseDownloader {
                     log.info("Max request count {} has been achieved.", MAX_REQUEST_COUNT);
                 }
 
-                final WalletState walletState = wallets.get(walletId);
                 walletState.lastBuyId = lastBuyId;
                 walletState.lastSellId = lastSellId;
 
@@ -127,9 +128,9 @@ public class CoinbaseDownloader {
         return userTrades;
     }
 
-    public List<FundingRecord> downloadFunding(Map<String, WalletState> walletStatesTwo) {
-        var walletStatesList = sortWalletsByFundingUpdates(walletStatesTwo);
-        var walletStates = walletStatesList.stream().
+    public List<FundingRecord> downloadFunding(Map<String, WalletState> walletStates) {
+        var walletStatesList = sortWalletsByFundingUpdates(walletStates);
+        var wallets = walletStatesList.stream().
             collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (u, v) -> u, LinkedHashMap::new));
 
         final List<FundingRecord> fundingRecords = new ArrayList<>();
@@ -140,11 +141,12 @@ public class CoinbaseDownloader {
         CoinbaseTradeHistoryParams params = (CoinbaseTradeHistoryParams) accountService.createFundingHistoryParams();
         params.setLimit(TRANSACTIONS_PER_REQUEST_LIMIT);
 
-        for (Map.Entry<String, WalletState> entry : walletStates.entrySet()) {
+        for (Map.Entry<String, WalletState> entry : wallets.entrySet()) {
+            final String walletId = entry.getKey();
+            final WalletState walletState = wallets.get(walletId);
             if(walletRequests < MAX_WALLET_REQUESTS) {
                 String lastDepositId = entry.getValue().lastDepositId;
                 String lastWithdrawalId = entry.getValue().lastWithdrawalId;
-                final String walletId = entry.getKey();
 
                 while (sentRequests < MAX_REQUEST_COUNT_DEPOSIT_WITHDRAWALS) {
                     ++sentRequests;
@@ -186,7 +188,6 @@ public class CoinbaseDownloader {
                     log.info("Max request count {} has been achieved.", MAX_REQUEST_COUNT);
                 }
 
-                final WalletState walletState = walletStates.get(walletId);
                 walletState.lastDepositId = lastDepositId;
                 walletState.lastWithdrawalId = lastWithdrawalId;
 
@@ -255,43 +256,23 @@ public class CoinbaseDownloader {
     }
 
     public static List<Map.Entry<String, WalletState>> sortWalletsByFundingUpdates(Map<String, WalletState>walletsMap) {
-        var wallets = walletsMap.entrySet().stream().collect(Collectors.toList());
-        for (int i = 0; i < wallets.size() - 1; i++) {
-            int min = i;
-            for (int j = i + 1; j < wallets.size(); j++) {
-                Long prev = (wallets.get(j).getValue().lastFundingWalletUpdate == null) ? 1L :
-                    Long.parseLong(wallets.get(j).getValue().lastFundingWalletUpdate);
-                Long next = (wallets.get(min).getValue().lastFundingWalletUpdate == null) ? 1L :
-                    Long.parseLong(wallets.get(min).getValue().lastFundingWalletUpdate);
-                if (next.compareTo(prev) > 0) {
-                    min = j;    // update the index of minimum element
-                }
-            }
-            var temp = wallets.get(min);
-            wallets.set(min,wallets.get(i));
-            wallets.set(i, temp);
-        }
-        return wallets;
+        List<Map.Entry<String, WalletState>> sortedWallets =
+            walletsMap.entrySet().stream()
+                .sorted(Map.Entry.comparingByValue(Comparator.comparingLong(c -> {
+                    String lastFundingWalletUpdate = c.lastFundingWalletUpdate != null ? c.lastFundingWalletUpdate : String.valueOf(1L);
+                    return Long.parseLong(lastFundingWalletUpdate);
+                }))).collect(Collectors.toList());
+        return sortedWallets;
     }
 
     public static List<Map.Entry<String, WalletState>> sortWalletsByTxsUpdates(Map<String, WalletState>walletsMap) {
-        var wallets = walletsMap.entrySet().stream().collect(Collectors.toList());
-        for (int i = 0; i < wallets.size() - 1; i++) {
-            int min = i;
-            for (int j = i + 1; j < wallets.size(); j++) {
-                Long prev = (wallets.get(j).getValue().lastTxWalletUpdate == null) ? 1L :
-                    Long.parseLong(wallets.get(j).getValue().lastTxWalletUpdate);
-                Long next = (wallets.get(min).getValue().lastTxWalletUpdate == null) ? 1L :
-                    Long.parseLong(wallets.get(min).getValue().lastTxWalletUpdate);
-                if (next.compareTo(prev) > 0) {
-                    min = j;    // update the index of minimum element
-                }
-            }
-            var temp = wallets.get(min);
-            wallets.set(min,wallets.get(i));
-            wallets.set(i, temp);
-        }
-        return wallets;
+        List<Map.Entry<String, WalletState>> sortedWallets =
+            walletsMap.entrySet().stream()
+                .sorted(Map.Entry.comparingByValue(Comparator.comparingLong(c -> {
+                    String lastFundingWalletUpdate = c.lastTxWalletUpdate != null ? c.lastTxWalletUpdate : String.valueOf(1L);
+                    return Long.parseLong(lastFundingWalletUpdate);
+                }))).collect(Collectors.toList());
+        return sortedWallets;
     }
 
     private Set<String> getWalletIds() {
