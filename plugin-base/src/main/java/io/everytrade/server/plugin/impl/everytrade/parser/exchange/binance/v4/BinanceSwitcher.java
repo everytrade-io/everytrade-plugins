@@ -20,9 +20,11 @@ public class BinanceSwitcher {
         if (BinanceConstantsV4.OPERATION_TYPE_FEE.code.equals(operationType)) {
             return TransactionType.FEE;
         }
-
         if (BinanceConstantsV4.OPERATION_TYPE_TRANSACTION_RELATED.code.equals(operationType)) {
             return TransactionType.BUY;
+        }
+        if (BinanceConstantsV4.OPERATION_TYPE_DISTRIBUTION.code.equals(operationType)) {
+            return TransactionType.REWARD;
         }
         return TransactionType.UNKNOWN;
     }
