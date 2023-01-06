@@ -599,7 +599,10 @@ public enum Currency {
     WOO(false, Instant.parse("2021-05-06T00:00:00Z"), "WOO Network"),
     LDO(false, Instant.parse("2021-09-02T00:00:00Z"), "Lido DAO"),
     ETHW(false, Instant.parse("2022-09-23T00:00:00Z"), "Ethereum PoW"),
-    FRONT(false, Instant.parse("2022-02-05T00:00:00Z"), "Frontier Token");
+    FRONT(false, Instant.parse("2022-02-05T00:00:00Z"), "Frontier Token"),
+    _00("00",false, Instant.parse("2022-10-28T00:00:00Z"), "00 Token"),
+    WAMPL(false, Instant.parse("2021-11-25T00:00:00Z"), "Wrapped Ampleforth"),
+    PEOPLE(false, Instant.parse("2021-11-18T00:00:00Z"), "Constitution DAO");
 
     String code;
     int decimalDigits;
