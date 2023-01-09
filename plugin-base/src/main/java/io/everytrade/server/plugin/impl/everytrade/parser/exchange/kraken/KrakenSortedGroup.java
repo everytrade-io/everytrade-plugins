@@ -176,7 +176,7 @@ public class KrakenSortedGroup {
         } else if (row.getType().equals(KrakenConstants.TYPE_WITHDRAWAL.code)) {
             rowsWithdrawal.add(row);
         } else {
-            throw new DataIgnoredException("Row " + row.getRowId() + "cannot be added due to wrong operation;");
+            throw new DataIgnoredException("Row " + row.getRowId() + " cannot be added due to wrong operation;");
         }
     }
 }

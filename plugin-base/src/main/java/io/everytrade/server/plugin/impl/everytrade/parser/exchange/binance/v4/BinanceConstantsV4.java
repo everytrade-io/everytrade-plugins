@@ -21,6 +21,8 @@ public enum BinanceConstantsV4 {
     OPERATION_TYPE_TRANSACTION_RELATED("Transaction Related"),
     OPERATION_TYPE_FEE("Fee"),
     OPERATION_TYPE_DISTRIBUTION("Distribution"),
+    OPERATION_TYPE_FIAT_WITHDRAWAL("Fiat Withdrawal"),
+    OPERATION_TYPE_FIAT_DEPOSIT("Fiat Deposit"),
 
     // Unsupported operations
     OPERATION_TYPE_MARGIN_LOAN("Margin loan"),

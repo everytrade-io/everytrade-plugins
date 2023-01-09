@@ -27,6 +27,8 @@ public class BinanceSupportedOperations {
         SUPPORTED_OPERATION_TYPES.add(BinanceConstantsV4.OPERATION_TYPE_WITHDRAWAL.code);
         SUPPORTED_OPERATION_TYPES.add(BinanceConstantsV4.OPERATION_TYPE_FEE.code);
         SUPPORTED_OPERATION_TYPES.add(BinanceConstantsV4.OPERATION_TYPE_DISTRIBUTION.code);
+        SUPPORTED_OPERATION_TYPES.add(BinanceConstantsV4.OPERATION_TYPE_FIAT_DEPOSIT.code);
+        SUPPORTED_OPERATION_TYPES.add(BinanceConstantsV4.OPERATION_TYPE_FIAT_WITHDRAWAL.code);
 
         BUY_SELL_OPERATION_TYPES.add(BinanceConstantsV4.OPERATION_TYPE_BUY.code);
         BUY_SELL_OPERATION_TYPES.add(BinanceConstantsV4.OPERATION_TYPE_SELL.code);

@@ -25,6 +25,8 @@ import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binanc
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceConstantsV4.OPERATION_TYPE_DEPOSIT;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceConstantsV4.OPERATION_TYPE_DISTRIBUTION;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceConstantsV4.OPERATION_TYPE_FEE;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceConstantsV4.OPERATION_TYPE_FIAT_DEPOSIT;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceConstantsV4.OPERATION_TYPE_FIAT_WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceConstantsV4.OPERATION_TYPE_SELL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceConstantsV4.OPERATION_TYPE_TRANSACTION_RELATED;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceConstantsV4.OPERATION_TYPE_WITHDRAWAL;
@@ -291,7 +293,7 @@ public class BinanceSortedGroupV4 {
                 newList.add(row);
                 rowsFees.put(row.getCoin(), newList);
             }
-        } else if (row.getOperation().equals(OPERATION_TYPE_DEPOSIT.code)) {
+        } else if (List.of(OPERATION_TYPE_DEPOSIT.code, OPERATION_TYPE_FIAT_DEPOSIT.code).contains(row.getOperation())) {
             if (rowsDeposit.containsKey(row.getCoin())) {
                 rowsDeposit.get(row.getCoin()).add(row);
             } else {
@@ -299,7 +301,7 @@ public class BinanceSortedGroupV4 {
                 newList.add(row);
                 rowsDeposit.put(row.getCoin(), newList);
             }
-        } else if (row.getOperation().equals(OPERATION_TYPE_WITHDRAWAL.code)) {
+        } else if (List.of(OPERATION_TYPE_WITHDRAWAL.code, OPERATION_TYPE_FIAT_WITHDRAWAL.code).contains(row.getOperation())) {
             if (rowsWithdrawal.containsKey(row.getCoin())) {
                 rowsWithdrawal.get(row.getCoin()).add(row);
             } else {
@@ -328,7 +330,7 @@ public class BinanceSortedGroupV4 {
                 rowsRewards.put(row.getCoin(), newList);
             }
         } else {
-            throw new DataIgnoredException("Row " + row.getRowId() + "cannot be added due to wrong operation. ");
+            throw new DataIgnoredException("Row " + row.getRowId() + " cannot be added due to wrong operation. ");
         }
     }
 }
