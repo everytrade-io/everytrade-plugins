@@ -11,6 +11,7 @@ public class BinanceSupportedOperations {
     public static final List<String> BUY_SELL_OPERATION_TYPES = new ArrayList<>();
     public static final List<String> DEPOSIT_WITHDRAWAL_OPERATION_TYPES = new ArrayList<>();
     public static final List<String> FEE_OPERATION_TYPES = new ArrayList<>();
+    public static final List<String> REWARD_OPERATION_TYPES = new ArrayList<>();
 
     public static final List<String> UNSUPPORTED_ACCOUNT_TYPES = new ArrayList<>();
     public static final List<String> UNSUPPORTED_OPERATION_TYPES = new ArrayList<>();
@@ -25,6 +26,7 @@ public class BinanceSupportedOperations {
         SUPPORTED_OPERATION_TYPES.add(BinanceConstantsV4.OPERATION_TYPE_DEPOSIT.code);
         SUPPORTED_OPERATION_TYPES.add(BinanceConstantsV4.OPERATION_TYPE_WITHDRAWAL.code);
         SUPPORTED_OPERATION_TYPES.add(BinanceConstantsV4.OPERATION_TYPE_FEE.code);
+        SUPPORTED_OPERATION_TYPES.add(BinanceConstantsV4.OPERATION_TYPE_DISTRIBUTION.code);
 
         BUY_SELL_OPERATION_TYPES.add(BinanceConstantsV4.OPERATION_TYPE_BUY.code);
         BUY_SELL_OPERATION_TYPES.add(BinanceConstantsV4.OPERATION_TYPE_SELL.code);
@@ -34,6 +36,8 @@ public class BinanceSupportedOperations {
         DEPOSIT_WITHDRAWAL_OPERATION_TYPES.add(BinanceConstantsV4.OPERATION_TYPE_WITHDRAWAL.code);
 
         FEE_OPERATION_TYPES.add(BinanceConstantsV4.OPERATION_TYPE_FEE.code);
+
+        REWARD_OPERATION_TYPES.add(BinanceConstantsV4.OPERATION_TYPE_DISTRIBUTION.code);
 
         //unsupported accounts
         UNSUPPORTED_ACCOUNT_TYPES.add(BinanceConstantsV4.ACCOUNT_TYPE_CROSS_MARGIN.code);

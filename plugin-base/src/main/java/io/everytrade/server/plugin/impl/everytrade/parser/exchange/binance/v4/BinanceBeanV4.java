@@ -15,6 +15,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
+
+import static io.everytrade.server.model.TransactionType.REWARD;
+import static java.util.Collections.emptyList;
 import static lombok.AccessLevel.PRIVATE;
 
 import java.math.BigDecimal;
@@ -166,6 +169,21 @@ public class BinanceBeanV4 extends ExchangeBean {
                 );
                 related.add(feeTxs);
             }
+        }
+
+        if (TransactionType.REWARD.equals(type)) {
+            return new TransactionCluster(
+                new ImportedTransactionBean(
+                    usedIds.toString(),
+                    date,
+                    marketBase,
+                    marketBase,
+                    REWARD,
+                    amountBase,
+                    null
+                ),
+                emptyList()
+            );
         }
 
         if (List.of(TransactionType.DEPOSIT, TransactionType.WITHDRAWAL).contains(this.type)) {

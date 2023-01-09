@@ -20,6 +20,7 @@ public enum BinanceConstantsV4 {
     OPERATION_TYPE_DEPOSIT("Deposit"),
     OPERATION_TYPE_TRANSACTION_RELATED("Transaction Related"),
     OPERATION_TYPE_FEE("Fee"),
+    OPERATION_TYPE_DISTRIBUTION("Distribution"),
 
     // Unsupported operations
     OPERATION_TYPE_MARGIN_LOAN("Margin loan"),
@@ -34,7 +35,6 @@ public enum BinanceConstantsV4 {
     OPERATION_TYPE_BNB_DEDUCTS_FEE("BNB deducts fee"),
     OPERATION_TYPE_COMMISSION_FEE_SHARED_WITH_YOU("Commission Fee Shared With You"),
     OPERATION_TYPE_COMMISSION_HISTORY("Commission History"),
-    OPERATION_TYPE_DISTRIBUTION("Distribution"),
     OPERATION_TYPE_LARGE_OTC_TRADING("Large OTC trading"),
     OPERATION_TYPE_LAUNCHPOOL_INTEREST("Launchpool Interest"),
     OPERATION_TYPE_LIQUID_SWAP_ADD("Liquid Swap add"),
