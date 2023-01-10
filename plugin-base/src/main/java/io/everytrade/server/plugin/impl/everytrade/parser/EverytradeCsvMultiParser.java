@@ -22,6 +22,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.IMultiExchang
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.KrakenExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.AquanowBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BinanceBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BinanceBeanV5;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BitflyerBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BitflyerBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BitmexBeanV1;
@@ -129,6 +130,9 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             var binanceHeader4 =
                 CsvHeader.of("User_ID", "UTC_Time", "Account", "Operation", "Coin", "Change", "Remark")
                     .withSeparator(delimiter);
+            var binanceHeader5 =
+                CsvHeader.of("Date(UTC)","Product Name","Coin","Amount")
+                    .withSeparator(delimiter);
 
             /* AQUANOW */
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
@@ -166,6 +170,12 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
                 .headers(List.of(binanceHeader4.withSeparator(delimiter)))
                 .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(BinanceBeanV4.class, delimiter))
+                .supportedExchange(BINANCE)
+                .build());
+
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(binanceHeader5.withSeparator(delimiter)))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(BinanceBeanV5.class, delimiter))
                 .supportedExchange(BINANCE)
                 .build());
 
