@@ -8,6 +8,7 @@ import io.everytrade.server.plugin.api.parser.ParseResult;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.ParsingProblemType;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataStatusException;
 import org.knowm.xchange.bittrex.dto.account.BittrexDepositHistory;
 import org.knowm.xchange.bittrex.dto.account.BittrexWithdrawalHistory;
 import org.knowm.xchange.coinmate.dto.trade.CoinmateTransactionHistoryEntry;
@@ -58,6 +59,8 @@ public class XChangeConnectorParser {
                 try {
                     XChangeApiTransaction xchangeApiTransaction = XChangeApiTransaction.fromCoinMateTransactions(transaction);
                     return xchangeApiTransaction.toTransactionCluster();
+                } catch (DataStatusException e) {
+                    logParsingIgnore(e,problems, transaction.toString());
                 } catch (Exception e) {
                     logParsingError(e, problems, transaction.toString());
                 }
@@ -152,6 +155,14 @@ public class XChangeConnectorParser {
         LOG.debug("Exception by converting to ImportedTransactionBean.", e);
         parsingProblems.add(
             new ParsingProblem(row, e.getMessage(), ParsingProblemType.ROW_PARSING_FAILED)
+        );
+    }
+
+    protected void logParsingIgnore(Exception e, List<ParsingProblem> parsingProblems, String row) {
+        LOG.error("Error converting to ImportedTransactionBean: {}", e.getMessage());
+        LOG.debug("Exception by converting to ImportedTransactionBean.", e);
+        parsingProblems.add(
+            new ParsingProblem(row, e.getMessage(), ParsingProblemType.PARSED_ROW_IGNORED)
         );
     }
 
