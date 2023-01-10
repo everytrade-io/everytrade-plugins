@@ -41,7 +41,7 @@ public class CoinmateConnector implements IConnector {
     private static final String SORT_DESC = "DESC";
     private static final long DELAY = 24 * 60 * 60 * 1000L;
     // MAX 100 request per minute per user, https://coinmate.docs.apiary.io/#reference/request-limits
-    private static final int MAX_REQUEST_COUNT = 20;
+    private static final int MAX_REQUEST_COUNT = 7;
     // https://coinmate.docs.apiary.io/#reference/transaction-history/get-transaction-history
     private static final int TX_PER_REQUEST = 1000;
     private static final Logger LOG = LoggerFactory.getLogger(CoinmateConnector.class);
