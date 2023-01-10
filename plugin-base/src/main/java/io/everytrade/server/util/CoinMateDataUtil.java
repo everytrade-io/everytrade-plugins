@@ -2,6 +2,7 @@ package io.everytrade.server.util;
 
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
+import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataStatusException;
 
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
@@ -16,7 +17,7 @@ public class CoinMateDataUtil {
             case "OK", "COMPLETED" -> {
                 String empty = "checkStyle does not like empty line";
             }
-            default -> throw new DataIgnoredException(String.format("Wrong transaction status %s", status));
+            default -> throw new DataStatusException(String.format("Wrong transaction status %s", status));
         }
     }
 
