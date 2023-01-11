@@ -49,9 +49,9 @@ public class BinanceBeanV3 extends ExchangeBean {
         pairBase = currencyPair.getBase();
         pairQuote = currencyPair.getQuote();
         this.type = detectTransactionType(type);
-        this.filled = new BigDecimal(filled.replaceAll("[A-Z,\\s$]", ""));
-        this.total = new BigDecimal(total.replaceAll("[A-Z,\\s$]", ""));
-        final String feeValue = fee.replaceAll("[A-Z,\\s$]", "");
+        this.filled = new BigDecimal(filled.replace("\"\"","").replace(",","").replaceAll("[A-Z,\\s$]", ""));
+        this.total = new BigDecimal(total.replace("\"\"","").replace(",","").replaceAll("[A-Z,\\s$]", ""));
+        final String feeValue = fee.replace("\"\"","").replace(",","").replaceAll("[A-Z,\\s$]", "");
         BigDecimal feeAbsValue = new BigDecimal(feeValue).abs(); // abs value of fee
         Currency currencyEnds = findEnds(fee); // end of string with currency code
         if (currencyEnds != null && feeAbsValue.compareTo((BigDecimal.ZERO)) > 0)  {

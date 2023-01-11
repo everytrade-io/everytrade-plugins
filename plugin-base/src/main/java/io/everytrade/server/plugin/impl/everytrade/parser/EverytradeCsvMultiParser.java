@@ -12,6 +12,7 @@ import io.everytrade.server.plugin.impl.everytrade.EveryTradePlugin;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.UnknownHeaderException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BinanceExchangeSpecificParserV4;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BinanceV4SpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BitfinexExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BitflyerMultiRowParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.CoinBaseProExchangeSpecificParser;
@@ -169,7 +170,7 @@ public class EverytradeCsvMultiParser implements ICsvParser {
 
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
                 .headers(List.of(binanceHeader4.withSeparator(delimiter)))
-                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(BinanceBeanV4.class, delimiter))
+                .parserFactory(() -> new BinanceV4SpecificParser(BinanceBeanV4.class, delimiterdgdfhfdh))
                 .supportedExchange(BINANCE)
                 .build());
 
