@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,7 +56,9 @@ public class BinanceExchangeSpecificParserV3 implements IExchangeSpecificParser 
                 allRecords.remove(0);
             }
             for (final Record record : allRecords) {
-                BinanceBeanV3 binanceBean = parseExchangeBean(record.getValues());
+                String[] values = record.getValues();
+                values = correctLinesWithCommaBetweenQuotes(values);
+                BinanceBeanV3 binanceBean = parseExchangeBean(values);
                 if (binanceBean != null) {
                     binanceBeans.add(binanceBean);
                 }
@@ -64,6 +67,38 @@ public class BinanceExchangeSpecificParserV3 implements IExchangeSpecificParser 
             throw new IllegalStateException(e);
         }
         return binanceBeans;
+    }
+
+    String[] correctLinesWithCommaBetweenQuotes(String[] values) {
+        try {
+            if (values.length > 7) {
+                String[] newValues = new String[7];
+                int j = 0;
+                for (int i = 0; i < values.length; i++) {
+                    if (values[i].contains("\"\"")) {
+                        newValues[i] = (values[i] + values[i + 1]).replace(",", "").replace("\"", "");
+                        i++;
+                    } else {
+                        newValues[j] = values[i];
+                    }
+                    j++;
+                }
+                return newValues;
+            } else if (values.length == 1) {
+                String text = "";
+                var val = values[0];
+                var parts = val.split("\"");
+                for (int i = 0; i < parts.length; ++i) {
+                    if ((i + 1) % 2 == 0) {
+                        parts[i] = parts[i].replace(",", "");
+                    }
+                    text += parts[i];
+                }
+                values = text.split(",");
+            }
+        } catch (Exception ignored) {
+        }
+        return values;
     }
 
     @Override

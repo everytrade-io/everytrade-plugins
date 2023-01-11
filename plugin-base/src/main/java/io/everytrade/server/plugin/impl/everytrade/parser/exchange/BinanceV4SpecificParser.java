@@ -23,36 +23,10 @@ import static io.everytrade.server.plugin.api.parser.ParsingProblemType.PARSED_R
 import static io.everytrade.server.plugin.api.parser.ParsingProblemType.ROW_PARSING_FAILED;
 import static java.util.stream.Collectors.toList;
 
-public class DefaultUnivocityExchangeSpecificParser implements IExchangeSpecificParser {
-    protected static final Logger LOG = LoggerFactory.getLogger(DefaultUnivocityExchangeSpecificParser.class);
-    protected static final String DEFAULT_DELIMITER = ",";
-    protected static final List<String> LINE_SEPARATORS = List.of("\n", "\r", "\r\n");
+public class BinanceV4SpecificParser extends DefaultUnivocityExchangeSpecificParser {
 
-    protected final Class<? extends ExchangeBean> exchangeBean;
-    protected final String delimiter;
-    protected final String lineSeparator;
-    protected List<ParsingProblem> parsingProblems = List.of();
-    protected int rowId = 1;
-
-    public DefaultUnivocityExchangeSpecificParser(Class<? extends ExchangeBean> exchangeBean) {
-        this(exchangeBean, DEFAULT_DELIMITER, null);
-    }
-
-    public DefaultUnivocityExchangeSpecificParser(
-        Class<? extends ExchangeBean> exchangeBean,
-        String delimiter
-    ) {
-        this(exchangeBean, delimiter, null);
-    }
-
-    public DefaultUnivocityExchangeSpecificParser(
-        Class<? extends ExchangeBean> exchangeBean,
-        String delimiter,
-        String lineSeparator
-    ) {
-        Objects.requireNonNull(this.exchangeBean = exchangeBean);
-        Objects.requireNonNull(this.delimiter = delimiter);
-        this.lineSeparator = lineSeparator;
+    public BinanceV4SpecificParser(Class<? extends ExchangeBean> exchangeBean, String delimiter) {
+        super(exchangeBean, delimiter);
     }
 
     @Override
@@ -79,17 +53,13 @@ public class DefaultUnivocityExchangeSpecificParser implements IExchangeSpecific
         throw new RuntimeException(lastException);
     }
 
-    @Override
-    public List<ParsingProblem> getParsingProblems() {
-        return parsingProblems;
-    }
-
     private <T extends ExchangeBean> List<T> parse(File file, CsvParserSettings parserSettings, Class<T> exchangeBean) {
         try (Reader reader = new FileReader(file, StandardCharsets.UTF_8)) {
             BeanListProcessor<T> rowProcessor = new BeanListProcessor<>(exchangeBean) {
                 @Override
                 public T createBean(String[] row, Context context) {
                     rowId++;
+                    row = correctLinesWithQuotes(row);
                     T bean = super.createBean(row, context);
                     if (bean == null) {
                         return null;
@@ -110,20 +80,16 @@ public class DefaultUnivocityExchangeSpecificParser implements IExchangeSpecific
         }
     }
 
-    protected CsvParserSettings createParserSettings(List<ParsingProblem> parsingProblems, String lineSeparator) {
-        var parserSettings = new CsvParserSettings();
-        parserSettings.setHeaderExtractionEnabled(true);
-        parserSettings.setProcessorErrorHandler((error, inputRow, context) -> {
-            ParsingProblemType parsingProblemType = error instanceof DataIgnoredException ? PARSED_ROW_IGNORED : ROW_PARSING_FAILED;
-            parsingProblems.add(new ParsingProblem(Arrays.toString(inputRow), error.getMessage(), parsingProblemType));
-        });
-        parserSettings.getFormat().setDelimiter(delimiter);
-        //default setting is autodetect
-        if (lineSeparator != null) {
-            parserSettings.getFormat().setLineSeparator(lineSeparator);
-        }
-        parserSettings.getFormat().setComment('\0'); // No symbol for comments
+    private String[] correctLinesWithQuotes(String[] row ) {
+        if(row[0] == null) {
+            try {
+                row = row[6].split(delimiter);
 
-        return parserSettings;
+            } catch (Exception ignored) {
+
+            }
+        }
+        return row;
     }
+
 }
