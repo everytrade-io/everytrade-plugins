@@ -1,7 +1,7 @@
 package io.everytrade.server.plugin.impl.everytrade.parser.exchange;
 
 import com.univocity.parsers.common.DataValidationException;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceBeanV4A;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceBeanV4;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceSortedGroupV4;
 
 import java.time.Instant;
@@ -15,28 +15,28 @@ import java.util.stream.Collectors;
 import static java.util.stream.Collectors.groupingBy;
 
 public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpecificParser implements IExchangeSpecificParser,
-    IMultiExchangeSpecificParser<BinanceBeanV4A> {
+    IMultiExchangeSpecificParser<BinanceBeanV4> {
 
     private static final long TRANSACTION_MERGE_TOLERANCE_MS = 1000;
     public BinanceExchangeSpecificParserV4(Class<? extends ExchangeBean> exchangeBean, String delimiter, boolean isRowInsideQuotes) {
         super(exchangeBean, delimiter, null, isRowInsideQuotes);
     }
 
-    List<BinanceBeanV4A> rows;
-    List<BinanceBeanV4A> unSupportedRows = new ArrayList<>();
+    List<BinanceBeanV4> rows;
+    List<BinanceBeanV4> unSupportedRows = new ArrayList<>();
 
-    public List<? extends ExchangeBean> convertMultipleRowsToTransactions(List<BinanceBeanV4A> rows) {
-        List<BinanceBeanV4A> result;
+    public List<? extends ExchangeBean> convertMultipleRowsToTransactions(List<BinanceBeanV4> rows) {
+        List<BinanceBeanV4> result;
         rows = setRowsWithIds(rows);
         this.rows = rows;
         var groupedRowsByTime = createGroupsFromRows(rows);
-        Map<Instant, List<BinanceBeanV4A>> sortedGroupsByDate = new TreeMap<>(groupedRowsByTime);
+        Map<Instant, List<BinanceBeanV4>> sortedGroupsByDate = new TreeMap<>(groupedRowsByTime);
         // merging rows nearly in the same time
         var mergedGroups = mergeGroupsInTimeWithinTolerance(sortedGroupsByDate);
         // clean groups of rows from unsupported rubbish
         var cleanGroups = removeGroupsWithUnsupportedRows(mergedGroups);
         // creating transaction
-        List<BinanceBeanV4A> rowsReadyForTxs = createTransactionFromGroupOfRows(cleanGroups);
+        List<BinanceBeanV4> rowsReadyForTxs = createTransactionFromGroupOfRows(cleanGroups);
         result = rowsReadyForTxs;
         unSupportedRows.stream().forEach(r -> {
             r.setRowNumber((long) r.getRowId());
@@ -46,11 +46,11 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
     }
 
     @Override
-    public Map<?, List<BinanceBeanV4A>> removeGroupsWithUnsupportedRows(Map<?, List<BinanceBeanV4A>> rowGroups) {
-        Map<Object, List<BinanceBeanV4A>> result = new HashMap<>();
-        for (Map.Entry<?, List<BinanceBeanV4A>> entry : rowGroups.entrySet()) {
+    public Map<?, List<BinanceBeanV4>> removeGroupsWithUnsupportedRows(Map<?, List<BinanceBeanV4>> rowGroups) {
+        Map<Object, List<BinanceBeanV4>> result = new HashMap<>();
+        for (Map.Entry<?, List<BinanceBeanV4>> entry : rowGroups.entrySet()) {
             var rowsInGroup = entry.getValue();
-            List<BinanceBeanV4A> unSupportedRow = rowsInGroup.stream()
+            List<BinanceBeanV4> unSupportedRow = rowsInGroup.stream()
                 .filter(r -> r.isUnsupportedRow() == true)
                 .collect(Collectors.toList());
             var isOneOrMoreUnsupportedRows =
@@ -67,7 +67,7 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
         return result;
     }
 
-    private void setRowsAsUnsupported(List<BinanceBeanV4A> rowsInGroup, String message) {
+    private void setRowsAsUnsupported(List<BinanceBeanV4> rowsInGroup, String message) {
         rowsInGroup.forEach(r -> {
             r.setMessage(message);
             r.setUnsupportedRow(true);
@@ -75,25 +75,25 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
         unSupportedRows.addAll(rowsInGroup);
     }
 
-    private List<BinanceBeanV4A> setRowsWithIds(List<BinanceBeanV4A> rows) {
+    private List<BinanceBeanV4> setRowsWithIds(List<BinanceBeanV4> rows) {
         int i = 1;
-        for (BinanceBeanV4A row : rows) {
+        for (BinanceBeanV4 row : rows) {
             i++;
             row.setRowId(i);
         }
         return rows;
     }
 
-    private Map<Instant, List<BinanceBeanV4A>> mergeGroupsInTimeWithinTolerance(Map<Instant, List<BinanceBeanV4A>> groups) {
-        Map<Instant, List<BinanceBeanV4A>> result = new HashMap<>();
+    private Map<Instant, List<BinanceBeanV4>> mergeGroupsInTimeWithinTolerance(Map<Instant, List<BinanceBeanV4>> groups) {
+        Map<Instant, List<BinanceBeanV4>> result = new HashMap<>();
         Instant previousKey = Instant.EPOCH;
-        List<BinanceBeanV4A> previousValues = new ArrayList<>();
-        for (Map.Entry<Instant, List<BinanceBeanV4A>> entry : groups.entrySet()) {
+        List<BinanceBeanV4> previousValues = new ArrayList<>();
+        for (Map.Entry<Instant, List<BinanceBeanV4>> entry : groups.entrySet()) {
             var currentKey = entry.getKey();
             var currentValues = entry.getValue();
             if ((currentKey.minusMillis(TRANSACTION_MERGE_TOLERANCE_MS).equals(previousKey)
                 || currentKey.minusMillis(TRANSACTION_MERGE_TOLERANCE_MS).isBefore(previousKey))) {
-                List<BinanceBeanV4A> all = currentValues;
+                List<BinanceBeanV4> all = currentValues;
                 all.addAll(previousValues);
                 all.forEach(r -> {
                     r.setMergedWithAnotherGroup(true);
@@ -109,9 +109,9 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
     }
 
     @Override
-    public List<BinanceBeanV4A> createTransactionFromGroupOfRows(Map<?, List<BinanceBeanV4A>> groups) {
-        List<BinanceBeanV4A> result = new ArrayList<>();
-        for (Map.Entry<?, List<BinanceBeanV4A>> entry : groups.entrySet()) {
+    public List<BinanceBeanV4> createTransactionFromGroupOfRows(Map<?, List<BinanceBeanV4>> groups) {
+        List<BinanceBeanV4> result = new ArrayList<>();
+        for (Map.Entry<?, List<BinanceBeanV4>> entry : groups.entrySet()) {
             var sortedGroup = new BinanceSortedGroupV4();
             sortedGroup.setTime(entry.getKey());
             var rows = entry.getValue();
@@ -129,8 +129,8 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
     }
 
     @Override
-    public Map<Instant,List<BinanceBeanV4A>> createGroupsFromRows(List<BinanceBeanV4A> rows) {
-        return rows.stream().collect(groupingBy(BinanceBeanV4A::getDate));
+    public Map<Instant,List<BinanceBeanV4>> createGroupsFromRows(List<BinanceBeanV4> rows) {
+        return rows.stream().collect(groupingBy(BinanceBeanV4::getDate));
     }
 
 }
