@@ -30,7 +30,7 @@ import java.util.List;
 @Data
 @FieldDefaults(level = PRIVATE)
 @Headers(sequence = {"Operation", "UTC_Time", "Account", "Coin", "Change", "Remark", "User_ID"}, extract = true)
-public class BinanceBeanV4 extends ExchangeBean {
+public class BinanceBeanV4A extends ExchangeBean {
 
     Instant date;
     String account;
@@ -61,7 +61,7 @@ public class BinanceBeanV4 extends ExchangeBean {
     Currency feeCurrency;
     BigDecimal transactionPrice;
 
-    public List<BinanceBeanV4> feeTransactions = new ArrayList<>();
+    public List<BinanceBeanV4A> feeTransactions = new ArrayList<>();
 
     @Parsed(field = "User_ID")
     public void setUserId(String userId) {
@@ -157,7 +157,7 @@ public class BinanceBeanV4 extends ExchangeBean {
             throw new DataIgnoredException(getMessage());
         }
         if (feeTransactions.size() > 0) {
-            for (BinanceBeanV4 fee : feeTransactions) {
+            for (BinanceBeanV4A fee : feeTransactions) {
                 var feeTxs = new FeeRebateImportedTransactionBean(
                     null,
                     fee.getDate(),

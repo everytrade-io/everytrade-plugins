@@ -12,7 +12,6 @@ import io.everytrade.server.plugin.impl.everytrade.EveryTradePlugin;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.UnknownHeaderException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BinanceExchangeSpecificParserV4;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BinanceV4SpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BitfinexExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BitflyerMultiRowParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.CoinBaseProExchangeSpecificParser;
@@ -36,6 +35,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.Coinbase
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OpenNodeV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OpenNodeV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OpenNodeV3;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceBeanV4B;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.coibasePro.v2.CoinbaseProBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinmateBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinmateBeanV2;
@@ -61,7 +61,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.Poloniex
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.ShakePayBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v2.BinanceExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v3.BinanceExchangeSpecificParserV3;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceBeanV4;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceBeanV4A;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.everytrade.EveryTradeBeanV3_1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.everytrade.EveryTradeBeanV3_2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.v1.KuCoinBuySellV1;
@@ -161,18 +161,18 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 .build());
 
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
-                .headers(List.of(binanceHeader3.withSeparator(delimiter),
-                    binanceHeader4.withSeparator(delimiter)
-                ))
-                .parserFactory(() -> new BinanceExchangeSpecificParserV4(BinanceBeanV4.class, delimiter))
+                .headers(List.of(binanceHeader4.withSeparator(delimiter)))
+                .parserFactory(() -> new BinanceExchangeSpecificParserV4(BinanceBeanV4B.class, delimiter, true))
                 .supportedExchange(BINANCE)
                 .build());
 
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
-                .headers(List.of(binanceHeader4.withSeparator(delimiter)))
-                .parserFactory(() -> new BinanceV4SpecificParser(BinanceBeanV4.class, delimiterdgdfhfdh))
+                .headers(List.of(binanceHeader3.withSeparator(delimiter)
+                ))
+                .parserFactory(() -> new BinanceExchangeSpecificParserV4(BinanceBeanV4A.class, delimiter, false))
                 .supportedExchange(BINANCE)
                 .build());
+
 
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
                 .headers(List.of(binanceHeader5.withSeparator(delimiter)))

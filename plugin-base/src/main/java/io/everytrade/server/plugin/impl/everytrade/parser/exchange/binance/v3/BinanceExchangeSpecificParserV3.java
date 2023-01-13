@@ -69,7 +69,12 @@ public class BinanceExchangeSpecificParserV3 implements IExchangeSpecificParser 
         return binanceBeans;
     }
 
-    String[] correctLinesWithCommaBetweenQuotes(String[] values) {
+    /**
+     * e.g. "2020-05-29 11:13:27,ADABTC,BUY,0.0000067200,""3,813.0000000000ADA"",0.02562336BTC,3.8130000000ADA"
+     * @param values
+     * @return
+     */
+    private static String[] correctLinesWithCommaBetweenQuotes(String[] values) {
         try {
             if (values.length > 7) {
                 String[] newValues = new String[7];
