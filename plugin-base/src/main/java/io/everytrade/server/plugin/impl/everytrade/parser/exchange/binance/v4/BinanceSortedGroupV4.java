@@ -5,7 +5,6 @@ import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -163,7 +162,7 @@ public class BinanceSortedGroupV4 {
                 fee.setInTransaction(true);
                 var bean = new BinanceBeanV4();
                 bean.setType(TransactionType.FEE);
-                bean.setFee(fee.getChange());
+                bean.setFee(fee.getChange().abs());
                 bean.setFeeCurrency(fee.getCoin());
                 bean.setDate(fee.getDate());
                 bean.setOperation(fee.getOperation());

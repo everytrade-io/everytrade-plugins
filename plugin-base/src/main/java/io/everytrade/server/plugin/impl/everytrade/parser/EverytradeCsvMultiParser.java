@@ -160,18 +160,18 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 .build());
 
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
-                .headers(List.of(binanceHeader3.withSeparator(delimiter),
-                    binanceHeader4.withSeparator(delimiter)
-                ))
-                .parserFactory(() -> new BinanceExchangeSpecificParserV4(BinanceBeanV4.class, delimiter))
+                .headers(List.of(binanceHeader4.withSeparator(delimiter)))
+                .parserFactory(() -> new BinanceExchangeSpecificParserV4(BinanceBeanV4.class, delimiter, true))
                 .supportedExchange(BINANCE)
                 .build());
 
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
-                .headers(List.of(binanceHeader4.withSeparator(delimiter)))
-                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(BinanceBeanV4.class, delimiter))
+                .headers(List.of(binanceHeader3.withSeparator(delimiter)
+                ))
+                .parserFactory(() -> new BinanceExchangeSpecificParserV4(BinanceBeanV4.class, delimiter, false))
                 .supportedExchange(BINANCE)
                 .build());
+
 
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
                 .headers(List.of(binanceHeader5.withSeparator(delimiter)))
