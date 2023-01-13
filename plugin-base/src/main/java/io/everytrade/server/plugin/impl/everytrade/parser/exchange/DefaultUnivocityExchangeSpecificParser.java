@@ -33,6 +33,7 @@ public class DefaultUnivocityExchangeSpecificParser implements IExchangeSpecific
     protected final String lineSeparator;
     protected List<ParsingProblem> parsingProblems = List.of();
     protected int rowId = 1;
+    protected final boolean isRowInsideQuotes;
 
     public DefaultUnivocityExchangeSpecificParser(Class<? extends ExchangeBean> exchangeBean) {
         this(exchangeBean, DEFAULT_DELIMITER, null);
@@ -50,9 +51,19 @@ public class DefaultUnivocityExchangeSpecificParser implements IExchangeSpecific
         String delimiter,
         String lineSeparator
     ) {
+        this(exchangeBean,delimiter,lineSeparator,false);
+    }
+
+    public DefaultUnivocityExchangeSpecificParser(
+        Class<? extends ExchangeBean> exchangeBean,
+        String delimiter,
+        String lineSeparator,
+        boolean isRowInsideQuotes
+    ) {
         Objects.requireNonNull(this.exchangeBean = exchangeBean);
         Objects.requireNonNull(this.delimiter = delimiter);
         this.lineSeparator = lineSeparator;
+        this.isRowInsideQuotes = isRowInsideQuotes;
     }
 
     @Override
@@ -90,6 +101,9 @@ public class DefaultUnivocityExchangeSpecificParser implements IExchangeSpecific
                 @Override
                 public T createBean(String[] row, Context context) {
                     rowId++;
+                    if(isRowInsideQuotes){
+                        row = correctRowInsideQuotes(row);
+                    }
                     T bean = super.createBean(row, context);
                     if (bean == null) {
                         return null;
@@ -126,4 +140,24 @@ public class DefaultUnivocityExchangeSpecificParser implements IExchangeSpecific
 
         return parserSettings;
     }
+
+    /**
+     * Method correct errors made by rows with quotes
+     * e.g. ""2023-01-04 05:43:39;IOTX;IOTX;0.00006298""
+     *
+     * @param values
+     * @return
+     */
+    public String[] correctRowInsideQuotes(String[] values) {
+        try {
+            var arrayAsList = Arrays.asList(values);
+            String join = String.join("", arrayAsList).replace("null", "");
+            if (values[(values.length-1)].equals(join)) {
+                return values[(values.length-1)].split(delimiter);
+            }
+        } catch (Exception ignored) {
+        }
+        return values;
+    }
+
 }

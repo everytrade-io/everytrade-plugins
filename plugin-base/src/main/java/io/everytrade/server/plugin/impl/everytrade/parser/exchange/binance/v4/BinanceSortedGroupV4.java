@@ -5,7 +5,6 @@ import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,24 +37,24 @@ public class BinanceSortedGroupV4 {
     Object time;
 
     // beforeSum
-    Map<Currency, List<BinanceBeanV4>> rowsDeposit = new HashMap<>();
-    Map<Currency, List<BinanceBeanV4>> rowsWithdrawal = new HashMap<>();
-    Map<Currency, List<BinanceBeanV4>> rowsFees = new HashMap<>();
-    Map<Currency, List<BinanceBeanV4>> rowsBuySellRelated = new HashMap<>();
-    Map<Currency, List<BinanceBeanV4>> rowsRewards = new HashMap<>();
+    Map<Currency, List<BinanceBeanV4A>> rowsDeposit = new HashMap<>();
+    Map<Currency, List<BinanceBeanV4A>> rowsWithdrawal = new HashMap<>();
+    Map<Currency, List<BinanceBeanV4A>> rowsFees = new HashMap<>();
+    Map<Currency, List<BinanceBeanV4A>> rowsBuySellRelated = new HashMap<>();
+    Map<Currency, List<BinanceBeanV4A>> rowsRewards = new HashMap<>();
 
     // afterSum
-    List<BinanceBeanV4> rowDeposit = new ArrayList<>();
-    List<BinanceBeanV4> rowWithdrawal = new ArrayList<>();
-    List<BinanceBeanV4> rowFees = new ArrayList<>();
-    List<BinanceBeanV4> rowBuySellRelated = new ArrayList<>();
-    List<BinanceBeanV4> rowReward = new ArrayList<>();
+    List<BinanceBeanV4A> rowDeposit = new ArrayList<>();
+    List<BinanceBeanV4A> rowWithdrawal = new ArrayList<>();
+    List<BinanceBeanV4A> rowFees = new ArrayList<>();
+    List<BinanceBeanV4A> rowBuySellRelated = new ArrayList<>();
+    List<BinanceBeanV4A> rowReward = new ArrayList<>();
 
-    public List<BinanceBeanV4> createdTransactions = new ArrayList<>();
+    public List<BinanceBeanV4A> createdTransactions = new ArrayList<>();
 
-    public void sortGroup(List<BinanceBeanV4> group) {
+    public void sortGroup(List<BinanceBeanV4A> group) {
         // nejdrive udelam map , kde hash bude currency
-        for (BinanceBeanV4 row : group) {
+        for (BinanceBeanV4A row : group) {
             addRow(row);
         }
         sumAllRows();
@@ -70,15 +69,15 @@ public class BinanceSortedGroupV4 {
         rowReward = sumRows(rowsRewards);
     }
 
-    private List<BinanceBeanV4> sumRows(Map<Currency, List<BinanceBeanV4>> rows) {
-        List<BinanceBeanV4> result = new ArrayList<>();
+    private List<BinanceBeanV4A> sumRows(Map<Currency, List<BinanceBeanV4A>> rows) {
+        List<BinanceBeanV4A> result = new ArrayList<>();
         if (rows.size() > 0) {
             var time = rows.values().stream().collect(Collectors.toList()).get(0).get(0).getDate();
-            for (Map.Entry<Currency, List<BinanceBeanV4>> entry : rows.entrySet()) {
-                var newBean = new BinanceBeanV4();
+            for (Map.Entry<Currency, List<BinanceBeanV4A>> entry : rows.entrySet()) {
+                var newBean = new BinanceBeanV4A();
                 var currency = entry.getKey();
-                var change = entry.getValue().stream().map(BinanceBeanV4::getChange).reduce(ZERO, BigDecimal::add);
-                var ids = entry.getValue().stream().map(BinanceBeanV4::getRowId).collect(Collectors.toList());
+                var change = entry.getValue().stream().map(BinanceBeanV4A::getChange).reduce(ZERO, BigDecimal::add);
+                var ids = entry.getValue().stream().map(BinanceBeanV4A::getRowId).collect(Collectors.toList());
                 if (entry.getValue().size() > 0) {
                     newBean.setChange(change);
                     newBean.setCoin(currency);
@@ -116,9 +115,9 @@ public class BinanceSortedGroupV4 {
         }
     }
 
-    private boolean isCrypto(List<BinanceBeanV4> rows) {
+    private boolean isCrypto(List<BinanceBeanV4A> rows) {
         boolean result = false;
-        for (BinanceBeanV4 row : rows) {
+        for (BinanceBeanV4A row : rows) {
             if (!row.getCoin().isFiat()) {
                 result = true;
             }
@@ -159,11 +158,11 @@ public class BinanceSortedGroupV4 {
     private void addFeeToTxs() {
         try {
             var txs = createdTransactions.get(0);
-            for (BinanceBeanV4 fee : rowFees) {
+            for (BinanceBeanV4A fee : rowFees) {
                 fee.setInTransaction(true);
-                var bean = new BinanceBeanV4();
+                var bean = new BinanceBeanV4A();
                 bean.setType(TransactionType.FEE);
-                bean.setFee(fee.getChange());
+                bean.setFee(fee.getChange().abs());
                 bean.setFeeCurrency(fee.getCoin());
                 bean.setDate(fee.getDate());
                 bean.setOperation(fee.getOperation());
@@ -187,13 +186,13 @@ public class BinanceSortedGroupV4 {
     }
 
     private void createDepositWithdrawalTxs() {
-        List<BinanceBeanV4> mergeDepositWithdrawal = new ArrayList<>();
+        List<BinanceBeanV4A> mergeDepositWithdrawal = new ArrayList<>();
         mergeDepositWithdrawal.addAll(rowDeposit);
         mergeDepositWithdrawal.addAll(rowWithdrawal);
-        var idsList = mergeDepositWithdrawal.stream().map(BinanceBeanV4::getRowId).collect(Collectors.toList());
+        var idsList = mergeDepositWithdrawal.stream().map(BinanceBeanV4A::getRowId).collect(Collectors.toList());
         var ids = parseIds(idsList);
-        for (BinanceBeanV4 row : mergeDepositWithdrawal) {
-            var txs = new BinanceBeanV4();
+        for (BinanceBeanV4A row : mergeDepositWithdrawal) {
+            var txs = new BinanceBeanV4A();
             txs.setRowNumber(row.getDate().getEpochSecond());
             String[] strings = {"Row id " + ids + " " + row.getOperation()};
             txs.setRowValues(strings);
@@ -212,7 +211,7 @@ public class BinanceSortedGroupV4 {
     }
 
     private void createRewarsTxs() {
-        var txs = new BinanceBeanV4();
+        var txs = new BinanceBeanV4A();
         var row = rowReward.get(0);
         txs.setRowNumber(row.getDate().getEpochSecond());
         String[] strings = {"Row id " + row.usedIds.toString() + " " + row.getOperation()};
@@ -234,7 +233,7 @@ public class BinanceSortedGroupV4 {
             stRow =  rowBuySellRelated.get(1);
             ndRow = rowBuySellRelated.get(0);
         }
-        var txsBuySell = new BinanceBeanV4();
+        var txsBuySell = new BinanceBeanV4A();
         txsBuySell.setDate(stRow.getDate());
         txsBuySell.usedIds.addAll(stRow.usedIds);
         txsBuySell.usedIds.addAll(ndRow.usedIds);
@@ -284,12 +283,12 @@ public class BinanceSortedGroupV4 {
         createdTransactions.add(txsBuySell);
     }
 
-    private void addRow(BinanceBeanV4 row) {
+    private void addRow(BinanceBeanV4A row) {
         if (row.getOperation().equals(OPERATION_TYPE_FEE.code)) {
             if (rowsFees.containsKey(row.getCoin())) {
                 rowsFees.get(row.getCoin()).add(row);
             } else {
-                List<BinanceBeanV4> newList = new ArrayList<>();
+                List<BinanceBeanV4A> newList = new ArrayList<>();
                 newList.add(row);
                 rowsFees.put(row.getCoin(), newList);
             }
@@ -297,7 +296,7 @@ public class BinanceSortedGroupV4 {
             if (rowsDeposit.containsKey(row.getCoin())) {
                 rowsDeposit.get(row.getCoin()).add(row);
             } else {
-                List<BinanceBeanV4> newList = new ArrayList<>();
+                List<BinanceBeanV4A> newList = new ArrayList<>();
                 newList.add(row);
                 rowsDeposit.put(row.getCoin(), newList);
             }
@@ -305,7 +304,7 @@ public class BinanceSortedGroupV4 {
             if (rowsWithdrawal.containsKey(row.getCoin())) {
                 rowsWithdrawal.get(row.getCoin()).add(row);
             } else {
-                List<BinanceBeanV4> newList = new ArrayList<>();
+                List<BinanceBeanV4A> newList = new ArrayList<>();
                 newList.add(row);
                 rowsWithdrawal.put(row.getCoin(), newList);
             }
@@ -317,7 +316,7 @@ public class BinanceSortedGroupV4 {
             if (rowsBuySellRelated.containsKey(row.getCoin())) {
                 rowsBuySellRelated.get(row.getCoin()).add(row);
             } else {
-                List<BinanceBeanV4> newList = new ArrayList<>();
+                List<BinanceBeanV4A> newList = new ArrayList<>();
                 newList.add(row);
                 rowsBuySellRelated.put(row.getCoin(), newList);
             }
@@ -325,7 +324,7 @@ public class BinanceSortedGroupV4 {
             if (rowsRewards.containsKey(row.getCoin())) {
                 rowsRewards.get(row.getCoin()).add(row);
             } else {
-                List<BinanceBeanV4> newList = new ArrayList<>();
+                List<BinanceBeanV4A> newList = new ArrayList<>();
                 newList.add(row);
                 rowsRewards.put(row.getCoin(), newList);
             }
