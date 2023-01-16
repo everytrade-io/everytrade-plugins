@@ -3,28 +3,17 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 import com.univocity.parsers.annotations.Format;
 import com.univocity.parsers.annotations.Headers;
 import com.univocity.parsers.annotations.Parsed;
-import com.univocity.parsers.annotations.Replace;
-import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
-import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
-import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 
-import static io.everytrade.server.model.CurrencyPair.getTradeablePairs;
 import static io.everytrade.server.model.TransactionType.EARNING;
-import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.equalsToZero;
-import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
 import static java.util.Collections.emptyList;
 
 /**
@@ -39,6 +28,7 @@ public class BinanceBeanV5 extends ExchangeBean {
     private BigDecimal amount;
     private TransactionType type = EARNING;
 
+    @Parsed(field = "Date(UTC)")
     @Format(formats = {"yyyy-MM-dd HH:mm:ss"}, options = {"locale=EN", "timezone=UTC"})
     public void setDate(Date value) {
         date = value.toInstant();
