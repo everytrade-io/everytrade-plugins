@@ -39,6 +39,7 @@ public class BinanceBeanV5 extends ExchangeBean {
     private BigDecimal amount;
     private TransactionType type = EARNING;
 
+    @Parsed(field = "Date(UTC)")
     @Format(formats = {"yyyy-MM-dd HH:mm:ss"}, options = {"locale=EN", "timezone=UTC"})
     public void setDate(Date value) {
         date = value.toInstant();
