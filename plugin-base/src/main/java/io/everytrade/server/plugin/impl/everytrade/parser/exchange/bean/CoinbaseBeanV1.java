@@ -19,6 +19,7 @@ import java.util.List;
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.FEE;
+import static io.everytrade.server.model.TransactionType.REWARD;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static java.util.Collections.emptyList;
 
@@ -27,6 +28,7 @@ public class CoinbaseBeanV1 extends ExchangeBean {
     private TransactionType transactionType;
     private Currency asset;
     private String spotPriceCurrency;
+    private BigDecimal spotPriceAtTransaction;
     private BigDecimal quantityTransacted;
     private BigDecimal subtotal;
     private BigDecimal fees;
@@ -34,6 +36,8 @@ public class CoinbaseBeanV1 extends ExchangeBean {
     private String type;
     private boolean advancedTrade;
     private boolean converted;
+    private boolean isFailedFee;
+    private String failedFeeMessage;
 
     @Parsed(field = "Timestamp")
     public void setTimeStamp(String value) {
@@ -54,6 +58,8 @@ public class CoinbaseBeanV1 extends ExchangeBean {
             transactionType = BUY;
         } else if ("Send".equalsIgnoreCase(value)) {
             transactionType = WITHDRAWAL;
+        } else if (List.of("Receive", "Rewards Income").contains(value)) {
+            transactionType = REWARD;
         } else {
             transactionType = detectTransactionType(value);
         }
@@ -69,27 +75,45 @@ public class CoinbaseBeanV1 extends ExchangeBean {
         }
     }
 
-    @Parsed(field = "Spot Price Currency")
-    public void setSpotPriceCurrency(String value) {
-        spotPriceCurrency = value;
-    }
-
     @Parsed(field = "Quantity Transacted")
     @Replace(expression = IGNORED_CHARS_IN_NUMBER, replacement = "")
     public void setQuantityTransacted(BigDecimal value) {
         quantityTransacted = value;
     }
 
+    @Parsed(field = "Spot Price Currency")
+    public void setSpotPriceCurrency(String value) {
+        spotPriceCurrency = value;
+    }
+
+    @Parsed(field = "Spot Price at Transaction")
+    public void setSpotPriceAtTransaction(String value) {
+        try {
+            spotPriceAtTransaction = new BigDecimal(value).abs().setScale(ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE);
+        } catch (Exception ignore) {
+        }
+    }
+
     @Parsed(field = "Subtotal")
     @Replace(expression = IGNORED_CHARS_IN_NUMBER, replacement = "")
-    public void setSubtotal(BigDecimal value) {
-        subtotal = value;
+    public void setSubtotal(String value) {
+        try {
+            subtotal = new BigDecimal(value).abs().setScale(ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE);
+        } catch (Exception ignore) {
+        }
     }
 
     @Parsed(field = {"Fees", "Fees and/or Spread"})
     @Replace(expression = IGNORED_CHARS_IN_NUMBER, replacement = "")
-    public void setFees(BigDecimal value) {
-        fees = value;
+    public void setFees(String value) {
+        try {
+            if (!"".equals(value)) {
+                fees = new BigDecimal(value).abs().setScale(ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE);
+            }
+        } catch (Exception e) {
+            isFailedFee = true;
+            failedFeeMessage = e.getMessage();
+        }
     }
 
     @Parsed(field = "Notes")
@@ -108,20 +132,26 @@ public class CoinbaseBeanV1 extends ExchangeBean {
         }
 
         List<ImportedTransactionBean> related;
-        if (ParserUtils.nullOrZero(fees)) {
+        if (ParserUtils.nullOrZero(fees) || isFailedFee) {
             related = emptyList();
         } else {
-            related = List.of(
-                new FeeRebateImportedTransactionBean(
-                    null,
-                    timeStamp,
-                    feeCurrency,
-                    feeCurrency,
-                    FEE,
-                    fees.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
-                    feeCurrency
-                )
-            );
+            try {
+                related = List.of(
+                    new FeeRebateImportedTransactionBean(
+                        null,
+                        timeStamp,
+                        feeCurrency,
+                        feeCurrency,
+                        FEE,
+                        fees.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
+                        feeCurrency
+                    )
+                );
+            } catch (Exception e) {
+                isFailedFee = true;
+                failedFeeMessage = e.getMessage();
+                related = emptyList();
+            }
         }
         final ImportedTransactionBean main;
         if (transactionType.isDepositOrWithdrawal()) {
@@ -138,7 +168,15 @@ public class CoinbaseBeanV1 extends ExchangeBean {
             final Currency baseCurrency = detectBaseCurrency(notes);
             final BigDecimal volume = detectBasePrice(notes);
             validateCurrencyPair(baseCurrency, quoteCurrency);
-
+            BigDecimal unitPrice = null;
+            try {
+                unitPrice = (!converted) ? evalUnitPrice(subtotal, volume) : evalConvertUnitPrice(volume, quantityTransacted);
+                if (unitPrice == null) {
+                    unitPrice = spotPriceAtTransaction;
+                }
+            } catch (Exception ignore) {
+                unitPrice = spotPriceAtTransaction;
+            }
             main = new ImportedTransactionBean(
                 null,
                 timeStamp,
@@ -146,13 +184,16 @@ public class CoinbaseBeanV1 extends ExchangeBean {
                 quoteCurrency,
                 transactionType,
                 volume.abs().setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
-                (!converted) ? evalUnitPrice(subtotal, volume) : evalConvertUnitPrice(volume, quantityTransacted)
+                unitPrice,
+                transactionType.name().equalsIgnoreCase(type) ? null : type,
+                null
             );
         }
-        return new TransactionCluster(
-            main,
-            related
-        );
+        var cluster = new TransactionCluster(main, related);
+        if (isFailedFee) {
+            cluster.setFailedFee(1, String.format("Fee cannot be added. Reason: %s ", failedFeeMessage));
+        }
+        return cluster;
     }
 
     private String extractAddressFromNote() {
@@ -223,6 +264,11 @@ public class CoinbaseBeanV1 extends ExchangeBean {
                 }
             }
         } catch (Exception e) {
+            try {
+                return Currency.fromCode(spotPriceCurrency);
+            } catch (Exception ex) {
+                throw new DataIgnoredException("Unsupported quote currency in 'Notes': " + note);
+            }
         }
         throw new DataIgnoredException("Unsupported quote currency in 'Notes': " + note);
     }
