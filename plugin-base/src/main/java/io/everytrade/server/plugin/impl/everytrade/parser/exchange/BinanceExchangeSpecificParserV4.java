@@ -6,6 +6,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.Bi
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +20,28 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
 
     private static final long TRANSACTION_MERGE_TOLERANCE_MS = 1000;
     public BinanceExchangeSpecificParserV4(Class<? extends ExchangeBean> exchangeBean, String delimiter, boolean isRowInsideQuotes) {
-        super(exchangeBean, delimiter, null, isRowInsideQuotes);
+        super(exchangeBean, delimiter);
+    }
+
+    /**
+     *
+     *  Method correct errors made by rows with quotes
+     *  e.g. ""2023-01-04 05:43:39;IOTX;IOTX;0.00006298""
+     *
+     * @param rows
+     * @return
+     */
+    @Override
+    protected String[] correctRow(String[] rows){
+        try {
+            var arrayAsList = Arrays.asList(rows);
+            String join = String.join("", arrayAsList).replace("null", "");
+            if (rows[(rows.length-1)].equals(join)) {
+                return rows[(rows.length-1)].split(delimiter);
+            }
+        } catch (Exception ignored) {
+        }
+        return rows;
     }
 
     List<BinanceBeanV4> rows;

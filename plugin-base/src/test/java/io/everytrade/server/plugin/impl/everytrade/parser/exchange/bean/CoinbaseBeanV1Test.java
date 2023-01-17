@@ -41,6 +41,10 @@ class CoinbaseBeanV1Test {
         = "Timestamp,Transaction Type,Asset,Quantity Transacted,Spot Price Currency,Spot Price at Transaction,Subtotal," +
         "Total (inclusive of fees),Fees,Notes\n";
 
+    private static final String HEADER_CORRECT_SPOT_SPREAD
+        = "Timestamp,Transaction Type,Asset,Quantity Transacted,Spot Price Currency,Spot Price at Transaction,Subtotal," +
+        "Total (inclusive of fees and/or spread),Fees and/or Spread,Notes\n";
+
     @Test
     void testCorrectHeader() {
         try {
@@ -111,7 +115,9 @@ class CoinbaseBeanV1Test {
                 XLM,
                 EARNING,
                 new BigDecimal("4.6746120000"),
-                new BigDecimal("0.3508312562")
+                new BigDecimal("0.3508312562"),
+                "Coinbase Earn",
+                null
             ),
             emptyList());
         ParserTestUtils.checkEqual(expected, actual);
@@ -156,7 +162,9 @@ class CoinbaseBeanV1Test {
                 BTC,
                 BUY,
                 new BigDecimal("451.2121480000"),
-                unitPrice
+                unitPrice,
+                "Convert",
+                null
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -250,4 +258,60 @@ class CoinbaseBeanV1Test {
         final String error = parsingProblem.getMessage();
         assertTrue(error.contains(ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE.concat("Sending")));
     }
+
+    @Test
+    void testCorrectParsingRawTransactionBuyWithQuotes() {
+        final String row0 = "\"2020-05-15T14:05:30Z,Receive,BTC,0.001044,CZK,243359.07,\"\"\"\",\"\"\"\",\"\"\"\",Received" +
+            " 0.001044 BTC from Coinbase Referral\"";
+        final String row1 = "\"2020-05-15T20:04:01Z,Buy,BTC,0.01104395,CZK,241343.40,2665.38,2771.82,106.44,\"\"Bought 0.01104395 BTC " +
+            "for Kč2,771.82 CZK\"\"\"";
+
+        final TransactionCluster actual0 = ParserTestUtils.getTransactionCluster(HEADER_CORRECT_SPOT_SPREAD + row0);
+        final TransactionCluster actual1 = ParserTestUtils.getTransactionCluster(HEADER_CORRECT_SPOT_SPREAD + row1);
+
+        final TransactionCluster expected0 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2020-05-15T14:05:30Z"),
+                Currency.BTC,
+                Currency.CZK,
+                TransactionType.REWARD,
+                new BigDecimal("0.0010440000"),
+                new BigDecimal("243359.070000000"),
+                "Receive",
+                null
+            ),
+            emptyList()
+        );
+
+        final TransactionCluster expected1 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2020-05-15T20:04:01Z"),
+                Currency.BTC,
+                Currency.CZK,
+                TransactionType.BUY,
+                new BigDecimal("0.01104395"),
+                new BigDecimal("241342.9977498993"),
+                null,
+                null
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    null,
+                    Instant.parse("2020-05-15T20:04:01Z"),
+                    Currency.CZK,
+                    Currency.CZK,
+                    TransactionType.FEE,
+                    new BigDecimal("106.44"),
+                    Currency.CZK
+                )
+            )
+        );
+
+        ParserTestUtils.checkEqual(expected0, actual0);
+        ParserTestUtils.checkEqual(expected1, actual1);
+    }
+
+
 }

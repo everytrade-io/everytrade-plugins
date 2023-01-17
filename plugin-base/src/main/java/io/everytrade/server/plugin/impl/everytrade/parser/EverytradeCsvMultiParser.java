@@ -16,6 +16,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BitfinexExcha
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BitflyerMultiRowParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.CoinBaseProExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.CoinbaseExchangeSpecificParser;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.CoinbaseUnivocitySpecificParserV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.DefaultUnivocityExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.IMultiExchangeSpecificParser;
@@ -316,7 +317,7 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                             "Fees and/or Spread", "Notes")
                         .withSeparator(delimiter)
                 ))
-                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(CoinbaseBeanV1.class, delimiter))
+                .parserFactory(() -> new CoinbaseUnivocitySpecificParserV1(CoinbaseBeanV1.class, delimiter))
                 .supportedExchange(COINBASE)
                 .build());
 
