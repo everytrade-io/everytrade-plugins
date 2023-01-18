@@ -108,7 +108,8 @@ class CoinmateBeanV1Test {
                     CZK,
                     CZK,
                     TransactionType.FEE,
-                    new BigDecimal("69.75584587"),
+                    new BigDecimal("69.75584587"            ",\"feeCurrency\":\"LTC\",\"transactionId\":10166143,\"amountCurrency\":\"LTC\",\"status\":\"COMPLETED\",\"timestamp\"" +
+),
                     CZK
                 )
             )
