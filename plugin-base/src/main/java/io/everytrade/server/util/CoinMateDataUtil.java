@@ -12,6 +12,17 @@ import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 
 public class CoinMateDataUtil {
 
+    public static final String BUY_OPERATION = "BUY";
+    public static final String QUICK_BUY_OPERATION = "QUICK_BUY";
+    public static final String MARKET_BUY_OPERATION = "MARKET_BUY";
+    public static final String SELL_OPERATION = "SELL";
+    public static final String QUICK_SELL_OPERATION = "QUICK_SELL";
+    public static final String MARKET_SELL_OPERATION = "MARKET_SELL";
+    public static final String DEPOSIT_OPERATION = "DEPOSIT";
+    public static final String WITHDRAWAL_OPERATION = "WITHDRAWAL";
+    public static final String INSTANT_BUY_OPERATION = "INSTANT_BUY";
+    public static final String INSTANT_SELL_OPERATION = "INSTANT_SELL";
+
     public static void adaptTransactionStatus(String status) {
         switch (status) {
             case "OK", "COMPLETED" -> {
@@ -37,11 +48,11 @@ public class CoinMateDataUtil {
 
     public static TransactionType mapCoinMateType(String type) {
         return switch (type) {
-            case "BUY", "QUICK_BUY", ("INSTANT_BUY") -> BUY;
-            case ("SELL"), ("QUICK_SELL"), ("INSTANT_SELL") -> SELL;
+            case BUY_OPERATION, QUICK_BUY_OPERATION, (INSTANT_BUY_OPERATION) -> BUY;
+            case (SELL_OPERATION), (QUICK_SELL_OPERATION), (INSTANT_SELL_OPERATION) -> SELL;
             case ("NEW_USER_REWARD"), ("REFERRAL") -> REWARD;
-            case ("DEPOSIT") -> DEPOSIT;
-            case ("WITHDRAWAL") -> WITHDRAWAL;
+            case (DEPOSIT_OPERATION) -> DEPOSIT;
+            case (WITHDRAWAL_OPERATION) -> WITHDRAWAL;
             default -> throw new DataIgnoredException(String.format("Unsupported transaction %s", type));
         };
     }
