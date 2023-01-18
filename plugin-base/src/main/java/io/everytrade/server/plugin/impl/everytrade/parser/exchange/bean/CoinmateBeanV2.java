@@ -50,9 +50,9 @@ public class CoinmateBeanV2 extends ExchangeBean {
 
     @Parsed(field = "Type detail")
     public void setTypeDetail(String typeDetail) {
-        if ("BUY".equals(typeDetail) || "QUICK_BUY".equals(typeDetail)) {
+        if ("BUY".equals(typeDetail) || "QUICK_BUY".equals(typeDetail) || "MARKET_BUY".equals(typeDetail)) {
             this.typeDetail = TransactionType.BUY;
-        } else if ("SELL".equals(typeDetail) || "QUICK_SELL".equals(typeDetail)) {
+        } else if ("SELL".equals(typeDetail) || "QUICK_SELL".equals(typeDetail) || "MARKET_SELL".equals(typeDetail)) {
             this.typeDetail = TransactionType.SELL;
         } else {
             throw new DataIgnoredException(UNSUPPORTED_TRANSACTION_TYPE.concat(typeDetail));
