@@ -143,6 +143,63 @@ class CoinmateBeanV1Test {
     }
 
     @Test
+    void testCorrectParsingRawTransactionMarketBuySell() {
+        final String row0 = "4;2019-08-30 05:05:24;MARKET_BUY;0.0019;BTC;8630.7;EUR;0.03443649;EUR;16.43276649;" +
+            "EUR;;OK\n";
+        final String row1 = "4;2019-08-30 05:05:24;MARKET_SELL;0.0019;BTC;8630.7;EUR;0.03443649;EUR;16.43276649;" +
+            "EUR;;OK\n";
+        final TransactionCluster actual0 = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row0);
+        final TransactionCluster actual1 = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row1);
+        final TransactionCluster expected0 = new TransactionCluster(
+            new ImportedTransactionBean(
+                "4",
+                Instant.parse("2019-08-30T05:05:24Z"),
+                Currency.BTC,
+                Currency.EUR,
+                TransactionType.BUY,
+                new BigDecimal("0.0019"),
+                new BigDecimal("8630.7")
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    "4" + FEE_UID_PART,
+                    Instant.parse("2019-08-30T05:05:24Z"),
+                    Currency.EUR,
+                    Currency.EUR,
+                    TransactionType.FEE,
+                    new BigDecimal("0.03443649"),
+                    Currency.EUR
+                )
+            )
+        );
+
+        final TransactionCluster expected1 = new TransactionCluster(
+            new ImportedTransactionBean(
+                "4",
+                Instant.parse("2019-08-30T05:05:24Z"),
+                Currency.BTC,
+                Currency.EUR,
+                TransactionType.SELL,
+                new BigDecimal("0.0019"),
+                new BigDecimal("8630.7")
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    "4" + FEE_UID_PART,
+                    Instant.parse("2019-08-30T05:05:24Z"),
+                    Currency.EUR,
+                    Currency.EUR,
+                    TransactionType.FEE,
+                    new BigDecimal("0.03443649"),
+                    Currency.EUR
+                )
+            )
+        );
+        ParserTestUtils.checkEqual(expected0, actual0);
+        ParserTestUtils.checkEqual(expected1, actual1);
+    }
+
+    @Test
     void testTransactionRebate() {
         final String row = "8477834;16.08.2021 9:42;M;;1.84599318;CZK; ; ; ; ; ; ;" +
             "User: georgesoft (ID: 85425, Account ID: 88299);OK;913180.69082074;CZK; ; ";
