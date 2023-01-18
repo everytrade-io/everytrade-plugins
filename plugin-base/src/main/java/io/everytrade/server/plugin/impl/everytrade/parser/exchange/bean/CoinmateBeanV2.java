@@ -21,6 +21,12 @@ import java.util.List;
 
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.equalsToZero;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
+import static io.everytrade.server.util.CoinMateDataUtil.BUY_OPERATION;
+import static io.everytrade.server.util.CoinMateDataUtil.MARKET_BUY_OPERATION;
+import static io.everytrade.server.util.CoinMateDataUtil.MARKET_SELL_OPERATION;
+import static io.everytrade.server.util.CoinMateDataUtil.QUICK_BUY_OPERATION;
+import static io.everytrade.server.util.CoinMateDataUtil.QUICK_SELL_OPERATION;
+import static io.everytrade.server.util.CoinMateDataUtil.SELL_OPERATION;
 
 @Headers(sequence = {
     "?Transaction id", "Date", "Type detail", "Currency amount", "Amount", "Currency price", "Price", "Currency fee",
@@ -50,9 +56,10 @@ public class CoinmateBeanV2 extends ExchangeBean {
 
     @Parsed(field = "Type detail")
     public void setTypeDetail(String typeDetail) {
-        if ("BUY".equals(typeDetail) || "QUICK_BUY".equals(typeDetail) || "MARKET_BUY".equals(typeDetail)) {
+        if (BUY_OPERATION.equals(typeDetail) || QUICK_BUY_OPERATION.equals(typeDetail) || MARKET_BUY_OPERATION.equals(typeDetail)) {
             this.typeDetail = TransactionType.BUY;
-        } else if ("SELL".equals(typeDetail) || "QUICK_SELL".equals(typeDetail) || "MARKET_SELL".equals(typeDetail)) {
+        } else if (SELL_OPERATION.equals(typeDetail) || QUICK_SELL_OPERATION.equals(typeDetail)
+            || MARKET_SELL_OPERATION.equals(typeDetail)) {
             this.typeDetail = TransactionType.SELL;
         } else {
             throw new DataIgnoredException(UNSUPPORTED_TRANSACTION_TYPE.concat(typeDetail));

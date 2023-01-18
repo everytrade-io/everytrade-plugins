@@ -25,6 +25,14 @@ import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.equalsToZero;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
+import static io.everytrade.server.util.CoinMateDataUtil.BUY_OPERATION;
+import static io.everytrade.server.util.CoinMateDataUtil.SELL_OPERATION;
+import static io.everytrade.server.util.CoinMateDataUtil.MARKET_BUY_OPERATION;
+import static io.everytrade.server.util.CoinMateDataUtil.MARKET_SELL_OPERATION;
+import static io.everytrade.server.util.CoinMateDataUtil.QUICK_BUY_OPERATION;
+import static io.everytrade.server.util.CoinMateDataUtil.QUICK_SELL_OPERATION;
+import static io.everytrade.server.util.CoinMateDataUtil.DEPOSIT_OPERATION;
+import static io.everytrade.server.util.CoinMateDataUtil.WITHDRAWAL_OPERATION;
 import static java.util.Collections.emptyList;
 
 @Headers(sequence = {"ID", "Date", "Datum", "Description", "Popisek", "Type", "Typ", "Amount", "Částka", "Amount Currency", "Částka měny",
@@ -56,13 +64,13 @@ public class CoinmateBeanV1 extends ExchangeBean {
 
     @Parsed(field = {"Type", "Typ"})
     public void setType(String type) {
-        if ("BUY".equals(type) || "QUICK_BUY".equals(type) || "MARKET_BUY".equals(type)) {
+        if (BUY_OPERATION.equals(type) || QUICK_BUY_OPERATION.equals(type) || MARKET_BUY_OPERATION.equals(type)) {
             this.type = BUY;
-        } else if ("SELL".equals(type) || "QUICK_SELL".equals(type) || "MARKET_SELL".equals(type)) {
+        } else if (SELL_OPERATION.equals(type) || QUICK_SELL_OPERATION.equals(type) || MARKET_SELL_OPERATION.equals(type)) {
             this.type = SELL;
-        } else if ("DEPOSIT".equals(type)) {
+        } else if (DEPOSIT_OPERATION.equals(type)) {
             this.type = DEPOSIT;
-        } else if ("WITHDRAWAL".equals(type)) {
+        } else if (WITHDRAWAL_OPERATION.equals(type)) {
             this.type = WITHDRAWAL;
         } else if (type == null && address.contains("User:") && address.contains("(ID:") && address.contains("Account ID:")) {
             this.type = REWARD;
