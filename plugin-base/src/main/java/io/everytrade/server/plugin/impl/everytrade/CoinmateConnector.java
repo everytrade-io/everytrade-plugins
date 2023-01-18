@@ -165,7 +165,7 @@ public class CoinmateConnector implements IConnector {
         if (state.txFrom == 0L) {
             // Old tradeHistory endpoint sent lastTxId but we require timestamp
             long lastTradeTimestamp;
-            if (!"".equals(state.lastTradeId)) {
+            if (!"".equals(state.lastTradeId) && !"0".equals(state.lastTradeId)) {
                 try {
                     var tradeService = exchange.getTradeService();
                     var params = (CoinmateTradeService.CoinmateTradeHistoryHistoryParams) tradeService.createTradeHistoryParams();
