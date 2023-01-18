@@ -30,6 +30,10 @@ class CoinmateBeanV1Test {
         "Fee Currency;Total;Total Currency;Description;Status;First balance after;" +
         "First balance after Currency;Second balance after;Second balance after Currency\n";
 
+    private static final String HEADER_THREE = "ID;Datum;Účet;Typ;Částka;Částka měny;Cena;Cena měny;Poplatek;Poplatek měny;" +
+        "Celkem;Celkem měny;Popisek;Status;První zůstatek po;První zůstatek po měně;Druhý zůstatek po;Druhý zůstatek po měně\n";
+
+
     @Test
     void testCorrectHeader() {
         try {
@@ -143,7 +147,7 @@ class CoinmateBeanV1Test {
     }
 
     @Test
-    void testTransactionRebate() {
+    void testTransactionRebateReward() {
         final String row = "8477834;16.08.2021 9:42;M;;1.84599318;CZK; ; ; ; ; ; ;" +
             "User: georgesoft (ID: 85425, Account ID: 88299);OK;913180.69082074;CZK; ; ";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_TWO + row);
@@ -155,6 +159,28 @@ class CoinmateBeanV1Test {
                 CZK,
                 REWARD,
                 new BigDecimal("1.84599318"),
+                null
+            ),
+            emptyList()
+        );
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
+    void testTransactionRebateRewardAffiliate() {
+        final String row = "8669156;2021-10-10 20:26:11;M;AFFILIATE;5.14366556;CZK;;;;;5.14366556;CZK;" +
+            "User: georgesoft (ID: 85425, Account ID: 88299);OK;520422.2716417;CZK;;";
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_THREE + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                "8669156",
+                Instant.parse("2021-10-10T20:26:11Z"),
+                CZK,
+                CZK,
+                REWARD,
+                new BigDecimal("5.14366556"),
+                null,
+                "AFFILIATE",
                 null
             ),
             emptyList()

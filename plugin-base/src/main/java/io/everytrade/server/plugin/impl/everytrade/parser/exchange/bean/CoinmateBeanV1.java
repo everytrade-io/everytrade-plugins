@@ -36,6 +36,7 @@ public class CoinmateBeanV1 extends ExchangeBean {
     private String id;
     private Instant date;
     private TransactionType type;
+    private String originalType;
     private BigDecimal amount;
     private Currency amountCurrency;
     private BigDecimal price;
@@ -56,6 +57,7 @@ public class CoinmateBeanV1 extends ExchangeBean {
 
     @Parsed(field = {"Type", "Typ"})
     public void setType(String type) {
+        originalType = type;
         if ("BUY".equals(type) || "QUICK_BUY".equals(type)) {
             this.type = BUY;
         } else if ("SELL".equals(type) || "QUICK_SELL".equals(type)) {
@@ -64,7 +66,8 @@ public class CoinmateBeanV1 extends ExchangeBean {
             this.type = DEPOSIT;
         } else if ("WITHDRAWAL".equals(type)) {
             this.type = WITHDRAWAL;
-        } else if (type == null && address.contains("User:") && address.contains("(ID:") && address.contains("Account ID:")) {
+        } else if (type == null && address.contains("User:") && address.contains("(ID:") && address.contains("Account ID:")
+            || "AFFILIATE".equalsIgnoreCase(type)) {
             this.type = REWARD;
         } else {
             throw new DataIgnoredException(UNSUPPORTED_TRANSACTION_TYPE.concat(type));
@@ -183,7 +186,9 @@ public class CoinmateBeanV1 extends ExchangeBean {
                 amountCurrency,     //quote
                 REWARD,             //action
                 amount,             //base quantity
-                null     //fee rebate
+                null,     //fee rebate
+                ("AFFILIATE".equalsIgnoreCase(originalType)) ? originalType : null,
+                null
             ),
             emptyList()
         );
