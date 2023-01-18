@@ -29,7 +29,6 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @FieldDefaults(level = PRIVATE)
-@Headers(sequence = {"Operation", "UTC_Time", "Account", "Coin", "Change", "Remark", "User_ID"}, extract = true)
 public class BinanceBeanV4 extends ExchangeBean {
 
     Instant date;

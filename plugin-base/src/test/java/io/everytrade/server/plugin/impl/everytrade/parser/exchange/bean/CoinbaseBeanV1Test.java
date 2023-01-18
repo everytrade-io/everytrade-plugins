@@ -21,6 +21,7 @@ import static io.everytrade.server.model.Currency.USD;
 import static io.everytrade.server.model.Currency.USDC;
 import static io.everytrade.server.model.Currency.XLM;
 import static io.everytrade.server.model.TransactionType.BUY;
+import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.SELL;
@@ -125,14 +126,18 @@ class CoinbaseBeanV1Test {
 
     @Test
     void testSendAsWithdrawal() {
-        var row = "2021-02-01T09:28:38Z,Send,XRP,40.002654,EUR,0.550000,\"\",\"\",\"\"," +
+        var row0 = "2021-02-01T09:28:38Z,Send,XRP,40.002654,EUR,0.550000,\"\",\"\",\"\"," +
             "Sent 40.002654 XRP to rDsbeomae4FXwgQTJp9Rs64Qg9vDiTCdBv (11150057)";
-        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT_SPOT + row);
+        var row1 = "2021-02-01T09:28:38Z,Receive,XRP,40.002654,EUR,0.550000,\"\",\"\",\"\"," +
+            "Received 40.002654 XRP";
+        final TransactionCluster actual0= ParserTestUtils.getTransactionCluster(HEADER_CORRECT_SPOT + row0);
+        final TransactionCluster actual1 = ParserTestUtils.getTransactionCluster(HEADER_CORRECT_SPOT + row1);
+
         BigDecimal quantityTransacted = new BigDecimal("40.002654");
         Currency asset = Currency.fromCode("XRP");
         String note = "rDsbeomae4FXwgQTJp9Rs64Qg9vDiTCdBv";
 
-        final TransactionCluster expected = new TransactionCluster(
+        final TransactionCluster expected0 = new TransactionCluster(
             ImportedTransactionBean.createDepositWithdrawal(
                 null,
                 Instant.parse("2021-02-01T09:28:38Z"),
@@ -140,10 +145,28 @@ class CoinbaseBeanV1Test {
                 asset,
                 WITHDRAWAL,
                 quantityTransacted,
-                note
+                note,
+                "Send",
+                null
             ),
             emptyList());
-        ParserTestUtils.checkEqual(expected, actual);
+
+        final TransactionCluster expected1 = new TransactionCluster(
+            ImportedTransactionBean.createDepositWithdrawal(
+                null,
+                Instant.parse("2021-02-01T09:28:38Z"),
+                asset,
+                asset,
+                DEPOSIT,
+                quantityTransacted,
+                null,
+                "Receive",
+                null
+            ),
+            emptyList());
+
+        ParserTestUtils.checkEqual(expected0, actual0);
+        ParserTestUtils.checkEqual(expected1, actual1);
     }
 
     @Test
@@ -260,29 +283,31 @@ class CoinbaseBeanV1Test {
     }
 
     @Test
-    void testCorrectParsingRawTransactionBuyWithQuotes() {
+    void testCorrectParsingRawTransactionsWithQuotes() {
         final String row0 = "\"2020-05-15T14:05:30Z,Receive,BTC,0.001044,CZK,243359.07,\"\"\"\",\"\"\"\",\"\"\"\",Received" +
             " 0.001044 BTC from Coinbase Referral\"";
         final String row1 = "\"2020-05-15T20:04:01Z,Buy,BTC,0.01104395,CZK,241343.40,2665.38,2771.82,106.44,\"\"Bought 0.01104395 BTC " +
             "for Kč2,771.82 CZK\"\"\"";
+        final String row2 = "\"2020-05-15T20:04:01Z,Send,BTC,0.01208795,CZK,222507.26,\"\"\"\",\"\"\"\",\"\"\"\",Sent 0.01208795 BTC to " +
+            "1PCzuXqY6MkYqNvbrKareZPJQPX8XExzb7";
 
         final TransactionCluster actual0 = ParserTestUtils.getTransactionCluster(HEADER_CORRECT_SPOT_SPREAD + row0);
         final TransactionCluster actual1 = ParserTestUtils.getTransactionCluster(HEADER_CORRECT_SPOT_SPREAD + row1);
+        final TransactionCluster actual2 = ParserTestUtils.getTransactionCluster(HEADER_CORRECT_SPOT_SPREAD + row2);
 
         final TransactionCluster expected0 = new TransactionCluster(
-            new ImportedTransactionBean(
+            ImportedTransactionBean.createDepositWithdrawal(
                 null,
                 Instant.parse("2020-05-15T14:05:30Z"),
-                Currency.BTC,
-                Currency.CZK,
-                TransactionType.REWARD,
-                new BigDecimal("0.0010440000"),
-                new BigDecimal("243359.070000000"),
+                BTC,
+                BTC,
+                DEPOSIT,
+                new BigDecimal("0.001044"),
+                null,
                 "Receive",
                 null
             ),
-            emptyList()
-        );
+            emptyList());
 
         final TransactionCluster expected1 = new TransactionCluster(
             new ImportedTransactionBean(
@@ -309,8 +334,23 @@ class CoinbaseBeanV1Test {
             )
         );
 
+        final TransactionCluster expected2 = new TransactionCluster(
+            ImportedTransactionBean.createDepositWithdrawal(
+                null,
+                Instant.parse("2020-05-15T20:04:01Z"),
+                BTC,
+                BTC,
+                WITHDRAWAL,
+                new BigDecimal("0.01208795"),
+                "1PCzuXqY6MkYqNvbrKareZPJQPX8XExzb7",
+                "Send",
+                null
+            ),
+            emptyList());
+
         ParserTestUtils.checkEqual(expected0, actual0);
         ParserTestUtils.checkEqual(expected1, actual1);
+        ParserTestUtils.checkEqual(expected2, actual2);
     }
 
 

@@ -17,6 +17,7 @@ import java.time.Instant;
 import java.util.List;
 
 import static io.everytrade.server.model.TransactionType.BUY;
+import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.REWARD;
@@ -58,7 +59,9 @@ public class CoinbaseBeanV1 extends ExchangeBean {
             transactionType = BUY;
         } else if ("Send".equalsIgnoreCase(value)) {
             transactionType = WITHDRAWAL;
-        } else if (List.of("Receive", "Rewards Income").contains(value)) {
+        } else if ("Receive".equalsIgnoreCase(value)) {
+            transactionType = DEPOSIT;
+        } else if (List.of("Rewards Income").contains(value)) {
             transactionType = REWARD;
         } else {
             transactionType = detectTransactionType(value);
@@ -162,7 +165,9 @@ public class CoinbaseBeanV1 extends ExchangeBean {
                 asset,
                 transactionType,
                 quantityTransacted,
-                extractAddressFromNote()
+                extractAddressFromNote(),
+                transactionType.name().equalsIgnoreCase(type) ? null : type,
+                null
             );
         } else {
             final Currency baseCurrency = detectBaseCurrency(notes);
@@ -196,10 +201,21 @@ public class CoinbaseBeanV1 extends ExchangeBean {
         return cluster;
     }
 
+    /**
+     * Method extract withdrawal address from string
+     * e.g. "Sent 0.01208795 BTC to 1PCzuXqY6MkYqNvbrKareZPJQPX8XExzb7"
+     * @return
+     */
     private String extractAddressFromNote() {
         try {
-            String address = notes.substring(notes.lastIndexOf("to ") + 3);
-            return address.substring(0, address.indexOf(" ("));
+            String address = null;
+            if(notes.contains("to ")) {
+                address = notes.substring(notes.lastIndexOf("to ") + 3);
+                if(notes.contains(" (")) {
+                    address = address.substring(0, address.indexOf(" ("));
+                }
+            }
+            return address;
         } catch (IndexOutOfBoundsException e) {
             return "";
         }
