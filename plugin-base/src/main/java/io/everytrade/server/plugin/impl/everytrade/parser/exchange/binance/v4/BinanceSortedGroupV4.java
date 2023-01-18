@@ -165,7 +165,7 @@ public class BinanceSortedGroupV4 {
                 bean.setFee(fee.getChange().abs());
                 bean.setFeeCurrency(fee.getCoin());
                 bean.setDate(fee.getDate());
-                bean.setOperation(fee.getOperation());
+                // bean.setOperation(); // Useless setter and creates error
                 bean.setRowId(fee.getRowId());
                 bean.setMessage(fee.getMessage());
                 txs.feeTransactions.add(bean);
