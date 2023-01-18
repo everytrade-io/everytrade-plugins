@@ -50,7 +50,7 @@ public class CoinMateDataUtil {
         return switch (type) {
             case BUY_OPERATION, QUICK_BUY_OPERATION, (INSTANT_BUY_OPERATION) -> BUY;
             case (SELL_OPERATION), (QUICK_SELL_OPERATION), (INSTANT_SELL_OPERATION) -> SELL;
-            case ("NEW_USER_REWARD"), ("REFERRAL") -> REWARD;
+            case ("NEW_USER_REWARD"), ("AFFILIATE"), ("REFERRAL") -> REWARD;
             case (DEPOSIT_OPERATION) -> DEPOSIT;
             case (WITHDRAWAL_OPERATION) -> WITHDRAWAL;
             default -> throw new DataIgnoredException(String.format("Unsupported transaction %s", type));
