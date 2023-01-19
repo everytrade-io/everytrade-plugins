@@ -204,7 +204,7 @@ class CoinmateBeanV1Test {
     }
 
     @Test
-    void testTransactionRebate() {
+    void testTransactionRebateReward() {
         final String row = "8477834;16.08.2021 9:42;M;;1.84599318;CZK; ; ; ; ; ; ;" +
             "User: georgesoft (ID: 85425, Account ID: 88299);OK;913180.69082074;CZK; ; ";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_TWO + row);
