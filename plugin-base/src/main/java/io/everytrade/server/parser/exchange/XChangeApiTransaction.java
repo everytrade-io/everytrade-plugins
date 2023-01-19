@@ -100,6 +100,10 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
     }
 
     public TransactionCluster toTransactionCluster() {
+        boolean isFailedFee = false;
+        final boolean isIgnoredFee = (feeCurrency == null && !nullOrZero(feeAmount));
+        String failedFeeMessage = "";
+
         if (type.isBuyOrSell()) {
             try {
                 new CurrencyPair(base, quote);
@@ -108,22 +112,26 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
             }
         }
 
-        final boolean isIncorrectFee = (feeCurrency == null);
-
         List<ImportedTransactionBean> related;
-        if (nullOrZero(feeAmount) || isIncorrectFee) {
+        if (nullOrZero(feeAmount) || isIgnoredFee) {
             related = emptyList();
         } else {
-            related = List.of(new FeeRebateImportedTransactionBean(
-                    id + FEE_UID_PART,
-                    timestamp,
-                    feeCurrency,
-                    feeCurrency,
-                    FEE,
-                    feeAmount,
-                    feeCurrency
-                )
-            );
+            try {
+                related = List.of(new FeeRebateImportedTransactionBean(
+                        id + FEE_UID_PART,
+                        timestamp,
+                        feeCurrency,
+                        feeCurrency,
+                        FEE,
+                        feeAmount,
+                        feeCurrency
+                    )
+                );
+            } catch (Exception e) {
+                isFailedFee = true;
+                failedFeeMessage = e.getMessage();
+                related = emptyList();
+            }
         }
 
         TransactionCluster cluster;
@@ -135,10 +143,11 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
             throw new DataValidationException("Unsupported type " + type.name());
         }
 
-        if (isIncorrectFee && logIgnoredFees) {
-            cluster.setFailedFee(1, "Fee " + (feeCurrency != null ? feeCurrency.code() : "null") + " currency is not base or quote");
-        } else if (nullOrZero(feeAmount)) {
-//            cluster.setIgnoredFee(1, "Fee amount is 0 " + (feeCurrency != null ? feeCurrency.code() : ""));
+        if (isIgnoredFee && logIgnoredFees) {
+            cluster.setIgnoredFee(1, "Fee " + (feeCurrency != null ? feeCurrency.code() : "null") + " currency is not base or quote");
+        }
+        if (isFailedFee) {
+            cluster.setFailedFee(1, String.format("Fee transaction failed - %s", failedFeeMessage));
         }
         return cluster;
     }
@@ -234,6 +243,5 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
     private static boolean isStakingReward(FundingRecord r) {
         return r.getDescription() != null && r.getDescription().toLowerCase().endsWith("distribution");
     }
-
 
 }
