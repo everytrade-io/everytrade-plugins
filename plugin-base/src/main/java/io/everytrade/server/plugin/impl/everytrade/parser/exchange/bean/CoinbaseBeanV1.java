@@ -110,7 +110,7 @@ public class CoinbaseBeanV1 extends ExchangeBean {
     @Replace(expression = IGNORED_CHARS_IN_NUMBER, replacement = "")
     public void setFees(String value) {
         try {
-            if (!"".equals(value)) {
+            if (!"".equals(value) && value != null) {
                 fees = new BigDecimal(value).abs().setScale(ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE);
             }
         } catch (Exception e) {
