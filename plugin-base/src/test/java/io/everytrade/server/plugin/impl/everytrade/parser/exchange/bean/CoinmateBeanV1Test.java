@@ -33,7 +33,6 @@ class CoinmateBeanV1Test {
     private static final String HEADER_THREE = "ID;Datum;Účet;Typ;Částka;Částka měny;Cena;Cena měny;Poplatek;Poplatek měny;" +
         "Celkem;Celkem měny;Popisek;Status;První zůstatek po;První zůstatek po měně;Druhý zůstatek po;Druhý zůstatek po měně\n";
 
-
     @Test
     void testCorrectHeader() {
         try {
