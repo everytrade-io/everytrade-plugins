@@ -17,6 +17,9 @@ import java.util.List;
 import static io.everytrade.server.model.Currency.CZK;
 import static io.everytrade.server.model.TransactionType.REWARD;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
+import static io.everytrade.server.util.CoinMateDataUtil.MARKET_BUY_OPERATION;
+import static io.everytrade.server.util.CoinMateDataUtil.MARKET_SELL_OPERATION;
+import static io.everytrade.server.util.CoinMateDataUtil.QUICK_BUY_OPERATION;
 import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -98,7 +101,9 @@ class CoinmateBeanV1Test {
                 CZK,
                 TransactionType.BUY,
                 new BigDecimal("0.01574751"),
-                new BigDecimal("1265612.25778996")
+                new BigDecimal("1265612.25778996"),
+                QUICK_BUY_OPERATION,
+                null
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -128,7 +133,9 @@ class CoinmateBeanV1Test {
                 Currency.EUR,
                 TransactionType.BUY,
                 new BigDecimal("0.0019"),
-                new BigDecimal("8630.7")
+                new BigDecimal("8630.7"),
+                QUICK_BUY_OPERATION,
+                null
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -161,7 +168,9 @@ class CoinmateBeanV1Test {
                 Currency.EUR,
                 TransactionType.BUY,
                 new BigDecimal("0.0019"),
-                new BigDecimal("8630.7")
+                new BigDecimal("8630.7"),
+                MARKET_BUY_OPERATION,
+                null
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -184,7 +193,9 @@ class CoinmateBeanV1Test {
                 Currency.EUR,
                 TransactionType.SELL,
                 new BigDecimal("0.0019"),
-                new BigDecimal("8630.7")
+                new BigDecimal("8630.7"),
+                MARKET_SELL_OPERATION,
+                null
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(

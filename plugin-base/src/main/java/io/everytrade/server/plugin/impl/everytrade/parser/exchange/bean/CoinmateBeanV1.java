@@ -51,6 +51,8 @@ public class CoinmateBeanV1 extends ExchangeBean {
     private Currency priceCurrency;
     private BigDecimal fee;
     private String address;
+    private boolean isFailedFee;
+    private String failedFeeMessage;
 
     @Parsed(field = "ID")
     public void setId(String id) {
@@ -102,14 +104,28 @@ public class CoinmateBeanV1 extends ExchangeBean {
         priceCurrency = parseCurrency(curr);
     }
 
-    @Parsed(field = {"Fee", "Poplatek"}, defaultNullRead = "0")
-    public void setFee(BigDecimal fee) {
-        this.fee = fee;
+    @Parsed(field = {"Fee", "Poplatek"})
+    public void setFee(String value) {
+        try {
+            if (!"".equals(value) && value != null) {
+                fee = new BigDecimal(value).abs().setScale(ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE);
+            }
+        } catch (Exception e) {
+            isFailedFee = true;
+            failedFeeMessage = e.getMessage();
+        }
     }
 
     @Parsed(field = {"Fee Currency", "Poplatek měny"})
-    public void setFeeCurrency(String curr) {
-        auxFeeCurrency = parseCurrency(curr);
+    public void setFeeCurrency(String value) {
+        try {
+            if (!"".equals(value)) {
+                auxFeeCurrency = parseCurrency(value);
+            }
+        } catch (Exception e) {
+            isFailedFee = true;
+            failedFeeMessage = e.getMessage();
+        }
     }
 
     @Parsed(field = "Status")
@@ -147,20 +163,26 @@ public class CoinmateBeanV1 extends ExchangeBean {
         validateCurrencyPair(amountCurrency, priceCurrency);
         final boolean isIncorrectFee = (auxFeeCurrency == null);
         List<ImportedTransactionBean> related;
-        if (equalsToZero(fee) || isIncorrectFee) {
+        if (nullOrZero(fee) || isIncorrectFee || isFailedFee) {
             related = emptyList();
         } else {
-            related = List.of(
-                new FeeRebateImportedTransactionBean(
-                    id + FEE_UID_PART,
-                    date,
-                    auxFeeCurrency,
-                    auxFeeCurrency,
-                    TransactionType.FEE,
-                    fee.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
-                    auxFeeCurrency
-                )
-            );
+            try {
+                related = List.of(
+                    new FeeRebateImportedTransactionBean(
+                        id + FEE_UID_PART,
+                        date,
+                        auxFeeCurrency,
+                        auxFeeCurrency,
+                        TransactionType.FEE,
+                        fee.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
+                        auxFeeCurrency
+                    )
+                );
+            } catch (Exception e) {
+                isFailedFee = true;
+                failedFeeMessage = e.getMessage();
+                related = emptyList();
+            }
         }
         TransactionCluster cluster = new TransactionCluster(
             new ImportedTransactionBean(
@@ -170,15 +192,14 @@ public class CoinmateBeanV1 extends ExchangeBean {
                 priceCurrency,  //quote
                 type,           //action
                 amount,         //base quantity
-                price
+                price,
+                type.name().equalsIgnoreCase(originalType) ? null : originalType,
+                null
             ),
             related
         );
-        if (isIncorrectFee) {
-            cluster.setFailedFee(
-                1,
-                "Fee " + (auxFeeCurrency != null ? auxFeeCurrency.code() : "null") + " currency is neither base or quote"
-            );
+        if (isFailedFee) {
+            cluster.setFailedFee(1, String.format("Fee transaction failed - %s", failedFeeMessage));
         } else if (nullOrZero(fee)) {
 //            cluster.setIgnoredFee(1, "Fee amount is 0 " + (auxFeeCurrency != null ? auxFeeCurrency.code() : ""));
         }
@@ -195,7 +216,7 @@ public class CoinmateBeanV1 extends ExchangeBean {
                 REWARD,             //action
                 amount,             //base quantity
                 null,     //fee rebate
-                ("AFFILIATE".equalsIgnoreCase(originalType)) ? originalType : null,
+                REWARD.name().equalsIgnoreCase(originalType) ? null : originalType,
                 null
             ),
             emptyList()
@@ -211,7 +232,9 @@ public class CoinmateBeanV1 extends ExchangeBean {
             priceCurrency,  //quote
             type,
             amount,
-            amountCurrency.isFiat() ? null : address
+            amountCurrency.isFiat() ? null : address,
+            type.name().equalsIgnoreCase(originalType) ? null : originalType,
+            null
         );
         return new TransactionCluster(tx, getRelatedFeeTransaction());
     }
@@ -221,17 +244,23 @@ public class CoinmateBeanV1 extends ExchangeBean {
         if (equalsToZero(fee)) {
             related = emptyList();
         } else {
-            related = List.of(
-                new FeeRebateImportedTransactionBean(
-                    id + FEE_UID_PART,
-                    date,
-                    auxFeeCurrency,
-                    auxFeeCurrency,
-                    TransactionType.FEE,
-                    fee.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
-                    auxFeeCurrency
-                )
-            );
+            try {
+                related = List.of(
+                    new FeeRebateImportedTransactionBean(
+                        id + FEE_UID_PART,
+                        date,
+                        auxFeeCurrency,
+                        auxFeeCurrency,
+                        TransactionType.FEE,
+                        fee.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
+                        auxFeeCurrency
+                    )
+                );
+            } catch (Exception e) {
+                isFailedFee = true;
+                failedFeeMessage = e.getMessage();
+                related = emptyList();
+            }
         }
         return related;
     }
