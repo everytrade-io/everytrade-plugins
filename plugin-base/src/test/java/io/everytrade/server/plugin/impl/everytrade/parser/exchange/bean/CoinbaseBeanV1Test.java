@@ -17,6 +17,7 @@ import java.util.List;
 import static io.everytrade.server.model.Currency.BTC;
 import static io.everytrade.server.model.Currency.CZK;
 import static io.everytrade.server.model.Currency.EUR;
+import static io.everytrade.server.model.Currency.GRT;
 import static io.everytrade.server.model.Currency.USD;
 import static io.everytrade.server.model.Currency.USDC;
 import static io.everytrade.server.model.Currency.XLM;
@@ -118,6 +119,27 @@ class CoinbaseBeanV1Test {
                 new BigDecimal("4.6746120000"),
                 new BigDecimal("0.3508312562"),
                 "Coinbase Earn",
+                null
+            ),
+            emptyList());
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
+    void testCorrectParsingRawTransactionEarningLearningReward() {
+        var row = "2022-11-18T20:27:05Z,Learning Reward,GRT,16.68056713,EUR,0.060000,1.00,1.00,0.00,Received 16.68056713 GRT from " +
+            "Coinbase as a learning reward\n";
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT_SPOT + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-11-18T20:27:05Z"),
+                GRT,
+                EUR,
+                EARNING,
+                new BigDecimal("16.68056713"),
+                new BigDecimal("0.0599500000"),
+                "Learning Reward",
                 null
             ),
             emptyList());
