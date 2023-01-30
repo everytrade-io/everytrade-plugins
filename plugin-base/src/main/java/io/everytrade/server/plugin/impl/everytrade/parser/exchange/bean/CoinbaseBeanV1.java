@@ -22,6 +22,13 @@ import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.REWARD;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
+import static io.everytrade.server.util.CoinBaseDataUtil.TRANSACTION_TYPE_ADVANCED_TRADE;
+import static io.everytrade.server.util.CoinBaseDataUtil.TRANSACTION_TYPE_COINBASE_EARN;
+import static io.everytrade.server.util.CoinBaseDataUtil.TRANSACTION_TYPE_CONVERT;
+import static io.everytrade.server.util.CoinBaseDataUtil.TRANSACTION_TYPE_LEARNING_REWARD;
+import static io.everytrade.server.util.CoinBaseDataUtil.TRANSACTION_TYPE_RECEIVE;
+import static io.everytrade.server.util.CoinBaseDataUtil.TRANSACTION_TYPE_REWARDS_INCOME;
+import static io.everytrade.server.util.CoinBaseDataUtil.TRANSACTION_TYPE_SEND;
 import static java.util.Collections.emptyList;
 
 public class CoinbaseBeanV1 extends ExchangeBean {
@@ -48,20 +55,20 @@ public class CoinbaseBeanV1 extends ExchangeBean {
     @Parsed(field = "Transaction Type")
     public void setTransactionType(String value) {
         type = value;
-        if (value.contains("Advanced Trade ")) {
-            value = value.replace("Advanced Trade ", "");
+        if (value.contains(TRANSACTION_TYPE_ADVANCED_TRADE)) {
+            value = value.replace(TRANSACTION_TYPE_ADVANCED_TRADE, "");
             advancedTrade = true;
         }
-        if (value.contains("Coinbase Earn")) {
+        if (value.contains(TRANSACTION_TYPE_COINBASE_EARN) || value.contains(TRANSACTION_TYPE_LEARNING_REWARD)) {
             transactionType = EARNING;
-        } else if (value.contains("Convert")) {
+        } else if (value.contains(TRANSACTION_TYPE_CONVERT)) {
             converted = true;
             transactionType = BUY;
-        } else if ("Send".equalsIgnoreCase(value)) {
+        } else if (TRANSACTION_TYPE_SEND.equalsIgnoreCase(value)) {
             transactionType = WITHDRAWAL;
-        } else if ("Receive".equalsIgnoreCase(value)) {
+        } else if (TRANSACTION_TYPE_RECEIVE.equalsIgnoreCase(value)) {
             transactionType = DEPOSIT;
-        } else if (List.of("Rewards Income").contains(value)) {
+        } else if (List.of(TRANSACTION_TYPE_REWARDS_INCOME).contains(value)) {
             transactionType = REWARD;
         } else {
             transactionType = detectTransactionType(value);
