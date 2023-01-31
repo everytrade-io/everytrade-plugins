@@ -13,15 +13,19 @@ import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.test.TestUtils;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static io.everytrade.server.model.Currency.BTC;
+import static io.everytrade.server.model.Currency.USD;
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.FEE;
@@ -37,6 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -48,6 +53,34 @@ class BlockchainDownloaderTest {
     private static final String ADDRESS = "addr1";
     private static final String SOURCE = "MUMbouREUxpVs1DZMCVknq9HziM95zTAyZ";
     private static final String LTC = "LTC";
+
+    @Test
+    void blockChainBtcXpubTest() {
+        List<TxInfo> txs = List.of();
+        String address = "xpub6CLuyGaJwJngMH6H7v7NGV4jtjwN7JS7QNH6p9TJ2SPEVCvwSaeL9nm6y3zjvV5M4eKPJEzRHyiTLq2probsxzdyxEj2yb17HiEsBXbJXQc";
+        var blockchainDownloader = new BlockchainDownloader(
+            mockClient(txs),
+            null,
+            0,
+            emptySet(),
+            FIAT,
+            BTC,
+            true,
+            true,
+            false,
+            false,
+            0,
+            300
+        );
+        DownloadResult actualResult = blockchainDownloader.download(address);
+        var expected = new ImportedTransactionBean("301d1025e7704e94a7a505a74647a5ecd5b12ad8f66dc5cd6394fe2bf906d8d8",
+            Instant.parse("2016-05-16T19:04:00Z"), Currency.BTC, USD, BUY, new BigDecimal("0.01"),
+            null, null, null);
+
+        assertEquals(7, actualResult.getParseResult().getTransactionClusters().size());
+        TestUtils.testTxs(expected, actualResult.getParseResult().getTransactionClusters().get(0).getMain());
+
+    }
 
     @Test
     void btcBuySellWithoutFeesTest() {
@@ -190,7 +223,7 @@ class BlockchainDownloaderTest {
         assertNotNull(tx.getUid());
         assertNotNull(tx.getExecuted());
         assertEquals(Currency.BTC, tx.getBase());
-        assertEquals(Currency.USD, tx.getQuote());
+        assertEquals(USD, tx.getQuote());
         assertEquals(type, tx.getAction());
         assertNotNull(tx.getImported());
     }
@@ -262,7 +295,7 @@ class BlockchainDownloaderTest {
         assertNotNull(tx.getUid());
         assertNotNull(tx.getExecuted());
         assertEquals(Currency.BTC, tx.getBase());
-        assertEquals(Currency.USD, tx.getQuote());
+        assertEquals(USD, tx.getQuote());
         assertEquals(type, tx.getAction());
         assertNotNull(tx.getImported());
     }
@@ -283,6 +316,8 @@ class BlockchainDownloaderTest {
 
         when(clientMock.getAddressInfo(anyString(), anyInt())).thenReturn(mockResponse(ADDRESS, txs));
         when(clientMock.getAddressInfo(anyString(), anyInt(), anyInt(), anyInt())).thenReturn(mockResponse(ADDRESS, txs));
+        when(clientMock.getAddressesInfoFromXpub(anyString(), anyLong(), anyInt(), anyInt()))
+            .thenReturn(mockXpubResponse());
         return clientMock;
     }
 
@@ -290,6 +325,11 @@ class BlockchainDownloaderTest {
         var clientMock = mock(Client.class);
         when(clientMock.getAddressInfo(anyString(), anyInt(), anyInt(), anyInt())).thenReturn(addressInfo);
         return clientMock;
+    }
+
+    private Collection<AddressInfo> mockXpubResponse() {
+        Collection<AddressInfo> allData = new BlockchainDummyData().getAllData();
+        return allData;
     }
 
     private AddressInfo mockResponse(String address, List<TxInfo> txs) {

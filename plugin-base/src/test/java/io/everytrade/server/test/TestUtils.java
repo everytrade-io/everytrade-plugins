@@ -3,6 +3,7 @@ package io.everytrade.server.test;
 import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.connector.DownloadResult;
+import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import org.knowm.xchange.currency.Currency;
 import org.knowm.xchange.dto.Order;
@@ -18,6 +19,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestUtils {
+
+
 
     public static void bigDecimalEquals(BigDecimal expected, BigDecimal actual) {
         if (expected == null || actual == null) {
@@ -113,6 +116,19 @@ public class TestUtils {
             fee,
             null
         );
+    }
+
+    public static void testTxs(ImportedTransactionBean expected, ImportedTransactionBean actual){
+        assertEquals(expected.getUid(), expected.getUid());
+        assertEquals(expected.getExecuted(), actual.getExecuted());
+        assertEquals(expected.getAction(), actual.getAction());
+        assertEquals(expected.getBase(), actual.getBase());
+        assertEquals(expected.getQuote(), actual.getQuote());
+        assertEquals(expected.getVolume(), actual.getVolume());
+        assertEquals(expected.getUnitPrice(), actual.getUnitPrice());
+        assertEquals(expected.getAddress(), actual.getAddress());
+        assertEquals(expected.getNote(), actual.getNote());
+        assertEquals(expected.getLabels(), actual.getLabels());
     }
 
     public static org.knowm.xchange.currency.CurrencyPair toXchangePair(CurrencyPair etPair) {
