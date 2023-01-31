@@ -657,6 +657,9 @@ public enum Currency {
 
     public static Currency fromCode(String code) {
         Objects.requireNonNull(code, "code is null");
+        if("ETH2".equalsIgnoreCase(code)) {
+            return ETH;
+        }
         for (Currency c : values()) {
             if (code.equals(c.code())) {
                 return c;
