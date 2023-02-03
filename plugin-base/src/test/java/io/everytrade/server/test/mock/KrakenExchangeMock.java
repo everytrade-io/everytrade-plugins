@@ -20,6 +20,10 @@ import static org.mockito.Mockito.when;
 
 
 public class KrakenExchangeMock extends KnowmExchangeMock {
+
+    public KrakenExchangeMock(List<FundingRecord> stakingRecords) {
+        super(stakingRecords);
+    }
     public KrakenExchangeMock(List<UserTrade> trades, List<FundingRecord> fundingRecords) {
         super(trades, fundingRecords);
     }
@@ -51,6 +55,9 @@ public class KrakenExchangeMock extends KnowmExchangeMock {
             .thenReturn(fundingRecords)
             .thenReturn(emptyList());
 
+        when(mock.getStakingHistory())
+            .thenReturn(staking)
+            .thenReturn(emptyList());
         return mock;
     }
 }
