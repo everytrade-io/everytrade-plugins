@@ -15,6 +15,7 @@ import org.knowm.xchange.service.trade.TradeService;
 import si.mazi.rescu.SynchronizedValueFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import static lombok.AccessLevel.PROTECTED;
@@ -25,6 +26,7 @@ public abstract class KnowmExchangeMock implements Exchange {
 
     List<UserTrade> trades;
     List<FundingRecord> fundingRecords;
+    List<FundingRecord> staking = new ArrayList<>();
 
     TradeService tradeService;
     AccountService accountService;
@@ -33,6 +35,14 @@ public abstract class KnowmExchangeMock implements Exchange {
     public KnowmExchangeMock(List<UserTrade> trades, List<FundingRecord> fundingRecords) {
         this.trades = trades;
         this.fundingRecords = fundingRecords;
+        initMocks();
+    }
+
+    @SneakyThrows
+    public KnowmExchangeMock(List<FundingRecord> stakingRecords) {
+        this.trades = null;
+        this.fundingRecords = null;
+        this.staking.addAll(stakingRecords);
         initMocks();
     }
 

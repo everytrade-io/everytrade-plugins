@@ -9,6 +9,7 @@ public class KrakenCurrencyUtil {
 
     public static final Map<String, Currency> CURRENCY_SHORT_CODES = new HashMap<>();
     public static final Map<String, Currency> CURRENCY_LONG_CODES = new HashMap<>();
+    public static final Map<String, Currency> CURRENCY_EXCEPTION_CODES = new HashMap<>();
 
     static {
         CURRENCY_SHORT_CODES.put("XBT", Currency.BTC);
@@ -20,6 +21,11 @@ public class KrakenCurrencyUtil {
 
         CURRENCY_SHORT_CODES.put("XDG", Currency.DOGE);
         CURRENCY_LONG_CODES.put("XXDG", Currency.DOGE);
+
+        CURRENCY_EXCEPTION_CODES.put("ATOM21", Currency.ATOM);
+        CURRENCY_EXCEPTION_CODES.put("KAVA21", Currency.KAVA);
+        CURRENCY_EXCEPTION_CODES.put("DOT28", Currency.DOT);
+        CURRENCY_EXCEPTION_CODES.put("ETH2", Currency.ETH);
 
         for (Currency value : Currency.values()) {
             if (value.equals(Currency.BTC)) {
@@ -53,6 +59,10 @@ public class KrakenCurrencyUtil {
         final Currency currencyShort = CURRENCY_SHORT_CODES.get(code);
         if (currencyShort != null) {
             return currencyShort;
+        }
+        final Currency exceptionCurrency = CURRENCY_EXCEPTION_CODES.get(code);
+        if (exceptionCurrency != null) {
+            return exceptionCurrency;
         }
         try {
             return Currency.fromCode(code);

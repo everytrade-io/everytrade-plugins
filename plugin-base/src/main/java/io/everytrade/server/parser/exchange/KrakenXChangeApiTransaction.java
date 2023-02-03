@@ -180,7 +180,7 @@ public class KrakenXChangeApiTransaction implements IXChangeApiTransaction {
     }
 
     private static boolean isStake(FundingRecord r) {
-        if (r.getDescription().equals("bonding")) {
+        if (r.getDescription().equalsIgnoreCase("bonding")) {
             return true;
         }
         return false;
