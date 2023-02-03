@@ -171,8 +171,20 @@ public class CoinbaseBeanV1 extends ExchangeBean {
                 asset,
                 asset,
                 transactionType,
-                quantityTransacted,
+                quantityTransacted.abs().setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
                 extractAddressFromNote(),
+                transactionType.name().equalsIgnoreCase(type) ? null : type,
+                null
+            );
+        } else if (type.equalsIgnoreCase(TRANSACTION_TYPE_LEARNING_REWARD)) {
+            main = new ImportedTransactionBean(
+                null,
+                timeStamp,
+                asset,
+                asset,
+                transactionType,
+                quantityTransacted.abs().setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
+                null,
                 transactionType.name().equalsIgnoreCase(type) ? null : type,
                 null
             );

@@ -135,10 +135,10 @@ class CoinbaseBeanV1Test {
                 null,
                 Instant.parse("2022-11-18T20:27:05Z"),
                 GRT,
-                EUR,
+                GRT,
                 EARNING,
                 new BigDecimal("16.68056713"),
-                new BigDecimal("0.0599500000"),
+                null,
                 "Learning Reward",
                 null
             ),
