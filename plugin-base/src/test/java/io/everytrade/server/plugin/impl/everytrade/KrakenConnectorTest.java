@@ -52,6 +52,7 @@ class KrakenConnectorTest {
 
         var connector = new KrakenConnector(new KrakenExchangeMock(trades, records));
         var result = connector.getTransactions(null);
+        KrakenExchangeMock.close();
 
         assertNotNull(result.getDownloadStateData());
         assertEquals(4, result.getParseResult().getTransactionClusters().size());
@@ -68,7 +69,7 @@ class KrakenConnectorTest {
         List<FundingRecord> records = new ArrayList<>();
         List<UserTrade> trades = new ArrayList<>();
 
-        var actual1 =  new FundingRecord(
+        var actual1 = new FundingRecord(
             null,
             Date.from(Instant.parse("2023-01-31T10:01:29Z")),
             new org.knowm.xchange.currency.Currency("DOT28.S"),
@@ -82,7 +83,31 @@ class KrakenConnectorTest {
             "bonding"
         );
 
-        var actual2 =  new FundingRecord(
+        var expected1 = new ImportedTransactionBean(
+            "RVFIYQT-IMIRSQ-KO5UGU",
+            Instant.parse("2023-01-31T10:01:29Z"),
+            Currency.DOT,
+            null,
+            STAKE,
+            new BigDecimal("163.6967014800"),
+            null,
+            null,
+            null
+        );
+        records.add(actual1);
+        var connector = new KrakenConnector(new KrakenExchangeMock(records));
+        var result = connector.getTransactions(null);
+        KrakenExchangeMock.close();
+        assertEquals(2, result.getParseResult().getTransactionClusters().size());
+        testTxs(expected1, result.getParseResult().getTransactionClusters().get(0).getMain());
+    }
+
+    @Test
+    void testReward() {
+        List<FundingRecord> records = new ArrayList<>();
+        List<UserTrade> trades = new ArrayList<>();
+
+        var actual = new FundingRecord(
             null,
             Date.from(Instant.parse("2023-01-22T02:35:21Z")),
             new org.knowm.xchange.currency.Currency("ETH2"),
@@ -95,38 +120,24 @@ class KrakenConnectorTest {
             null,
             "reward"
         );
-            var expected1 = new ImportedTransactionBean(
-                "RVFIYQT-IMIRSQ-KO5UGU",
-                Instant.parse("2023-01-31T10:01:29Z"),
-                Currency.DOT,
-                null,
-                STAKE,
-                new BigDecimal("163.6967014800"),
-                null,
-                null,
-                null
-            );
 
-            var expected2 = new ImportedTransactionBean(
-                "RUOWBVL-JTJOHI-GWDYYM",
-                Instant.parse("2023-01-22T02:35:21Z"),
-                Currency.ETH,
-                null,
-                TransactionType.STAKING_REWARD,
-                new BigDecimal("0.0068700590"),
-                null,
-                null,
-                null
-            );
-
-        records.add(actual1);
-        records.add(actual2);
-
+        var expected = new ImportedTransactionBean(
+            "RUOWBVL-JTJOHI-GWDYYM",
+            Instant.parse("2023-01-22T02:35:21Z"),
+            Currency.ETH,
+            null,
+            TransactionType.STAKING_REWARD,
+            new BigDecimal("0.0068700590"),
+            null,
+            null,
+            null
+        );
+        records.add(actual);
         var connector = new KrakenConnector(new KrakenExchangeMock(records));
         var result = connector.getTransactions(null);
+        KrakenExchangeMock.close();
         assertEquals(2, result.getParseResult().getTransactionClusters().size());
-        testTxs(expected1,result.getParseResult().getTransactionClusters().get(0).getMain());
-        testTxs(expected2,result.getParseResult().getTransactionClusters().get(1).getMain());
+        testTxs(expected, result.getParseResult().getTransactionClusters().get(0).getMain());
     }
 
     private void assertTx(TransactionCluster cluster, BigDecimal volume) {

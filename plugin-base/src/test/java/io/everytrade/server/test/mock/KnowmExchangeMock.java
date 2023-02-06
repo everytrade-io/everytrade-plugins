@@ -40,8 +40,8 @@ public abstract class KnowmExchangeMock implements Exchange {
 
     @SneakyThrows
     public KnowmExchangeMock(List<FundingRecord> stakingRecords) {
-        this.trades = null;
-        this.fundingRecords = null;
+        this.trades = new ArrayList<>();
+        this.fundingRecords = new ArrayList<>();
         this.staking.addAll(stakingRecords);
         initMocks();
     }
