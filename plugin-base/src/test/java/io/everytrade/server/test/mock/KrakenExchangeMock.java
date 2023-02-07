@@ -9,6 +9,7 @@ import org.knowm.xchange.kraken.KrakenUtils;
 import org.knowm.xchange.kraken.service.KrakenAccountService;
 import org.knowm.xchange.kraken.service.KrakenTradeHistoryParams;
 import org.knowm.xchange.service.trade.TradeService;
+import org.mockito.MockedStatic;
 
 import java.util.List;
 
@@ -20,6 +21,11 @@ import static org.mockito.Mockito.when;
 
 
 public class KrakenExchangeMock extends KnowmExchangeMock {
+    static MockedStatic<KrakenUtils> mockCurrencies;
+
+    public KrakenExchangeMock(List<FundingRecord> stakingRecords) {
+        super(stakingRecords);
+    }
     public KrakenExchangeMock(List<UserTrade> trades, List<FundingRecord> fundingRecords) {
         super(trades, fundingRecords);
     }
@@ -36,8 +42,12 @@ public class KrakenExchangeMock extends KnowmExchangeMock {
         return mock;
     }
 
+    public static void close() {
+        mockCurrencies.close();
+    }
+
     protected void mockKrakenCurrencies() {
-        var mockCurrencies = mockStatic(KrakenUtils.class);
+        mockCurrencies = mockStatic(KrakenUtils.class);
         mockCurrencies.when( () -> KrakenUtils.getKrakenCurrencyCode(Currency.BTC)).thenReturn(Currency.BTC.getCurrencyCode());
         mockCurrencies.when( () -> KrakenUtils.getKrakenCurrencyCode(Currency.USD)).thenReturn(Currency.USD.getCurrencyCode());
     }
@@ -51,6 +61,9 @@ public class KrakenExchangeMock extends KnowmExchangeMock {
             .thenReturn(fundingRecords)
             .thenReturn(emptyList());
 
+        when(mock.getStakingHistory())
+            .thenReturn(staking)
+            .thenReturn(emptyList());
         return mock;
     }
 }
