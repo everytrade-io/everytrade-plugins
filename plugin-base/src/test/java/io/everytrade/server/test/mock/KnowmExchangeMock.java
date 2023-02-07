@@ -4,11 +4,11 @@ import lombok.SneakyThrows;
 import lombok.experimental.FieldDefaults;
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.ExchangeSpecification;
-import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.account.FundingRecord;
 import org.knowm.xchange.dto.meta.ExchangeMetaData;
 import org.knowm.xchange.dto.trade.UserTrade;
 import org.knowm.xchange.exceptions.ExchangeException;
+import org.knowm.xchange.instrument.Instrument;
 import org.knowm.xchange.service.account.AccountService;
 import org.knowm.xchange.service.marketdata.MarketDataService;
 import org.knowm.xchange.service.trade.TradeService;
@@ -72,11 +72,6 @@ public abstract class KnowmExchangeMock implements Exchange {
     }
 
     @Override
-    public List<CurrencyPair> getExchangeSymbols() {
-        return null;
-    }
-
-    @Override
     public SynchronizedValueFactory<Long> getNonceFactory() {
         return null;
     }
@@ -106,6 +101,12 @@ public abstract class KnowmExchangeMock implements Exchange {
     @Override
     public AccountService getAccountService() {
         return accountService;
+    }
+
+    @SneakyThrows
+    @Override
+    public List<Instrument> getExchangeInstruments() {
+        return null;
     }
 
     @Override

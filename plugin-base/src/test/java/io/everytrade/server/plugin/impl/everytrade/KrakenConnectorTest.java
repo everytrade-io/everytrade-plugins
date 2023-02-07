@@ -67,9 +67,8 @@ class KrakenConnectorTest {
     @Test
     void testBoundingAsStake() {
         List<FundingRecord> records = new ArrayList<>();
-        List<UserTrade> trades = new ArrayList<>();
 
-        var actual1 = new FundingRecord(
+        var actual = new FundingRecord(
             null,
             Date.from(Instant.parse("2023-01-31T10:01:29Z")),
             new org.knowm.xchange.currency.Currency("DOT28.S"),
@@ -83,7 +82,7 @@ class KrakenConnectorTest {
             "bonding"
         );
 
-        var expected1 = new ImportedTransactionBean(
+        var expected = new ImportedTransactionBean(
             "RVFIYQT-IMIRSQ-KO5UGU",
             Instant.parse("2023-01-31T10:01:29Z"),
             Currency.DOT,
@@ -94,18 +93,17 @@ class KrakenConnectorTest {
             null,
             null
         );
-        records.add(actual1);
+        records.add(actual);
         var connector = new KrakenConnector(new KrakenExchangeMock(records));
         var result = connector.getTransactions(null);
         KrakenExchangeMock.close();
-        assertEquals(2, result.getParseResult().getTransactionClusters().size());
-        testTxs(expected1, result.getParseResult().getTransactionClusters().get(0).getMain());
+        assertEquals(1, result.getParseResult().getTransactionClusters().size());
+        testTxs(expected, result.getParseResult().getTransactionClusters().get(0).getMain());
     }
 
     @Test
     void testReward() {
         List<FundingRecord> records = new ArrayList<>();
-        List<UserTrade> trades = new ArrayList<>();
 
         var actual = new FundingRecord(
             null,
@@ -136,7 +134,7 @@ class KrakenConnectorTest {
         var connector = new KrakenConnector(new KrakenExchangeMock(records));
         var result = connector.getTransactions(null);
         KrakenExchangeMock.close();
-        assertEquals(2, result.getParseResult().getTransactionClusters().size());
+        assertEquals(1, result.getParseResult().getTransactionClusters().size());
         testTxs(expected, result.getParseResult().getTransactionClusters().get(0).getMain());
     }
 
