@@ -630,7 +630,9 @@ public enum Currency {
     XYO(false, Instant.parse("2018-05-16T00:00:00Z"), "XYO"),
     XYZ(false, Instant.parse("2021-09-08T00:00:00Z"), "Universe.XYZ"),
     ETHDOWN(false, Instant.parse("2023-01-18T00:00:00Z"), "ETHDOWN"),
-    BTCDOWN(false, Instant.parse("2022-03-03T00:00:00Z"), "BTCDOWN");
+    BTCDOWN(false, Instant.parse("2022-03-03T00:00:00Z"), "BTCDOWN"),
+    KINT(false, Instant.parse("2022-09-02T00:00:00Z"), "Kintsugi"),
+    YGG(false, Instant.parse("2021-08-25T00:00:00Z"), "Yield Guild Games");
 
     String code;
     int decimalDigits;
