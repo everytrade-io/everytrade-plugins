@@ -49,7 +49,6 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
 
     public List<? extends ExchangeBean> convertMultipleRowsToTransactions(List<BinanceBeanV4> rows) {
         List<BinanceBeanV4> result;
-        rows = setRowsWithIds(rows);
         this.rows = rows;
         var groupedRowsByTime = createGroupsFromRows(rows);
         Map<Instant, List<BinanceBeanV4>> sortedGroupsByDate = new TreeMap<>(groupedRowsByTime);
@@ -95,15 +94,6 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
             r.setUnsupportedRow(true);
         });
         unSupportedRows.addAll(rowsInGroup);
-    }
-
-    private List<BinanceBeanV4> setRowsWithIds(List<BinanceBeanV4> rows) {
-        int i = 1;
-        for (BinanceBeanV4 row : rows) {
-            i++;
-            row.setRowId(i);
-        }
-        return rows;
     }
 
     private Map<Instant, List<BinanceBeanV4>> mergeGroupsInTimeWithinTolerance(Map<Instant, List<BinanceBeanV4>> groups) {
