@@ -81,6 +81,7 @@ public class BinanceSortedGroupV4 {
                 if (entry.getValue().size() > 0) {
                     newBean.setChange(change);
                     newBean.setCoin(currency);
+                    newBean.setOperation(entry.getValue().get(0).getOperation());
                     newBean.usedIds.addAll(ids);
                     newBean.setDate(time);
                     result.add(newBean);
@@ -246,11 +247,8 @@ public class BinanceSortedGroupV4 {
             if (!stRow.getCoin().isFiat()) {
                 txsBuySell.setMarketBase(stRow.getCoin());
                 txsBuySell.setAmountBase(stRow.getChange().abs());
-                if (stRow.getChange().compareTo(ZERO) < 0) {
-                    txsBuySell.setType(SELL);
-                } else {
-                    txsBuySell.setType(BUY);
-                }
+                TransactionType type = TransactionType.valueOf(stRow.getOperation().toUpperCase());
+                txsBuySell.setType(type);
                 txsBuySell.setMarketQuote(ndRow.getCoin());
                 txsBuySell.setAmountQuote(ndRow.getChange().abs());
             } else {
