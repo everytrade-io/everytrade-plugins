@@ -173,7 +173,7 @@ public class BinanceBeanV4 extends ExchangeBean {
         if (TransactionType.REWARD.equals(type)) {
             return new TransactionCluster(
                 new ImportedTransactionBean(
-                    usedIds.toString(),
+                    null,
                     date,
                     marketBase,
                     marketBase,
@@ -188,7 +188,7 @@ public class BinanceBeanV4 extends ExchangeBean {
         if (List.of(TransactionType.DEPOSIT, TransactionType.WITHDRAWAL).contains(this.type)) {
             TransactionCluster cluster = new TransactionCluster(
                 ImportedTransactionBean.createDepositWithdrawal(
-                    usedIds.toString(),
+                    null,
                     date,
                     marketBase,
                     marketBase,
@@ -203,7 +203,7 @@ public class BinanceBeanV4 extends ExchangeBean {
             validateCurrencyPair(marketBase, marketQuote);
             TransactionCluster cluster = new TransactionCluster(
                 new ImportedTransactionBean(
-                    usedIds.toString(),
+                    null,
                     date,
                     marketBase,
                     marketQuote,

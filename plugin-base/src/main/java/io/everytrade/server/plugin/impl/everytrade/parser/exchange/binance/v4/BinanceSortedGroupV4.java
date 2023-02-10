@@ -229,55 +229,43 @@ public class BinanceSortedGroupV4 {
     private void createBuySellTxs() {
         var stRow = rowBuySellRelated.get(0);
         var ndRow = rowBuySellRelated.get(1);
-        if(stRow.getChange().compareTo(ZERO) < 0
-            && ndRow.getChange().compareTo(ZERO) > 0) {
-            stRow =  rowBuySellRelated.get(1);
-            ndRow = rowBuySellRelated.get(0);
+        BinanceBeanV4 baseRow;
+        BinanceBeanV4 quoteRow;
+        TransactionType type = stRow.getType();
+
+        if (SELL.equals(type)) {
+            if (stRow.getChange().compareTo(ZERO) < 0) {
+                baseRow = stRow;
+                quoteRow = ndRow;
+            } else {
+                baseRow = ndRow;
+                quoteRow = stRow;
+            }
+        } else {
+            if (stRow.getChange().compareTo(ZERO) >= 0) {
+                baseRow = stRow;
+                quoteRow = ndRow;
+            } else {
+                baseRow = ndRow;
+                quoteRow = stRow;
+            }
         }
+
         var txsBuySell = new BinanceBeanV4();
-        txsBuySell.setDate(stRow.getDate());
-        txsBuySell.usedIds.addAll(stRow.usedIds);
-        txsBuySell.usedIds.addAll(ndRow.usedIds);
-        txsBuySell.setMergedWithAnotherGroup(stRow.isMergedWithAnotherGroup());
-        txsBuySell.setRowNumber(stRow.getDate().getEpochSecond());
+        txsBuySell.setDate(baseRow.getDate());
+        txsBuySell.usedIds.addAll(baseRow.usedIds);
+        txsBuySell.usedIds.addAll(quoteRow.usedIds);
+        txsBuySell.setMergedWithAnotherGroup(baseRow.isMergedWithAnotherGroup());
+        txsBuySell.setRowNumber(baseRow.getDate().getEpochSecond());
         String ids = parseIds(txsBuySell.usedIds);
         String[] strings = {"Row id " + ids, " " + stRow.getOperation()};
         txsBuySell.setRowValues(strings);
-        if (isCrypto(rowBuySellRelated)) {
-            if (!stRow.getCoin().isFiat()) {
-                txsBuySell.setMarketBase(stRow.getCoin());
-                txsBuySell.setAmountBase(stRow.getChange().abs());
-                TransactionType type = TransactionType.valueOf(stRow.getOperation().toUpperCase());
-                txsBuySell.setType(type);
-                txsBuySell.setMarketQuote(ndRow.getCoin());
-                txsBuySell.setAmountQuote(ndRow.getChange().abs());
-            } else {
-                txsBuySell.setMarketBase(ndRow.getCoin());
-                txsBuySell.setAmountBase(ndRow.getChange().abs());
-                if (ndRow.getChange().compareTo(ZERO) < 0) {
-                    txsBuySell.setType(SELL);
-                } else {
-                    txsBuySell.setType(BUY);
-                }
-                txsBuySell.setMarketQuote(stRow.getCoin());
-                txsBuySell.setAmountQuote(stRow.getChange().abs());
-            }
-        } else {
-            if (stRow.getChange().compareTo(ZERO) > 0) {
-                txsBuySell.setMarketBase(stRow.getCoin());
-                txsBuySell.setAmountBase(stRow.getChange().abs());
-                txsBuySell.setType(BUY);
-                txsBuySell.setMarketQuote(ndRow.getCoin());
-                txsBuySell.setAmountQuote(ndRow.getChange());
-            } else {
-                txsBuySell.setMarketBase(ndRow.getCoin());
-                txsBuySell.setAmountBase(ndRow.getChange().abs());
-                txsBuySell.setType(BUY);
-                txsBuySell.setMarketQuote(stRow.getCoin());
-                txsBuySell.setAmountQuote(stRow.getChange());
-            }
-        }
-        ExchangeBean.validateCurrencyPair(txsBuySell.getMarketBase(),txsBuySell.getMarketQuote());
+        txsBuySell.setMarketBase(baseRow.getCoin());
+        txsBuySell.setAmountBase(baseRow.getChange().abs());
+        txsBuySell.setType(type);
+        txsBuySell.setMarketQuote(quoteRow.getCoin());
+        txsBuySell.setAmountQuote(quoteRow.getChange().abs());
+        ExchangeBean.validateCurrencyPair(txsBuySell.getMarketBase(), txsBuySell.getMarketQuote());
         createdTransactions.add(txsBuySell);
     }
 
