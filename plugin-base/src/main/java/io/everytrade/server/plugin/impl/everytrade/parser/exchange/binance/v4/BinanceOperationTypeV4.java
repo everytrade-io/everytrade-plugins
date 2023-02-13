@@ -65,13 +65,12 @@ public enum BinanceOperationTypeV4 {
     }
 
     public static BinanceOperationTypeV4 getEnum(String name) {
-        for(BinanceOperationTypeV4 e : values()) {
-            if(e.code.equals(name)) return e;
+        for (BinanceOperationTypeV4 e : values()) {
+            if (e.code.equals(name)) {
+                return e;
+            }
         }
         return null;
     }
-
-
-
 
 }
