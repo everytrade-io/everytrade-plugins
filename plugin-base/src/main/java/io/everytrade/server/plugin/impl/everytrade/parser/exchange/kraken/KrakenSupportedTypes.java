@@ -1,11 +1,7 @@
 package io.everytrade.server.plugin.impl.everytrade.parser.exchange.kraken;
 
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceConstantsV4;
-
 import java.util.ArrayList;
 import java.util.List;
-
-import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceSupportedOperations.SUPPORTED_OPERATION_TYPES;
 
 public class KrakenSupportedTypes {
 

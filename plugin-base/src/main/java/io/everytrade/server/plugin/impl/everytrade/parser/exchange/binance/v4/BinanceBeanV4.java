@@ -1,7 +1,6 @@
 package io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4;
 
 import com.univocity.parsers.annotations.Format;
-import com.univocity.parsers.annotations.Headers;
 import com.univocity.parsers.annotations.Parsed;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
@@ -16,7 +15,11 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
 
+import static io.everytrade.server.model.TransactionType.DEPOSIT;
+import static io.everytrade.server.model.TransactionType.REBATE;
 import static io.everytrade.server.model.TransactionType.REWARD;
+import static io.everytrade.server.model.TransactionType.UNKNOWN;
+import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static java.util.Collections.emptyList;
 import static lombok.AccessLevel.PRIVATE;
 
@@ -34,7 +37,8 @@ public class BinanceBeanV4 extends ExchangeBean {
     Instant date;
     String account;
     String userId;
-    String operation;
+    String originalOperation;
+    BinanceOperationTypeV4 operationType;
     Currency coin;
     BigDecimal change;
     String remark;
@@ -88,14 +92,18 @@ public class BinanceBeanV4 extends ExchangeBean {
     }
 
     @Parsed(field = "Operation")
-    public void setOperation(String operation) {
+    public void setOriginalOperation(String value) {
+        this.originalOperation = value;
         var supportedOperations = BinanceSupportedOperations.SUPPORTED_OPERATION_TYPES;
-        if (!supportedOperations.contains(operation)) {
+        if (!supportedOperations.contains(value)) {
             this.setUnsupportedRow(true);
-            this.setMessage("Unsupported type of operation " + operation);
+            this.setMessage("Unsupported type of operation " + value);
         }
-        this.operation = operation;
-        this.type = BinanceSwitcher.operationTypeSwitcher(operation);
+        try{
+            this.operationType = BinanceOperationTypeV4.getEnum(value);
+            this.type = BinanceSwitcher.operationTypeSwitcher(value);
+        } catch (Exception ignore) {
+        }
     }
 
     @Parsed(field = "Coin")
@@ -152,7 +160,7 @@ public class BinanceBeanV4 extends ExchangeBean {
     @Override
     public TransactionCluster toTransactionCluster() {
         final List<ImportedTransactionBean> related = new ArrayList<>();
-        if (TransactionType.UNKNOWN.equals(type) || isUnsupportedRow()) {
+        if (UNKNOWN.equals(type) || isUnsupportedRow()) {
             throw new DataIgnoredException(getMessage());
         }
         if (feeTransactions.size() > 0) {
@@ -170,7 +178,7 @@ public class BinanceBeanV4 extends ExchangeBean {
             }
         }
 
-        if (TransactionType.REWARD.equals(type)) {
+        if (REWARD.equals(type)) {
             return new TransactionCluster(
                 new ImportedTransactionBean(
                     null,
@@ -185,7 +193,23 @@ public class BinanceBeanV4 extends ExchangeBean {
             );
         }
 
-        if (List.of(TransactionType.DEPOSIT, TransactionType.WITHDRAWAL).contains(this.type)) {
+        if (REBATE.equals(type)) {
+            return new TransactionCluster(
+                new FeeRebateImportedTransactionBean(
+                    null,
+                    date,
+                    marketBase,
+                    marketBase,
+                    REBATE,
+                    amountBase,
+                    marketBase,
+                    originalOperation
+                ),
+                emptyList()
+            );
+        }
+
+        if (List.of(DEPOSIT, WITHDRAWAL).contains(this.type)) {
             TransactionCluster cluster = new TransactionCluster(
                 ImportedTransactionBean.createDepositWithdrawal(
                     null,
