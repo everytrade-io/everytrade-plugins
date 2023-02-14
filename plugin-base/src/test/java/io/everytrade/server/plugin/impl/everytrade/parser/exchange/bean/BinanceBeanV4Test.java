@@ -15,7 +15,9 @@ import java.util.List;
 import static io.everytrade.server.model.Currency.BNB;
 import static io.everytrade.server.model.Currency.BTC;
 import static io.everytrade.server.model.Currency.ETH;
+import static io.everytrade.server.model.Currency.SOL;
 import static io.everytrade.server.model.TransactionType.BUY;
+import static io.everytrade.server.model.TransactionType.REBATE;
 import static io.everytrade.server.model.TransactionType.SELL;
 
 class BinanceBeanV4Test {
@@ -89,6 +91,89 @@ class BinanceBeanV4Test {
         );
         TestUtils.testTxs( expected.getRelated().get(0),actual.getRelated().get(0));
         TestUtils.testTxs( expected.getMain(),actual.getMain());
+    }
+
+    @Test
+    void testCardCashback() {
+        final String row0 = "\"38065325,2022-02-26 05:48:48,Card,Card Cashback,BNB,0.00066906,\"\"\"\"\"\n";
+        final String row1 = "\"38065325,2022-02-26 05:48:48,Card,Card Cashback,BNB,0.00006234,\"\"\"\"\"\n";
+        final String join = row0 + row1;
+
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + join);
+
+        final TransactionCluster expected1 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-02-26T05:48:48Z"),
+                BNB,
+                BNB,
+                REBATE,
+                new BigDecimal("0.00066906"),
+                null,
+                "Card Cashback",
+                null
+            ),
+            List.of()
+        );
+        final TransactionCluster expected2 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-02-26T05:48:48Z"),
+                BNB,
+                BNB,
+                REBATE,
+                new BigDecimal("0.00006234"),
+                null,
+                "Card Cashback",
+                null
+            ),
+            List.of()
+        );
+
+        TestUtils.testTxs( expected1.getMain(),actual.get(0).getMain());
+        TestUtils.testTxs( expected2.getMain(),actual.get(1).getMain());
+    }
+
+    @Test
+    void testCommissionRebate() {
+        final String row0 = "70366274,2022-08-10 13:25:58,Spot,Commission Rebate,SOL,0.00182000,\"\"\n";
+        final String row1 = "70366274,2022-08-10 13:25:58,Spot,Commission Rebate,SOL,0.00220000,\"\"\n";
+        final String join = row0 + row1;
+
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + join);
+
+        final TransactionCluster expected1 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-08-10T13:25:58Z"),
+                SOL,
+                SOL,
+                REBATE,
+                new BigDecimal("0.00182000"),
+                null,
+                "Commission Rebate",
+                null
+            ),
+            List.of()
+        );
+
+
+        final TransactionCluster expected2 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-08-10T13:25:58Z"),
+                SOL,
+                SOL,
+                REBATE,
+                new BigDecimal("0.00220000"),
+                null,
+                "Commission Rebate",
+                null
+            ),
+            List.of()
+        );
+        TestUtils.testTxs( expected1.getMain(),actual.get(0).getMain());
+        TestUtils.testTxs( expected2.getMain(),actual.get(1).getMain());
     }
 
     @Test
