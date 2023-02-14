@@ -28,6 +28,7 @@ import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binanc
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_FEE;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_FIAT_DEPOSIT;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_FIAT_WITHDRAWAL;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_LARGE_OTC_TRADING;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SELL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_TRANSACTION_RELATED;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_WITHDRAWAL;
@@ -89,6 +90,7 @@ public class BinanceSortedGroupV4 {
                 if (entry.getValue().size() > 0) {
                     newBean.setChange(change);
                     newBean.setCoin(currency);
+                    newBean.setRowId(entry.getValue().get(0).getRowId());
                     newBean.setOriginalOperation(entry.getValue().get(0).getOriginalOperation());
                     newBean.usedIds.addAll(ids);
                     newBean.setDate(time);
@@ -258,9 +260,17 @@ public class BinanceSortedGroupV4 {
     private void createBuySellTxs() {
         var stRow = rowBuySellRelated.get(0);
         var ndRow = rowBuySellRelated.get(1);
+        if (stRow.getRowId() > ndRow.getRowId()) {
+            stRow = rowBuySellRelated.get(1);
+            ndRow = rowBuySellRelated.get(0);
+        }
         BinanceBeanV4 baseRow;
         BinanceBeanV4 quoteRow;
         TransactionType type = stRow.getType();
+
+        if (stRow.getOriginalOperation().equals(OPERATION_TYPE_LARGE_OTC_TRADING.code) && stRow.getChange().compareTo(ZERO) < 0) {
+            type = SELL;
+        }
 
         if (SELL.equals(type)) {
             if (stRow.getChange().compareTo(ZERO) < 0) {
@@ -326,7 +336,8 @@ public class BinanceSortedGroupV4 {
         } else if (
             row.getOriginalOperation().equals(OPERATION_TYPE_BUY.code) ||
                 row.getOriginalOperation().equals(OPERATION_TYPE_SELL.code) ||
-                row.getOriginalOperation().equals(OPERATION_TYPE_TRANSACTION_RELATED.code)
+                row.getOriginalOperation().equals(OPERATION_TYPE_TRANSACTION_RELATED.code) ||
+                row.getOriginalOperation().equals(OPERATION_TYPE_LARGE_OTC_TRADING.code)
         ) {
             if (rowsBuySellRelated.containsKey(row.getCoin())) {
                 rowsBuySellRelated.get(row.getCoin()).add(row);

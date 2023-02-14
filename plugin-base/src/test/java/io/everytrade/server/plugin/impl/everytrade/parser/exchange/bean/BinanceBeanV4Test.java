@@ -14,8 +14,10 @@ import java.util.List;
 
 import static io.everytrade.server.model.Currency.BNB;
 import static io.everytrade.server.model.Currency.BTC;
+import static io.everytrade.server.model.Currency.DOGE;
 import static io.everytrade.server.model.Currency.ETH;
 import static io.everytrade.server.model.Currency.SOL;
+import static io.everytrade.server.model.Currency.USDT;
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.REBATE;
 import static io.everytrade.server.model.TransactionType.SELL;
@@ -208,6 +210,52 @@ class BinanceBeanV4Test {
             )
         );
         TestUtils.testTxs( expected.getRelated().get(0),actual.getRelated().get(0));
+        TestUtils.testTxs( expected.getMain(),actual.getMain());
+    }
+
+    @Test
+    void testLargeOtcTradingBuy() {
+        final String row0 = "42138160,2022-01-12 18:00:24,Spot,Large OTC trading,DOGE,481.58400000,\"\"\n";
+        final String row1 = "42138160,2022-01-12 18:00:24,Spot,Large OTC trading,USDT,-3000.00000000,\"\"\n";
+        final String join = row0 + row1;
+
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + join);
+
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-01-12T18:00:24Z"),
+                DOGE,
+                USDT,
+                BUY,
+                new BigDecimal("481.5840000000"),
+                new BigDecimal("6.2294428386")
+            ),
+            List.of()
+        );
+        TestUtils.testTxs( expected.getMain(),actual.getMain());
+    }
+
+    @Test
+    void testLargeOtcTradingSell() {
+        final String row0 = "42138160,2022-01-12 18:00:24,Spot,Large OTC trading,DOGE,-3000.00000000,\"\"\n";
+        final String row1 = "42138160,2022-01-12 18:00:24,Spot,Large OTC trading,USDT,481.58400000,\"\"\n";
+        final String join = row0 + row1;
+
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + join);
+
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-01-12T18:00:24Z"),
+                DOGE,
+                USDT,
+                SELL,
+                new BigDecimal("3000.0000000000"),
+                new BigDecimal("0.1605280000")
+            ),
+            List.of()
+        );
         TestUtils.testTxs( expected.getMain(),actual.getMain());
     }
 
