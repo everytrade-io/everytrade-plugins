@@ -2,8 +2,8 @@ package io.everytrade.server.plugin.impl.everytrade;
 
 import lombok.experimental.FieldDefaults;
 import org.knowm.xchange.Exchange;
-import org.knowm.xchange.binance.service.BinanceFundingHistoryParams;
-import org.knowm.xchange.binance.service.BinanceTradeHistoryParams;
+import org.knowm.xchange.binance.dto.trade.BinanceTradeHistoryParams;
+import org.knowm.xchange.binance.dto.account.BinanceFundingHistoryParams;
 import org.knowm.xchange.binance.service.BinanceTradeService;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.account.FundingRecord;
@@ -74,7 +74,7 @@ public class BinanceDownloader {
         final List<UserTrade> userTrades = new ArrayList<>();
 
         for (CurrencyPair pair : pairs) {
-            params.setCurrencyPair(pair);
+            params.setInstrument(pair);
             String lastDownloadedTx = currencyPairLastIds.get(pair.toString());
             // binance api hack - start download from tradeId=0, because we can only page trades from lowest ids to newest
             params.setStartId(isEmpty(lastDownloadedTx) ? "0" : lastDownloadedTx);

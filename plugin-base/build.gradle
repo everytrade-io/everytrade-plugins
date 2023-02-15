@@ -35,7 +35,8 @@ dependencies {
      * ETD: 424
      * original: pluginCompile "org.knowm.xchange:xchange-binance:$xchangeVersion"
      */
-    pluginCompile "com.github.martinkyov.Xchange:xchange-binance:b36e03ffae18c1ac0b4349d48d014fc95cfd26b4"
+//    pluginCompile "com.github.martinkyov.Xchange:xchange-binance:b36e03ffae18c1ac0b4349d48d014fc95cfd26b4"
+    pluginCompile "com.github.martinkyov.Xchange:xchange-binance:d9f9f0e449d74ae4455e2024eaa8e2b96a0b196c"
 
     pluginCompile "org.knowm.xchange:xchange-bittrex:$xchangeVersion"
     pluginCompile "org.knowm.xchange:xchange-bitstamp:$xchangeVersion"
