@@ -23,6 +23,7 @@ public enum BinanceOperationTypeV4 {
     OPERATION_TYPE_FIAT_DEPOSIT("Fiat Deposit", true),
     OPERATION_TYPE_CARD_CASHBACK("Card Cashback", false),
     OPERATION_TYPE_COMMISSION_REBATE("Commission Rebate", false),
+    OPERATION_TYPE_SMALL_ASSETS_EXCHANGE_BNB("Small assets exchange BNB", true),
 
     // Unsupported operations
     OPERATION_TYPE_MARGIN_LOAN("Margin loan", true),

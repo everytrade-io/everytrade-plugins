@@ -33,6 +33,7 @@ public class BinanceSupportedOperations {
         SUPPORTED_OPERATION_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_CARD_CASHBACK.code);
         SUPPORTED_OPERATION_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_COMMISSION_REBATE.code);
         SUPPORTED_OPERATION_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_LARGE_OTC_TRADING.code);
+        SUPPORTED_OPERATION_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_SMALL_ASSETS_EXCHANGE_BNB.code);
 
         BUY_SELL_OPERATION_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_BUY.code);
         BUY_SELL_OPERATION_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_SELL.code);
