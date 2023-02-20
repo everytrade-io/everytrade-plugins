@@ -29,6 +29,7 @@ import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binanc
 public class BinanceSwitcher {
 
     public static TransactionType operationTypeSwitcher(String operationType) {
+        operationType = operationType.toUpperCase();
         if (OPERATION_TYPE_BUY.code.equals(operationType)) {
             return BUY;
         }
@@ -45,7 +46,7 @@ public class BinanceSwitcher {
             return FEE;
         }
         if (OPERATION_TYPE_TRANSACTION_RELATED.code.equals(operationType) || OPERATION_TYPE_LARGE_OTC_TRADING.code.equals(operationType)
-            || OPERATION_TYPE_SMALL_ASSETS_EXCHANGE_BNB.equals(operationType)) {
+            || OPERATION_TYPE_SMALL_ASSETS_EXCHANGE_BNB.code.equals(operationType)) {
             return BUY;
         }
         if (OPERATION_TYPE_DISTRIBUTION.code.equals(operationType)) {
