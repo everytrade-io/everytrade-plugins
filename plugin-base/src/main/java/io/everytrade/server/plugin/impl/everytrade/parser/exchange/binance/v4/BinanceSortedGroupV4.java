@@ -30,6 +30,7 @@ import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binanc
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_FIAT_WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_LARGE_OTC_TRADING;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SELL;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SMALL_ASSETS_EXCHANGE_BNB;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_TRANSACTION_RELATED;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_WITHDRAWAL;
 import static java.math.BigDecimal.ZERO;
@@ -302,6 +303,7 @@ public class BinanceSortedGroupV4 {
         txsBuySell.setMarketBase(baseRow.getCoin());
         txsBuySell.setAmountBase(baseRow.getChange().abs());
         txsBuySell.setType(type);
+        txsBuySell.setRemark(baseRow.getRemark());
         txsBuySell.setMarketQuote(quoteRow.getCoin());
         txsBuySell.setAmountQuote(quoteRow.getChange().abs());
         ExchangeBean.validateCurrencyPair(txsBuySell.getMarketBase(), txsBuySell.getMarketQuote());
@@ -337,7 +339,8 @@ public class BinanceSortedGroupV4 {
             row.getOriginalOperation().equals(OPERATION_TYPE_BUY.code) ||
                 row.getOriginalOperation().equals(OPERATION_TYPE_SELL.code) ||
                 row.getOriginalOperation().equals(OPERATION_TYPE_TRANSACTION_RELATED.code) ||
-                row.getOriginalOperation().equals(OPERATION_TYPE_LARGE_OTC_TRADING.code)
+                row.getOriginalOperation().equals(OPERATION_TYPE_LARGE_OTC_TRADING.code) ||
+                row.getOriginalOperation().equals(OPERATION_TYPE_SMALL_ASSETS_EXCHANGE_BNB.code)
         ) {
             if (rowsBuySellRelated.containsKey(row.getCoin())) {
                 rowsBuySellRelated.get(row.getCoin()).add(row);

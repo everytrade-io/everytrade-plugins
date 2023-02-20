@@ -7,12 +7,14 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.Bi
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SMALL_ASSETS_EXCHANGE_BNB;
 import static java.util.stream.Collectors.groupingBy;
 
 public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpecificParser implements IExchangeSpecificParser,
@@ -24,20 +26,19 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
     }
 
     /**
-     *
-     *  Method correct errors made by rows with quotes
-     *  e.g. ""2023-01-04 05:43:39;IOTX;IOTX;0.00006298""
+     * Method correct errors made by rows with quotes
+     * e.g. ""2023-01-04 05:43:39;IOTX;IOTX;0.00006298""
      *
      * @param rows
      * @return
      */
     @Override
-    protected String[] correctRow(String[] rows){
+    protected String[] correctRow(String[] rows) {
         try {
             var arrayAsList = Arrays.asList(rows);
             String join = String.join("", arrayAsList).replace("null", "");
-            if (rows[(rows.length-1)].equals(join)) {
-                return rows[(rows.length-1)].split(delimiter);
+            if (rows[(rows.length - 1)].equals(join)) {
+                return rows[(rows.length - 1)].split(delimiter);
             }
         } catch (Exception ignored) {
         }
@@ -47,6 +48,64 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
     List<BinanceBeanV4> rows;
     List<BinanceBeanV4> unSupportedRows = new ArrayList<>();
 
+    /**
+     * Method should solve exception where are many rows with operation "Small assets exchange BNB" done
+     * in the same time
+     *
+     * @param mergedGroups
+     * @return
+     */
+    Map<Instant, List<BinanceBeanV4>> splitExceptionGroups(Map<Instant, List<BinanceBeanV4>> mergedGroups) {
+        Map<Instant, List<BinanceBeanV4>> result = new HashMap<>();
+        final long timeIncrease = 10000000;
+        try {
+            for (Map.Entry<?, List<BinanceBeanV4>> entry : mergedGroups.entrySet()) {
+                var rowsInGroup = entry.getValue();
+                Instant key = (Instant) entry.getKey();
+                List<BinanceBeanV4> smallAssetExchange = rowsInGroup.stream()
+                    .filter(r -> r.getOriginalOperation().equalsIgnoreCase(OPERATION_TYPE_SMALL_ASSETS_EXCHANGE_BNB.code))
+                    .collect(Collectors.toList());
+                if (smallAssetExchange.size() == 0) {
+                    result.put(key, rowsInGroup);
+                } else if (smallAssetExchange.size() == rowsInGroup.size()) {
+                    if(smallAssetExchange.size() % 2 != 0) {
+                        rowsInGroup.stream().forEach(row -> {
+                            row.setMessage(String.format("Wrong number of operation %s",OPERATION_TYPE_SMALL_ASSETS_EXCHANGE_BNB.code));
+                            row.setUnsupportedRow(true);
+                        });
+                        result.put(key,rowsInGroup);
+                    } else {
+                        rowsInGroup = rowsInGroup.stream().sorted(Comparator.comparingInt(BinanceBeanV4::getRowId))
+                            .collect(Collectors.toList());
+                        int i = 0;
+                        for (BinanceBeanV4 row : rowsInGroup) {
+                            if (i % 2 == 0) {
+                                List<BinanceBeanV4> smallGroup = new ArrayList<>();
+                                smallGroup.add(row);
+                                result.put(key, smallGroup);
+                            } else {
+                                var smallGroup = result.get(key);
+                                smallGroup.add(row);
+                                result.put(key, smallGroup);
+                                key = key.plusMillis(timeIncrease);
+                            }
+                            i++;
+                        }
+                    }
+                } else {
+                    rowsInGroup.stream().forEach(row -> {
+                        row.setMessage("Too many operation in the same time");
+                        row.setUnsupportedRow(true);
+                    });
+                    result.put(key,rowsInGroup);
+                }
+            }
+        } catch (Exception ignore) {
+            return mergedGroups;
+        }
+        return result;
+    }
+
     public List<? extends ExchangeBean> convertMultipleRowsToTransactions(List<BinanceBeanV4> rows) {
         List<BinanceBeanV4> result;
         this.rows = rows;
@@ -54,6 +113,7 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
         Map<Instant, List<BinanceBeanV4>> sortedGroupsByDate = new TreeMap<>(groupedRowsByTime);
         // merging rows nearly in the same time
         var mergedGroups = mergeGroupsInTimeWithinTolerance(sortedGroupsByDate);
+        mergedGroups = splitExceptionGroups(mergedGroups);
         // clean groups of rows from unsupported rubbish
         var cleanGroups = removeGroupsWithUnsupportedRows(mergedGroups);
         // creating transaction
