@@ -22,6 +22,7 @@ public class BinanceSupportedOperations {
         // supported accounts
         SUPPORTED_ACCOUNT_TYPES.add(BinanceOperationTypeV4.ACCOUNT_TYPE_SPOT.code);
         SUPPORTED_ACCOUNT_TYPES.add(BinanceOperationTypeV4.ACCOUNT_TYPE_CARD.code);
+        SUPPORTED_ACCOUNT_TYPES.add(BinanceOperationTypeV4.ACCOUNT_TYPE_EARN.code);
         // supported operations
         SUPPORTED_OPERATION_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_BUY.code);
         SUPPORTED_OPERATION_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_SELL.code);
@@ -36,6 +37,7 @@ public class BinanceSupportedOperations {
         SUPPORTED_OPERATION_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_COMMISSION_REBATE.code);
         SUPPORTED_OPERATION_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_LARGE_OTC_TRADING.code);
         SUPPORTED_OPERATION_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_SMALL_ASSETS_EXCHANGE_BNB.code);
+        SUPPORTED_OPERATION_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_INTEREST.code);
 
         BUY_SELL_OPERATION_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_BUY.code);
         BUY_SELL_OPERATION_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_SELL.code);
@@ -50,6 +52,7 @@ public class BinanceSupportedOperations {
 
         WRITE_ORIGINAL_OPERATION_AS_NOTE.add(BinanceOperationTypeV4.OPERATION_TYPE_SMALL_ASSETS_EXCHANGE_BNB.code);
         WRITE_ORIGINAL_OPERATION_AS_NOTE.add(BinanceOperationTypeV4.OPERATION_TYPE_LARGE_OTC_TRADING.code);
+        WRITE_ORIGINAL_OPERATION_AS_NOTE.add(BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_INTEREST.code);
 
         //unsupported accounts
         UNSUPPORTED_ACCOUNT_TYPES.add(BinanceOperationTypeV4.ACCOUNT_TYPE_CROSS_MARGIN.code);

@@ -57,7 +57,7 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
      */
     Map<Instant, List<BinanceBeanV4>> splitExceptionGroups(Map<Instant, List<BinanceBeanV4>> mergedGroups) {
         Map<Instant, List<BinanceBeanV4>> result = new HashMap<>();
-        final long timeIncrease = 10000000;
+        final long timeIncrease = 1;
         try {
             for (Map.Entry<?, List<BinanceBeanV4>> entry : mergedGroups.entrySet()) {
                 var rowsInGroup = entry.getValue();

@@ -16,6 +16,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import lombok.Data;
 
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
+import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.REBATE;
 import static io.everytrade.server.model.TransactionType.REWARD;
 import static io.everytrade.server.model.TransactionType.SELL;
@@ -30,6 +31,7 @@ import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binanc
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_FIAT_WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_LARGE_OTC_TRADING;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SELL;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_INTEREST;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SMALL_ASSETS_EXCHANGE_BNB;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_TRANSACTION_RELATED;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_WITHDRAWAL;
@@ -47,6 +49,7 @@ public class BinanceSortedGroupV4 {
     Map<Currency, List<BinanceBeanV4>> rowsBuySellRelated = new HashMap<>();
     Map<Currency, List<BinanceBeanV4>> rowsRewards = new HashMap<>();
     Map<Currency, List<BinanceBeanV4>> rowsRebate = new HashMap<>();
+    Map<Currency, List<BinanceBeanV4>> rowsEarnings = new HashMap<>();
 
     // afterSum
     List<BinanceBeanV4> rowDeposit = new ArrayList<>();
@@ -55,6 +58,7 @@ public class BinanceSortedGroupV4 {
     List<BinanceBeanV4> rowBuySellRelated = new ArrayList<>();
     List<BinanceBeanV4> rowReward = new ArrayList<>();
     List<BinanceBeanV4> rowRebate = new ArrayList<>();
+    List<BinanceBeanV4> rowEarnings = new ArrayList<>();
 
     public List<BinanceBeanV4> createdTransactions = new ArrayList<>();
 
@@ -74,6 +78,7 @@ public class BinanceSortedGroupV4 {
         rowBuySellRelated = sumRows(rowsBuySellRelated);
         rowReward = sumRows(rowsRewards);
         rowRebate = sumRows(rowsRebate);
+        rowEarnings = sumRows(rowsEarnings);
     }
 
     private List<BinanceBeanV4> sumRows(Map<Currency, List<BinanceBeanV4>> rows) {
@@ -82,21 +87,23 @@ public class BinanceSortedGroupV4 {
             var time = rows.values().stream().collect(Collectors.toList()).get(0).get(0).getDate();
             for (Map.Entry<Currency, List<BinanceBeanV4>> entry : rows.entrySet()) {
                 if(!entry.getValue().get(0).getOperationType().isMultiRowType) {
-                    return entry.getValue();
+                    result.addAll(entry.getValue());
+                } else {
+                    var newBean = new BinanceBeanV4();
+                    var currency = entry.getKey();
+                    var change = entry.getValue().stream().map(BinanceBeanV4::getChange).reduce(ZERO, BigDecimal::add);
+                    var ids = entry.getValue().stream().map(BinanceBeanV4::getRowId).collect(Collectors.toList());
+                    if (entry.getValue().size() > 0) {
+                        newBean.setChange(change);
+                        newBean.setCoin(currency);
+                        newBean.setRowId(entry.getValue().get(0).getRowId());
+                        newBean.setOriginalOperation(entry.getValue().get(0).getOriginalOperation());
+                        newBean.usedIds.addAll(ids);
+                        newBean.setDate(time);
+                        result.add(newBean);
+                    }
                 }
-                var newBean = new BinanceBeanV4();
-                var currency = entry.getKey();
-                var change = entry.getValue().stream().map(BinanceBeanV4::getChange).reduce(ZERO, BigDecimal::add);
-                var ids = entry.getValue().stream().map(BinanceBeanV4::getRowId).collect(Collectors.toList());
-                if (entry.getValue().size() > 0) {
-                    newBean.setChange(change);
-                    newBean.setCoin(currency);
-                    newBean.setRowId(entry.getValue().get(0).getRowId());
-                    newBean.setOriginalOperation(entry.getValue().get(0).getOriginalOperation());
-                    newBean.usedIds.addAll(ids);
-                    newBean.setDate(time);
-                    result.add(newBean);
-                }
+
             }
         }
         return result;
@@ -144,6 +151,7 @@ public class BinanceSortedGroupV4 {
         int feeNum = rowFees.size();
         int rewardNum = rowReward.size();
         int rebateNum = rowsRebate.size();
+        int earningsNum = rowsEarnings.size();
 
         if (buySellNum > 0) {
             validateBuySell();
@@ -161,6 +169,10 @@ public class BinanceSortedGroupV4 {
 
         if (rebateNum > 0) {
             createRebateTxs();
+        }
+
+        if (earningsNum > 0) {
+            createEarningsTxs();
         }
 
         if (feeNum > 0) {
@@ -253,6 +265,21 @@ public class BinanceSortedGroupV4 {
             txs.setDate(bean.getDate());
             txs.setMergedWithAnotherGroup(bean.isMergedWithAnotherGroup());
             txs.setType(REBATE);
+            txs.setOriginalOperation(bean.getOriginalOperation());
+            createdTransactions.add(txs);
+        }
+    }
+
+    private void createEarningsTxs() {
+        for (BinanceBeanV4 bean : rowEarnings) {
+            var txs = new BinanceBeanV4();
+            txs.setRowNumber(bean.getDate().getEpochSecond());
+            txs.usedIds.add(bean.getRowId());
+            txs.setAmountBase(bean.getChange().abs());
+            txs.setMarketBase(bean.getCoin());
+            txs.setDate(bean.getDate());
+            txs.setMergedWithAnotherGroup(bean.isMergedWithAnotherGroup());
+            txs.setType(EARNING);
             txs.setOriginalOperation(bean.getOriginalOperation());
             createdTransactions.add(txs);
         }
@@ -365,6 +392,14 @@ public class BinanceSortedGroupV4 {
                 List<BinanceBeanV4> newList = new ArrayList<>();
                 newList.add(row);
                 rowsRebate.put(row.getCoin(), newList);
+            }
+        } else if (row.getOriginalOperation().equals(OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_INTEREST.code)) {
+            if (rowsEarnings.containsKey(row.getCoin())) {
+                rowsEarnings.get(row.getCoin()).add(row);
+            } else {
+                List<BinanceBeanV4> newList = new ArrayList<>();
+                newList.add(row);
+                rowsEarnings.put(row.getCoin(), newList);
             }
         } else {
             throw new DataIgnoredException("Row " + row.getRowId() + " cannot be added due to wrong operation. ");
