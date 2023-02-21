@@ -24,6 +24,7 @@ import static io.everytrade.server.model.Currency.USDC;
 import static io.everytrade.server.model.Currency.USDT;
 import static io.everytrade.server.model.Currency.UST;
 import static io.everytrade.server.model.TransactionType.BUY;
+import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.REBATE;
 import static io.everytrade.server.model.TransactionType.SELL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -371,16 +372,46 @@ class BinanceBeanV4Test {
 
         final ParseResult actual = ParserTestUtils.getParseResult(HEADER_CORRECT + join);
 
+        assertEquals( 3,actual.getParsingProblems().size());
+        assertEquals( "PARSED_ROW_IGNORED", actual.getParsingProblems().get(0).getParsingProblemType().name());
+    }
+
+    @Test
+    void testOperationTypeSimpleEarnFlexibleInterest() {
+        final String row0 = "40360729,2020-11-28 00:59:18,Earn,Simple Earn Flexible Interest,BTC,3.8E-7,\"\"\n";
+        final String row1 = "40360729,2020-11-28 00:59:18,Earn,Simple Earn Flexible Interest,ETH,0.00011628,\"\"\n";
+        final String row2 = "40360729,2020-11-29 00:59:53,Earn,Simple Earn Flexible Interest,BTC,3.8E-7,\"\"\n";
+        final String join = row0 + row1 + row2;
+
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + join);
+
+        final TransactionCluster expected0 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2020-11-28T00:59:18Z"),
+                BTC,
+                BTC,
+                EARNING,
+                new BigDecimal("0.00000038"),
+                null,
+                "SIMPLE EARN FLEXIBLE INTEREST",
+                null,
+                null
+            ),
+            List.of()
+        );
+
         final TransactionCluster expected1 = new TransactionCluster(
             new ImportedTransactionBean(
                 null,
-                Instant.parse("2020-11-24T15:44:58Z"),
-                BNB,
-                EUR,
-                BUY,
-                new BigDecimal("0.0000390800"),
-                new BigDecimal("28.5056294780"),
-                "SMALL ASSETS EXCHANGE BNB",
+                Instant.parse("2020-11-28T00:59:18Z"),
+                ETH,
+                ETH,
+                EARNING,
+                new BigDecimal("0.00011628"),
+                null,
+                "SIMPLE EARN FLEXIBLE INTEREST",
+                null,
                 null
             ),
             List.of()
@@ -389,22 +420,22 @@ class BinanceBeanV4Test {
         final TransactionCluster expected2 = new TransactionCluster(
             new ImportedTransactionBean(
                 null,
-                Instant.parse("2020-11-24T15:44:58Z"),
-                BNB,
-                USDT,
-                BUY,
-                new BigDecimal("0.0001040500"),
-                new BigDecimal("33.6670831331"),
-                "SMALL ASSETS EXCHANGE BNB",
+                Instant.parse("2020-11-29T00:59:53Z"),
+                BTC,
+                BTC,
+                EARNING,
+                new BigDecimal("0.00000038"),
+                null,
+                "SIMPLE EARN FLEXIBLE INTEREST",
+                null,
                 null
-                ),
+            ),
             List.of()
         );
-        assertEquals( 3,actual.getParsingProblems().size());
-        assertEquals( "PARSED_ROW_IGNORED", actual.getParsingProblems().get(0).getParsingProblemType().name());
+
+        TestUtils.testTxs( expected0.getMain(),actual.get(0).getMain());
+        TestUtils.testTxs( expected1.getMain(),actual.get(1).getMain());
+        TestUtils.testTxs( expected2.getMain(),actual.get(2).getMain());
     }
-
-
-
 
 }

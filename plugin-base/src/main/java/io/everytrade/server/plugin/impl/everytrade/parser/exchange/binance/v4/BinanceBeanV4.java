@@ -16,6 +16,7 @@ import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
 
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
+import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.REBATE;
 import static io.everytrade.server.model.TransactionType.REWARD;
 import static io.everytrade.server.model.TransactionType.UNKNOWN;
@@ -209,6 +210,24 @@ public class BinanceBeanV4 extends ExchangeBean {
                     amountBase,
                     marketBase,
                     originalOperation
+                ),
+                emptyList()
+            );
+        }
+
+        if (EARNING.equals(type)) {
+            return new TransactionCluster(
+                new ImportedTransactionBean(
+                    null,
+                    date,
+                    marketBase,
+                    marketBase,
+                    EARNING,
+                    amountBase,
+                    null,
+                    remark,
+                    null,
+                    null
                 ),
                 emptyList()
             );
