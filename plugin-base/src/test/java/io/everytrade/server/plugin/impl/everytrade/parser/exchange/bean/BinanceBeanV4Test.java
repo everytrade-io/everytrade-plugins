@@ -4,6 +4,7 @@ import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.ParseResult;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.test.TestUtils;
 import org.junit.jupiter.api.Test;
@@ -16,11 +17,16 @@ import static io.everytrade.server.model.Currency.BNB;
 import static io.everytrade.server.model.Currency.BTC;
 import static io.everytrade.server.model.Currency.DOGE;
 import static io.everytrade.server.model.Currency.ETH;
+import static io.everytrade.server.model.Currency.EUR;
+import static io.everytrade.server.model.Currency.RUNE;
 import static io.everytrade.server.model.Currency.SOL;
+import static io.everytrade.server.model.Currency.USDC;
 import static io.everytrade.server.model.Currency.USDT;
+import static io.everytrade.server.model.Currency.UST;
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.REBATE;
 import static io.everytrade.server.model.TransactionType.SELL;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class BinanceBeanV4Test {
     public static final String HEADER_CORRECT = "\uFEFFUser_ID,UTC_Time,Account,Operation,Coin,Change,Remark\n";
@@ -74,7 +80,7 @@ class BinanceBeanV4Test {
                 null,
                 Instant.parse("2022-01-01T10:56:29Z"),
                 Currency.USDT,
-                Currency.EUR,
+                EUR,
                 SELL,
                 new BigDecimal("9820.0000000000"),
                 new BigDecimal("1.1310000000")
@@ -83,11 +89,11 @@ class BinanceBeanV4Test {
                 new FeeRebateImportedTransactionBean(
                     null,
                     Instant.parse("2022-01-01T10:56:29Z"),
-                    Currency.EUR,
-                    Currency.EUR,
+                    EUR,
+                    EUR,
                     TransactionType.FEE,
                     new BigDecimal("11.10642"),
-                    Currency.EUR
+                    EUR
                 )
             )
         );
@@ -112,7 +118,7 @@ class BinanceBeanV4Test {
                 REBATE,
                 new BigDecimal("0.00066906"),
                 null,
-                "Card Cashback",
+                "CARD CASHBACK",
                 null
             ),
             List.of()
@@ -126,7 +132,7 @@ class BinanceBeanV4Test {
                 REBATE,
                 new BigDecimal("0.00006234"),
                 null,
-                "Card Cashback",
+                "CARD CASHBACK",
                 null
             ),
             List.of()
@@ -153,7 +159,7 @@ class BinanceBeanV4Test {
                 REBATE,
                 new BigDecimal("0.00182000"),
                 null,
-                "Commission Rebate",
+                "COMMISSION REBATE",
                 null
             ),
             List.of()
@@ -169,7 +175,7 @@ class BinanceBeanV4Test {
                 REBATE,
                 new BigDecimal("0.00220000"),
                 null,
-                "Commission Rebate",
+                "COMMISSION REBATE",
                 null
             ),
             List.of()
@@ -229,7 +235,34 @@ class BinanceBeanV4Test {
                 USDT,
                 BUY,
                 new BigDecimal("481.5840000000"),
-                new BigDecimal("6.2294428386")
+                new BigDecimal("6.2294428386"),
+                "LARGE OTC TRADING",
+                null
+            ),
+            List.of()
+        );
+        TestUtils.testTxs( expected.getMain(),actual.getMain());
+    }
+
+    @Test
+    void testLargeOtcTradingBuy1() {
+        final String row0 = "70366274,2022-08-08 12:22:18,Spot,Large OTC Trading,USDC,7524.81470366,\"\"\n";
+        final String row1 = "70366274,2022-08-08 12:22:18,Spot,Large OTC Trading,USDT,-7523.83706360,\"\"\n";
+        final String join = row0 + row1;
+
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + join);
+
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-08-08T12:22:18Z"),
+                USDC,
+                USDT,
+                BUY,
+                new BigDecimal("7524.8147036600"),
+                new BigDecimal("0.9998700779"),
+                "LARGE OTC TRADING",
+                null
             ),
             List.of()
         );
@@ -252,11 +285,126 @@ class BinanceBeanV4Test {
                 USDT,
                 SELL,
                 new BigDecimal("3000.0000000000"),
-                new BigDecimal("0.1605280000")
+                new BigDecimal("0.1605280000"),
+                "LARGE OTC TRADING",
+                null
             ),
             List.of()
         );
         TestUtils.testTxs( expected.getMain(),actual.getMain());
     }
+
+    @Test
+    void testLargeOtcTradingConvert() {
+        final String row0 = "70366274,2022-04-06 23:15:18,Spot,Large OTC Trading,RUNE,-1557.71867805,\"\"\n";
+        final String row1 = "70366274,2022-04-06 23:15:18,Spot,Large OTC Trading,UST,14513.31689430,\"\"\n";
+        final String join = row0 + row1;
+
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + join);
+
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-04-06T23:15:18Z"),
+                RUNE,
+                UST,
+                SELL,
+                new BigDecimal("1557.7186780500"),
+                new BigDecimal("9.3170333635"),
+                "LARGE OTC TRADING",
+                null
+            ),
+            List.of()
+        );
+        TestUtils.testTxs( expected.getMain(),actual.getMain());
+    }
+
+    @Test
+    void testSmallAssetsExchangeBuy() {
+        final String row0 = "40360729,2020-11-24 15:44:58,Spot,Small assets exchange BNB,EUR,-0.00111400,\"\"\n";
+        final String row1 = "40360729,2020-11-24 15:44:58,Spot,Small assets exchange BNB,BNB,0.00003908,\"\"\n";
+        final String row2 = "40360729,2020-11-24 15:44:58,Spot,Small assets exchange BNB,USDT,-0.00350306,\"\"\n";
+        final String row3 = "40360729,2020-11-24 15:44:58,Spot,Small assets exchange BNB,BNB,0.00010405,\"\"\n";
+        final String join = row0 + row1 + row2 + row3;
+
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + join);
+
+        final TransactionCluster expected1 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2020-11-24T15:44:58Z"),
+                BNB,
+                EUR,
+                BUY,
+                new BigDecimal("0.0000390800"),
+                new BigDecimal("28.5056294780"),
+                "SMALL ASSETS EXCHANGE BNB",
+                null
+            ),
+            List.of()
+        );
+
+        final TransactionCluster expected2 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2020-11-24T15:44:58Z"),
+                BNB,
+                USDT,
+                BUY,
+                new BigDecimal("0.0001040500"),
+                new BigDecimal("33.6670831331"),
+                "SMALL ASSETS EXCHANGE BNB",
+                null
+                ),
+            List.of()
+        );
+        TestUtils.testTxs( expected1.getMain(),actual.get(0).getMain());
+        TestUtils.testTxs( expected2.getMain(),actual.get(1).getMain());
+    }
+
+    @Test
+    void testSmallAssetsExchangeBuyWrongInputs() {
+        final String row0 = "40360729,2020-11-24 15:44:58,Spot,Small assets exchange BNB,EUR,-0.00111400,\"\"\n";
+        final String row1 = "40360729,2020-11-24 15:44:58,Spot,Small assets exchange BNB,BNB,0.00003908,\"\"\n";
+        final String row2 = "40360729,2020-11-24 15:44:58,Spot,Small assets exchange BNB,USDT,-0.00350306,\"\"\n";
+        final String join = row0 + row1 + row2;
+
+        final ParseResult actual = ParserTestUtils.getParseResult(HEADER_CORRECT + join);
+
+        final TransactionCluster expected1 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2020-11-24T15:44:58Z"),
+                BNB,
+                EUR,
+                BUY,
+                new BigDecimal("0.0000390800"),
+                new BigDecimal("28.5056294780"),
+                "SMALL ASSETS EXCHANGE BNB",
+                null
+            ),
+            List.of()
+        );
+
+        final TransactionCluster expected2 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2020-11-24T15:44:58Z"),
+                BNB,
+                USDT,
+                BUY,
+                new BigDecimal("0.0001040500"),
+                new BigDecimal("33.6670831331"),
+                "SMALL ASSETS EXCHANGE BNB",
+                null
+                ),
+            List.of()
+        );
+        assertEquals( 3,actual.getParsingProblems().size());
+        assertEquals( "PARSED_ROW_IGNORED", actual.getParsingProblems().get(0).getParsingProblemType().name());
+    }
+
+
+
 
 }

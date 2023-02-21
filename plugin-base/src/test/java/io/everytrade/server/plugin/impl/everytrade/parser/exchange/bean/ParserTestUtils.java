@@ -113,6 +113,10 @@ public class ParserTestUtils {
         throw new IllegalStateException("Unexpected state during tests.");
     }
 
+    public static ParseResult getParseResult(String rows) {
+        return CSV_PARSER.parse(ParserTestUtils.createTestFile(rows), getHeader(rows));
+    }
+
     public static List<TransactionCluster> getTransactionClusters(String rows) {
         try {
             final ParseResult result = CSV_PARSER.parse(ParserTestUtils.createTestFile(rows), getHeader(rows));

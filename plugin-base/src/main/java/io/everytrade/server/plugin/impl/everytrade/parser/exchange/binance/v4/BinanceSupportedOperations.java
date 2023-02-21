@@ -16,6 +16,8 @@ public class BinanceSupportedOperations {
     public static final List<String> UNSUPPORTED_ACCOUNT_TYPES = new ArrayList<>();
     public static final List<String> UNSUPPORTED_OPERATION_TYPES = new ArrayList<>();
 
+    public static final List<String> WRITE_ORIGINAL_OPERATION_AS_NOTE = new ArrayList<>();
+
     static {
         // supported accounts
         SUPPORTED_ACCOUNT_TYPES.add(BinanceOperationTypeV4.ACCOUNT_TYPE_SPOT.code);
@@ -33,6 +35,7 @@ public class BinanceSupportedOperations {
         SUPPORTED_OPERATION_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_CARD_CASHBACK.code);
         SUPPORTED_OPERATION_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_COMMISSION_REBATE.code);
         SUPPORTED_OPERATION_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_LARGE_OTC_TRADING.code);
+        SUPPORTED_OPERATION_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_SMALL_ASSETS_EXCHANGE_BNB.code);
 
         BUY_SELL_OPERATION_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_BUY.code);
         BUY_SELL_OPERATION_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_SELL.code);
@@ -44,6 +47,9 @@ public class BinanceSupportedOperations {
         FEE_OPERATION_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_FEE.code);
 
         REWARD_OPERATION_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_DISTRIBUTION.code);
+
+        WRITE_ORIGINAL_OPERATION_AS_NOTE.add(BinanceOperationTypeV4.OPERATION_TYPE_SMALL_ASSETS_EXCHANGE_BNB.code);
+        WRITE_ORIGINAL_OPERATION_AS_NOTE.add(BinanceOperationTypeV4.OPERATION_TYPE_LARGE_OTC_TRADING.code);
 
         //unsupported accounts
         UNSUPPORTED_ACCOUNT_TYPES.add(BinanceOperationTypeV4.ACCOUNT_TYPE_CROSS_MARGIN.code);
@@ -74,7 +80,6 @@ public class BinanceSupportedOperations {
         UNSUPPORTED_OPERATION_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_SAVINGS_INTEREST.code);
         UNSUPPORTED_OPERATION_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_SAVINGS_PRINCIPAL_REDEMPTION.code);
         UNSUPPORTED_OPERATION_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_SAVINGS_PURCHASE.code);
-        UNSUPPORTED_OPERATION_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_SMALL_ASSET_EXCHANGE_BNB.code);
         UNSUPPORTED_OPERATION_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_SUPER_BNB_MINING.code);
         UNSUPPORTED_OPERATION_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_FUNDING_FEE.code);
         UNSUPPORTED_OPERATION_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_INSURANCE_FUND_COMPENSATION.code);

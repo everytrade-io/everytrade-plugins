@@ -83,6 +83,7 @@ public class BinanceBeanV4 extends ExchangeBean {
 
     @Parsed(field = "Account")
     public void setAccount(String account) {
+        account = account.toUpperCase();
         var supportedAccounts = BinanceSupportedOperations.SUPPORTED_ACCOUNT_TYPES;
         if (!supportedAccounts.contains(account)) {
             this.setUnsupportedRow(true);
@@ -93,13 +94,17 @@ public class BinanceBeanV4 extends ExchangeBean {
 
     @Parsed(field = "Operation")
     public void setOriginalOperation(String value) {
+        value = value.toUpperCase();
         this.originalOperation = value;
         var supportedOperations = BinanceSupportedOperations.SUPPORTED_OPERATION_TYPES;
         if (!supportedOperations.contains(value)) {
             this.setUnsupportedRow(true);
             this.setMessage("Unsupported type of operation " + value);
         }
-        try{
+        if (BinanceSupportedOperations.WRITE_ORIGINAL_OPERATION_AS_NOTE.contains(value)) {
+            setRemark(value);
+        }
+        try {
             this.operationType = BinanceOperationTypeV4.getEnum(value);
             this.type = BinanceSwitcher.operationTypeSwitcher(value);
         } catch (Exception ignore) {
