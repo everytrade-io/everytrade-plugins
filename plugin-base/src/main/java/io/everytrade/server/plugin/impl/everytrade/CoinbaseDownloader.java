@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -32,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 import static io.everytrade.server.plugin.api.parser.ParsingProblemType.ROW_PARSING_FAILED;
@@ -119,7 +121,7 @@ public class CoinbaseDownloader {
             params.setEndDateTime(Instant.now());
             params.setStartDatetime(Instant.ofEpochMilli(0));
             // 2. state - not finished 1st download
-        } else if (lastAdvanceTradeEndDatetime >= 0 && lastAdvanceTradeStartDatetime == 0) {
+        } else if (lastAdvanceTradeEndDatetime > 0 && lastAdvanceTradeStartDatetime == 0) {
             params.setEndDateTime(Instant.ofEpochMilli(lastAdvanceTradeEndDatetime));
             params.setStartDatetime(Instant.ofEpochMilli(0));
             // 3. finished first download and setup for second one - used as well as for start another downloads
@@ -137,6 +139,45 @@ public class CoinbaseDownloader {
         return params;
     }
 
+    private List<CoinbaseAdvancedTradeFills> removeLastTxsPlusOneSecond(List<CoinbaseAdvancedTradeFills> block) {
+        long lastTxTime;
+        try {
+            String tradeTime = block.get(block.size() - 1).getTradeTime();
+            lastTxTime = createDateFromText(tradeTime).getTime();
+            lastTxTime = lastTxTime + 1000L;
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+        long finalLastTxTime = lastTxTime;
+        var advancedTradesPureBlock =
+            block.stream().filter(tx -> {
+                try {
+                    String tradeTime = tx.getTradeTime();
+                    long time = createDateFromText(tradeTime).getTime();
+                    return time > finalLastTxTime;
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
+                }
+            }).collect(Collectors.toList());
+        return advancedTradesPureBlock;
+    }
+
+    /**
+     * 2023-01-02T00:42:55.504087795Z
+     * @param textDate
+     * @return
+     */
+    String cleanDateText(String textDate) {
+        try {
+            textDate = textDate.substring(0,textDate.lastIndexOf(".") + 4);
+            textDate = textDate.replace("Z", "");
+            textDate += "Z";
+        } catch (Exception ignore) {
+
+        }
+        return textDate;
+    }
+
     private List<UserTrade> downloadAdvancedTrade() {
         var tradeService = (CoinbaseTradeService) exchange.getTradeService();
         int sentRequests = 0;
@@ -150,18 +191,34 @@ public class CoinbaseDownloader {
             } catch (Exception e) {
                 throw new IllegalStateException("Unable to download advanced trades. ", e);
             }
-            advancedTrades.addAll(advancedTradesBlock);
-            if (advancedTradesBlock.size() == 0) {
+            int size = advancedTradesBlock.size();
+            if (size == 0) {
                 lastAdvanceTradeEndDatetime = 0;
                 lastAdvanceTradeStartDatetime = lastAdvanceTradeEndDatetime;
                 break;
-            } else if (advancedTradesBlock.size() == TRANSACTIONS_PER_REQUEST_LIMIT) {
-                lastAdvanceTradeEndDatetime = lastAdvanceTradeStartDatetime;
-                lastAdvanceTradeStartDatetime = lastAdvanceTradeStartDatetime; // start ponechavam
-
-            } else if (advancedTradesBlock.size() <= TRANSACTIONS_PER_REQUEST_LIMIT) {
+            } else if (size == TRANSACTIONS_PER_REQUEST_LIMIT) {
+                // remove last txs with the same timestamp
+                advancedTradesBlock = removeLastTxsPlusOneSecond(advancedTradesBlock);
+                Date minTradeDate;
+                try {
+                    String tradeTime = advancedTradesBlock.get(advancedTradesBlock.size() - 1).getTradeTime();
+                    minTradeDate = createDateFromText(tradeTime);
+                } catch (ParseException e) {
+                    throw new RuntimeException("Unable to parse date of trade ", e);
+                }
+                lastAdvanceTradeEndDatetime = minTradeDate.getTime();
+                advancedTrades.addAll(advancedTradesBlock);
+            } else if (size < TRANSACTIONS_PER_REQUEST_LIMIT && size > 0) {
+                advancedTrades.addAll(advancedTradesBlock);
+                String tradeTime = advancedTrades.get(0).getTradeTime();
+                long endDate;
+                try {
+                    endDate = createDateFromText(tradeTime).getTime();
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
+                }
                 lastAdvanceTradeEndDatetime = 0;
-                lastAdvanceTradeStartDatetime = lastAdvanceTradeEndDatetime;
+                lastAdvanceTradeStartDatetime = endDate;
                 break;
             } else {
                 throw new IllegalStateException("Unknown state of downloaded data. ");
@@ -181,8 +238,7 @@ public class CoinbaseDownloader {
                 var base = new Currency(currencies[0]);
                 var quote = new Currency(currencies[1]);
                 var pair = new CurrencyPair(base, quote);
-                var datePattern = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS'Z'");
-                var date = datePattern.parse(fill.getTradeTime());
+                Date date = createDateFromText(fill.getTradeTime());
                 Order.OrderType type = fill.getSide().equalsIgnoreCase("BUY") ? Order.OrderType.BID : Order.OrderType.ASK;
                 var trade = new UserTrade(type, fill.getSize(), pair, fill.getPrice(), date, fill.getTradeId(),
                     fill.getOrderId(), fill.getCommission(), pair.getCounter(), fill.getUserId());
@@ -198,7 +254,12 @@ public class CoinbaseDownloader {
         return trades;
     }
 
-
+    Date createDateFromText(String textTime) throws ParseException {
+        var datePattern = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        datePattern.setTimeZone(TimeZone.getTimeZone("UTC"));
+        textTime = cleanDateText(textTime);
+        return datePattern.parse(textTime);
+    }
 
     private List<UserTrade> downloadTrades(Map<String, WalletState> walletStates) {
         var sortedWalletStates = sortWalletsByTxsUpdates(walletStates);
