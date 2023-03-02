@@ -71,7 +71,8 @@ dependencies {
     //    pluginCompile "org.knowm.xchange:xchange-coinbase:$xchangeVersion"
     // Temporary merged issue ETD-191 and ETD-235 CoinbaseConnectorFixingAndAddingTransfers
     // ETD:235 pluginCompile "com.github.martinkyov.Xchange:xchange-coinbase:beb42644b59a486126fe7eefde69729d4c3e78a8"
-    pluginCompile "com.github.martinkyov.Xchange:xchange-coinbase:136289732f459f489caa0cd4860f6dcd3b76712f"
+//    pluginCompile "com.github.martinkyov.Xchange:xchange-coinbase:136289732f459f489caa0cd4860f6dcd3b76712f"
+    pluginCompile "com.github.martinkyov.Xchange:xchange-coinbase:e55e846c55711644eec463b40d2a484e2092fbec"
 
     /*
      * only for temporary use till pull request confirmation https://github.com/knowm/XChange/pull/4412
