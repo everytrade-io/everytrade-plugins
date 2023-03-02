@@ -139,7 +139,7 @@ public class CoinbaseDownloader {
         return params;
     }
 
-    private List<CoinbaseAdvancedTradeFills> removeLastTxsPlusOneSecond(List<CoinbaseAdvancedTradeFills> block) {
+    private List<CoinbaseAdvancedTradeFills> removeLastTxs(List<CoinbaseAdvancedTradeFills> block) {
         long lastTxTime;
         try {
             String tradeTime = block.get(block.size() - 1).getTradeTime();
@@ -194,11 +194,11 @@ public class CoinbaseDownloader {
             int size = advancedTradesBlock.size();
             if (size == 0) {
                 lastAdvanceTradeEndDatetime = 0;
-                lastAdvanceTradeStartDatetime = lastAdvanceTradeEndDatetime;
+                lastAdvanceTradeStartDatetime = lastAdvanceTradeEndDatetime + 1;
                 break;
             } else if (size == TRANSACTIONS_PER_REQUEST_LIMIT) {
                 // remove last txs with the same timestamp
-                advancedTradesBlock = removeLastTxsPlusOneSecond(advancedTradesBlock);
+                advancedTradesBlock = removeLastTxs(advancedTradesBlock);
                 Date minTradeDate;
                 try {
                     String tradeTime = advancedTradesBlock.get(advancedTradesBlock.size() - 1).getTradeTime();
@@ -218,7 +218,7 @@ public class CoinbaseDownloader {
                     throw new RuntimeException(e);
                 }
                 lastAdvanceTradeEndDatetime = 0;
-                lastAdvanceTradeStartDatetime = endDate;
+                lastAdvanceTradeStartDatetime = endDate + 1;
                 break;
             } else {
                 throw new IllegalStateException("Unknown state of downloaded data. ");
