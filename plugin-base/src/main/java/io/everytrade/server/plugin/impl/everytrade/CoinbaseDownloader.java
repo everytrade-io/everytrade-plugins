@@ -54,7 +54,7 @@ public class CoinbaseDownloader {
     private String lastDownloadWalletState;
     private long lastAdvanceTradeStartDatetime;
     private long lastAdvanceTradeEndDatetime;
-    private static final Logger log = LoggerFactory.getLogger(CoinbaseDownloader.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CoinbaseDownloader.class);
 
     @NonNull
     Exchange exchange;
@@ -85,24 +85,24 @@ public class CoinbaseDownloader {
         List<UserTrade> advancedTrading = new ArrayList<>();
 
         try{
-            log.info("Advanced trading download start");
+            LOG.info("Advanced trading download start");
             advancedTrading = downloadAdvancedTrade();
         } catch (Exception e) {
-            log.error("Advanced trading download error " + e.getMessage());
+            LOG.error("Advanced trading download error " + e.getMessage());
         }
 
         try{
-            log.info("Trades download start");
+            LOG.info("Trades download start");
             trades = downloadTrades(walletStates);
         } catch (Exception e) {
-            log.error("Trades download error " + e.getMessage());
+            LOG.error("Trades download error " + e.getMessage());
         }
 
         try{
-            log.info("Funding download start");
+            LOG.info("Funding download start");
             funding = downloadFunding(walletStates);
         } catch (Exception e) {
-            log.error("Funding download error " + e.getMessage());
+            LOG.error("Funding download error " + e.getMessage());
         }
         trades.addAll(advancedTrading);
 
@@ -249,7 +249,7 @@ public class CoinbaseDownloader {
         }
         int size = parsingProblems.size();
         if(size > 0 ) {
-            log.error("Several ( %s ) fills could not be processed", size);
+            LOG.error("Several ( %s ) fills could not be processed", size);
         }
         return trades;
     }
@@ -317,7 +317,7 @@ public class CoinbaseDownloader {
 
                 }
                 if (sentRequests == MAX_REQUEST_COUNT) {
-                    log.info("Max request count {} has been achieved.", MAX_REQUEST_COUNT);
+                    LOG.info("Max request count {} has been achieved.", MAX_REQUEST_COUNT);
                 }
 
                 walletState.lastBuyId = lastBuyId;
@@ -387,7 +387,7 @@ public class CoinbaseDownloader {
 
                 }
                 if (sentRequests == MAX_REQUEST_COUNT) {
-                    log.info("Max request count {} has been achieved.", MAX_REQUEST_COUNT);
+                    LOG.info("Max request count {} has been achieved.", MAX_REQUEST_COUNT);
                 }
 
                 walletState.lastDepositId = lastDepositId;
