@@ -15,12 +15,14 @@ import io.everytrade.server.model.Currency;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import lombok.Data;
 
+import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.REBATE;
 import static io.everytrade.server.model.TransactionType.REWARD;
 import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BINANCE_CONVERT;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BUY;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_CARD_CASHBACK;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_COMMISSION_REBATE;
@@ -285,37 +287,51 @@ public class BinanceSortedGroupV4 {
         }
     }
 
+    private boolean isConvert(BinanceBeanV4 stRow, BinanceBeanV4 ndRow) {
+        return !stRow.getCoin().isFiat() && !ndRow.getCoin().isFiat();
+    }
+    private boolean isRelatedTransaction(BinanceBeanV4 stRow, BinanceBeanV4 ndRow) {
+        return stRow.getOriginalOperation().equalsIgnoreCase(OPERATION_TYPE_TRANSACTION_RELATED.code)
+            && ndRow.getOriginalOperation().equalsIgnoreCase(OPERATION_TYPE_TRANSACTION_RELATED.code);
+    }
+
+    private TransactionType detectTransactionType(BinanceBeanV4 stRow, BinanceBeanV4 ndRow, boolean convert ) {
+        if(convert) {
+            return BUY;
+        } else {
+            var isBuy = rowBuySellRelated.stream().anyMatch(row -> row.getOriginalOperation().equalsIgnoreCase(OPERATION_TYPE_BUY.code));
+            var isSell = rowBuySellRelated.stream().anyMatch(row -> row.getOriginalOperation().equalsIgnoreCase(OPERATION_TYPE_SELL.code));
+            if(isBuy) {
+                return BUY;
+            } else if (isSell) {
+                return SELL;
+            } else if ((stRow.getCoin().isFiat() && stRow.getChange().compareTo(ZERO) > 0) || (ndRow.getCoin().isFiat() && ndRow.getChange().compareTo(ZERO) > 0)) {
+                return SELL;
+            } else {
+                return BUY;
+            }
+        }
+    }
+
     private void createBuySellTxs() {
         var stRow = rowBuySellRelated.get(0);
         var ndRow = rowBuySellRelated.get(1);
-        if (stRow.getRowId() > ndRow.getRowId()) {
-            stRow = rowBuySellRelated.get(1);
-            ndRow = rowBuySellRelated.get(0);
-        }
         BinanceBeanV4 baseRow;
         BinanceBeanV4 quoteRow;
-        TransactionType type = stRow.getType();
 
-        if (stRow.getOriginalOperation().equals(OPERATION_TYPE_LARGE_OTC_TRADING.code) && stRow.getChange().compareTo(ZERO) < 0) {
-            type = SELL;
-        }
+        boolean convert = isConvert(stRow,ndRow);
+        boolean relatedTransaction = isRelatedTransaction(stRow,ndRow);
+        TransactionType type = detectTransactionType(stRow, ndRow, convert);
 
-        if (SELL.equals(type)) {
-            if (stRow.getChange().compareTo(ZERO) < 0) {
-                baseRow = stRow;
-                quoteRow = ndRow;
-            } else {
-                baseRow = ndRow;
-                quoteRow = stRow;
-            }
+        if (convert && stRow.getChange().compareTo(ZERO) < 0) {
+            baseRow = ndRow;
+            quoteRow = stRow;
+        } else if (stRow.getCoin().isFiat()) {
+            baseRow = ndRow;
+            quoteRow = stRow;
         } else {
-            if (stRow.getChange().compareTo(ZERO) >= 0) {
-                baseRow = stRow;
-                quoteRow = ndRow;
-            } else {
-                baseRow = ndRow;
-                quoteRow = stRow;
-            }
+            baseRow = stRow;
+            quoteRow = ndRow;
         }
 
         var txsBuySell = new BinanceBeanV4();
@@ -331,6 +347,7 @@ public class BinanceSortedGroupV4 {
         txsBuySell.setAmountBase(baseRow.getChange().abs());
         txsBuySell.setType(type);
         txsBuySell.setRemark(baseRow.getRemark());
+        if(relatedTransaction) txsBuySell.setRemark(baseRow.getOriginalOperation().toUpperCase());
         txsBuySell.setMarketQuote(quoteRow.getCoin());
         txsBuySell.setAmountQuote(quoteRow.getChange().abs());
         ExchangeBean.validateCurrencyPair(txsBuySell.getMarketBase(), txsBuySell.getMarketQuote());
@@ -367,7 +384,8 @@ public class BinanceSortedGroupV4 {
                 row.getOriginalOperation().equals(OPERATION_TYPE_SELL.code) ||
                 row.getOriginalOperation().equals(OPERATION_TYPE_TRANSACTION_RELATED.code) ||
                 row.getOriginalOperation().equals(OPERATION_TYPE_LARGE_OTC_TRADING.code) ||
-                row.getOriginalOperation().equals(OPERATION_TYPE_SMALL_ASSETS_EXCHANGE_BNB.code)
+                row.getOriginalOperation().equals(OPERATION_TYPE_SMALL_ASSETS_EXCHANGE_BNB.code) ||
+                row.getOriginalOperation().equals(OPERATION_TYPE_BINANCE_CONVERT.code)
         ) {
             if (rowsBuySellRelated.containsKey(row.getCoin())) {
                 rowsBuySellRelated.get(row.getCoin()).add(row);
