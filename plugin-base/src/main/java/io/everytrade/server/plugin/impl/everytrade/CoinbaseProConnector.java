@@ -82,7 +82,6 @@ public class CoinbaseProConnector implements IConnector {
         Objects.requireNonNull(this.passPhrase = parameters.get(PARAMETER_PASS_PHRASE.getId()));
     }
 
-
     @Override
     public String getId() {
         return ID;
