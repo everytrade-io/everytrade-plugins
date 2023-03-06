@@ -82,6 +82,13 @@ public class CoinbaseProConnector implements IConnector {
         Objects.requireNonNull(this.passPhrase = parameters.get(PARAMETER_PASS_PHRASE.getId()));
     }
 
+    public CoinbaseProConnector(String apiKey, String apiSecret, String currencyPairs, String passPhrase) {
+        Objects.requireNonNull(this.apiKey = apiKey);
+        Objects.requireNonNull(this.apiSecret = apiSecret);
+        Objects.requireNonNull(this.currencyPairs = currencyPairs);
+        Objects.requireNonNull(this.passPhrase = passPhrase);
+    }
+
     @Override
     public String getId() {
         return ID;
