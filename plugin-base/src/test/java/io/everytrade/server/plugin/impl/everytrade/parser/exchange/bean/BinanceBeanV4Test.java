@@ -537,8 +537,8 @@ class BinanceBeanV4Test {
             List.of()
         );
 
-        TestUtils.testTxs( expected0.getMain(),actual.get(0).getMain());
-        TestUtils.testTxs( expected1.getMain(),actual.get(1).getMain());
+        TestUtils.testTxs( expected0.getMain(),actual.get(1).getMain());
+        TestUtils.testTxs( expected1.getMain(),actual.get(0).getMain());
         TestUtils.testTxs( expected2.getMain(),actual.get(2).getMain());
     }
 
