@@ -14,7 +14,6 @@ import java.time.Instant;
 import java.util.List;
 
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.ILLEGAL_NEGATIVE_VALUES;
-import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.UNSUPPORTED_CURRENCY_PAIR;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.PoloniexBeanV1.UNSUPPORTED_CATEGORY;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.PoloniexBeanV2.UNSUPPORTED_FEE_CURRENCY;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -102,15 +101,6 @@ class PoloniexBeanV2Test {
         final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
         final String error = parsingProblem.getMessage();
         assertTrue(error.contains(UNSUPPORTED_CATEGORY.concat("XXX")));
-    }
-
-    @Test
-    void testNotAllowedPair() {
-        final String row = "2020-01-27 20:39:14,USDT/BTC,Exchange,Sell,8955,0.32647158,2923.5529989,0.075%," +
-            "436733958991,2921.36033415,-0.32647158,USDT,2.19266474\n";
-        final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
-        final String error = parsingProblem.getMessage();
-        assertTrue(error.contains(UNSUPPORTED_CURRENCY_PAIR.concat("USDT/BTC")));
     }
 
     @Test

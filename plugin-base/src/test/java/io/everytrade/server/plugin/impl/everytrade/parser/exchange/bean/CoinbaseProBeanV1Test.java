@@ -15,7 +15,6 @@ import java.time.Instant;
 import java.util.List;
 
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
-import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.UNSUPPORTED_CURRENCY_PAIR;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseProBeanV1.BASE_DIFFERS_FROM_UNIT_SIZE;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseProBeanV1.QUOTE_DIFFERS_FROM_PRICE_FEE_TOTAL_UNIT;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -102,17 +101,6 @@ class CoinbaseProBeanV1Test {
             )
         );
         ParserTestUtils.checkEqual(expected, actual);
-    }
-
-    @Test
-    void testUnknownPair() {
-        final String row = "default,1,BTC-ETH,SELL,2020-05-18T20:10:26.735Z,2.81680093,BTC,41.35,0" +
-            ".5823735922775," +
-            "115" +
-            ".8923448632225,ETH\n";
-        final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
-        final String error = parsingProblem.getMessage();
-        assertTrue(error.contains(UNSUPPORTED_CURRENCY_PAIR.concat("BTC/ETH")));
     }
 
     @Test

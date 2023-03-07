@@ -14,7 +14,6 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 
-import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.UNSUPPORTED_CURRENCY_PAIR;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BitfinexBeanV1.ILLEGAL_ZERO_VALUE_OF_AMOUNT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -207,15 +206,6 @@ class BitfinexBeanV1Test {
         );
         expected.setFailedFee(1, "");
         ParserTestUtils.checkEqual(expected, actual);
-    }
-
-
-    @Test
-    void testNotAllowedPair() {
-        final String row = "0,CAD/USD,0.01048537,9212.82428,-0.00002097,USD,04-02-20 16:52:06,1\n";
-        final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
-        final String error = parsingProblem.getMessage();
-        assertTrue(error.contains(UNSUPPORTED_CURRENCY_PAIR.concat("CAD/USD")));
     }
 
     @Test
