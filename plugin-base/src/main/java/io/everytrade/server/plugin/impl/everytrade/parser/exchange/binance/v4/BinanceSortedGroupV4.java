@@ -305,7 +305,8 @@ public class BinanceSortedGroupV4 {
                 return BUY;
             } else if (isSell) {
                 return SELL;
-            } else if ((stRow.getCoin().isFiat() && stRow.getChange().compareTo(ZERO) > 0) || (ndRow.getCoin().isFiat() && ndRow.getChange().compareTo(ZERO) > 0)) {
+            } else if ((stRow.getCoin().isFiat() && stRow.getChange().compareTo(ZERO) > 0)
+                || (ndRow.getCoin().isFiat() && ndRow.getChange().compareTo(ZERO) > 0)) {
                 return SELL;
             } else {
                 return BUY;
@@ -347,7 +348,9 @@ public class BinanceSortedGroupV4 {
         txsBuySell.setAmountBase(baseRow.getChange().abs());
         txsBuySell.setType(type);
         txsBuySell.setRemark(baseRow.getRemark());
-        if(relatedTransaction) txsBuySell.setRemark(baseRow.getOriginalOperation().toUpperCase());
+        if (relatedTransaction) {
+            txsBuySell.setRemark(baseRow.getOriginalOperation().toUpperCase());
+        }
         txsBuySell.setMarketQuote(quoteRow.getCoin());
         txsBuySell.setAmountQuote(quoteRow.getChange().abs());
         ExchangeBean.validateCurrencyPair(txsBuySell.getMarketBase(), txsBuySell.getMarketQuote());
