@@ -12,7 +12,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Collections;
 
-import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.UNSUPPORTED_CURRENCY_PAIR;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -104,14 +103,6 @@ class CoinsquareBeanV1Test {
             Collections.emptyList()
         );
         ParserTestUtils.checkEqual(expected, actual);
-    }
-
-    @Test
-    void testNotAllowedPair() {
-        final String row = "27-12-19;sell;DASH;ETH;0,00010604;2,271.66;-0.24064597\n";
-        final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
-        final String error = parsingProblem.getMessage();
-        assertTrue(error.contains(UNSUPPORTED_CURRENCY_PAIR.concat("ETH/DASH")));
     }
 
     @Test

@@ -14,8 +14,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
-import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.UNSUPPORTED_CURRENCY_PAIR;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -262,19 +260,6 @@ class BinanceBeanV2Test {
             )
         );
         ParserTestUtils.checkEqual(expected, actual);
-    }
-
-
-    @Test
-    void testUnknownPair() {
-        final String row0 = "2020-03-19 17:02:52;USDTBTC;SELL;0.0;0.041600;6236.39;0.041600;259.44;Filled\n";
-        final String row1 = ";Date(UTC);Trading Price;Filled;Total;Fee;;;\n";
-        final String row2 = ";2020-03-19 17:02:52;6236.39;0.041600;259.43382400;0.1612653USDT;;;\n";
-
-        final ParsingProblem parsingProblem
-            = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row0 + row1 + row2);
-        final String error = parsingProblem.getMessage();
-        assertTrue(error.contains(UNSUPPORTED_CURRENCY_PAIR.concat("USDTBTC")));
     }
 
     @Test

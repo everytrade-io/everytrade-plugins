@@ -70,11 +70,10 @@ class ShakePayBeanV1Test {
     }
 
     @Test
-    void testUnknonwBase() {
+    void testUnknownBase() {
         final String row = "exchange,2020-03-11T19:59:23+00,\"1,000\",CAD,0.09172307,XXX,10902.3826,,\n";
         final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
         final String error = parsingProblem.getMessage();
         assertTrue(error.contains("Unable to set value 'XXX'"));
     }
-
 }

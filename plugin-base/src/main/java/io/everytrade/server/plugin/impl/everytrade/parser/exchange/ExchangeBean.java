@@ -101,20 +101,15 @@ public abstract class ExchangeBean implements IImportableBean {
     }
 
     protected TransactionType detectTransactionType(Currency fromCurrency, Currency toCurrency) {
-        final CurrencyPair tradablePairSell = findTradablePair(fromCurrency, toCurrency);
-        final CurrencyPair tradablePairBuy = findTradablePair(toCurrency, fromCurrency);
-        if (tradablePairBuy != null && tradablePairSell == null) {
+        var pair = findTradablePair(toCurrency, fromCurrency);
+        if (pair != null && !pair.getBase().isFiat()) {
             return TransactionType.BUY;
-        } else if (tradablePairBuy == null && tradablePairSell != null) {
-            return TransactionType.SELL;
-        } else {
-            throw new DataValidationException(
-                UNSUPPORTED_CURRENCY_PAIR
-                    .concat(fromCurrency.code())
-                    .concat("/")
-                    .concat(toCurrency.code())
-            );
         }
+        pair = findTradablePair(fromCurrency, toCurrency);
+        if (pair != null && !pair.getBase().isFiat()) {
+            return TransactionType.SELL;
+        }
+        throw new DataValidationException(UNSUPPORTED_CURRENCY_PAIR.concat(fromCurrency.code()).concat("/").concat(toCurrency.code()));
     }
 
     protected static TransactionType detectTransactionType(String value) {

@@ -11,50 +11,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static io.everytrade.server.model.Currency.ACXT;
-import static io.everytrade.server.model.Currency.ADA;
-import static io.everytrade.server.model.Currency.AKT;
-import static io.everytrade.server.model.Currency.AMP;
-import static io.everytrade.server.model.Currency.ATOM;
-import static io.everytrade.server.model.Currency.BNB;
-import static io.everytrade.server.model.Currency.BTC;
-import static io.everytrade.server.model.Currency.BUSD;
-import static io.everytrade.server.model.Currency.CAKE;
-import static io.everytrade.server.model.Currency.CHN;
-import static io.everytrade.server.model.Currency.CRO;
-import static io.everytrade.server.model.Currency.DAI;
-import static io.everytrade.server.model.Currency.ETH;
-import static io.everytrade.server.model.Currency.FRAX;
-import static io.everytrade.server.model.Currency.GRT;
-import static io.everytrade.server.model.Currency.HUSD;
-import static io.everytrade.server.model.Currency.IOTA;
-import static io.everytrade.server.model.Currency.LINK;
-import static io.everytrade.server.model.Currency.LTC;
-import static io.everytrade.server.model.Currency.LUNA;
-import static io.everytrade.server.model.Currency.LUSD;
-import static io.everytrade.server.model.Currency.MANA;
-import static io.everytrade.server.model.Currency.MASK;
-import static io.everytrade.server.model.Currency.MAXI;
-import static io.everytrade.server.model.Currency.NEAR;
-import static io.everytrade.server.model.Currency.PKR;
-import static io.everytrade.server.model.Currency.SOL;
-import static io.everytrade.server.model.Currency.TUSD;
-import static io.everytrade.server.model.Currency.USDC;
-import static io.everytrade.server.model.Currency.USDN;
-import static io.everytrade.server.model.Currency.USDT;
-import static io.everytrade.server.model.Currency.UST;
-import static io.everytrade.server.model.Currency.XEQ;
-import static io.everytrade.server.model.Currency.XRP;
 import static lombok.AccessLevel.PRIVATE;
 
 @Getter
-@FieldDefaults(level = PRIVATE)
+@FieldDefaults(level = PRIVATE, makeFinal = true)
 public final class CurrencyPair implements Comparable<CurrencyPair> {
-
-    private static final Set<Currency> ALLOWED_CRYPTO_QUOTES = Set.of(
-        USDT, BTC, ETH, BNB, BUSD, USDC, DAI, XRP, ADA, CRO, FRAX, HUSD, LINK, LTC, LUNA, LUSD, MANA, SOL, TUSD, USDN, UST, ATOM,
-        NEAR, GRT, AMP, IOTA, ACXT, AKT, CHN, PKR, MAXI, CAKE, XEQ, MASK
-    );
 
     @NonNull Currency base;
     @NonNull Currency quote;
@@ -64,17 +25,9 @@ public final class CurrencyPair implements Comparable<CurrencyPair> {
     static {
         for (Currency base : Currency.values()) {
             for (Currency quote : Currency.values()) {
-                var baseIsCrypto = !base.isFiat();
-                var quoteIsFiat = quote.isFiat();
-                var quoteIsAllowedCrypto = ALLOWED_CRYPTO_QUOTES.contains(quote);
-                var quoteIsAllowed = quoteIsFiat || quoteIsAllowedCrypto;
-                var isUnsupportedCryptoPair = isUnsupportedCryptoPairs(base, quote);
-                if ((baseIsCrypto && quoteIsAllowed && !isUnsupportedCryptoPair) || (base == quote)) {
-                    CURRENCY_PAIRS.add(new CurrencyPair(base, quote));
-                }
+                CURRENCY_PAIRS.add(new CurrencyPair(base, quote));
             }
         }
-        CURRENCY_PAIRS.addAll(getSupportedFiatPairs());
     }
 
     public enum CurrencyPosition {BASE, QUOTE}
@@ -90,9 +43,6 @@ public final class CurrencyPair implements Comparable<CurrencyPair> {
     public CurrencyPair(Currency base, Currency quote) {
         this.base = base;
         this.quote = quote;
-        if(this.base.isFiat() && !this.quote.isFiat()) {
-            throw new FiatCryptoCombinationException(this.base, this.quote);
-        }
     }
 
     public CurrencyPair reverse() {
@@ -117,31 +67,6 @@ public final class CurrencyPair implements Comparable<CurrencyPair> {
 
     public static List<CurrencyPair> getTradeablePairs() {
         return new ArrayList<>(CURRENCY_PAIRS);
-    }
-
-    public static List<CurrencyPair> getSupportedFiatPairs() {
-        List<CurrencyPair> currencyPairs = new ArrayList<>();
-        currencyPairs.add(new CurrencyPair(Currency.USD, Currency.CAD));
-        currencyPairs.add(new CurrencyPair(Currency.USD, Currency.CZK));
-
-        currencyPairs.add(new CurrencyPair(Currency.CAD, Currency.CZK));
-
-        currencyPairs.add(new CurrencyPair(Currency.EUR, Currency.USD));
-        currencyPairs.add(new CurrencyPair(Currency.EUR, Currency.CAD));
-        currencyPairs.add(new CurrencyPair(Currency.EUR, Currency.CZK));
-        currencyPairs.add(new CurrencyPair(Currency.EUR, Currency.GBP));
-        currencyPairs.add(new CurrencyPair(Currency.EUR, Currency.AUD));
-
-        currencyPairs.add(new CurrencyPair(Currency.GBP, Currency.USD));
-        currencyPairs.add(new CurrencyPair(Currency.GBP, Currency.CAD));
-        currencyPairs.add(new CurrencyPair(Currency.GBP, Currency.CZK));
-        currencyPairs.add(new CurrencyPair(Currency.GBP, Currency.AUD));
-
-        currencyPairs.add(new CurrencyPair(Currency.AUD, Currency.USD));
-        currencyPairs.add(new CurrencyPair(Currency.AUD, Currency.CAD));
-        currencyPairs.add(new CurrencyPair(Currency.AUD, Currency.CZK));
-
-        return currencyPairs;
     }
 
     @Override
@@ -176,16 +101,6 @@ public final class CurrencyPair implements Comparable<CurrencyPair> {
     @Override
     public String toString() {
         return String.format("%s/%s", base, quote);
-    }
-
-    private static boolean isUnsupportedCryptoPairs(Currency base, Currency quote) {
-        if (USDT.equals(base)) {
-            return BTC.equals(quote) || ETH.equals(quote) || BNB.equals(quote);
-        } else if (BTC.equals(base)) {
-            return  ETH.equals(quote) || BNB.equals(quote);
-        } else {
-            return base.equals(ETH) && quote.equals(BNB);
-        }
     }
 
     public static class FiatCryptoCombinationException extends RuntimeException {

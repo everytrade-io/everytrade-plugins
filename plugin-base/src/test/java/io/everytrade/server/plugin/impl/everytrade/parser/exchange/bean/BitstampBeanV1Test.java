@@ -14,7 +14,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
-import static io.everytrade.server.model.CurrencyPair.FiatCryptoCombinationException.INVALID_CURRENCY_PAIR;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -78,15 +77,6 @@ class BitstampBeanV1Test {
         ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
         final String error = parsingProblem.getMessage();
         assertTrue(error.contains("Unable to set value '0.00111167 XXX'"));
-    }
-
-    @Test
-    void testNotAllowedPair() {
-        final String row = "Market,\"Feb. 14, 2019, 03:32 PM\",Main Account,0.00111167 USD,3.96238096 BTC," +
-            "3564.35 BTC,0.00990595 BTC,Buy\n";
-        ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
-        final String error = parsingProblem.getMessage();
-        assertTrue(error.contains(INVALID_CURRENCY_PAIR));
     }
 
     @Test
