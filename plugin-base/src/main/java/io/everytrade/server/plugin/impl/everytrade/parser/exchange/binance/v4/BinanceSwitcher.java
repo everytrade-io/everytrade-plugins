@@ -13,6 +13,7 @@ import static io.everytrade.server.model.TransactionType.REWARD;
 import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.UNKNOWN;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BINANCE_CONVERT;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BUY;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_CARD_CASHBACK;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_COMMISSION_REBATE;
@@ -32,7 +33,7 @@ public class BinanceSwitcher {
 
     public static TransactionType operationTypeSwitcher(String operationType) {
         operationType = operationType.toUpperCase();
-        if (OPERATION_TYPE_BUY.code.equals(operationType)) {
+        if (OPERATION_TYPE_BUY.code.equals(operationType) || OPERATION_TYPE_BINANCE_CONVERT.code.equals(operationType)) {
             return BUY;
         }
         if (OPERATION_TYPE_SELL.code.equals(operationType)) {
