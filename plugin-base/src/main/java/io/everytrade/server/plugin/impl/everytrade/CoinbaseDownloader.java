@@ -52,8 +52,9 @@ public class CoinbaseDownloader {
     private static final int TRANSACTIONS_PER_REQUEST_LIMIT = 100; // please do not change, it could affect last download state logic
     private static final int REAL_WALLET_ID_LENGTH = 36;
     private String lastDownloadWalletState;
-    private long lastAdvanceTradeStartDatetime;
-    private long lastAdvanceTradeEndDatetime;
+    private long partialLastAdvanceTradeStartDatetime;
+    private long partialLastAdvanceTradeEndDatetime;
+    private long completedLastAdvanceTradeEndDatetime;
     private static final Logger LOG = LoggerFactory.getLogger(CoinbaseDownloader.class);
 
     @NonNull
@@ -68,8 +69,11 @@ public class CoinbaseDownloader {
             String[] split = lastDownloadState.split(ADVANCED_TRADE_SYMBOL_SEPARATOR);
             if (split.length > 1) {
                 String[] advancedTrades = split[1].split(COLON_SYMBOL);
-                lastAdvanceTradeStartDatetime = Long.parseLong(advancedTrades[0]);
-                lastAdvanceTradeEndDatetime = Long.parseLong(advancedTrades[1]);
+                partialLastAdvanceTradeStartDatetime = Long.parseLong(advancedTrades[0]);
+                partialLastAdvanceTradeEndDatetime = Long.parseLong(advancedTrades[1]);
+                if (advancedTrades.length == 3) {
+                    completedLastAdvanceTradeEndDatetime = Long.parseLong(advancedTrades[2]);
+                }
                 lastDownloadWalletState = split[0];
             } else if (split.length == 1) {
                 lastDownloadWalletState = split[0];
@@ -113,25 +117,26 @@ public class CoinbaseDownloader {
         return build;
     }
 
-
-    private CoinbaseTradeHistoryParams setParamsBeforeStart(TradeService tradeService) {
+    private CoinbaseTradeHistoryParams setParamsBeforeStart(TradeService tradeService, Instant now) {
         var params = (CoinbaseTradeHistoryParams) tradeService.createTradeHistoryParams();
         // 1. state - brand new download
-        if(lastAdvanceTradeEndDatetime == 0 && lastAdvanceTradeStartDatetime == 0) {
-            params.setEndDateTime(Instant.now());
+        if(partialLastAdvanceTradeEndDatetime == 0 && partialLastAdvanceTradeStartDatetime == 0) {
+            params.setEndDateTime(now);
+            partialLastAdvanceTradeEndDatetime = completedLastAdvanceTradeEndDatetime;
             params.setStartDatetime(Instant.ofEpochMilli(0));
             // 2. state - not finished 1st download
-        } else if (lastAdvanceTradeEndDatetime > 0 && lastAdvanceTradeStartDatetime == 0) {
-            params.setEndDateTime(Instant.ofEpochMilli(lastAdvanceTradeEndDatetime));
+        } else if (partialLastAdvanceTradeEndDatetime > 0 && partialLastAdvanceTradeStartDatetime == 0) {
+            params.setEndDateTime(Instant.ofEpochMilli(partialLastAdvanceTradeEndDatetime));
             params.setStartDatetime(Instant.ofEpochMilli(0));
             // 3. finished first download and setup for second one - used as well as for start another downloads
-        } else if (lastAdvanceTradeEndDatetime == 0 && lastAdvanceTradeStartDatetime > 0) {
-            params.setEndDateTime(Instant.now());
-            params.setStartDatetime(Instant.ofEpochMilli(lastAdvanceTradeStartDatetime));
+        } else if (partialLastAdvanceTradeEndDatetime == 0 && partialLastAdvanceTradeStartDatetime > 0) {
+            params.setEndDateTime(now);
+            partialLastAdvanceTradeEndDatetime = now.toEpochMilli();
+            params.setStartDatetime(Instant.ofEpochMilli(partialLastAdvanceTradeStartDatetime));
             // 4. not finished 2nd download
-        } else if (lastAdvanceTradeEndDatetime > 0 && lastAdvanceTradeStartDatetime > 0) {
-            params.setEndDateTime(Instant.ofEpochMilli(lastAdvanceTradeEndDatetime));
-            params.setStartDatetime(Instant.ofEpochMilli(lastAdvanceTradeStartDatetime));
+        } else if (partialLastAdvanceTradeEndDatetime > 0 && partialLastAdvanceTradeStartDatetime > 0) {
+            params.setEndDateTime(Instant.ofEpochMilli(partialLastAdvanceTradeEndDatetime));
+            params.setStartDatetime(Instant.ofEpochMilli(partialLastAdvanceTradeStartDatetime));
         } else {
             throw new IllegalStateException("Unknown last download state data");
         }
@@ -181,9 +186,13 @@ public class CoinbaseDownloader {
     private List<UserTrade> downloadAdvancedTrade() {
         var tradeService = (CoinbaseTradeService) exchange.getTradeService();
         int sentRequests = 0;
+        Instant now = Instant.now();
+        if(completedLastAdvanceTradeEndDatetime == 0) {
+            completedLastAdvanceTradeEndDatetime = now.toEpochMilli();
+        }
         List<CoinbaseAdvancedTradeFills> advancedTrades = new ArrayList<>();
         while (sentRequests < MAX_REQUEST_COUNT) {
-            var params = setParamsBeforeStart(tradeService);
+            var params = setParamsBeforeStart(tradeService, now);
 
             List<CoinbaseAdvancedTradeFills> advancedTradesBlock = new ArrayList<>();
             try {
@@ -193,8 +202,9 @@ public class CoinbaseDownloader {
             }
             int size = advancedTradesBlock.size();
             if (size == 0) {
-                lastAdvanceTradeEndDatetime = 0;
-                lastAdvanceTradeStartDatetime = lastAdvanceTradeEndDatetime + 1;
+                partialLastAdvanceTradeStartDatetime = completedLastAdvanceTradeEndDatetime;
+                partialLastAdvanceTradeEndDatetime = 0;
+                completedLastAdvanceTradeEndDatetime = 0;
                 break;
             } else if (size == TRANSACTIONS_PER_REQUEST_LIMIT) {
                 // remove last txs with the same timestamp
@@ -206,19 +216,13 @@ public class CoinbaseDownloader {
                 } catch (ParseException e) {
                     throw new RuntimeException("Unable to parse date of trade ", e);
                 }
-                lastAdvanceTradeEndDatetime = minTradeDate.getTime();
+                partialLastAdvanceTradeEndDatetime = minTradeDate.getTime();
                 advancedTrades.addAll(advancedTradesBlock);
-            } else if (size < TRANSACTIONS_PER_REQUEST_LIMIT && size > 0) {
+            } else if (size < TRANSACTIONS_PER_REQUEST_LIMIT) {
                 advancedTrades.addAll(advancedTradesBlock);
-                String tradeTime = advancedTrades.get(0).getTradeTime();
-                long endDate;
-                try {
-                    endDate = createDateFromText(tradeTime).getTime();
-                } catch (ParseException e) {
-                    throw new RuntimeException(e);
-                }
-                lastAdvanceTradeEndDatetime = 0;
-                lastAdvanceTradeStartDatetime = endDate + 1;
+                partialLastAdvanceTradeStartDatetime = completedLastAdvanceTradeEndDatetime;
+                partialLastAdvanceTradeEndDatetime = 0;
+                completedLastAdvanceTradeEndDatetime = 0;
                 break;
             } else {
                 throw new IllegalStateException("Unknown state of downloaded data. ");
@@ -518,6 +522,7 @@ public class CoinbaseDownloader {
     }
 
     private String advancedTradeLastDownloadTimestamp() {
-        return String.valueOf(lastAdvanceTradeStartDatetime) + COLON_SYMBOL + String.valueOf(lastAdvanceTradeEndDatetime);
+        return String.valueOf(partialLastAdvanceTradeStartDatetime) + COLON_SYMBOL + String.valueOf(partialLastAdvanceTradeEndDatetime)
+            + COLON_SYMBOL + String.valueOf(completedLastAdvanceTradeEndDatetime);
     }
 }
