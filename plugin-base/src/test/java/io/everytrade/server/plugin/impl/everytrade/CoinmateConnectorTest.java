@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.everytrade.server.model.CurrencyPair;
 
+import io.everytrade.server.plugin.api.connector.DownloadResult;
 import org.junit.jupiter.api.Test;
 import org.knowm.xchange.coinmate.dto.trade.CoinmateTransactionHistoryEntry;
 
@@ -38,6 +39,58 @@ class CoinmateConnectorTest {
     @Test
     void testBuySellDepositWithdrawal() throws JsonProcessingException {
         // TODO - test
+    }
+
+    @Test
+    public void connectionTest() {
+
+        String xpub = "Mtub2t1qaHAMGVQGTirbf6fPinYFxg8xiw4N2AoMppoGZCvatYa13HQEcc7KSTx3d1rHkjRadpTLb3wwkcv5aaxVJdUM4rKktwFnYzML5n23S8M";
+
+        BlockchainLtcConnector gbConnector = new BlockchainLtcConnector(
+            xpub,
+            "USD",
+            "true",
+            "false",
+            "false",
+            "false");
+
+        DownloadResult download = gbConnector.getTransactions(null);
+        DownloadResult downloadTwo = download;
+    }
+
+    @Test
+    public void connectionTestBtc() {
+
+        String xpub = "MUMbouREUxpVs1DZMCVknq9HziM95zTAyZ";
+
+        BlockchainLtcConnector gbConnector = new BlockchainLtcConnector(
+            xpub,
+            "USD",
+            "true",
+            "false",
+            "false",
+            "false");
+
+        DownloadResult download = gbConnector.getTransactions(null);
+        DownloadResult downloadTwo = download;
+    }
+
+    @Test
+    public void connectionTestLtc() {
+
+        String xpub = "MKwF9PdJSVCox7gzCzPeRkMNhSwG7iUEHE";
+//         xpub = "MUMbouREUxpVs1DZMCVknq9HziM95zTAyZ";
+
+        BlockchainLtcConnector gbConnector = new BlockchainLtcConnector(
+            xpub,
+            "USD",
+            "true",
+            "false",
+            "false",
+            "true");
+
+        DownloadResult download = gbConnector.getTransactions(null);
+        DownloadResult downloadTwo = download;
     }
 
 }
