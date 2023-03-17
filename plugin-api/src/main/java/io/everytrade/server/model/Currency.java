@@ -632,7 +632,16 @@ public enum Currency {
     ETHDOWN(false, Instant.parse("2023-01-18T00:00:00Z"), "ETHDOWN"),
     BTCDOWN(false, Instant.parse("2022-03-03T00:00:00Z"), "BTCDOWN"),
     KINT(false, Instant.parse("2022-09-02T00:00:00Z"), "Kintsugi"),
-    YGG(false, Instant.parse("2021-08-25T00:00:00Z"), "Yield Guild Games");
+    YGG(false, Instant.parse("2021-08-25T00:00:00Z"), "Yield Guild Games"),
+    SHPING(false, Instant.parse("2018-10-04T00:00:00Z"), "SHPING"),
+    AUCTION(false, Instant.parse("2022-10-27T00:00:00Z"), "Bounce"),
+    CTX(false, Instant.parse("2021-07-15T00:00:00Z"), "Cryptex"),
+    ERN(false, Instant.parse("2021-07-01T00:00:00Z"), "Ethernity Chain"),
+    METIS(false, Instant.parse("2021-07-01T00:00:00Z"), "Metis Token"),
+    PCX(false, Instant.parse("2019-08-01T00:00:00Z"), "ChainX"),
+    TLOS(false, Instant.parse("2019-09-19T00:00:00Z"), "Telos"),
+    KRL(false, Instant.parse("2019-07-19T00:00:00Z"), "Kryll"),
+    BTRST(false, Instant.parse("2021-09-16T00:00:00Z"), "Braintrust");
 
     String code;
     int decimalDigits;
