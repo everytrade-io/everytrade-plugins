@@ -1,7 +1,10 @@
 package io.everytrade.server.plugin.impl.everytrade;
 
+import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
+import io.everytrade.server.util.AmountUtil;
+
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.knowm.xchange.Exchange;
@@ -9,6 +12,7 @@ import org.knowm.xchange.coinbase.v2.service.CoinbaseAccountService;
 import org.knowm.xchange.coinbase.v2.service.CoinbaseTradeHistoryParams;
 import org.knowm.xchange.coinbase.v2.service.CoinbaseTradeService;
 import org.knowm.xchange.coinbase.v3.dto.transactions.CoinbaseAdvancedTradeFills;
+import org.knowm.xchange.coinbase.v3.dto.transactions.CoinbaseAdvancedTradeOrderFillsResponse;
 import org.knowm.xchange.currency.Currency;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.Order;
@@ -20,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -55,12 +60,13 @@ public class CoinbaseDownloader {
     private long partialLastAdvanceTradeStartDatetime;
     private long partialLastAdvanceTradeEndDatetime;
     private long completedLastAdvanceTradeEndDatetime;
+    private String cursorAdvanceTrade;
     private static final Logger LOG = LoggerFactory.getLogger(CoinbaseDownloader.class);
 
     @NonNull
     Exchange exchange;
 
-    public  CoinbaseDownloader(Exchange exchange) {
+    public CoinbaseDownloader(Exchange exchange) {
         this.exchange = exchange;
     }
 
@@ -71,8 +77,11 @@ public class CoinbaseDownloader {
                 String[] advancedTrades = split[1].split(COLON_SYMBOL);
                 partialLastAdvanceTradeStartDatetime = Long.parseLong(advancedTrades[0]);
                 partialLastAdvanceTradeEndDatetime = Long.parseLong(advancedTrades[1]);
-                if (advancedTrades.length == 3) {
+                if (advancedTrades.length > 2) {
                     completedLastAdvanceTradeEndDatetime = Long.parseLong(advancedTrades[2]);
+                }
+                if (advancedTrades.length > 3) {
+                    cursorAdvanceTrade = advancedTrades[3];
                 }
                 lastDownloadWalletState = split[0];
             } else if (split.length == 1) {
@@ -87,22 +96,23 @@ public class CoinbaseDownloader {
         List<FundingRecord> funding = new ArrayList<>();
         List<UserTrade> trades = new ArrayList<>();
         List<UserTrade> advancedTrading = new ArrayList<>();
+        List<ParsingProblem> parsingProblems = new ArrayList<>();
 
-        try{
+        try {
             LOG.info("Advanced trading download start");
-            advancedTrading = downloadAdvancedTrade();
+            advancedTrading = downloadAdvancedTrade(parsingProblems);
         } catch (Exception e) {
             LOG.error("Advanced trading download error " + e.getMessage());
         }
 
-        try{
+        try {
             LOG.info("Trades download start");
             trades = downloadTrades(walletStates);
         } catch (Exception e) {
             LOG.error("Trades download error " + e.getMessage());
         }
 
-        try{
+        try {
             LOG.info("Funding download start");
             funding = downloadFunding(walletStates);
         } catch (Exception e) {
@@ -111,7 +121,7 @@ public class CoinbaseDownloader {
         trades.addAll(advancedTrading);
 
         DownloadResult build = DownloadResult.builder()
-            .parseResult(new XChangeConnectorParser().getParseResult(trades, funding))
+            .parseResult(new XChangeConnectorParser().getParseResult(trades, funding, parsingProblems))
             .downloadStateData(getLastTransactionId(walletStates))
             .build();
         return build;
@@ -120,7 +130,7 @@ public class CoinbaseDownloader {
     private CoinbaseTradeHistoryParams setParamsBeforeStart(TradeService tradeService, Instant now) {
         var params = (CoinbaseTradeHistoryParams) tradeService.createTradeHistoryParams();
         // 1. state - brand new download
-        if(partialLastAdvanceTradeEndDatetime == 0 && partialLastAdvanceTradeStartDatetime == 0) {
+        if (partialLastAdvanceTradeEndDatetime == 0 && partialLastAdvanceTradeStartDatetime == 0) {
             params.setEndDateTime(now);
             partialLastAdvanceTradeEndDatetime = completedLastAdvanceTradeEndDatetime;
             params.setStartDatetime(Instant.ofEpochMilli(0));
@@ -141,40 +151,19 @@ public class CoinbaseDownloader {
             throw new IllegalStateException("Unknown last download state data");
         }
         params.setLimit(TRANSACTIONS_PER_REQUEST_LIMIT);
+        params.setCursor(cursorAdvanceTrade);
         return params;
-    }
-
-    private List<CoinbaseAdvancedTradeFills> removeLastTxs(List<CoinbaseAdvancedTradeFills> block) {
-        long lastTxTime;
-        try {
-            String tradeTime = block.get(block.size() - 1).getTradeTime();
-            lastTxTime = createDateFromText(tradeTime).getTime();
-            lastTxTime = lastTxTime + 1000L;
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
-        long finalLastTxTime = lastTxTime;
-        var advancedTradesPureBlock =
-            block.stream().filter(tx -> {
-                try {
-                    String tradeTime = tx.getTradeTime();
-                    long time = createDateFromText(tradeTime).getTime();
-                    return time > finalLastTxTime;
-                } catch (ParseException e) {
-                    throw new RuntimeException(e);
-                }
-            }).collect(Collectors.toList());
-        return advancedTradesPureBlock;
     }
 
     /**
      * 2023-01-02T00:42:55.504087795Z
+     *
      * @param textDate
      * @return
      */
     String cleanDateText(String textDate) {
         try {
-            textDate = textDate.substring(0,textDate.lastIndexOf(".") + 4);
+            textDate = textDate.substring(0, textDate.lastIndexOf(".") + 4);
             textDate = textDate.replace("Z", "");
             textDate += "Z";
         } catch (Exception ignore) {
@@ -183,11 +172,11 @@ public class CoinbaseDownloader {
         return textDate;
     }
 
-    private List<UserTrade> downloadAdvancedTrade() {
+    private List<UserTrade> downloadAdvancedTrade(List<ParsingProblem> parsingProblems) {
         var tradeService = (CoinbaseTradeService) exchange.getTradeService();
         int sentRequests = 0;
         Instant now = Instant.now();
-        if(completedLastAdvanceTradeEndDatetime == 0) {
+        if (completedLastAdvanceTradeEndDatetime == 0) {
             completedLastAdvanceTradeEndDatetime = now.toEpochMilli();
         }
         List<CoinbaseAdvancedTradeFills> advancedTrades = new ArrayList<>();
@@ -196,7 +185,9 @@ public class CoinbaseDownloader {
 
             List<CoinbaseAdvancedTradeFills> advancedTradesBlock = new ArrayList<>();
             try {
-                advancedTradesBlock = tradeService.getAdvancedTradeOrderFills(params);
+                CoinbaseAdvancedTradeOrderFillsResponse advancedTradeOrderFillsRow = tradeService.getAdvancedTradeOrderFillsRow(params);
+                advancedTradesBlock = advancedTradeOrderFillsRow.getFills();
+                cursorAdvanceTrade = advancedTradeOrderFillsRow.getCursor();
             } catch (Exception e) {
                 throw new IllegalStateException("Unable to download advanced trades. ", e);
             }
@@ -207,8 +198,6 @@ public class CoinbaseDownloader {
                 completedLastAdvanceTradeEndDatetime = 0;
                 break;
             } else if (size == TRANSACTIONS_PER_REQUEST_LIMIT) {
-                // remove last txs with the same timestamp
-                advancedTradesBlock = removeLastTxs(advancedTradesBlock);
                 Date minTradeDate;
                 try {
                     String tradeTime = advancedTradesBlock.get(advancedTradesBlock.size() - 1).getTradeTime();
@@ -229,30 +218,36 @@ public class CoinbaseDownloader {
             }
             sentRequests++;
         }
-        List<UserTrade> userTrades = createUserTradesFromAdvancedTrades(advancedTrades);
+        List<UserTrade> userTrades = createUserTradesFromAdvancedTrades(advancedTrades, parsingProblems);
         return userTrades;
     }
 
-    private List<UserTrade> createUserTradesFromAdvancedTrades(List<CoinbaseAdvancedTradeFills> fills) {
+    private List<UserTrade> createUserTradesFromAdvancedTrades(List<CoinbaseAdvancedTradeFills> fills, List<ParsingProblem> parsingProblems) {
         List<UserTrade> trades = new ArrayList<>();
-        var parsingProblems = new ArrayList<ParsingProblem>();
-        for(CoinbaseAdvancedTradeFills fill : fills) {
+        for (CoinbaseAdvancedTradeFills fill : fills) {
             try {
-                String[] currencies = fill.getProductId().split("-");
-                var base = new Currency(currencies[0]);
-                var quote = new Currency(currencies[1]);
-                var pair = new CurrencyPair(base, quote);
-                Date date = createDateFromText(fill.getTradeTime());
-                Order.OrderType type = fill.getSide().equalsIgnoreCase("BUY") ? Order.OrderType.BID : Order.OrderType.ASK;
-                var trade = new UserTrade(type, fill.getSize(), pair, fill.getPrice(), date, fill.getTradeId(),
-                    fill.getOrderId(), fill.getCommission(), pair.getCounter(), fill.getUserId());
-                trades.add(trade);
+                if(fill.getSizeInQuote().equals("true") || fill.getSizeInQuote().equals("false")) {
+                    String[] currencies = fill.getProductId().split("-");
+                    var base = new Currency(currencies[0]);
+                    var quote = new Currency(currencies[1]);
+                    var pair = new CurrencyPair(base, quote);
+                    Date date = createDateFromText(fill.getTradeTime());
+                    Order.OrderType type = fill.getSide().equalsIgnoreCase("BUY") ? Order.OrderType.BID : Order.OrderType.ASK;
+                    BigDecimal baseAmount = fill.getSizeInQuote().equals("true") ? AmountUtil.evaluateBaseAmount(fill.getSize(),
+                        fill.getPrice()) : fill.getSize();
+                    var trade = new UserTrade(type, baseAmount, pair,
+                        fill.getPrice(), date, fill.getTradeId(),
+                        fill.getOrderId(), fill.getCommission(), pair.getCounter(), fill.getUserId());
+                    trades.add(trade);
+                } else {
+                    throw new DataValidationException(String.format("Unsupported size in quote value: %s", fill.getSizeInQuote()));
+                }
             } catch (Exception e) {
-                parsingProblems.add(new ParsingProblem(fill.toString(), e.getMessage(), ROW_PARSING_FAILED));
+                parsingProblems.add(new ParsingProblem("Advance trade error: " + fill.toString(), e.getMessage(), ROW_PARSING_FAILED));
             }
         }
         int size = parsingProblems.size();
-        if(size > 0 ) {
+        if (size > 0) {
             LOG.error("Several ( %s ) fills could not be processed", size);
         }
         return trades;
@@ -328,7 +323,7 @@ public class CoinbaseDownloader {
                 walletState.lastSellId = lastSellId;
 
                 walletRequests++;
-                walletState.lastTxWalletUpdate =  String.valueOf(new Date().getTime());
+                walletState.lastTxWalletUpdate = String.valueOf(new Date().getTime());
             }
         }
         return userTrades;
@@ -350,10 +345,11 @@ public class CoinbaseDownloader {
         for (Map.Entry<String, WalletState> entry : wallets.entrySet()) {
             final String walletId = entry.getKey();
             final WalletState walletState = wallets.get(walletId);
-            if(walletRequests < MAX_WALLET_REQUESTS) {
+            int noOfWallet = 0;
+            if (walletRequests < MAX_WALLET_REQUESTS) {
                 String lastDepositId = entry.getValue().lastDepositId;
                 String lastWithdrawalId = entry.getValue().lastWithdrawalId;
-
+                noOfWallet++;
                 while (sentRequests < MAX_REQUEST_COUNT_DEPOSIT_WITHDRAWALS) {
                     ++sentRequests;
                     params.setStartId(lastDepositId);
@@ -398,7 +394,7 @@ public class CoinbaseDownloader {
                 walletState.lastWithdrawalId = lastWithdrawalId;
 
                 walletRequests++;
-                walletState.lastFundingWalletUpdate =  String.valueOf(new Date().getTime());
+                walletState.lastFundingWalletUpdate = String.valueOf(new Date().getTime());
             }
         }
         return fundingRecords;
@@ -447,7 +443,7 @@ public class CoinbaseDownloader {
                             getOrNull(entry, 3),
                             getOrNull(entry, 4),
                             getOrNull(entry, 5),
-                            getOrNull(entry,6)
+                            getOrNull(entry, 6)
                         )
                     ));
 
@@ -462,7 +458,7 @@ public class CoinbaseDownloader {
         return actualWalletStates;
     }
 
-    public static List<Map.Entry<String, WalletState>> sortWalletsByFundingUpdates(Map<String, WalletState>walletsMap) {
+    public static List<Map.Entry<String, WalletState>> sortWalletsByFundingUpdates(Map<String, WalletState> walletsMap) {
         List<Map.Entry<String, WalletState>> sortedWallets =
             walletsMap.entrySet().stream()
                 .sorted(Map.Entry.comparingByValue(Comparator.comparingLong(c -> {
@@ -472,7 +468,7 @@ public class CoinbaseDownloader {
         return sortedWallets;
     }
 
-    public static List<Map.Entry<String, WalletState>> sortWalletsByTxsUpdates(Map<String, WalletState>walletsMap) {
+    public static List<Map.Entry<String, WalletState>> sortWalletsByTxsUpdates(Map<String, WalletState> walletsMap) {
         List<Map.Entry<String, WalletState>> sortedWallets =
             walletsMap.entrySet().stream()
                 .sorted(Map.Entry.comparingByValue(Comparator.comparingLong(c -> {
@@ -511,7 +507,7 @@ public class CoinbaseDownloader {
         String lastFundingWalletUpdate;
 
         public WalletState(String lastBuyId, String lastSellId, String lastDepositId, String lastWithdrawalId, String lastTxWalletUpdate,
-         String lastFundingWalletUpdate) {
+                           String lastFundingWalletUpdate) {
             this.lastBuyId = DASH_SYMBOL.equals(lastBuyId) ? null : lastBuyId;
             this.lastSellId = DASH_SYMBOL.equals(lastSellId) ? null : lastSellId;
             this.lastDepositId = DASH_SYMBOL.equals(lastDepositId) ? null : lastDepositId;
@@ -523,6 +519,6 @@ public class CoinbaseDownloader {
 
     private String advancedTradeLastDownloadTimestamp() {
         return String.valueOf(partialLastAdvanceTradeStartDatetime) + COLON_SYMBOL + String.valueOf(partialLastAdvanceTradeEndDatetime)
-            + COLON_SYMBOL + String.valueOf(completedLastAdvanceTradeEndDatetime);
+            + COLON_SYMBOL + String.valueOf(completedLastAdvanceTradeEndDatetime) + COLON_SYMBOL + cursorAdvanceTrade;
     }
 }
