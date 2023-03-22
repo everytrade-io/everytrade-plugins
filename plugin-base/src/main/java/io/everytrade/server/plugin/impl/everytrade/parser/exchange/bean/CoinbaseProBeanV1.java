@@ -11,6 +11,7 @@ import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
+import io.everytrade.server.plugin.impl.everytrade.parser.utils.CoinbaseProCurrencySwitch;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -72,7 +73,11 @@ public class CoinbaseProBeanV1 extends ExchangeBean {
 
     @Parsed(field = "size unit")
     public void setSizeUnit(String value) {
-        sizeUnit = Currency.fromCode(value);
+        try {
+            sizeUnit = CoinbaseProCurrencySwitch.getCurrency(value);
+        } catch (IllegalArgumentException e) {
+            throw new DataValidationException(String.format("Unsupported currency: %s; ", value));
+        }
     }
 
     @Parsed(field = "price")
