@@ -346,11 +346,9 @@ public class CoinbaseDownloader {
         for (Map.Entry<String, WalletState> entry : wallets.entrySet()) {
             final String walletId = entry.getKey();
             final WalletState walletState = wallets.get(walletId);
-            int noOfWallet = 0;
             if (walletRequests < MAX_WALLET_REQUESTS) {
                 String lastDepositId = entry.getValue().lastDepositId;
                 String lastWithdrawalId = entry.getValue().lastWithdrawalId;
-                noOfWallet++;
                 while (sentRequests < MAX_REQUEST_COUNT_DEPOSIT_WITHDRAWALS) {
                     ++sentRequests;
                     params.setStartId(lastDepositId);
