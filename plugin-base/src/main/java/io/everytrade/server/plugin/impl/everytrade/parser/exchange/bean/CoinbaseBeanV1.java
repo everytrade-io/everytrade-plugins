@@ -10,6 +10,7 @@ import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
+import io.everytrade.server.plugin.impl.everytrade.parser.utils.CoinbaseProCurrencySwitch;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -78,7 +79,7 @@ public class CoinbaseBeanV1 extends ExchangeBean {
     @Parsed(field = "Asset")
     public void setAsset(String value) {
         try {
-            Currency asset = Currency.fromCode(value);
+            Currency asset = CoinbaseProCurrencySwitch.getCurrency(value);
             this.asset = asset;
         } catch (IllegalArgumentException e) {
             throw new DataIgnoredException("Unsupported type of asset " + value + ". ");
