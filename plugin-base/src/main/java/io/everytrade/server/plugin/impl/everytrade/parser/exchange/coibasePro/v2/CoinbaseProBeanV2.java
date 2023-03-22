@@ -13,6 +13,7 @@ import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
+import io.everytrade.server.plugin.impl.everytrade.parser.utils.CoinbaseProCurrencySwitch;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -118,7 +119,7 @@ public class CoinbaseProBeanV2 extends ExchangeBean {
 
     public void setCurrency(String amountBalanceUnit) {
         try {
-            currency = Currency.fromCode(amountBalanceUnit);
+            currency = CoinbaseProCurrencySwitch.getCurrency(amountBalanceUnit);
         } catch (IllegalArgumentException e) {
             throw new DataValidationException(String.format("Unsupported currency: %s; ", amountBalanceUnit));
         }
