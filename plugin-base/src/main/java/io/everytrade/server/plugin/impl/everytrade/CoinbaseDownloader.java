@@ -183,7 +183,7 @@ public class CoinbaseDownloader {
         while (sentRequests < MAX_REQUEST_COUNT) {
             var params = setParamsBeforeStart(tradeService, now);
 
-            List<CoinbaseAdvancedTradeFills> advancedTradesBlock = new ArrayList<>();
+            List<CoinbaseAdvancedTradeFills> advancedTradesBlock;
             try {
                 CoinbaseAdvancedTradeOrderFillsResponse advancedTradeOrderFillsRow = tradeService.getAdvancedTradeOrderFillsRow(params);
                 advancedTradesBlock = advancedTradeOrderFillsRow.getFills();
@@ -222,7 +222,8 @@ public class CoinbaseDownloader {
         return userTrades;
     }
 
-    private List<UserTrade> createUserTradesFromAdvancedTrades(List<CoinbaseAdvancedTradeFills> fills, List<ParsingProblem> parsingProblems) {
+    private List<UserTrade> createUserTradesFromAdvancedTrades(List<CoinbaseAdvancedTradeFills> fills,
+                                                               List<ParsingProblem> parsingProblems) {
         List<UserTrade> trades = new ArrayList<>();
         for (CoinbaseAdvancedTradeFills fill : fills) {
             try {
@@ -345,10 +346,9 @@ public class CoinbaseDownloader {
         for (Map.Entry<String, WalletState> entry : wallets.entrySet()) {
             final String walletId = entry.getKey();
             final WalletState walletState = wallets.get(walletId);
-            if(walletRequests < MAX_WALLET_REQUESTS) {
+            if (walletRequests < MAX_WALLET_REQUESTS) {
                 String lastDepositId = entry.getValue().lastDepositId;
                 String lastWithdrawalId = entry.getValue().lastWithdrawalId;
-
                 while (sentRequests < MAX_REQUEST_COUNT_DEPOSIT_WITHDRAWALS) {
                     ++sentRequests;
                     params.setStartId(lastDepositId);
