@@ -183,7 +183,7 @@ public class CoinbaseDownloader {
         while (sentRequests < MAX_REQUEST_COUNT) {
             var params = setParamsBeforeStart(tradeService, now);
 
-            List<CoinbaseAdvancedTradeFills> advancedTradesBlock = new ArrayList<>();
+            List<CoinbaseAdvancedTradeFills> advancedTradesBlock;
             try {
                 CoinbaseAdvancedTradeOrderFillsResponse advancedTradeOrderFillsRow = tradeService.getAdvancedTradeOrderFillsRow(params);
                 advancedTradesBlock = advancedTradeOrderFillsRow.getFills();
@@ -222,7 +222,8 @@ public class CoinbaseDownloader {
         return userTrades;
     }
 
-    private List<UserTrade> createUserTradesFromAdvancedTrades(List<CoinbaseAdvancedTradeFills> fills, List<ParsingProblem> parsingProblems) {
+    private List<UserTrade> createUserTradesFromAdvancedTrades(List<CoinbaseAdvancedTradeFills> fills,
+                                                               List<ParsingProblem> parsingProblems) {
         List<UserTrade> trades = new ArrayList<>();
         for (CoinbaseAdvancedTradeFills fill : fills) {
             try {
