@@ -67,9 +67,27 @@ public class KrakenCurrencyUtil {
         try {
             return Currency.fromCode(code);
         } catch (IllegalArgumentException e) {
+            try {
+                code = removeDigitsFromEndOfString(code);
+                return Currency.fromCode(code);
 
+            } catch (IllegalArgumentException ignore) {
+            }
         }
         throw new IllegalStateException(String.format("Currency not found for code %s.", code));
+    }
+
+    private static String removeDigitsFromEndOfString(String value) {
+        int i;
+        for (i = value.length(); i > 0; --i) {
+            char[] chars = value.substring(0, i).toCharArray();
+            if (Character.isDigit(chars[i-1])) {
+                value = value.substring(0, i - 1);
+            } else {
+                break;
+            }
+        }
+        return value;
     }
 
 }
