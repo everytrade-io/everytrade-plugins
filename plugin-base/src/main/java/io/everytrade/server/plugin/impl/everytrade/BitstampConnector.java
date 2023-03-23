@@ -146,9 +146,9 @@ public class BitstampConnector implements IConnector {
     private List<FundingRecord> downloadFunding(DownloadState downloadState) {
         AccountService accountService = exchange.getAccountService();
         var params = (BitstampTradeHistoryParams) accountService.createFundingHistoryParams();
-        params.setStartId(downloadState.lastTxId);
+        params.setStartId(downloadState.lastFundingId);
         params.setPageLength(TXS_PER_REQUEST);
-        String lastDownloadedTx = downloadState.lastTxId;
+        String lastDownloadedFundingTx = downloadState.lastFundingId;
 
         final List<FundingRecord> funding = new ArrayList<>();
         int sentRequests = 0;
@@ -163,8 +163,8 @@ public class BitstampConnector implements IConnector {
 
             if (
                 !fundingBlock.isEmpty()
-                    && lastDownloadedTx != null
-                    && lastDownloadedTx.equals(fundingBlock.get(0).getInternalId())
+                    && lastDownloadedFundingTx != null
+                    && lastDownloadedFundingTx.equals(fundingBlock.get(0).getInternalId())
             ) {
                 fundingBlock.remove(0);
             }
@@ -172,11 +172,11 @@ public class BitstampConnector implements IConnector {
                 break;
             }
             funding.addAll(fundingBlock);
-            lastDownloadedTx = fundingBlock.get(0).getInternalId();
-            params.setStartId(lastDownloadedTx);
+            lastDownloadedFundingTx = fundingBlock.get(0).getInternalId();
+            params.setStartId(lastDownloadedFundingTx);
             ++sentRequests;
         }
-        downloadState.setLastTxId(lastDownloadedTx);
+        downloadState.setLastFundingId(lastDownloadedFundingTx);
         return funding;
     }
 
