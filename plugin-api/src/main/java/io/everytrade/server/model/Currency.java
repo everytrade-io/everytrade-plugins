@@ -642,7 +642,8 @@ public enum Currency {
     TLOS(false, Instant.parse("2019-09-19T00:00:00Z"), "Telos"),
     KRL(false, Instant.parse("2019-07-19T00:00:00Z"), "Kryll"),
     BTRST(false, Instant.parse("2021-09-16T00:00:00Z"), "Braintrust"),
-    JUNO(false, Instant.parse("2022-08-29T00:00:00Z"), "Juno");
+    JUNO(false, Instant.parse("2022-08-29T00:00:00Z"), "Juno"),
+    BEST(false, Instant.parse("2020-11-12T00:00:00Z"), "Bitpanda Ecosystem Token");
 
     String code;
     int decimalDigits;

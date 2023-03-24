@@ -24,6 +24,7 @@ import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BINANCE_CONVERT;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BUY;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BUY_CRYPTO;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_CARD_CASHBACK;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_COMMISSION_REBATE;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_DEPOSIT;
@@ -35,7 +36,11 @@ import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binanc
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SELL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_INTEREST;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SMALL_ASSETS_EXCHANGE_BNB;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_TRANSACTION_BUY;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_TRANSACTION_RELATED;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_TRANSACTION_REVENUE;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_TRANSACTION_SOLD;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_TRANSACTION_SPEND;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_WITHDRAWAL;
 import static java.math.BigDecimal.ZERO;
 
@@ -66,8 +71,9 @@ public class BinanceSortedGroupV4 {
 
     public void sortGroup(List<BinanceBeanV4> group) {
         // nejdrive udelam map , kde hash bude currency
+        int groupSize = group.size();
         for (BinanceBeanV4 row : group) {
-            addRow(row);
+            addRow(row, groupSize);
         }
         sumAllRows();
         createTransactions();
@@ -357,7 +363,7 @@ public class BinanceSortedGroupV4 {
         createdTransactions.add(txsBuySell);
     }
 
-    private void addRow(BinanceBeanV4 row) {
+    private void addRow(BinanceBeanV4 row, int groupSize) {
         if (row.getOriginalOperation().equals(OPERATION_TYPE_FEE.code)) {
             if (rowsFees.containsKey(row.getCoin())) {
                 rowsFees.get(row.getCoin()).add(row);
@@ -382,13 +388,34 @@ public class BinanceSortedGroupV4 {
                 newList.add(row);
                 rowsWithdrawal.put(row.getCoin(), newList);
             }
+        }else if (row.getOriginalOperation().equals(OPERATION_TYPE_BUY_CRYPTO.code) && groupSize == 1) {
+            row.setType(DEPOSIT);
+            if (rowsDeposit.containsKey(row.getCoin())) {
+                rowsDeposit.get(row.getCoin()).add(row);
+            } else {
+                List<BinanceBeanV4> newList = new ArrayList<>();
+                newList.add(row);
+                rowsDeposit.put(row.getCoin(), newList);
+            }
+        }else if (row.getOriginalOperation().equals(OPERATION_TYPE_BUY_CRYPTO.code) && groupSize > 1) {
+            if (rowsBuySellRelated.containsKey(row.getCoin())) {
+                rowsBuySellRelated.get(row.getCoin()).add(row);
+            } else {
+                List<BinanceBeanV4> newList = new ArrayList<>();
+                newList.add(row);
+                rowsBuySellRelated.put(row.getCoin(), newList);
+            }
         } else if (
             row.getOriginalOperation().equals(OPERATION_TYPE_BUY.code) ||
                 row.getOriginalOperation().equals(OPERATION_TYPE_SELL.code) ||
                 row.getOriginalOperation().equals(OPERATION_TYPE_TRANSACTION_RELATED.code) ||
                 row.getOriginalOperation().equals(OPERATION_TYPE_LARGE_OTC_TRADING.code) ||
                 row.getOriginalOperation().equals(OPERATION_TYPE_SMALL_ASSETS_EXCHANGE_BNB.code) ||
-                row.getOriginalOperation().equals(OPERATION_TYPE_BINANCE_CONVERT.code)
+                row.getOriginalOperation().equals(OPERATION_TYPE_BINANCE_CONVERT.code) ||
+                row.getOriginalOperation().equals(OPERATION_TYPE_TRANSACTION_BUY.code) ||
+                row.getOriginalOperation().equals(OPERATION_TYPE_TRANSACTION_SPEND.code) ||
+                row.getOriginalOperation().equals(OPERATION_TYPE_TRANSACTION_REVENUE.code) ||
+                row.getOriginalOperation().equals(OPERATION_TYPE_TRANSACTION_SOLD.code)
         ) {
             if (rowsBuySellRelated.containsKey(row.getCoin())) {
                 rowsBuySellRelated.get(row.getCoin()).add(row);

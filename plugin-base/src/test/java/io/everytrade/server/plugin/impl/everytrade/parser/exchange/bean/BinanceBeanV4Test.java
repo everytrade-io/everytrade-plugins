@@ -16,11 +16,13 @@ import java.util.List;
 import static io.everytrade.server.model.Currency.ADA;
 import static io.everytrade.server.model.Currency.BNB;
 import static io.everytrade.server.model.Currency.BTC;
+import static io.everytrade.server.model.Currency.BUSD;
 import static io.everytrade.server.model.Currency.CZK;
 import static io.everytrade.server.model.Currency.DOGE;
 import static io.everytrade.server.model.Currency.ETH;
 import static io.everytrade.server.model.Currency.EUR;
 import static io.everytrade.server.model.Currency.RUNE;
+import static io.everytrade.server.model.Currency.SHIB;
 import static io.everytrade.server.model.Currency.SOL;
 import static io.everytrade.server.model.Currency.USDC;
 import static io.everytrade.server.model.Currency.USDT;
@@ -540,6 +542,125 @@ class BinanceBeanV4Test {
         TestUtils.testTxs( expected0.getMain(),actual.get(0).getMain());
         TestUtils.testTxs( expected1.getMain(),actual.get(1).getMain());
         TestUtils.testTxs( expected2.getMain(),actual.get(2).getMain());
+    }
+
+    @Test
+    void testTransactionBuy(){
+        final String row0 = "155380140,2021-06-25 14:11:52,Spot,Fee,SHIB,-4324.22000000,\"\"\n";
+        final String row1 = "155380140,2021-06-25 14:11:52,Spot,Transaction Buy,SHIB,4324216.00000000,\"\"\n";
+        final String row2 = "155380140,2021-06-25 14:11:52,Spot,Transaction Spend,USDT,-32.17216704,\"\"\n";
+        final String join = row0 + row1 + row2;
+
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + join);
+
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2021-06-25T14:11:52Z"),
+                SHIB,
+                USDT,
+                BUY,
+                new BigDecimal("4324216.00000000"),
+                new BigDecimal("0.0000074400"),
+                "TRANSACTION BUY",
+                null,
+                null
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    null,
+                    Instant.parse("2021-06-25T14:11:52Z"),
+                    SHIB,
+                    SHIB,
+                    TransactionType.FEE,
+                    new BigDecimal("4324.22000000"),
+                    SHIB
+                )
+            )
+        );
+
+        TestUtils.testTxs( expected.getMain(),actual.get(0).getMain());
+    }
+
+    @Test
+    void testTransactionRevenue(){
+        final String row0 = "155380140,2021-07-12 19:28:23,Spot,Transaction Revenue,BUSD,85.18238417,\"\"\n";
+        final String row1 = "155380140,2021-07-12 19:28:23,Spot,Transaction Sold,BTC,-0.00257900,\"\"\n";
+        final String row2 = "155380140,2021-07-12 19:28:23,Spot,Fee,BUSD,-0.08518238,\"\"\n";
+        final String join = row0 + row1 + row2;
+
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + join);
+
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2021-07-12T19:28:23Z"),
+                BUSD,
+                BTC,
+                BUY,
+                new BigDecimal("85.1823841700"),
+                new BigDecimal("0.0000302762"),
+                "TRANSACTION REVENUE",
+                null,
+                null
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    null,
+                    Instant.parse("2021-07-12T19:28:23Z"),
+                    BUSD,
+                    BUSD,
+                    TransactionType.FEE,
+                    new BigDecimal("0.08518238"),
+                    BUSD
+                )
+            )
+        );
+
+        TestUtils.testTxs( expected.getMain(),actual.get(0).getMain());
+    }
+
+    @Test
+    void testCryptoBuy(){
+        final String row0 = "155380140,2022-01-21 05:27:49,Spot,Buy Crypto,CZK,1471.50000000,\"\"\n";
+        final String row1 = "155380140,2022-01-21 05:27:51,Spot,Buy Crypto,CZK,-1471.50000000,\"\"\n";
+        final String row2 = "155380140,2022-01-21 05:27:51,Spot,Buy Crypto,ETH,0.02339931,\"\"\n";
+        final String join = row0 + row1 + row2;
+
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + join);
+
+        final TransactionCluster expected0 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-01-21T05:27:51Z"),
+                ETH,
+                CZK,
+                BUY,
+                new BigDecimal("0.0233993100"),
+                new BigDecimal("62886.4697292356"),
+                "BUY CRYPTO",
+                null,
+                null
+            ),
+            List.of()
+        );
+
+        final TransactionCluster expected1 = new TransactionCluster(
+            ImportedTransactionBean.createDepositWithdrawal(
+                null,
+                Instant.parse("2022-01-21T05:27:49Z"),
+                CZK,
+                CZK,
+                DEPOSIT,
+                new BigDecimal("1471.50000000"),
+                null,
+                "BUY CRYPTO",
+                null
+                ),
+            List.of()
+        );
+        TestUtils.testTxs( expected0.getMain(),actual.get(0).getMain());
+        TestUtils.testTxs( expected1.getMain(),actual.get(1).getMain());
     }
 
     @Test
