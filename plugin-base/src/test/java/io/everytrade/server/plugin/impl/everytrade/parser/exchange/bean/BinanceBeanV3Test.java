@@ -4,6 +4,7 @@ import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.ParseResult;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
 import org.junit.jupiter.api.Test;
@@ -12,6 +13,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 class BinanceBeanV3Test {
@@ -99,6 +101,54 @@ class BinanceBeanV3Test {
         ParserTestUtils.checkEqual(expected, actual9);
         ParserTestUtils.checkEqual(expected, actual10);
         ParserTestUtils.checkEqual(expected, actual11);
+    }
+
+    @Test
+    void testCorrectParsingFee() {
+        final String row0 = "2021-06-02 16:45:27,BTCBUSD,BUY,\"37,850.0000000000\",0.0009100000BTC,34.44350000BUSD,0.0000000000BNB\n";
+        final String row1 = "2021-06-02 16:07:12,BTCBUSD,SELL,\"37,900.0000000000\",0.0009090000BTC,34.45110000BUSD,1.0000000000BNB\n";
+        final String join = row0.concat(row1);
+
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + join);
+        final ParseResult result = ParserTestUtils.getParseResult(HEADER_CORRECT + join);
+
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2021-06-02T16:45:27Z"),
+                Currency.BTC,
+                Currency.BUSD,
+                TransactionType.BUY,
+                new BigDecimal("0.0009100000"),
+                new BigDecimal("37850.0000000000")
+            ),
+            List.of()
+        );
+        final TransactionCluster expected1 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2021-06-02T16:07:12Z"),
+                Currency.BTC,
+                Currency.BUSD,
+                TransactionType.SELL,
+                new BigDecimal("0.0009090000"),
+                new BigDecimal("37900.0000000000")
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    null,
+                    Instant.parse("2021-06-02T16:07:12Z"),
+                    Currency.BNB,
+                    Currency.BNB,
+                    TransactionType.FEE,
+                    new BigDecimal("1.0000000000"),
+                    Currency.BNB
+                )
+            )
+        );
+        ParserTestUtils.checkEqual(expected, actual.get(0));
+        ParserTestUtils.checkEqual(expected1, actual.get(1));
+        assertEquals(0, result.getParsingProblems().size());
     }
 
 }

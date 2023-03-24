@@ -67,7 +67,7 @@ public class BinanceBeanV3 extends ExchangeBean {
         validateCurrencyPair(pairBase, pairQuote);
         validatePositivity(filled, total, fee);
 
-        var isIncorrectFeeCoin = (feeCurrency == null);
+        var isIncorrectFeeCoin = (feeCurrency == null && !equalsToZero(fee));
 
         List<ImportedTransactionBean> related;
         if (isIncorrectFeeCoin || equalsToZero(fee)) {
