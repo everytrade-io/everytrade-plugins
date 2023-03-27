@@ -36,6 +36,9 @@ import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binanc
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SELL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_INTEREST;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SMALL_ASSETS_EXCHANGE_BNB;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_STAKING_PURCHASE;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_STAKING_REDEMPTION;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_STAKING_REWARDS;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_TRANSACTION_BUY;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_TRANSACTION_RELATED;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_TRANSACTION_REVENUE;
@@ -57,6 +60,7 @@ public class BinanceSortedGroupV4 {
     Map<Currency, List<BinanceBeanV4>> rowsRewards = new HashMap<>();
     Map<Currency, List<BinanceBeanV4>> rowsRebate = new HashMap<>();
     Map<Currency, List<BinanceBeanV4>> rowsEarnings = new HashMap<>();
+    Map<Currency, List<BinanceBeanV4>> rowsStakings = new HashMap<>();
 
     // afterSum
     List<BinanceBeanV4> rowDeposit = new ArrayList<>();
@@ -66,6 +70,7 @@ public class BinanceSortedGroupV4 {
     List<BinanceBeanV4> rowReward = new ArrayList<>();
     List<BinanceBeanV4> rowRebate = new ArrayList<>();
     List<BinanceBeanV4> rowEarnings = new ArrayList<>();
+    List<BinanceBeanV4> rowStakings = new ArrayList<>();
 
     public List<BinanceBeanV4> createdTransactions = new ArrayList<>();
 
@@ -87,6 +92,7 @@ public class BinanceSortedGroupV4 {
         rowReward = sumRows(rowsRewards);
         rowRebate = sumRows(rowsRebate);
         rowEarnings = sumRows(rowsEarnings);
+        rowStakings = sumRows(rowsStakings);
     }
 
     private List<BinanceBeanV4> sumRows(Map<Currency, List<BinanceBeanV4>> rows) {
@@ -95,6 +101,7 @@ public class BinanceSortedGroupV4 {
             var time = rows.values().stream().collect(Collectors.toList()).get(0).get(0).getDate();
             for (Map.Entry<Currency, List<BinanceBeanV4>> entry : rows.entrySet()) {
                 if(!entry.getValue().get(0).getOperationType().isMultiRowType) {
+                    entry.getValue().get(0).usedIds.add(entry.getValue().get(0).getRowId());
                     result.addAll(entry.getValue());
                 } else {
                     var newBean = new BinanceBeanV4();
@@ -160,6 +167,7 @@ public class BinanceSortedGroupV4 {
         int rewardNum = rowReward.size();
         int rebateNum = rowsRebate.size();
         int earningsNum = rowsEarnings.size();
+        int stakingsNum = rowsStakings.size();
 
         if (buySellNum > 0) {
             validateBuySell();
@@ -181,6 +189,10 @@ public class BinanceSortedGroupV4 {
 
         if (earningsNum > 0) {
             createEarningsTxs();
+        }
+
+        if (stakingsNum > 0) {
+            createStakingsTxs();
         }
 
         if (feeNum > 0) {
@@ -259,6 +271,22 @@ public class BinanceSortedGroupV4 {
         txs.setDate(row.getDate());
         txs.setMergedWithAnotherGroup(row.isMergedWithAnotherGroup());
         txs.setType(REWARD);
+        txs.setOriginalOperation(row.getOriginalOperation());
+        createdTransactions.add(txs);
+    }
+
+    private void createStakingsTxs() {
+        var txs = new BinanceBeanV4();
+        var row = rowStakings.get(0);
+        txs.setRowNumber(row.getDate().getEpochSecond());
+        String[] strings = {"Row id " + row.usedIds.toString() + " " + row.getOriginalOperation()};
+        txs.setRowValues(strings);
+        txs.usedIds.addAll(row.usedIds);
+        txs.setAmountBase(row.getChange().abs());
+        txs.setMarketBase(row.getCoin());
+        txs.setDate(row.getDate());
+        txs.setMergedWithAnotherGroup(row.isMergedWithAnotherGroup());
+        txs.setType(row.getType());
         txs.setOriginalOperation(row.getOriginalOperation());
         createdTransactions.add(txs);
     }
@@ -379,6 +407,15 @@ public class BinanceSortedGroupV4 {
                 List<BinanceBeanV4> newList = new ArrayList<>();
                 newList.add(row);
                 rowsDeposit.put(row.getCoin(), newList);
+            }
+        } else if (List.of(OPERATION_TYPE_STAKING_PURCHASE.code, OPERATION_TYPE_STAKING_REWARDS.code,
+            OPERATION_TYPE_STAKING_REDEMPTION.code).contains(row.getOriginalOperation())) {
+            if (rowsStakings.containsKey(row.getCoin())) {
+                rowsStakings.get(row.getCoin()).add(row);
+            } else {
+                List<BinanceBeanV4> newList = new ArrayList<>();
+                newList.add(row);
+                rowsStakings.put(row.getCoin(), newList);
             }
         } else if (List.of(OPERATION_TYPE_WITHDRAWAL.code, OPERATION_TYPE_FIAT_WITHDRAWAL.code).contains(row.getOriginalOperation())) {
             if (rowsWithdrawal.containsKey(row.getCoin())) {

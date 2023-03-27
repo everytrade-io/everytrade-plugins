@@ -19,6 +19,7 @@ import static io.everytrade.server.model.Currency.BTC;
 import static io.everytrade.server.model.Currency.BUSD;
 import static io.everytrade.server.model.Currency.CZK;
 import static io.everytrade.server.model.Currency.DOGE;
+import static io.everytrade.server.model.Currency.DOT;
 import static io.everytrade.server.model.Currency.ETH;
 import static io.everytrade.server.model.Currency.EUR;
 import static io.everytrade.server.model.Currency.RUNE;
@@ -32,6 +33,9 @@ import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.REBATE;
 import static io.everytrade.server.model.TransactionType.SELL;
+import static io.everytrade.server.model.TransactionType.STAKE;
+import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
+import static io.everytrade.server.model.TransactionType.UNSTAKE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class BinanceBeanV4Test {
@@ -661,6 +665,78 @@ class BinanceBeanV4Test {
         );
         TestUtils.testTxs( expected0.getMain(),actual.get(0).getMain());
         TestUtils.testTxs( expected1.getMain(),actual.get(1).getMain());
+    }
+
+    @Test
+    void testStakingRewards(){
+        final String row = "86879943,2022-01-01 00:48:07,Spot,Staking Rewards,DOT,0.00044214,\"\"\n";
+
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row);
+
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-01-01T00:48:07Z"),
+                DOT,
+                DOT,
+                STAKING_REWARD,
+                new BigDecimal("0.00044214"),
+                null,
+                "STAKING REWARDS",
+                null,
+                null
+            ),
+            List.of()
+        );
+        TestUtils.testTxs( expected.getMain(),actual.get(0).getMain());
+    }
+
+    @Test
+    void testStakingRedemption(){
+        final String row = "86879943,2022-01-04 01:08:57,Spot,Staking Redemption,DOT,1.40212298,\"\"\n";
+
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row);
+
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-01-04T01:08:57Z"),
+                DOT,
+                DOT,
+                UNSTAKE,
+                new BigDecimal("1.40212298"),
+                null,
+                "STAKING REDEMPTION",
+                null,
+                null
+            ),
+            List.of()
+        );
+        TestUtils.testTxs( expected.getMain(),actual.get(0).getMain());
+    }
+
+    @Test
+    void testStakingPurchase(){
+        final String row = "86879943,2022-01-04 21:17:14,Spot,Staking Purchase,ADA,-200.09109425,\"\"\n";
+
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row);
+
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-01-04T21:17:14Z"),
+                ADA,
+                ADA,
+                STAKE,
+                new BigDecimal("200.09109425"),
+                null,
+                "STAKING PURCHASE",
+                null,
+                null
+            ),
+            List.of()
+        );
+        TestUtils.testTxs( expected.getMain(),actual.get(0).getMain());
     }
 
     @Test
