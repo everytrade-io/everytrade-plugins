@@ -11,7 +11,10 @@ import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.REBATE;
 import static io.everytrade.server.model.TransactionType.REWARD;
 import static io.everytrade.server.model.TransactionType.SELL;
+import static io.everytrade.server.model.TransactionType.STAKE;
+import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
 import static io.everytrade.server.model.TransactionType.UNKNOWN;
+import static io.everytrade.server.model.TransactionType.UNSTAKE;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BINANCE_CONVERT;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BUY;
@@ -27,6 +30,9 @@ import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binanc
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SELL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_INTEREST;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SMALL_ASSETS_EXCHANGE_BNB;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_STAKING_PURCHASE;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_STAKING_REDEMPTION;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_STAKING_REWARDS;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_TRANSACTION_BUY;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_TRANSACTION_RELATED;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_TRANSACTION_REVENUE;
@@ -58,8 +64,7 @@ public class BinanceSwitcher {
             || OPERATION_TYPE_SMALL_ASSETS_EXCHANGE_BNB.code.equals(operationType)
             || OPERATION_TYPE_TRANSACTION_BUY.code.equals(operationType)
             || OPERATION_TYPE_BUY_CRYPTO.code.equals(operationType)
-            || OPERATION_TYPE_TRANSACTION_REVENUE.code.equals(operationType))
-        {
+            || OPERATION_TYPE_TRANSACTION_REVENUE.code.equals(operationType)) {
             return BUY;
         }
         if (OPERATION_TYPE_DISTRIBUTION.code.equals(operationType)) {
@@ -70,6 +75,15 @@ public class BinanceSwitcher {
         }
         if (OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_INTEREST.code.equals(operationType)) {
             return EARNING;
+        }
+        if (OPERATION_TYPE_STAKING_REWARDS.code.equals(operationType)) {
+            return STAKING_REWARD;
+        }
+        if (OPERATION_TYPE_STAKING_REDEMPTION.code.equals(operationType)) {
+            return UNSTAKE;
+        }
+        if (OPERATION_TYPE_STAKING_PURCHASE.code.equals(operationType)) {
+            return STAKE;
         }
         return UNKNOWN;
     }

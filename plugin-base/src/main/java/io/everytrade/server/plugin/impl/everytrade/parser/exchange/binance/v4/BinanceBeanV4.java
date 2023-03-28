@@ -19,7 +19,10 @@ import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.REBATE;
 import static io.everytrade.server.model.TransactionType.REWARD;
+import static io.everytrade.server.model.TransactionType.STAKE;
+import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
 import static io.everytrade.server.model.TransactionType.UNKNOWN;
+import static io.everytrade.server.model.TransactionType.UNSTAKE;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static java.util.Collections.emptyList;
 import static lombok.AccessLevel.PRIVATE;
@@ -223,6 +226,60 @@ public class BinanceBeanV4 extends ExchangeBean {
                     marketBase,
                     marketBase,
                     EARNING,
+                    amountBase,
+                    null,
+                    remark,
+                    null,
+                    null
+                ),
+                emptyList()
+            );
+        }
+
+        if (STAKE.equals(type)) {
+            return new TransactionCluster(
+                new ImportedTransactionBean(
+                    null,
+                    date,
+                    marketBase,
+                    marketBase,
+                    STAKE,
+                    amountBase,
+                    null,
+                    remark,
+                    null,
+                    null
+                ),
+                emptyList()
+            );
+        }
+
+        if (STAKING_REWARD.equals(type)) {
+            return new TransactionCluster(
+                new ImportedTransactionBean(
+                    null,
+                    date,
+                    marketBase,
+                    marketBase,
+                    STAKING_REWARD,
+                    amountBase,
+                    null,
+                    remark,
+                    null,
+                    null
+                ),
+                emptyList()
+            );
+        }
+
+        if (UNSTAKE.equals(type)) {
+            return new TransactionCluster(
+                new ImportedTransactionBean(
+                    null,
+                    date,
+                    marketBase,
+                    marketBase,
+                    UNSTAKE,
                     amountBase,
                     null,
                     remark,
