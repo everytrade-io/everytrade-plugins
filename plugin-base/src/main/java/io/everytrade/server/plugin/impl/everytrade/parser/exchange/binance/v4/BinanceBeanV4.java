@@ -148,6 +148,10 @@ public class BinanceBeanV4 extends ExchangeBean {
         this.remark = remark;
     }
 
+    public void setNote(String remark) {
+        this.remark = remark;
+    }
+
     public void setRowId(int rowId) {
         String sub = (message == null) ? "" : message;
         message = "Row id " + rowId + ": " + sub;
@@ -299,7 +303,9 @@ public class BinanceBeanV4 extends ExchangeBean {
                     marketBase,
                     type,
                     amountBase,
-                    remark
+                    null,
+                    remark,
+                    null
                 ),
                 related
             );
@@ -314,7 +320,7 @@ public class BinanceBeanV4 extends ExchangeBean {
                     marketQuote,
                     type,
                     amountBase.setScale(ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE),
-                    evalUnitPrice(amountQuote, amountBase),
+                    (amountQuote != null) ? evalUnitPrice(amountQuote, amountBase) : null,
                     remark,
                     null
                 ),
