@@ -321,7 +321,6 @@ class BinanceBeanV4Test {
         TestUtils.testTxs( expected1.getMain(),actual.get(0).getMain());
     }
 
-    ////
     @Test
     void testSimpleEarn() {
         final String row0 = "86879943,2022-03-02 17:02:42,Earn,Simple Earn Flexible Subscription,LDUSDT,236.79617000,\"\"\n";
