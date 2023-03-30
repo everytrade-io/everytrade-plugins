@@ -55,7 +55,7 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
      * @param mergedGroups
      * @return
      */
-    Map<Instant, List<BinanceBeanV4>> splitExceptionGroups(Map<Instant, List<BinanceBeanV4>> mergedGroups) {
+    Map<?, List<BinanceBeanV4>> splitExceptionGroups(Map<?, List<BinanceBeanV4>> mergedGroups) {
         Map<Instant, List<BinanceBeanV4>> result = new HashMap<>();
         final long timeIncrease = 1;
         try {
@@ -113,7 +113,6 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
         Map<Instant, List<BinanceBeanV4>> sortedGroupsByDate = new TreeMap<>(groupedRowsByTime);
         // merging rows nearly in the same time
         var mergedGroups = mergeGroupsInTimeWithinTolerance(sortedGroupsByDate);
-        mergedGroups = splitExceptionGroups(mergedGroups);
         // clean groups of rows from unsupported rubbish
         var cleanGroups = removeGroupsWithUnsupportedRows(mergedGroups);
         // creating transaction

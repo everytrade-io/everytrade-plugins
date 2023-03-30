@@ -25,6 +25,7 @@ import static io.everytrade.server.model.Currency.EUR;
 import static io.everytrade.server.model.Currency.RUNE;
 import static io.everytrade.server.model.Currency.SHIB;
 import static io.everytrade.server.model.Currency.SOL;
+import static io.everytrade.server.model.Currency.USD;
 import static io.everytrade.server.model.Currency.USDC;
 import static io.everytrade.server.model.Currency.USDT;
 import static io.everytrade.server.model.Currency.UST;
@@ -33,6 +34,7 @@ import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.REBATE;
 import static io.everytrade.server.model.TransactionType.SELL;
+import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.model.TransactionType.STAKE;
 import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
 import static io.everytrade.server.model.TransactionType.UNSTAKE;
@@ -296,6 +298,141 @@ class BinanceBeanV4Test {
     }
 
     @Test
+    void testCashbackVoucherRebate() {
+        final String row = "530683417,2022-11-09 03:02:17,Spot,Cashback Voucher,USDT,0.01626671,\"\"\n";
+
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row);
+
+        final TransactionCluster expected1 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-11-09T03:02:17Z"),
+                USDT,
+                USDT,
+                REBATE,
+                new BigDecimal("0.01626671"),
+                null,
+                "CASHBACK VOUCHER",
+                null
+            ),
+            List.of()
+        );
+
+        TestUtils.testTxs( expected1.getMain(),actual.get(0).getMain());
+    }
+
+    @Test
+    void testSimpleEarn() {
+        final String row0 = "86879943,2022-03-02 17:02:42,Earn,Simple Earn Flexible Subscription,LDUSDT,236.79617000,\"\"\n";
+        final String row1 = "86879943,2022-03-02 17:02:42,Earn,Simple Earn Flexible Subscription,USDT,-236.79617000,\"\"\n";
+        final String row2 = "86879943,2022-03-31 16:36:00,Earn,Simple Earn Flexible Redemption,LDUSDT,-300.00000000,\"\"\n";
+        final String row3 = "86879943,2022-03-31 16:36:00,Earn,Simple Earn Flexible Redemption,USDT,300.00000000,\"\"\n";
+        final String row4 = "40360729,2020-11-26 08:55:38,Spot,Savings distribution,LDBTC,0.01155980,\"\"\n";
+        final String row5 = "40360729,2020-11-26 08:55:38,Spot,Savings distribution,BTC,-0.01155980,\"\"\n";
+        final String join = row0 + row1 + row2 + row3 + row4 + row5;
+
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + join);
+
+
+        final TransactionCluster expected0 = new TransactionCluster(
+            ImportedTransactionBean.createDepositWithdrawal(
+                null,
+                Instant.parse("2022-03-02T17:02:42Z"),
+                USDT,
+                USDT,
+                DEPOSIT,
+                new BigDecimal("236.79617000"),
+                null,
+                "SIMPLE EARN FLEXIBLE SUBSCRIPTION",
+                null
+            ),
+            List.of()
+        );
+
+        final TransactionCluster expected1 = new TransactionCluster(
+            ImportedTransactionBean.createDepositWithdrawal(
+                null,
+                Instant.parse("2022-03-02T17:02:42Z"),
+                USDT,
+                USDT,
+                WITHDRAWAL,
+                new BigDecimal("236.79617000"),
+                null,
+                "SIMPLE EARN FLEXIBLE SUBSCRIPTION",
+                null
+            ),
+            List.of()
+        );
+
+        final TransactionCluster expected2 = new TransactionCluster(
+            ImportedTransactionBean.createDepositWithdrawal(
+                null,
+                Instant.parse("2022-03-31T16:36:00Z"),
+                USDT,
+                USDT,
+                WITHDRAWAL,
+                new BigDecimal("300.00000000"),
+                null,
+                "SIMPLE EARN FLEXIBLE REDEMPTION",
+                null
+            ),
+            List.of()
+        );
+
+        final TransactionCluster expected3 = new TransactionCluster(
+            ImportedTransactionBean.createDepositWithdrawal(
+                null,
+                Instant.parse("2022-03-31T16:36:00Z"),
+                USDT,
+                USDT,
+                DEPOSIT,
+                new BigDecimal("300.00000000"),
+                null,
+                "SIMPLE EARN FLEXIBLE REDEMPTION",
+                null
+            ),
+            List.of()
+        );
+
+        final TransactionCluster expected4 = new TransactionCluster(
+            ImportedTransactionBean.createDepositWithdrawal(
+                null,
+                Instant.parse("2020-11-26T08:55:38Z"),
+                BTC,
+                BTC,
+                DEPOSIT,
+                new BigDecimal("0.01155980"),
+                null,
+                "SAVINGS DISTRIBUTION",
+                null
+            ),
+            List.of()
+        );
+
+        final TransactionCluster expected5 = new TransactionCluster(
+            ImportedTransactionBean.createDepositWithdrawal(
+                null,
+                Instant.parse("2020-11-26T08:55:38Z"),
+                BTC,
+                BTC,
+                WITHDRAWAL,
+                new BigDecimal("0.01155980"),
+                null,
+                "SAVINGS DISTRIBUTION",
+                null
+            ),
+            List.of()
+        );
+
+        TestUtils.testTxs(expected0.getMain(), actual.get(4).getMain());
+        TestUtils.testTxs(expected1.getMain(), actual.get(5).getMain());
+        TestUtils.testTxs(expected2.getMain(), actual.get(3).getMain());
+        TestUtils.testTxs(expected3.getMain(), actual.get(2).getMain());
+        TestUtils.testTxs(expected4.getMain(), actual.get(0).getMain());
+        TestUtils.testTxs(expected5.getMain(), actual.get(1).getMain());
+    }
+
+    @Test
     void testConvertBuy() {
         final String row0 = "41438313,2022-01-01 10:58:15,Spot,Buy,BTC,-5896.73580000,\"\"\n";
         final String row1 = "41438313,2022-01-01 10:58:15,Spot,Fee,BNB,-0.00859660,\"\"\n";
@@ -474,16 +611,114 @@ class BinanceBeanV4Test {
     }
 
     @Test
-    void testSmallAssetsExchangeBuyWrongInputs() {
-        final String row0 = "40360729,2020-11-24 15:44:58,Spot,Small assets exchange BNB,EUR,-0.00111400,\"\"\n";
-        final String row1 = "40360729,2020-11-24 15:44:58,Spot,Small assets exchange BNB,BNB,0.00003908,\"\"\n";
-        final String row2 = "40360729,2020-11-24 15:44:58,Spot,Small assets exchange BNB,USDT,-0.00350306,\"\"\n";
-        final String join = row0 + row1 + row2;
+    void testSmallAssetsExchangeException() {
+        final String row0 = "155380140,2021-07-20 16:24:10,Spot,Small Assets Exchange BNB,ADA,-0.00500000,\"\"\n";
+        final String row1 = "155380140,2021-07-20 16:24:10,Spot,Small Assets Exchange BNB,BNB,0.00125645,\"\"\n";
+        final String row2 = "155380140,2021-07-20 16:24:10,Spot,Small Assets Exchange BNB,USDT,-0.00887636,\"\"\n";
+        final String row3 = "155380140,2021-07-20 16:24:10,Spot,Small Assets Exchange BNB,BTC,-5.4E-7,\"\"\n";
+        final String row4 = "155380140,2021-07-20 16:24:10,Spot,Small Assets Exchange BNB,EUR,100,\"\"\n";
+        final String row5 = "155380140,2021-07-20 16:24:10,Spot,Small Assets Exchange BNB,EUR,-100,\"\"\n";
+        final String join = row0 + row1 + row2 + row3 + row4 + row5;
 
-        final ParseResult actual = ParserTestUtils.getParseResult(HEADER_CORRECT + join);
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + join);
 
-        assertEquals( 3,actual.getParsingProblems().size());
-        assertEquals( "PARSED_ROW_IGNORED", actual.getParsingProblems().get(0).getParsingProblemType().name());
+        final TransactionCluster expected0 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2021-07-20T16:24:10Z"),
+                ADA,
+                USD,
+                SELL,
+                new BigDecimal("0.0050000000"),
+                null,
+                "SMALL ASSETS EXCHANGE BNB",
+                null
+            ),
+            List.of()
+        );
+
+        final TransactionCluster expected1 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2021-07-20T16:24:10Z"),
+                BNB,
+                USD,
+                BUY,
+                new BigDecimal("0.0012564500"),
+                null,
+                "SMALL ASSETS EXCHANGE BNB",
+                null
+            ),
+            List.of()
+        );
+
+        final TransactionCluster expected2 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2021-07-20T16:24:10Z"),
+                USDT,
+                USD,
+                SELL,
+                new BigDecimal("0.0088763600"),
+                null,
+                "SMALL ASSETS EXCHANGE BNB",
+                null
+            ),
+            List.of()
+        );
+
+        final TransactionCluster expected3 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2021-07-20T16:24:10Z"),
+                BTC,
+                USD,
+                SELL,
+                new BigDecimal("5.400E-7"),
+                null,
+                "SMALL ASSETS EXCHANGE BNB",
+                null
+            ),
+            List.of()
+        );
+
+
+        final TransactionCluster expected4 = new TransactionCluster(
+            ImportedTransactionBean.createDepositWithdrawal(
+                null,
+                Instant.parse("2021-07-20T16:24:10Z"),
+                EUR,
+                EUR,
+                DEPOSIT,
+                new BigDecimal("100"),
+                null,
+                "SMALL ASSETS EXCHANGE BNB",
+                null
+            ),
+            List.of()
+        );
+
+        final TransactionCluster expected5 = new TransactionCluster(
+            ImportedTransactionBean.createDepositWithdrawal(
+                null,
+                Instant.parse("2021-07-20T16:24:10Z"),
+                EUR,
+                EUR,
+                WITHDRAWAL,
+                new BigDecimal("100"),
+                null,
+                "SMALL ASSETS EXCHANGE BNB",
+                null
+            ),
+            List.of()
+        );
+
+        TestUtils.testTxs( expected0.getMain(),actual.get(0).getMain());
+        TestUtils.testTxs( expected1.getMain(),actual.get(1).getMain());
+        TestUtils.testTxs( expected2.getMain(),actual.get(2).getMain());
+        TestUtils.testTxs( expected3.getMain(),actual.get(3).getMain());
+        TestUtils.testTxs( expected4.getMain(),actual.get(4).getMain());
+        TestUtils.testTxs( expected5.getMain(),actual.get(5).getMain());
     }
 
     @Test
