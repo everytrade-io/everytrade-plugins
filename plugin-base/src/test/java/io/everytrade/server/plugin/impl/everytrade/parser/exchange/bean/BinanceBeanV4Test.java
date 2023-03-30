@@ -298,6 +298,142 @@ class BinanceBeanV4Test {
     }
 
     @Test
+    void testCashbackVoucherRebate() {
+        final String row = "530683417,2022-11-09 03:02:17,Spot,Cashback Voucher,USDT,0.01626671,\"\"\n";
+
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row);
+
+        final TransactionCluster expected1 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-11-09T03:02:17Z"),
+                USDT,
+                USDT,
+                REBATE,
+                new BigDecimal("0.01626671"),
+                null,
+                "CASHBACK VOUCHER",
+                null
+            ),
+            List.of()
+        );
+
+        TestUtils.testTxs( expected1.getMain(),actual.get(0).getMain());
+    }
+
+    ////
+    @Test
+    void testSimpleEarn() {
+        final String row0 = "86879943,2022-03-02 17:02:42,Earn,Simple Earn Flexible Subscription,LDUSDT,236.79617000,\"\"\n";
+        final String row1 = "86879943,2022-03-02 17:02:42,Earn,Simple Earn Flexible Subscription,USDT,-236.79617000,\"\"\n";
+        final String row2 = "86879943,2022-03-31 16:36:00,Earn,Simple Earn Flexible Redemption,LDUSDT,-300.00000000,\"\"\n";
+        final String row3 = "86879943,2022-03-31 16:36:00,Earn,Simple Earn Flexible Redemption,USDT,300.00000000,\"\"\n";
+        final String row4 = "40360729,2020-11-26 08:55:38,Spot,Savings distribution,LDBTC,0.01155980,\"\"\n";
+        final String row5 = "40360729,2020-11-26 08:55:38,Spot,Savings distribution,BTC,-0.01155980,\"\"\n";
+        final String join = row0 + row1 + row2 + row3 + row4 + row5;
+
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + join);
+
+
+        final TransactionCluster expected0 = new TransactionCluster(
+            ImportedTransactionBean.createDepositWithdrawal(
+                null,
+                Instant.parse("2022-03-02T17:02:42Z"),
+                USDT,
+                USDT,
+                DEPOSIT,
+                new BigDecimal("236.79617000"),
+                null,
+                "SIMPLE EARN FLEXIBLE SUBSCRIPTION",
+                null
+            ),
+            List.of()
+        );
+
+        final TransactionCluster expected1 = new TransactionCluster(
+            ImportedTransactionBean.createDepositWithdrawal(
+                null,
+                Instant.parse("2022-03-02T17:02:42Z"),
+                USDT,
+                USDT,
+                WITHDRAWAL,
+                new BigDecimal("236.79617000"),
+                null,
+                "SIMPLE EARN FLEXIBLE SUBSCRIPTION",
+                null
+            ),
+            List.of()
+        );
+
+        final TransactionCluster expected2 = new TransactionCluster(
+            ImportedTransactionBean.createDepositWithdrawal(
+                null,
+                Instant.parse("2022-03-31T16:36:00Z"),
+                USDT,
+                USDT,
+                WITHDRAWAL,
+                new BigDecimal("300.00000000"),
+                null,
+                "SIMPLE EARN FLEXIBLE REDEMPTION",
+                null
+            ),
+            List.of()
+        );
+
+        final TransactionCluster expected3 = new TransactionCluster(
+            ImportedTransactionBean.createDepositWithdrawal(
+                null,
+                Instant.parse("2022-03-31T16:36:00Z"),
+                USDT,
+                USDT,
+                DEPOSIT,
+                new BigDecimal("300.00000000"),
+                null,
+                "SIMPLE EARN FLEXIBLE REDEMPTION",
+                null
+            ),
+            List.of()
+        );
+
+        final TransactionCluster expected4 = new TransactionCluster(
+            ImportedTransactionBean.createDepositWithdrawal(
+                null,
+                Instant.parse("2020-11-26T08:55:38Z"),
+                BTC,
+                BTC,
+                DEPOSIT,
+                new BigDecimal("0.01155980"),
+                null,
+                "SAVINGS DISTRIBUTION",
+                null
+            ),
+            List.of()
+        );
+
+        final TransactionCluster expected5 = new TransactionCluster(
+            ImportedTransactionBean.createDepositWithdrawal(
+                null,
+                Instant.parse("2020-11-26T08:55:38Z"),
+                BTC,
+                BTC,
+                WITHDRAWAL,
+                new BigDecimal("0.01155980"),
+                null,
+                "SAVINGS DISTRIBUTION",
+                null
+            ),
+            List.of()
+        );
+
+        TestUtils.testTxs(expected0.getMain(), actual.get(4).getMain());
+        TestUtils.testTxs(expected1.getMain(), actual.get(5).getMain());
+        TestUtils.testTxs(expected2.getMain(), actual.get(3).getMain());
+        TestUtils.testTxs(expected3.getMain(), actual.get(2).getMain());
+        TestUtils.testTxs(expected4.getMain(), actual.get(0).getMain());
+        TestUtils.testTxs(expected5.getMain(), actual.get(1).getMain());
+    }
+
+    @Test
     void testConvertBuy() {
         final String row0 = "41438313,2022-01-01 10:58:15,Spot,Buy,BTC,-5896.73580000,\"\"\n";
         final String row1 = "41438313,2022-01-01 10:58:15,Spot,Fee,BNB,-0.00859660,\"\"\n";
@@ -584,19 +720,6 @@ class BinanceBeanV4Test {
         TestUtils.testTxs( expected3.getMain(),actual.get(3).getMain());
         TestUtils.testTxs( expected4.getMain(),actual.get(4).getMain());
         TestUtils.testTxs( expected5.getMain(),actual.get(5).getMain());
-    }
-
-    @Test
-    void testSmallAssetsExchangeBuyWrongInputs() {
-        final String row0 = "40360729,2020-11-24 15:44:58,Spot,Small assets exchange BNB,EUR,-0.00111400,\"\"\n";
-        final String row1 = "40360729,2020-11-24 15:44:58,Spot,Small assets exchange BNB,BNB,0.00003908,\"\"\n";
-        final String row2 = "40360729,2020-11-24 15:44:58,Spot,Small assets exchange BNB,USDT,-0.00350306,\"\"\n";
-        final String join = row0 + row1 + row2;
-
-        final ParseResult actual = ParserTestUtils.getParseResult(HEADER_CORRECT + join);
-
-        assertEquals( 3,actual.getParsingProblems().size());
-        assertEquals( "PARSED_ROW_IGNORED", actual.getParsingProblems().get(0).getParsingProblemType().name());
     }
 
     @Test

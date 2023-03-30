@@ -29,6 +29,7 @@ import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binanc
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BUY;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BUY_CRYPTO;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_CARD_CASHBACK;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_CASHBACK_VOUCHER;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_COMMISSION_REBATE;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_DEPOSIT;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_DISTRIBUTION;
@@ -36,8 +37,11 @@ import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binanc
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_FIAT_DEPOSIT;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_FIAT_WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_LARGE_OTC_TRADING;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SAVING_DISTRIBUTION;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SELL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_INTEREST;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_REDEMPTION;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_SUBSCRIPTION;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SMALL_ASSETS_EXCHANGE_BNB;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_STAKING_PURCHASE;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_STAKING_REDEMPTION;
@@ -551,7 +555,29 @@ public class BinanceSortedGroupV4 {
                 newList.add(row);
                 rowsWithdrawal.put(row.getCoin(), newList);
             }
-        }else if (row.getOriginalOperation().equals(OPERATION_TYPE_BUY_CRYPTO.code) && groupSize == 1) {
+        } else if (List.of(OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_SUBSCRIPTION.code, OPERATION_TYPE_SAVING_DISTRIBUTION.code,
+            OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_REDEMPTION.code).contains(row.getOriginalOperation())) {
+            row.setNote(row.getOriginalOperation().toUpperCase());
+            if (row.getChange().compareTo(ZERO) < 0) {
+                row.setType(WITHDRAWAL);
+                if (rowsWithdrawal.containsKey(row.getCoin())) {
+                    rowsWithdrawal.get(row.getCoin()).add(row);
+                } else {
+                    List<BinanceBeanV4> newList = new ArrayList<>();
+                    newList.add(row);
+                    rowsWithdrawal.put(row.getCoin(), newList);
+                }
+            } else {
+                row.setType(DEPOSIT);
+                if (rowsDeposit.containsKey(row.getCoin())) {
+                    rowsDeposit.get(row.getCoin()).add(row);
+                } else {
+                    List<BinanceBeanV4> newList = new ArrayList<>();
+                    newList.add(row);
+                    rowsDeposit.put(row.getCoin(), newList);
+                }
+            }
+        } else if (row.getOriginalOperation().equals(OPERATION_TYPE_BUY_CRYPTO.code) && groupSize == 1) {
             row.setType(DEPOSIT);
             if (rowsDeposit.containsKey(row.getCoin())) {
                 rowsDeposit.get(row.getCoin()).add(row);
@@ -598,7 +624,8 @@ public class BinanceSortedGroupV4 {
                 rowsRewards.put(row.getCoin(), newList);
             }
         } else if (row.getOriginalOperation().equals(OPERATION_TYPE_CARD_CASHBACK.code)
-            || row.getOriginalOperation().equals(OPERATION_TYPE_COMMISSION_REBATE.code)) {
+            || row.getOriginalOperation().equals(OPERATION_TYPE_COMMISSION_REBATE.code)
+            || row.getOriginalOperation().equals(OPERATION_TYPE_CASHBACK_VOUCHER.code)) {
             if (rowsRebate.containsKey(row.getCoin())) {
                 rowsRebate.get(row.getCoin()).add(row);
             } else {

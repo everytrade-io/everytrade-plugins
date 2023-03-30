@@ -24,6 +24,9 @@ import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
 import static io.everytrade.server.model.TransactionType.UNKNOWN;
 import static io.everytrade.server.model.TransactionType.UNSTAKE;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SAVING_DISTRIBUTION;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_REDEMPTION;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_SUBSCRIPTION;
 import static java.util.Collections.emptyList;
 import static lombok.AccessLevel.PRIVATE;
 
@@ -38,6 +41,7 @@ import java.util.List;
 @FieldDefaults(level = PRIVATE)
 public class BinanceBeanV4 extends ExchangeBean {
 
+    public static final String LD_COIN_CURRENCY_PREFIX = "LD";
     Instant date;
     String account;
     String userId;
@@ -46,6 +50,7 @@ public class BinanceBeanV4 extends ExchangeBean {
     Currency coin;
     BigDecimal change;
     String remark;
+    String originalCoin;
 
     int rowId;
     public List<Integer> usedIds = new ArrayList<>();
@@ -118,6 +123,13 @@ public class BinanceBeanV4 extends ExchangeBean {
     @Parsed(field = "Coin")
     public void setCoin(String coin) {
         try {
+            if (coin.startsWith("LD")
+                && (originalOperation.equals(OPERATION_TYPE_SAVING_DISTRIBUTION.code)
+                || originalOperation.equals(OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_SUBSCRIPTION.code)
+                || originalOperation.equals(OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_REDEMPTION.code))) {
+                this.originalCoin = coin;
+                coin = coin.replaceFirst(LD_COIN_CURRENCY_PREFIX, "");
+            }
             this.coin = Currency.fromCode(coin);
         } catch (IllegalArgumentException e) {
             this.setUnsupportedRow(true);
