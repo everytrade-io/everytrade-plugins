@@ -14,6 +14,7 @@ import java.time.Instant;
 import java.util.List;
 
 import static io.everytrade.server.model.Currency.ADA;
+import static io.everytrade.server.model.Currency.ALGO;
 import static io.everytrade.server.model.Currency.BNB;
 import static io.everytrade.server.model.Currency.BTC;
 import static io.everytrade.server.model.Currency.BUSD;
@@ -22,6 +23,7 @@ import static io.everytrade.server.model.Currency.DOGE;
 import static io.everytrade.server.model.Currency.DOT;
 import static io.everytrade.server.model.Currency.ETH;
 import static io.everytrade.server.model.Currency.EUR;
+import static io.everytrade.server.model.Currency.REEF;
 import static io.everytrade.server.model.Currency.RUNE;
 import static io.everytrade.server.model.Currency.SHIB;
 import static io.everytrade.server.model.Currency.SOL;
@@ -33,6 +35,7 @@ import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.REBATE;
+import static io.everytrade.server.model.TransactionType.REWARD;
 import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.model.TransactionType.STAKE;
@@ -343,7 +346,7 @@ class BinanceBeanV4Test {
                 DEPOSIT,
                 new BigDecimal("236.79617000"),
                 null,
-                "SIMPLE EARN FLEXIBLE SUBSCRIPTION",
+                "SIMPLE EARN FLEXIBLE SUBSCRIPTION, LD \"currency\"",
                 null
             ),
             List.of()
@@ -373,7 +376,7 @@ class BinanceBeanV4Test {
                 WITHDRAWAL,
                 new BigDecimal("300.00000000"),
                 null,
-                "SIMPLE EARN FLEXIBLE REDEMPTION",
+                "SIMPLE EARN FLEXIBLE REDEMPTION, LD \"currency\"",
                 null
             ),
             List.of()
@@ -403,7 +406,7 @@ class BinanceBeanV4Test {
                 DEPOSIT,
                 new BigDecimal("0.01155980"),
                 null,
-                "SAVINGS DISTRIBUTION",
+                "SAVINGS DISTRIBUTION, LD \"currency\"",
                 null
             ),
             List.of()
@@ -778,8 +781,8 @@ class BinanceBeanV4Test {
             List.of()
         );
 
-        TestUtils.testTxs( expected0.getMain(),actual.get(0).getMain());
-        TestUtils.testTxs( expected1.getMain(),actual.get(1).getMain());
+        TestUtils.testTxs( expected0.getMain(),actual.get(1).getMain());
+        TestUtils.testTxs( expected1.getMain(),actual.get(0).getMain());
         TestUtils.testTxs( expected2.getMain(),actual.get(2).getMain());
     }
 
@@ -799,7 +802,7 @@ class BinanceBeanV4Test {
                 SHIB,
                 USDT,
                 BUY,
-                new BigDecimal("4324216.00000000"),
+                new BigDecimal("4324216.0000000000"),
                 new BigDecimal("0.0000074400"),
                 "TRANSACTION BUY",
                 null,
@@ -918,6 +921,55 @@ class BinanceBeanV4Test {
                 new BigDecimal("0.00044214"),
                 null,
                 "STAKING REWARDS",
+                null,
+                null
+            ),
+            List.of()
+        );
+        TestUtils.testTxs( expected.getMain(),actual.get(0).getMain());
+    }
+
+
+    @Test
+    void testBnbVaultRewards(){
+        final String row = "40360729,2020-12-27 02:36:24,Spot,BNB Vault Rewards,REEF,27.07578576,\n";
+
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row);
+
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2020-12-27T02:36:24Z"),
+                REEF,
+                REEF,
+                REWARD,
+                new BigDecimal("27.07578576"),
+                null,
+                "BNB VAULT REWARDS",
+                null,
+                null
+            ),
+            List.of()
+        );
+        TestUtils.testTxs( expected.getMain(),actual.get(0).getMain());
+    }
+
+    @Test
+    void testSimpleEarnLockedRewards(){
+        final String row = "86879943,2022-09-27 03:56:38,Spot,Simple Earn Locked Rewards,ADA,0.02587789,\"\"\n";
+
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row);
+
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-09-27T03:56:38Z"),
+                ADA,
+                ADA,
+                EARNING,
+                new BigDecimal("0.02587789"),
+                null,
+                "SIMPLE EARN LOCKED REWARDS",
                 null,
                 null
             ),

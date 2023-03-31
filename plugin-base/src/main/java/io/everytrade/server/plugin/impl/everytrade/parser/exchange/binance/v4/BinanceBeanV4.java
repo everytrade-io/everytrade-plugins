@@ -51,6 +51,7 @@ public class BinanceBeanV4 extends ExchangeBean {
     BigDecimal change;
     String remark;
     String originalCoin;
+    boolean coinPrefix;
 
     int rowId;
     public List<Integer> usedIds = new ArrayList<>();
@@ -123,12 +124,13 @@ public class BinanceBeanV4 extends ExchangeBean {
     @Parsed(field = "Coin")
     public void setCoin(String coin) {
         try {
-            if (coin.startsWith("LD")
+            if (coin.startsWith(LD_COIN_CURRENCY_PREFIX)
                 && (originalOperation.equals(OPERATION_TYPE_SAVING_DISTRIBUTION.code)
                 || originalOperation.equals(OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_SUBSCRIPTION.code)
                 || originalOperation.equals(OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_REDEMPTION.code))) {
                 this.originalCoin = coin;
                 coin = coin.replaceFirst(LD_COIN_CURRENCY_PREFIX, "");
+                coinPrefix = true;
             }
             this.coin = Currency.fromCode(coin);
         } catch (IllegalArgumentException e) {
@@ -188,6 +190,12 @@ public class BinanceBeanV4 extends ExchangeBean {
         if (UNKNOWN.equals(type) || isUnsupportedRow()) {
             throw new DataIgnoredException(getMessage());
         }
+        if (BinanceSupportedOperations.WRITE_ORIGINAL_OPERATION_AS_NOTE.contains(originalOperation)) {
+            remark = originalOperation;
+            if (isCoinPrefix()) {
+                remark += ", " + LD_COIN_CURRENCY_PREFIX + " \"currency\"";
+            }
+        }
         if (feeTransactions.size() > 0) {
             for (BinanceBeanV4 fee : feeTransactions) {
                 var feeTxs = new FeeRebateImportedTransactionBean(
@@ -212,6 +220,8 @@ public class BinanceBeanV4 extends ExchangeBean {
                     marketBase,
                     REWARD,
                     amountBase,
+                    null,
+                    remark,
                     null
                 ),
                 emptyList()
@@ -228,7 +238,7 @@ public class BinanceBeanV4 extends ExchangeBean {
                     REBATE,
                     amountBase,
                     marketBase,
-                    originalOperation
+                    remark
                 ),
                 emptyList()
             );

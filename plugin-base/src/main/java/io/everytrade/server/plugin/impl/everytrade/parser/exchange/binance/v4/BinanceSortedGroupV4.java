@@ -26,6 +26,7 @@ import static io.everytrade.server.model.TransactionType.REWARD;
 import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BINANCE_CONVERT;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BNB_VAULT_REWARDS;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BUY;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BUY_CRYPTO;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_CARD_CASHBACK;
@@ -42,6 +43,7 @@ import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binanc
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_INTEREST;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_REDEMPTION;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_SUBSCRIPTION;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_LOCKED_REWARDS;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SMALL_ASSETS_EXCHANGE_BNB;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_STAKING_PURCHASE;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_STAKING_REDEMPTION;
@@ -335,6 +337,8 @@ public class BinanceSortedGroupV4 {
             txs.setRemark(row.getRemark());
             txs.setDate(row.getDate());
             txs.setMergedWithAnotherGroup(row.isMergedWithAnotherGroup());
+            txs.setOriginalOperation(row.getOriginalOperation());
+            txs.setCoinPrefix(row.isCoinPrefix());
             if (row.getChange().compareTo(ZERO) > 0) {
                 txs.setType(DEPOSIT);
             } else {
@@ -358,6 +362,7 @@ public class BinanceSortedGroupV4 {
         txs.setType(REWARD);
         txs.setRemark(row.getRemark());
         txs.setOriginalOperation(row.getOriginalOperation());
+        txs.setCoinPrefix(row.isCoinPrefix());
         createdTransactions.add(txs);
     }
 
@@ -374,6 +379,7 @@ public class BinanceSortedGroupV4 {
         txs.setMergedWithAnotherGroup(row.isMergedWithAnotherGroup());
         txs.setType(row.getType());
         txs.setOriginalOperation(row.getOriginalOperation());
+        txs.setCoinPrefix(row.isCoinPrefix());
         createdTransactions.add(txs);
     }
 
@@ -389,6 +395,7 @@ public class BinanceSortedGroupV4 {
             txs.setType(REBATE);
             txs.setRemark(bean.getRemark());
             txs.setOriginalOperation(bean.getOriginalOperation());
+            txs.setCoinPrefix(bean.isCoinPrefix());
             createdTransactions.add(txs);
         }
     }
@@ -404,6 +411,7 @@ public class BinanceSortedGroupV4 {
             txs.setMergedWithAnotherGroup(bean.isMergedWithAnotherGroup());
             txs.setType(EARNING);
             txs.setOriginalOperation(bean.getOriginalOperation());
+            txs.setCoinPrefix(bean.isCoinPrefix());
             createdTransactions.add(txs);
         }
     }
@@ -469,6 +477,7 @@ public class BinanceSortedGroupV4 {
         txsBuySell.setAmountBase(baseRow.getChange().abs());
         txsBuySell.setType(type);
         txsBuySell.setRemark(baseRow.getRemark());
+        txsBuySell.setCoinPrefix(baseRow.isCoinPrefix());
         if (relatedTransaction) {
             txsBuySell.setRemark(baseRow.getOriginalOperation().toUpperCase());
         }
@@ -615,7 +624,8 @@ public class BinanceSortedGroupV4 {
                 newList.add(row);
                 rowsBuySellRelated.put(row.getCoin(), newList);
             }
-        } else if (row.getOriginalOperation().equals(OPERATION_TYPE_DISTRIBUTION.code)) {
+        } else if (row.getOriginalOperation().equals(OPERATION_TYPE_DISTRIBUTION.code)
+            || row.getOriginalOperation().equals(OPERATION_TYPE_BNB_VAULT_REWARDS.code)) {
             if (rowsRewards.containsKey(row.getCoin())) {
                 rowsRewards.get(row.getCoin()).add(row);
             } else {
@@ -633,7 +643,8 @@ public class BinanceSortedGroupV4 {
                 newList.add(row);
                 rowsRebate.put(row.getCoin(), newList);
             }
-        } else if (row.getOriginalOperation().equals(OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_INTEREST.code)) {
+        } else if (row.getOriginalOperation().equals(OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_INTEREST.code)
+            || row.getOriginalOperation().equals(OPERATION_TYPE_SIMPLE_EARN_LOCKED_REWARDS.code)) {
             if (rowsEarnings.containsKey(row.getCoin())) {
                 rowsEarnings.get(row.getCoin()).add(row);
             } else {
