@@ -346,7 +346,7 @@ class BinanceBeanV4Test {
                 DEPOSIT,
                 new BigDecimal("236.79617000"),
                 null,
-                "SIMPLE EARN FLEXIBLE SUBSCRIPTION, LD \"currency\"",
+                "SIMPLE EARN FLEXIBLE SUBSCRIPTION, LDUSDT",
                 null
             ),
             List.of()
@@ -376,7 +376,7 @@ class BinanceBeanV4Test {
                 WITHDRAWAL,
                 new BigDecimal("300.00000000"),
                 null,
-                "SIMPLE EARN FLEXIBLE REDEMPTION, LD \"currency\"",
+                "SIMPLE EARN FLEXIBLE REDEMPTION, LDUSDT",
                 null
             ),
             List.of()
@@ -406,7 +406,7 @@ class BinanceBeanV4Test {
                 DEPOSIT,
                 new BigDecimal("0.01155980"),
                 null,
-                "SAVINGS DISTRIBUTION, LD \"currency\"",
+                "SAVINGS DISTRIBUTION",
                 null
             ),
             List.of()

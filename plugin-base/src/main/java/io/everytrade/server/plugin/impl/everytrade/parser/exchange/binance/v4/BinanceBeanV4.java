@@ -193,7 +193,7 @@ public class BinanceBeanV4 extends ExchangeBean {
         if (BinanceSupportedOperations.WRITE_ORIGINAL_OPERATION_AS_NOTE.contains(originalOperation)) {
             remark = originalOperation;
             if (isCoinPrefix()) {
-                remark += ", " + LD_COIN_CURRENCY_PREFIX + " \"currency\"";
+                remark += ", " + originalCoin;
             }
         }
         if (feeTransactions.size() > 0) {
