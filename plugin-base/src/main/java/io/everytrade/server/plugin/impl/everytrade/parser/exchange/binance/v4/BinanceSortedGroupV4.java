@@ -339,6 +339,7 @@ public class BinanceSortedGroupV4 {
             txs.setMergedWithAnotherGroup(row.isMergedWithAnotherGroup());
             txs.setOriginalOperation(row.getOriginalOperation());
             txs.setCoinPrefix(row.isCoinPrefix());
+            txs.setOriginalCoin(row.getOriginalCoin());
             if (row.getChange().compareTo(ZERO) > 0) {
                 txs.setType(DEPOSIT);
             } else {
