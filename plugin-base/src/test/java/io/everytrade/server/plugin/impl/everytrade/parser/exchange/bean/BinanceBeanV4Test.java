@@ -406,7 +406,7 @@ class BinanceBeanV4Test {
                 DEPOSIT,
                 new BigDecimal("0.01155980"),
                 null,
-                "SAVINGS DISTRIBUTION, LDBTC",
+                "SAVINGS DISTRIBUTION",
                 null
             ),
             List.of()
