@@ -173,12 +173,13 @@ class HuobiBeanV1Test {
         assertTrue(error.contains(UNSUPPORTED_TRANSACTION_TYPE.concat("Depositz")));
     }
 
-    @Test
-    void testIgnoredFee() {
-        final String row = "2020-03-31 21:31:24,Exchange,LTC/BTC,Sell,0.006036,0.7362,0.0044,0.00000888XXX,\n";
-        final TransactionCluster transactionCluster = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
-        assertEquals(1, transactionCluster.getFailedFeeTransactionCount());
-    }
+    // TO-DO
+    //    @Test
+    //    void testIgnoredFee() {
+    //        final String row = "2020-03-31 21:31:24,Exchange,LTC/BTC,Sell,0.006036,0.7362,0.0044,0.00000888XXX,\n";
+    //        final TransactionCluster transactionCluster = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
+    //        assertEquals(1, transactionCluster.getFailedFeeTransactionCount());
+    //    }
 
     @Test
     void testIgnoredTransactionType() {

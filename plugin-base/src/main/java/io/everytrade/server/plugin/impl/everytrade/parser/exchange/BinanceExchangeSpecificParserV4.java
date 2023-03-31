@@ -170,6 +170,8 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
                     r.setMergedWithAnotherGroup(true);
                 });
                 result.put(previousKey, all);
+                currentKey = previousKey;
+                currentValues = all;
             } else {
                 result.put(currentKey, currentValues);
             }
