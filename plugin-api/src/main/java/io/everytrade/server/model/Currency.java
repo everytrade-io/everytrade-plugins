@@ -644,7 +644,27 @@ public enum Currency {
     BTRST(false, Instant.parse("2021-09-16T00:00:00Z"), "Braintrust"),
     JUNO(false, Instant.parse("2022-08-29T00:00:00Z"), "Juno"),
     BEST(false, Instant.parse("2020-11-12T00:00:00Z"), "Bitpanda Ecosystem Token"),
-    CQT(false, Instant.parse("2022-09-29T00:00:00Z"), "Covalent");
+    CQT(false, Instant.parse("2022-09-29T00:00:00Z"), "Covalent"),
+    JOE(false, Instant.parse("2021-10-07T00:00:00Z"), "Joe"),
+    MILK(false, Instant.parse("2022-03-10"), "MuesliSwap"),
+    AERGO(false, Instant.parse("2018-12-12"), "Aergo"),
+    API3(false, Instant.parse("2022-06-10"), "API3"),
+    EPX(false, Instant.parse("2021-05-27"), "Ellipsis"),
+    IMX(false, Instant.parse("2022-02-23"), "Immutable X"),
+    KP3R(false, Instant.parse("2021-05-27"), "Keep3rV1"),
+    LEVER(false, Instant.parse("2022-07-21"), "LeverFi"),
+    MULTI(false, Instant.parse("2022-09-04"), "Multichain"),
+    OOKI(false, Instant.parse("2022-03-24"), "OOKI"),
+    OP(false, Instant.parse("2022-06-03"), "Optimism"),
+    OSMO(false, Instant.parse("2022-05-29"), "Osmosis"),
+    POND(false, Instant.parse("2023-02-03"), "Marlin"),
+    PUNDIX(false, Instant.parse("2021-03-24"), "Pundi X"),
+    STG(false, Instant.parse("2022-03-16"), "Stargate Finance"),
+    TORN(false, Instant.parse("2021-02-10"), "Tornado Cash"),
+    UFT(false, Instant.parse("2021-09-02"), "UniLend Finance"),
+    ARB(false, Instant.parse("2023-03-24"), "Arbitrum"),
+    LQTY(false, Instant.parse("2021-06-01"), "Liquity"),
+    EASY(false, Instant.parse("2020-10-22"), "EasyFi");
 
     String code;
     int decimalDigits;
