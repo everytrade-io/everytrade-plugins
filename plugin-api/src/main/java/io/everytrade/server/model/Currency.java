@@ -664,7 +664,22 @@ public enum Currency {
     UFT(false, Instant.parse("2021-09-02T00:00:00Z"), "UniLend Finance"),
     ARB(false, Instant.parse("2023-03-24T00:00:00Z"), "Arbitrum"),
     LQTY(false, Instant.parse("2021-06-01T00:00:00Z"), "Liquity"),
-    EASY(false, Instant.parse("2020-10-22T00:00:00Z"), "EasyFi");
+    EASY(false, Instant.parse("2020-10-22T00:00:00Z"), "EasyFi"),
+    AI(false, Instant.parse("2021-09-02T00:00:00Z"), "Multiverse"),
+    ALCX(false, Instant.parse("2021-09-23T00:00:00Z"), "Alchemix"),
+    AZERO(false, Instant.parse("2022-02-02T00:00:00Z"), "Aleph Zero"),
+    BONE(false, Instant.parse("2021-08-09T00:00:00Z"), "Bone ShibaSwap"),
+    EQX(false, Instant.parse("2021-09-02T00:00:00Z"), "EQIFI Token"),
+    FOOTBALL(false, Instant.parse("2023-01-16T00:00:00Z"), "Football Inu"),
+    HUSL(false, Instant.parse("2021-09-21T00:00:00Z"), "The HUSL"),
+    LOOKS(false, Instant.parse("2022-01-26T00:00:00Z"), "LooksRare Token"),
+    LUNA2(false, Instant.parse("2019-08-01T00:00:00Z"), "Terra Classic"),
+    MAGIC(false, Instant.parse("2022-05-09T00:00:00Z"), "MAGIC (Arbitrum)"),
+    MTRG(false, Instant.parse("2021-10-21T00:00:00Z"), "Meter Governance"),
+    SENSO(false, Instant.parse("2020-04-30T00:00:00Z"), "SENSO"),
+    SWEAT(false, Instant.parse("2023-01-16T00:00:00Z"), "Sweat Economy"),
+    WILD(false, Instant.parse("2021-09-02T00:00:00Z"), "Wilder World"),
+    ZCX(false, Instant.parse("2021-09-02T00:00:00Z"), "Unizen");
 
     String code;
     int decimalDigits;
