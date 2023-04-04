@@ -21,6 +21,11 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
     IMultiExchangeSpecificParser<BinanceBeanV4> {
 
     private static final long TRANSACTION_MERGE_TOLERANCE_MS = 1000;
+    List<BinanceBeanV4> originalRows;
+    List<BinanceBeanV4> unSupportedRows = new ArrayList<>();
+    List<BinanceBeanV4> rowsWithOneRowTransactionType = new ArrayList<>();
+    List<BinanceBeanV4> rowsWithMultipleRowTransactionType = new ArrayList<>();
+
     public BinanceExchangeSpecificParserV4(Class<? extends ExchangeBean> exchangeBean, String delimiter, boolean isRowInsideQuotes) {
         super(exchangeBean, delimiter);
     }
@@ -45,8 +50,6 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
         return rows;
     }
 
-    List<BinanceBeanV4> rows;
-    List<BinanceBeanV4> unSupportedRows = new ArrayList<>();
 
     /**
      * Method should solve exception where are many rows with operation "Small assets exchange BNB" done
@@ -106,10 +109,22 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
         return result;
     }
 
+    private void filterRowsByType(List<BinanceBeanV4> rows) {
+        rows.stream().forEach(r -> {
+            if(!r.isUnsupportedRow() && !r.getOperationType().isMultiRowType) {
+                rowsWithOneRowTransactionType.add(r);
+            } else {
+                rowsWithMultipleRowTransactionType.add(r);
+            }
+        });
+    }
+
     public List<? extends ExchangeBean> convertMultipleRowsToTransactions(List<BinanceBeanV4> rows) {
         List<BinanceBeanV4> result;
-        this.rows = rows;
-        var groupedRowsByTime = createGroupsFromRows(rows);
+        this.originalRows = rows;
+        filterRowsByType(rows);
+
+        var groupedRowsByTime = createGroupsFromRows(rowsWithMultipleRowTransactionType);
         Map<Instant, List<BinanceBeanV4>> sortedGroupsByDate = new TreeMap<>(groupedRowsByTime);
         // merging rows nearly in the same time
         var mergedGroups = mergeGroupsInTimeWithinTolerance(sortedGroupsByDate);
@@ -124,6 +139,9 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
         result.addAll(unSupportedRows);
         return rowsReadyForTxs;
     }
+
+
+
 
     @Override
     public Map<?, List<BinanceBeanV4>> removeGroupsWithUnsupportedRows(Map<?, List<BinanceBeanV4>> rowGroups) {
