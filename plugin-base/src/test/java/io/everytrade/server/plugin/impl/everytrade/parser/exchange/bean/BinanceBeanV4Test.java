@@ -1158,4 +1158,113 @@ class BinanceBeanV4Test {
         TestUtils.testTxs(expected1.getMain(), actual.get(1).getMain());
     }
 
+    @Test
+    void testConvertBuySellWithWrongTolerance() {
+        final String row0 = "86879943,2022-07-17 11:14:21,Spot,Sell,BUSD,121.04594400,\"\"\n";
+        final String row1 = "86879943,2022-07-17 11:14:21,Spot,Sell,ETH,-0.08880000,\"\"\n";
+
+        final String row2 = "86879943,2022-07-17 11:14:22,Spot,Sell,BTC,-0.00094000,\"\"\n";
+        final String row3 = "86879943,2022-07-17 11:14:22,Spot,Buy,ETH,0.01470000,\"\"\n";
+        final String row4 = "86879943,2022-07-17 11:14:22,Spot,Sell,BUSD,20.13856940,\"\"\n";
+        final String row5 = "86879943,2022-07-17 11:14:22,Spot,Buy,BUSD,-50.10363540,\"\"\n";
+        final String row6 = "86879943,2022-07-17 11:14:22,Spot,Buy,BUSD,-20.03036700,\"\"\n";
+        final String row7 = "86879943,2022-07-17 11:14:22,Spot,Fee,BNB,-0.00005936,\"\"\n";
+        final String row8 = "86879943,2022-07-17 11:14:22,Spot,Buy,BTC,0.00234000,\"\"\n";
+        final String join = row0 + row1 + row2 + row3 + row4 + row5 + row6 + row7 + row8;
+
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + join);
+
+        final TransactionCluster expected0 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-07-17T11:14:21Z"),
+                BUSD,
+                BTC,
+                BUY,
+                new BigDecimal("121.04594400"),
+                new BigDecimal("0.000733606")
+            ),
+            List.of()
+        );
+
+        final TransactionCluster expected1 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-07-17T11:14:22Z"),
+                BTC,
+                USD,
+                SELL,
+                new BigDecimal("0.00094000"),
+                null
+            ),
+            List.of()
+        );
+        final TransactionCluster expected2 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-07-17T11:14:22Z"),
+                ETH,
+                USD,
+                BUY,
+                new BigDecimal("0.01470000"),
+                null
+            ),
+            List.of()
+        );
+
+        final TransactionCluster expected3 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-07-17T11:14:22Z"),
+                BUSD,
+                USD,
+                BUY,
+                new BigDecimal("20.13856940"),
+                null
+            ),
+            List.of()
+        );
+
+        final TransactionCluster expected4 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-07-17T11:14:22Z"),
+                BUSD,
+                USD,
+                SELL,
+                new BigDecimal("50.10363540"),
+                null
+            ),
+            List.of()
+        );
+
+        final TransactionCluster expected5 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-07-17T11:14:22Z"),
+                BUSD,
+                USD,
+                SELL,
+                new BigDecimal("20.03036700"),
+                null
+            ),
+            List.of()
+        );
+
+        final TransactionCluster expected6 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-07-17T11:14:22Z"),
+                BTC,
+                USD,
+                BUY,
+                new BigDecimal("0.00234000"),
+                null
+            ),
+            List.of()
+        );
+        TestUtils.testTxs( expected0.getMain(),actual.get(0).getMain());
+    }
+
+
 }

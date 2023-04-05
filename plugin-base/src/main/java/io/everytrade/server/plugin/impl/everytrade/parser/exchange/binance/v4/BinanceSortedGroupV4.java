@@ -17,7 +17,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import lombok.Data;
 
 import static io.everytrade.server.model.Currency.BNB;
-import static io.everytrade.server.model.Currency.USD;
+import static io.everytrade.server.model.Currency.USDT;
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.EARNING;
@@ -54,12 +54,14 @@ import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binanc
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_TRANSACTION_SOLD;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_TRANSACTION_SPEND;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_WITHDRAWAL;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceSupportedOperations.CREATE_ONE_ROW_TRANSACTION_WHEN_EXCEPTION;
 import static java.math.BigDecimal.ZERO;
 
 @Data
 public class BinanceSortedGroupV4 {
 
     Object time;
+    public static final Currency ACCOUNT_CURRENCY = USDT;
 
     // beforeSum
     Map<Currency, List<BinanceBeanV4>> rowsDeposit = new HashMap<>();
@@ -86,12 +88,26 @@ public class BinanceSortedGroupV4 {
 
     public void sortGroup(List<BinanceBeanV4> group) {
         // nejdrive udelam map , kde hash bude currency
-        int groupSize = group.size();
-        for (BinanceBeanV4 row : group) {
-            addRow(row, groupSize);
+        try {
+            int groupSize = group.size();
+            for (BinanceBeanV4 row : group) {
+                addRow(row, groupSize);
+            }
+            sumAllRows();
+            createTransactionsFromMultiRowData();
+        } catch (Exception ignore) {
+            int i = 0;
+            for (BinanceBeanV4 row : group) {
+                if(!CREATE_ONE_ROW_TRANSACTION_WHEN_EXCEPTION.contains(row.getOperationType())) {
+                   i++;
+                }
+            }
+            if(group.size() == i) {
+                createTransactionFromOneRowData(group);
+            } else {
+                throw new DataValidationException(ignore.getMessage());
+            }
         }
-        sumAllRows();
-        createTransactions();
     }
 
     private void sumAllRows() {
@@ -175,7 +191,54 @@ public class BinanceSortedGroupV4 {
         return result;
     }
 
-    public void createTransactions() {
+    private List<BinanceBeanV4> createFee(List<BinanceBeanV4> group) {
+        List<BinanceBeanV4> result = new ArrayList<>();
+        for(BinanceBeanV4 row : group) {
+            if (row.getOperationType().equals(OPERATION_TYPE_FEE)) {
+                row.setInTransaction(true);
+                row.setType(TransactionType.FEE);
+                row.setFee(row.getChange().abs());
+                row.setFeeCurrency(row.getCoin());
+                row.feeTransactions.add(row);
+                row.setMarketBase(row.getCoin());
+                row.setAmountBase(row.getChange().abs());
+                result.add(row);
+            }
+        }
+        return result;
+    }
+
+    public void createTransactionFromOneRowData(List<BinanceBeanV4> group) {
+        List<BinanceBeanV4> fees = createFee(group);
+        for (BinanceBeanV4 row : group) {
+            if (row.getOperationType().equals(OPERATION_TYPE_FEE)) {
+                // ignore;
+            } else if (OPERATION_TYPE_SELL.equals(row.getOperationType()) || OPERATION_TYPE_BUY.equals(row.getOperationType())) {
+                if (row.getCoin().isFiat()) {
+                    if (row.getChange().compareTo(ZERO) >= 0) {
+                        row.setType(DEPOSIT);
+                    } else {
+                        row.setType(WITHDRAWAL);
+                    }
+                } else {
+                    if (row.getChange().compareTo(ZERO) >= 0) {
+                        row.setType(BUY);
+                    } else {
+                        row.setType(SELL);
+                    }
+                }
+                this.createdTransactions.add(row);
+            }
+        }
+        if (createdTransactions.size() > 0) {
+            createdTransactions.get(0).setFeeTransactions(fees);
+        } else {
+            createdTransactions.addAll(fees);
+        }
+    }
+
+
+    public void createTransactionsFromMultiRowData() {
         int buySellNum = rowBuySellRelated.size();
         int depositNum = rowDeposit.size();
         int withdrawNum = rowWithdrawal.size();
@@ -279,7 +342,7 @@ public class BinanceSortedGroupV4 {
                 } else {
                     row.setType(SELL);
                 }
-                row.setMarketQuote(USD);
+                row.setMarketQuote(ACCOUNT_CURRENCY);
                 row.setAmountQuote(null);
             }
             row.setMarketBase(row.getCoin());
@@ -287,8 +350,6 @@ public class BinanceSortedGroupV4 {
             createdTransactions.add(row);
         }
     }
-
-    ;
 
     private void addFeeToTxs() {
         try {
@@ -401,6 +462,7 @@ public class BinanceSortedGroupV4 {
         }
     }
 
+
     private void createEarningsTxs() {
         for (BinanceBeanV4 bean : rowEarnings) {
             var txs = new BinanceBeanV4();
@@ -416,6 +478,60 @@ public class BinanceSortedGroupV4 {
             createdTransactions.add(txs);
         }
     }
+
+    public static BinanceBeanV4 createEarningsTxs(BinanceBeanV4 row) {
+        row.setRowNumber(row.getDate().getEpochSecond());
+        row.usedIds.add(row.getRowId());
+        row.setAmountBase(row.getChange().abs());
+        row.setMarketBase(row.getCoin());
+        row.setType(EARNING);
+        return row;
+    }
+
+    public static BinanceBeanV4 createRebateTxs(BinanceBeanV4 row) {
+        row.setRowNumber(row.getDate().getEpochSecond());
+        row.usedIds.add(row.getRowId());
+        row.setAmountBase(row.getChange().abs());
+        row.setMarketBase(row.getCoin());
+        row.setType(REBATE);
+        return row;
+    }
+
+    public static BinanceBeanV4 createStakingsTxs(BinanceBeanV4 row) {
+        row.setRowNumber(row.getDate().getEpochSecond());
+        String[] strings = {"Row id " + row.usedIds.toString() + " " + row.getOriginalOperation()};
+        row.setRowValues(strings);
+        row.setAmountBase(row.getChange().abs());
+        row.setMarketBase(row.getCoin());
+        return row;
+    }
+
+    public static BinanceBeanV4 createDepositWithdrawalTxs(BinanceBeanV4 row) {
+        row.setRowNumber(row.getDate().getEpochSecond());
+        String[] strings = {"Row id " + row.usedIds + " " + row.getOriginalOperation()};
+        row.setRowValues(strings);
+        row.setAmountBase(row.getChange().abs());
+        row.setMarketBase(row.getCoin());
+        if (row.getChange().compareTo(ZERO) > 0) {
+            row.setType(DEPOSIT);
+        } else {
+            row.setType(WITHDRAWAL);
+        }
+        return row;
+    }
+
+    public static BinanceBeanV4 createRewardsTxs(BinanceBeanV4 row) {
+        row.setRowNumber(row.getDate().getEpochSecond());
+        String[] strings = {"Row id " + row.usedIds.toString() + " " + row.getOriginalOperation()};
+        row.setRowValues(strings);
+        row.setAmountBase(row.getChange().abs());
+        row.setMarketBase(row.getCoin());
+        row.setType(REWARD);
+        return row;
+    }
+
+
+
 
     private boolean isConvert(BinanceBeanV4 stRow, BinanceBeanV4 ndRow) {
         return !stRow.getCoin().isFiat() && !ndRow.getCoin().isFiat();
