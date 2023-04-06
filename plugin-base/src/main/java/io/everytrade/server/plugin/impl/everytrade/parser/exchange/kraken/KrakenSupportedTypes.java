@@ -14,6 +14,7 @@ public class KrakenSupportedTypes {
         SUPPORTED_TYPES.add(KrakenConstants.TYPE_TRADE.code);
         SUPPORTED_TYPES.add(KrakenConstants.TYPE_DEPOSIT.code);
         SUPPORTED_TYPES.add(KrakenConstants.TYPE_WITHDRAWAL.code);
+        SUPPORTED_TYPES.add(KrakenConstants.TYPE_TRANSFER.code);
 
         DUPLICABLE_TYPES.add(KrakenConstants.TYPE_WITHDRAWAL.code);
         DUPLICABLE_TYPES.add(KrakenConstants.TYPE_DEPOSIT.code);

@@ -1,6 +1,7 @@
 package io.everytrade.server.plugin.impl.everytrade.parser.exchange;
 
 import com.univocity.parsers.common.DataValidationException;
+import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceBeanV4;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceSortedGroupV4;
 
@@ -9,18 +10,44 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
+import static io.everytrade.server.model.TransactionType.DEPOSIT;
+import static io.everytrade.server.model.TransactionType.EARNING;
+import static io.everytrade.server.model.TransactionType.REBATE;
+import static io.everytrade.server.model.TransactionType.REWARD;
+import static io.everytrade.server.model.TransactionType.STAKE;
+import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
+import static io.everytrade.server.model.TransactionType.UNSTAKE;
+import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BNB_VAULT_REWARDS;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_CARD_CASHBACK;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_CASHBACK_VOUCHER;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_COMMISSION_REBATE;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SAVING_DISTRIBUTION;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_INTEREST;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_REDEMPTION;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_SUBSCRIPTION;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SMALL_ASSETS_EXCHANGE_BNB;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_STAKING_PURCHASE;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_STAKING_REDEMPTION;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_STAKING_REWARDS;
+import static java.math.BigDecimal.ZERO;
 import static java.util.stream.Collectors.groupingBy;
 
 public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpecificParser implements IExchangeSpecificParser,
     IMultiExchangeSpecificParser<BinanceBeanV4> {
 
     private static final long TRANSACTION_MERGE_TOLERANCE_MS = 1000;
+    List<BinanceBeanV4> originalRows;
+    List<BinanceBeanV4> unSupportedRows = new ArrayList<>();
+    List<BinanceBeanV4> rowsWithOneRowTransactionType = new ArrayList<>();
+    List<BinanceBeanV4> rowsWithMultipleRowTransactionType = new ArrayList<>();
+
     public BinanceExchangeSpecificParserV4(Class<? extends ExchangeBean> exchangeBean, String delimiter, boolean isRowInsideQuotes) {
         super(exchangeBean, delimiter);
     }
@@ -45,9 +72,6 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
         return rows;
     }
 
-    List<BinanceBeanV4> rows;
-    List<BinanceBeanV4> unSupportedRows = new ArrayList<>();
-
     /**
      * Method should solve exception where are many rows with operation "Small assets exchange BNB" done
      * in the same time
@@ -68,12 +92,12 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
                 if (smallAssetExchange.size() == 0) {
                     result.put(key, rowsInGroup);
                 } else if (smallAssetExchange.size() == rowsInGroup.size()) {
-                    if(smallAssetExchange.size() % 2 != 0) {
+                    if (smallAssetExchange.size() % 2 != 0) {
                         rowsInGroup.stream().forEach(row -> {
-                            row.setMessage(String.format("Wrong number of operation %s",OPERATION_TYPE_SMALL_ASSETS_EXCHANGE_BNB.code));
+                            row.setMessage(String.format("Wrong number of operation %s", OPERATION_TYPE_SMALL_ASSETS_EXCHANGE_BNB.code));
                             row.setUnsupportedRow(true);
                         });
-                        result.put(key,rowsInGroup);
+                        result.put(key, rowsInGroup);
                     } else {
                         rowsInGroup = rowsInGroup.stream().sorted(Comparator.comparingInt(BinanceBeanV4::getRowId))
                             .collect(Collectors.toList());
@@ -97,7 +121,7 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
                         row.setMessage("Too many operation in the same time");
                         row.setUnsupportedRow(true);
                     });
-                    result.put(key,rowsInGroup);
+                    result.put(key, rowsInGroup);
                 }
             }
         } catch (Exception ignore) {
@@ -106,23 +130,86 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
         return result;
     }
 
+    private void filterRowsByType(List<BinanceBeanV4> rows) {
+        rows.stream().forEach(r -> {
+            if (!r.isUnsupportedRow() && !r.getOperationType().isMultiRowType) {
+                rowsWithOneRowTransactionType.add(r);
+            } else {
+                rowsWithMultipleRowTransactionType.add(r);
+            }
+        });
+    }
+
+    private List<BinanceBeanV4> prepareBeansForTransactions(List<BinanceBeanV4> rowsWithMultipleRowTransactionType,
+                                                            List<BinanceBeanV4> rowsWithOneRowTransactionType) {
+        List<BinanceBeanV4> result;
+        List<BinanceBeanV4> oneRowTxs = prepareBeansForTransactionsFromOneRowTypes(rowsWithOneRowTransactionType);
+        List<BinanceBeanV4> multiRowsTxs = prepareBeansForTransactionsFromMultiRows(rowsWithMultipleRowTransactionType);
+        result = multiRowsTxs;
+        result.addAll(oneRowTxs);
+        return result;
+    }
+
+    private List<BinanceBeanV4> prepareBeansForTransactionsFromOneRowTypes(List<BinanceBeanV4> rows) {
+        List<BinanceBeanV4> result = new ArrayList<>();
+        for (BinanceBeanV4 row : rows) {
+            if (!row.getOperationType().isMultiRowType) { // test yes
+                if (List.of(OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_SUBSCRIPTION.code, OPERATION_TYPE_SAVING_DISTRIBUTION.code,
+                    OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_REDEMPTION.code).contains(row.getOriginalOperation())) {
+                    row.setNote(row.getOriginalOperation().toUpperCase());
+                    if (row.getChange().compareTo(ZERO) < 0) {
+                        row.setType(WITHDRAWAL);
+                    } else {
+                        row.setType(DEPOSIT);
+                    }
+                }
+                if (REBATE.equals(row.getType()) || REBATE.equals(OPERATION_TYPE_CASHBACK_VOUCHER)) {
+                    row = BinanceSortedGroupV4.createRebateTxs(row);
+                    result.add(row);
+                } else if (EARNING.equals(row.getType())) {
+                    row = BinanceSortedGroupV4.createEarningsTxs(row);
+                    result.add(row);
+                } else if (STAKING_REWARD.equals(row.getType()) || UNSTAKE.equals(row.getType()) || STAKE.equals(row.getType())) {
+                    row = BinanceSortedGroupV4.createStakingsTxs(row);
+                    result.add(row);
+                } else if (DEPOSIT.equals(row.getType()) || WITHDRAWAL.equals(row.getType())) {
+                    row = BinanceSortedGroupV4.createDepositWithdrawalTxs(row);
+                    result.add(row);
+                } else if (REWARD.equals(row.getType())) {
+                    row = BinanceSortedGroupV4.createRewardsTxs(row);
+                    result.add(row);
+                } else {
+                    row.setUnsupportedRow(true);
+                    row.setMessage("Cannot define transaction");
+                    unSupportedRows.add(row);
+                }
+            }
+        }
+        return result;
+    }
+
+    private List<BinanceBeanV4> prepareBeansForTransactionsFromMultiRows(List<BinanceBeanV4> rows) {
+        var groupedRowsByTime = createGroupsFromRows(rowsWithMultipleRowTransactionType);
+        Map<Instant, List<BinanceBeanV4>> sortedGroupsByDate = new TreeMap<>(groupedRowsByTime);
+        // clean groups of rows from unsupported rubbish
+        var cleanGroups = removeGroupsWithUnsupportedRows(sortedGroupsByDate);
+        // merging rows nearly in the same time
+        var mergedGroups = mergeGroupsInTimeWithinTolerance((Map<Instant, List<BinanceBeanV4>>) cleanGroups);
+        // creating transaction
+        return createTransactionFromGroupOfRows(mergedGroups);
+    }
+
     public List<? extends ExchangeBean> convertMultipleRowsToTransactions(List<BinanceBeanV4> rows) {
         List<BinanceBeanV4> result;
-        this.rows = rows;
-        var groupedRowsByTime = createGroupsFromRows(rows);
-        Map<Instant, List<BinanceBeanV4>> sortedGroupsByDate = new TreeMap<>(groupedRowsByTime);
-        // merging rows nearly in the same time
-        var mergedGroups = mergeGroupsInTimeWithinTolerance(sortedGroupsByDate);
-        // clean groups of rows from unsupported rubbish
-        var cleanGroups = removeGroupsWithUnsupportedRows(mergedGroups);
-        // creating transaction
-        List<BinanceBeanV4> rowsReadyForTxs = createTransactionFromGroupOfRows(cleanGroups);
-        result = rowsReadyForTxs;
+        this.originalRows = rows;
+        filterRowsByType(rows);
+        List<BinanceBeanV4> beans = prepareBeansForTransactions(rowsWithMultipleRowTransactionType, rowsWithOneRowTransactionType);
+        result = beans;
         unSupportedRows.stream().forEach(r -> {
             r.setRowNumber((long) r.getRowId());
         });
         result.addAll(unSupportedRows);
-        return rowsReadyForTxs;
+        return beans;
     }
 
     @Override
@@ -157,9 +244,15 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
 
     private Map<Instant, List<BinanceBeanV4>> mergeGroupsInTimeWithinTolerance(Map<Instant, List<BinanceBeanV4>> groups) {
         Map<Instant, List<BinanceBeanV4>> result = new HashMap<>();
+        Map<Instant, List<BinanceBeanV4>> sortedMap = groups.entrySet()
+            .stream()
+            .sorted(Comparator.comparing(Map.Entry::getKey))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+                (oldValue, newValue) -> oldValue, LinkedHashMap::new));
+
         Instant previousKey = Instant.EPOCH;
         List<BinanceBeanV4> previousValues = new ArrayList<>();
-        for (Map.Entry<Instant, List<BinanceBeanV4>> entry : groups.entrySet()) {
+        for (Map.Entry<Instant, List<BinanceBeanV4>> entry : sortedMap.entrySet()) {
             var currentKey = entry.getKey();
             var currentValues = entry.getValue();
             if ((currentKey.minusMillis(TRANSACTION_MERGE_TOLERANCE_MS).equals(previousKey)
@@ -192,17 +285,28 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
                 sortedGroup.sortGroup(rows);
                 result.addAll(sortedGroup.createdTransactions);
             } catch (DataValidationException e) {
-                var eMess = e.getMessage();
-                var ids = rows.stream().map(r -> r.getRowId()).collect(Collectors.toList());
-                var s = BinanceSortedGroupV4.parseIds(ids);
-                setRowsAsUnsupported(rows, "One or more rows in group " + "( rows: " + s + ") is unsupported;" + " " + eMess);
+                try {
+                    if (rows.get(0).isMergedWithAnotherGroup()) {
+                        rows.stream().forEach( r -> r.setMergedWithAnotherGroup(false));
+                        Map<?, List<BinanceBeanV4>> groupsBeforeMerge = createGroupsFromRows(rows);
+                        List<BinanceBeanV4> anotherResult = createTransactionFromGroupOfRows(groupsBeforeMerge);
+                        result.addAll(anotherResult);
+                    } else {
+                        throw new DataValidationException(e.getMessage());
+                    }
+                } catch (DataValidationException ex) {
+                    var eMess = e.getMessage();
+                    var ids = rows.stream().map(r -> r.getRowId()).collect(Collectors.toList());
+                    var s = BinanceSortedGroupV4.parseIds(ids);
+                    setRowsAsUnsupported(rows, "One or more rows in group " + "( rows: " + s + ") is unsupported;" + " " + eMess);
+                }
             }
         }
         return result;
     }
 
     @Override
-    public Map<Instant,List<BinanceBeanV4>> createGroupsFromRows(List<BinanceBeanV4> rows) {
+    public Map<Instant, List<BinanceBeanV4>> createGroupsFromRows(List<BinanceBeanV4> rows) {
         return rows.stream().collect(groupingBy(BinanceBeanV4::getDate));
     }
 

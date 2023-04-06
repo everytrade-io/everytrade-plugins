@@ -182,7 +182,7 @@ public class KrakenBeanV2 extends ExchangeBean {
                     marketQuote,
                     txsType,
                     amountBase.abs().setScale(ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE),
-                    evalUnitPrice(amountQuote, amountBase)
+                    evalUnitPrice(amountQuote.abs(), amountBase.abs())
                 ),
                 related
             );

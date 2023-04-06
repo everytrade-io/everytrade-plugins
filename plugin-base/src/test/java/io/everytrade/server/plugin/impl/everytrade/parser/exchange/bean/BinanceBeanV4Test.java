@@ -34,6 +34,7 @@ import static io.everytrade.server.model.Currency.UST;
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.EARNING;
+import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.REBATE;
 import static io.everytrade.server.model.TransactionType.REWARD;
 import static io.everytrade.server.model.TransactionType.SELL;
@@ -86,7 +87,7 @@ class BinanceBeanV4Test {
                     Instant.parse("2021-01-05T02:38:00Z"),
                     EUR,
                     EUR,
-                    TransactionType.FEE,
+                    FEE,
                     new BigDecimal("20.0"),
                     EUR
                 )
@@ -135,7 +136,7 @@ class BinanceBeanV4Test {
                     Instant.parse("2021-01-05T02:38:00Z"),
                     EUR,
                     EUR,
-                    TransactionType.FEE,
+                    FEE,
                     new BigDecimal("20.0"),
                     EUR
                 )
@@ -169,7 +170,7 @@ class BinanceBeanV4Test {
                     Instant.parse("2022-01-01T10:56:29Z"),
                     BNB,
                     BNB,
-                    TransactionType.FEE,
+                    FEE,
                     new BigDecimal("0.00011168"),
                     BNB
                 )
@@ -204,7 +205,7 @@ class BinanceBeanV4Test {
                     Instant.parse("2022-01-01T10:56:29Z"),
                     EUR,
                     EUR,
-                    TransactionType.FEE,
+                    FEE,
                     new BigDecimal("11.10642"),
                     EUR
                 )
@@ -476,7 +477,7 @@ class BinanceBeanV4Test {
                     Instant.parse("2022-01-01T10:58:15Z"),
                     BNB,
                     BNB,
-                    TransactionType.FEE,
+                    FEE,
                     new BigDecimal("0.00859660"),
                     BNB
                 )
@@ -646,7 +647,7 @@ class BinanceBeanV4Test {
                 null,
                 Instant.parse("2021-07-20T16:24:10Z"),
                 ADA,
-                USD,
+                USDT,
                 SELL,
                 new BigDecimal("0.0050000000"),
                 null,
@@ -661,7 +662,7 @@ class BinanceBeanV4Test {
                 null,
                 Instant.parse("2021-07-20T16:24:10Z"),
                 BNB,
-                USD,
+                USDT,
                 BUY,
                 new BigDecimal("0.0012564500"),
                 null,
@@ -676,7 +677,7 @@ class BinanceBeanV4Test {
                 null,
                 Instant.parse("2021-07-20T16:24:10Z"),
                 USDT,
-                USD,
+                USDT,
                 SELL,
                 new BigDecimal("0.0088763600"),
                 null,
@@ -691,7 +692,7 @@ class BinanceBeanV4Test {
                 null,
                 Instant.parse("2021-07-20T16:24:10Z"),
                 BTC,
-                USD,
+                USDT,
                 SELL,
                 new BigDecimal("5.400E-7"),
                 null,
@@ -837,7 +838,7 @@ class BinanceBeanV4Test {
                     Instant.parse("2021-06-25T14:11:52Z"),
                     SHIB,
                     SHIB,
-                    TransactionType.FEE,
+                    FEE,
                     new BigDecimal("4324.22000000"),
                     SHIB
                 )
@@ -875,7 +876,7 @@ class BinanceBeanV4Test {
                     Instant.parse("2021-07-12T19:28:23Z"),
                     BUSD,
                     BUSD,
-                    TransactionType.FEE,
+                    FEE,
                     new BigDecimal("0.08518238"),
                     BUSD
                 )
@@ -1157,5 +1158,131 @@ class BinanceBeanV4Test {
         TestUtils.testTxs(expected0.getMain(), actual.get(0).getMain());
         TestUtils.testTxs(expected1.getMain(), actual.get(1).getMain());
     }
+
+    @Test
+    void testConvertBuySellWithWrongTolerance() {
+        final String row0 = "86879943,2022-07-17 11:14:21,Spot,Sell,BUSD,121.04594400,\"\"\n";
+        final String row1 = "86879943,2022-07-17 11:14:21,Spot,Sell,ETH,-0.08880000,\"\"\n";
+
+        final String row2 = "86879943,2022-07-17 11:14:22,Spot,Sell,BTC,-0.00094000,\"\"\n";
+        final String row3 = "86879943,2022-07-17 11:14:22,Spot,Buy,ETH,0.01470000,\"\"\n";
+        final String row4 = "86879943,2022-07-17 11:14:22,Spot,Sell,BUSD,20.13856940,\"\"\n";
+        final String row5 = "86879943,2022-07-17 11:14:22,Spot,Buy,BUSD,-50.10363540,\"\"\n";
+        final String row6 = "86879943,2022-07-17 11:14:22,Spot,Buy,BUSD,-20.03036700,\"\"\n";
+        final String row7 = "86879943,2022-07-17 11:14:22,Spot,Fee,BNB,-0.00005936,\"\"\n";
+        final String row8 = "86879943,2022-07-17 11:14:22,Spot,Buy,BTC,0.00234000,\"\"\n";
+        final String join = row0 + row1 + row2 + row3 + row4 + row5 + row6 + row7 + row8;
+
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + join);
+
+        final TransactionCluster expected0 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-07-17T11:14:21Z"),
+                BUSD,
+                ETH,
+                BUY,
+                new BigDecimal("121.0459440000"),
+                new BigDecimal("0.0007336057")
+            ),
+            List.of()
+        );
+
+        final TransactionCluster expected1 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-07-17T11:14:22Z"),
+                BTC,
+                USDT,
+                SELL,
+                new BigDecimal("0.0009400000"),
+                null
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    null,
+                    Instant.parse("2022-07-17T11:14:22Z"),
+                    BNB,
+                    BNB,
+                    FEE,
+                    new BigDecimal("0.00005936"),
+                    BNB
+                )
+            )
+        );
+        final TransactionCluster expected2 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-07-17T11:14:22Z"),
+                ETH,
+                USDT,
+                BUY,
+                new BigDecimal("0.0147000000"),
+                null
+            ),
+            List.of()
+        );
+
+        final TransactionCluster expected3 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-07-17T11:14:22Z"),
+                BUSD,
+                USDT,
+                BUY,
+                new BigDecimal("20.1385694000"),
+                null
+            ),
+            List.of()
+        );
+
+        final TransactionCluster expected4 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-07-17T11:14:22Z"),
+                BUSD,
+                USDT,
+                SELL,
+                new BigDecimal("50.1036354000"),
+                null
+            ),
+            List.of()
+        );
+
+        final TransactionCluster expected5 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-07-17T11:14:22Z"),
+                BUSD,
+                USDT,
+                SELL,
+                new BigDecimal("20.0303670000"),
+                null
+            ),
+            List.of()
+        );
+
+        final TransactionCluster expected6 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-07-17T11:14:22Z"),
+                BTC,
+                USDT,
+                BUY,
+                new BigDecimal("0.0023400000"),
+                null
+            ),
+            List.of()
+        );
+        TestUtils.testTxs( expected0.getMain(),actual.get(6).getMain());
+        TestUtils.testTxs( expected1.getMain(),actual.get(0).getMain());
+        TestUtils.testTxs( expected1.getRelated().get(0),actual.get(0).getRelated().get(0));
+        TestUtils.testTxs( expected2.getMain(),actual.get(1).getMain());
+        TestUtils.testTxs( expected3.getMain(),actual.get(2).getMain());
+        TestUtils.testTxs( expected4.getMain(),actual.get(3).getMain());
+        TestUtils.testTxs( expected5.getMain(),actual.get(4).getMain());
+        TestUtils.testTxs( expected6.getMain(),actual.get(5).getMain());
+    }
+
 
 }

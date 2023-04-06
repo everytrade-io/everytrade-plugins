@@ -4,7 +4,8 @@ public enum KrakenConstants {
     // Supported types
     TYPE_TRADE("trade"),
     TYPE_WITHDRAWAL("withdrawal"),
-    TYPE_DEPOSIT("deposit");
+    TYPE_DEPOSIT("deposit"),
+    TYPE_TRANSFER("transfer");
 
     public final String code;
     KrakenConstants(String code) {

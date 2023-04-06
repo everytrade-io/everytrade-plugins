@@ -17,6 +17,7 @@ import lombok.experimental.FieldDefaults;
 
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.EARNING;
+import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.REBATE;
 import static io.everytrade.server.model.TransactionType.REWARD;
 import static io.everytrade.server.model.TransactionType.STAKE;
@@ -203,7 +204,7 @@ public class BinanceBeanV4 extends ExchangeBean {
                     fee.getDate(),
                     fee.getFeeCurrency(),
                     fee.getFeeCurrency(),
-                    TransactionType.FEE,
+                    FEE,
                     fee.getFee().abs(),
                     fee.getFeeCurrency()
                 );
@@ -238,6 +239,22 @@ public class BinanceBeanV4 extends ExchangeBean {
                     REBATE,
                     amountBase,
                     marketBase,
+                    remark
+                ),
+                emptyList()
+            );
+        }
+
+        if (FEE.equals(type)) {
+            return new TransactionCluster(
+                new FeeRebateImportedTransactionBean(
+                    null,
+                    date,
+                    feeCurrency,
+                    feeCurrency,
+                    FEE,
+                    fee,
+                    feeCurrency,
                     remark
                 ),
                 emptyList()
