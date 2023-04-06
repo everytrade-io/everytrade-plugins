@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -243,9 +244,15 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
 
     private Map<Instant, List<BinanceBeanV4>> mergeGroupsInTimeWithinTolerance(Map<Instant, List<BinanceBeanV4>> groups) {
         Map<Instant, List<BinanceBeanV4>> result = new HashMap<>();
+        Map<Instant, List<BinanceBeanV4>> sortedMap = groups.entrySet()
+            .stream()
+            .sorted(Comparator.comparing(Map.Entry::getKey))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+                (oldValue, newValue) -> oldValue, LinkedHashMap::new));
+
         Instant previousKey = Instant.EPOCH;
         List<BinanceBeanV4> previousValues = new ArrayList<>();
-        for (Map.Entry<Instant, List<BinanceBeanV4>> entry : groups.entrySet()) {
+        for (Map.Entry<Instant, List<BinanceBeanV4>> entry : sortedMap.entrySet()) {
             var currentKey = entry.getKey();
             var currentValues = entry.getValue();
             if ((currentKey.minusMillis(TRANSACTION_MERGE_TOLERANCE_MS).equals(previousKey)

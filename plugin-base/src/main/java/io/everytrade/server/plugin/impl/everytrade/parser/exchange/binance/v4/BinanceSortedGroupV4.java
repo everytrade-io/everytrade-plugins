@@ -96,16 +96,20 @@ public class BinanceSortedGroupV4 {
             sumAllRows();
             createTransactionsFromMultiRowData();
         } catch (Exception ignore) {
-            int i = 0;
-            for (BinanceBeanV4 row : group) {
-                if(!CREATE_ONE_ROW_TRANSACTION_WHEN_EXCEPTION.contains(row.getOperationType())) {
-                   i++;
-                }
-            }
-            if(group.size() == i) {
-                createTransactionFromOneRowData(group);
-            } else {
+            if (group.get(0).isMergedWithAnotherGroup()) {
                 throw new DataValidationException(ignore.getMessage());
+            } else {
+                int i = 0;
+                for (BinanceBeanV4 row : group) {
+                    if (!CREATE_ONE_ROW_TRANSACTION_WHEN_EXCEPTION.contains(row.getOperationType())) {
+                        i++;
+                    }
+                }
+                if (group.size() == i) {
+                    createTransactionFromOneRowData(group);
+                } else {
+                    throw new DataValidationException(ignore.getMessage());
+                }
             }
         }
     }
@@ -223,10 +227,14 @@ public class BinanceSortedGroupV4 {
                 } else {
                     if (row.getChange().compareTo(ZERO) >= 0) {
                         row.setType(BUY);
+                        row.setMarketQuote(ACCOUNT_CURRENCY);
                     } else {
+                        row.setMarketQuote(ACCOUNT_CURRENCY);
                         row.setType(SELL);
                     }
                 }
+                row.setAmountBase(row.getChange().abs());
+                row.setMarketBase(row.getCoin());
                 this.createdTransactions.add(row);
             }
         }
