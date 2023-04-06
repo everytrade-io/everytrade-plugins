@@ -137,6 +137,9 @@ public class BinanceSortedGroupV4 {
                     var newBean = new BinanceBeanV4();
                     var currency = entry.getKey();
                     var change = entry.getValue().stream().map(BinanceBeanV4::getChange).reduce(ZERO, BigDecimal::add);
+                    if(change.compareTo(ZERO) == 0 && entry.getValue().get(0).isMergedWithAnotherGroup()) {
+                        throw new DataValidationException(String.format("Rows with currency %s cannot be sum.", currency.code()));
+                    }
                     var ids = entry.getValue().stream().map(BinanceBeanV4::getRowId).collect(Collectors.toList());
                     if (entry.getValue().size() > 0) {
                         newBean.setChange(change);
