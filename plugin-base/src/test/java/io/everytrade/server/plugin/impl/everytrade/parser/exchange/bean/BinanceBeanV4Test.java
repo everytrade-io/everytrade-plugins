@@ -23,6 +23,7 @@ import static io.everytrade.server.model.Currency.DOGE;
 import static io.everytrade.server.model.Currency.DOT;
 import static io.everytrade.server.model.Currency.ETH;
 import static io.everytrade.server.model.Currency.EUR;
+import static io.everytrade.server.model.Currency.NEAR;
 import static io.everytrade.server.model.Currency.REEF;
 import static io.everytrade.server.model.Currency.RUNE;
 import static io.everytrade.server.model.Currency.SHIB;
@@ -1282,6 +1283,46 @@ class BinanceBeanV4Test {
         TestUtils.testTxs( expected4.getMain(),actual.get(3).getMain());
         TestUtils.testTxs( expected5.getMain(),actual.get(4).getMain());
         TestUtils.testTxs( expected6.getMain(),actual.get(5).getMain());
+    }
+
+
+    @Test
+    void testConvertBuySellWithWrongTolerance2() {
+        final String row0 = "86879943,2022-07-19 16:29:34,Spot,Sell,BUSD,20.38720000,\"\"\n";
+        final String row1 = "86879943,2022-07-19 16:29:34,Spot,Sell,NEAR,-4.60000000,\"\"\n";
+        final String row2 = "86879943,2022-07-19 16:29:35,Spot,Buy,BUSD,-20.39640000,\"\"\n";
+        final String row3 = "86879943,2022-07-19 16:29:35,Spot,Buy,NEAR,4.60000000,\"\"\n";
+        final String join = row0 + row1 + row2 + row3;
+
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + join);
+
+        final TransactionCluster expected0 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-07-19T16:29:34Z"),
+                BUSD,
+                NEAR,
+                BUY,
+                new BigDecimal("20.3872000000"),
+                new BigDecimal("0.2256317690")
+            ),
+            List.of()
+        );
+
+        final TransactionCluster expected1 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-07-19T16:29:35Z"),
+                NEAR,
+                BUSD,
+                BUY,
+                new BigDecimal("4.6000000000"),
+                new BigDecimal("4.4340000000")
+            ),
+            List.of()
+        );
+        TestUtils.testTxs( expected0.getMain(),actual.get(0).getMain());
+        TestUtils.testTxs( expected1.getMain(),actual.get(1).getMain());
     }
 
 
