@@ -5,6 +5,8 @@ import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParseResult;
+import io.everytrade.server.plugin.api.parser.ParsingProblem;
+import io.everytrade.server.plugin.api.parser.ParsingProblemType;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.test.TestUtils;
 import org.junit.jupiter.api.Test;
@@ -25,6 +27,7 @@ import static io.everytrade.server.model.Currency.ETH;
 import static io.everytrade.server.model.Currency.EUR;
 import static io.everytrade.server.model.Currency.NEAR;
 import static io.everytrade.server.model.Currency.REEF;
+import static io.everytrade.server.model.Currency.ROSE;
 import static io.everytrade.server.model.Currency.RUNE;
 import static io.everytrade.server.model.Currency.SHIB;
 import static io.everytrade.server.model.Currency.SOL;
@@ -1164,7 +1167,6 @@ class BinanceBeanV4Test {
     void testConvertBuySellWithWrongTolerance() {
         final String row0 = "86879943,2022-07-17 11:14:21,Spot,Sell,BUSD,121.04594400,\"\"\n";
         final String row1 = "86879943,2022-07-17 11:14:21,Spot,Sell,ETH,-0.08880000,\"\"\n";
-
         final String row2 = "86879943,2022-07-17 11:14:22,Spot,Sell,BTC,-0.00094000,\"\"\n";
         final String row3 = "86879943,2022-07-17 11:14:22,Spot,Buy,ETH,0.01470000,\"\"\n";
         final String row4 = "86879943,2022-07-17 11:14:22,Spot,Sell,BUSD,20.13856940,\"\"\n";
@@ -1275,16 +1277,15 @@ class BinanceBeanV4Test {
             ),
             List.of()
         );
-        TestUtils.testTxs( expected0.getMain(),actual.get(6).getMain());
-        TestUtils.testTxs( expected1.getMain(),actual.get(0).getMain());
-        TestUtils.testTxs( expected1.getRelated().get(0),actual.get(0).getRelated().get(0));
-        TestUtils.testTxs( expected2.getMain(),actual.get(1).getMain());
-        TestUtils.testTxs( expected3.getMain(),actual.get(2).getMain());
-        TestUtils.testTxs( expected4.getMain(),actual.get(3).getMain());
-        TestUtils.testTxs( expected5.getMain(),actual.get(4).getMain());
-        TestUtils.testTxs( expected6.getMain(),actual.get(5).getMain());
+        TestUtils.testTxs(expected0.getMain(), actual.get(6).getMain());
+        TestUtils.testTxs(expected1.getMain(), actual.get(0).getMain());
+        TestUtils.testTxs(expected1.getRelated().get(0), actual.get(0).getRelated().get(0));
+        TestUtils.testTxs(expected2.getMain(), actual.get(1).getMain());
+        TestUtils.testTxs(expected3.getMain(), actual.get(2).getMain());
+        TestUtils.testTxs(expected4.getMain(), actual.get(3).getMain());
+        TestUtils.testTxs(expected5.getMain(), actual.get(4).getMain());
+        TestUtils.testTxs(expected6.getMain(), actual.get(5).getMain());
     }
-
 
     @Test
     void testConvertBuySellWithWrongTolerance2() {
@@ -1321,9 +1322,113 @@ class BinanceBeanV4Test {
             ),
             List.of()
         );
-        TestUtils.testTxs( expected0.getMain(),actual.get(0).getMain());
-        TestUtils.testTxs( expected1.getMain(),actual.get(1).getMain());
+        TestUtils.testTxs(expected0.getMain(), actual.get(0).getMain());
+        TestUtils.testTxs(expected1.getMain(), actual.get(1).getMain());
     }
 
+    @Test
+    void testFiatWithdraw() {
+        final String row0 = "38065325,2021-05-18 18:19:50,SPOT,Fiat Withdraw,EUR,-8000.00000000,\"\"\n";
+        final String row1 = "38065325,2021-05-18 18:19:50,SPOT,Fiat Withdraw,EUR,8000.00000000,\"\"\n";
+        final String join = row0 + row1;
+        final var actual = ParserTestUtils.getParseResult(HEADER_CORRECT + join);
+
+        final TransactionCluster expected = new TransactionCluster(
+            ImportedTransactionBean.createDepositWithdrawal(
+                null,
+                Instant.parse("2021-05-18T18:19:50Z"),
+                EUR,
+                EUR,
+                WITHDRAWAL,
+                new BigDecimal("8000.00000000"),
+                null,
+                "FIAT WITHDRAW",
+                null
+            ),
+            List.of()
+        );
+
+        var expectedProblem = new ParsingProblem("[38065325, 2021-05-18 18:19:50, SPOT, Fiat Withdraw, EUR, 8000.00000000, null]",
+            "Expected negative value\nInternal state when error was thrown: Unable to set value '8000.00000000' of type" +
+                " 'java.lang.String' to method 'setChange' of class io.everytrade.server.plugin.impl.everytrade.parser.exchange." +
+                "binance.v4.BinanceBeanV4\nline=3, column=0, record=2, charIndex=194, headers=[User_ID, UTC_Time, Account, Operation," +
+                " Coin, Change, Remark], value=8000.00000000", ParsingProblemType.PARSED_ROW_IGNORED);
+
+        TestUtils.testTxs(expected.getMain(), actual.getTransactionClusters().get(0).getMain());
+        assertEquals(expectedProblem.getMessage(), actual.getParsingProblems().get(0).getMessage());
+        assertEquals(expectedProblem.getRow(), actual.getParsingProblems().get(0).getRow());
+
+    }
+
+    @Test
+    void testC2cTransfer() {
+        final String row0 = "39388188,2022-10-24 18:10:22,SPOT,C2C Transfer,USDT,-1500.00000000,\"\"\n";
+        final String row1 = "39388188,2022-10-24 18:10:22,SPOT,C2C Transfer,USDT,1500.00000000,\"\"\n";
+        final String join = row0 + row1;
+        final var actual = ParserTestUtils.getParseResult(HEADER_CORRECT + join);
+
+        final TransactionCluster expected = new TransactionCluster(
+            ImportedTransactionBean.createDepositWithdrawal(
+                null,
+                Instant.parse("2022-10-24T18:10:22Z"),
+                USDT,
+                USDT,
+                WITHDRAWAL,
+                new BigDecimal("1500.00000000"),
+                null,
+                "C2C TRANSFER",
+                null
+            ),
+            List.of()
+        );
+        var expectedProblem = new ParsingProblem("[39388188, 2022-10-24 18:10:22, SPOT, C2C Transfer, USDT, 1500.00000000, null]",
+            "Expected negative value\nInternal state when error was thrown: Unable to set value '1500.00000000' of type" +
+                " 'java.lang.String' to method 'setChange' of class io.everytrade.server.plugin.impl.everytrade.parser.exchange." +
+                "binance.v4.BinanceBeanV4\nline=3, column=0, record=2, charIndex=194, headers=[User_ID, UTC_Time, Account, Operation" +
+                ", Coin, Change, Remark], value=1500.00000000", ParsingProblemType.PARSED_ROW_IGNORED);
+
+        TestUtils.testTxs(expected.getMain(), actual.getTransactionClusters().get(0).getMain());
+        assertEquals(expectedProblem.getMessage(), actual.getParsingProblems().get(0).getMessage());
+        assertEquals(expectedProblem.getRow(), actual.getParsingProblems().get(0).getRow());
+    }
+
+    @Test
+    void testBinanceCardSimpleEarnLockedRedemption() {
+        final String row = "86879943,2022-11-03 02:51:24,Spot,Simple Earn Locked Redemption,ROSE,302.52300337,\"\"\n";
+        final var actual = ParserTestUtils.getParseResult(HEADER_CORRECT + row);
+
+        final TransactionCluster expected0 = new TransactionCluster(
+            ImportedTransactionBean.createDepositWithdrawal(
+                null,
+                Instant.parse("2022-11-03T02:51:24Z"),
+                ROSE,
+                ROSE,
+                DEPOSIT,
+                new BigDecimal("302.52300337"),
+                null,
+                "SIMPLE EARN LOCKED REDEMPTION",
+                null
+            ),
+            List.of()
+        );
+
+        final TransactionCluster expected1 = new TransactionCluster(
+            ImportedTransactionBean.createDepositWithdrawal(
+                null,
+                Instant.parse("2022-11-03T02:51:24Z"),
+                ROSE,
+                ROSE,
+                WITHDRAWAL,
+                new BigDecimal("302.52300337"),
+                null,
+                "SIMPLE EARN LOCKED REDEMPTION, BINANCE EARN",
+                null
+            ),
+            List.of()
+        );
+
+        TestUtils.testTxs(expected0.getMain(), actual.getTransactionClusters().get(0).getMain());
+        TestUtils.testTxs(expected1.getMain(), actual.getTransactionClusters().get(1).getMain());
+    }
 
 }

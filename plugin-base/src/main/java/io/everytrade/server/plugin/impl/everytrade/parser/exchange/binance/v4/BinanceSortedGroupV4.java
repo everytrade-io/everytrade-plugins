@@ -29,6 +29,7 @@ import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binanc
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BNB_VAULT_REWARDS;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BUY;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BUY_CRYPTO;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_C2C_TRANSFER;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_CARD_CASHBACK;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_CASHBACK_VOUCHER;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_COMMISSION_REBATE;
@@ -36,6 +37,7 @@ import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binanc
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_DISTRIBUTION;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_FEE;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_FIAT_DEPOSIT;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_FIAT_WITHDRAW;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_FIAT_WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_LARGE_OTC_TRADING;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SAVING_DISTRIBUTION;
@@ -43,6 +45,7 @@ import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binanc
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_INTEREST;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_REDEMPTION;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_SUBSCRIPTION;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_LOCKED_REDEMPTION;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_LOCKED_REWARDS;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SMALL_ASSETS_EXCHANGE_BNB;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_STAKING_PURCHASE;
@@ -54,6 +57,7 @@ import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binanc
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_TRANSACTION_SOLD;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_TRANSACTION_SPEND;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_WITHDRAWAL;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.SIMPLE_EARN_LOCKED_REDEMPTION_BINANCE_EARN;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceSupportedOperations.CREATE_ONE_ROW_TRANSACTION_WHEN_EXCEPTION;
 import static java.math.BigDecimal.ZERO;
 
@@ -87,7 +91,6 @@ public class BinanceSortedGroupV4 {
     public List<BinanceBeanV4> createdTransactions = new ArrayList<>();
 
     public void sortGroup(List<BinanceBeanV4> group) {
-        // nejdrive udelam map , kde hash bude currency
         try {
             int groupSize = group.size();
             for (BinanceBeanV4 row : group) {
@@ -399,19 +402,12 @@ public class BinanceSortedGroupV4 {
         var idsList = mergeDepositWithdrawal.stream().map(BinanceBeanV4::getRowId).collect(Collectors.toList());
         var ids = parseIds(idsList);
         for (BinanceBeanV4 row : mergeDepositWithdrawal) {
-            var txs = new BinanceBeanV4();
+            var txs = row;
             txs.setRowNumber(row.getDate().getEpochSecond());
             String[] strings = {"Row id " + ids + " " + row.getOriginalOperation()};
             txs.setRowValues(strings);
-            txs.usedIds.addAll(row.usedIds);
             txs.setAmountBase(row.getChange().abs());
             txs.setMarketBase(row.getCoin());
-            txs.setRemark(row.getRemark());
-            txs.setDate(row.getDate());
-            txs.setMergedWithAnotherGroup(row.isMergedWithAnotherGroup());
-            txs.setOriginalOperation(row.getOriginalOperation());
-            txs.setCoinPrefix(row.isCoinPrefix());
-            txs.setOriginalCoin(row.getOriginalCoin());
             if (row.getChange().compareTo(ZERO) > 0) {
                 txs.setType(DEPOSIT);
             } else {
@@ -433,7 +429,7 @@ public class BinanceSortedGroupV4 {
         txs.setDate(row.getDate());
         txs.setMergedWithAnotherGroup(row.isMergedWithAnotherGroup());
         txs.setType(REWARD);
-        txs.setRemark(row.getRemark());
+        txs.setNote(row.getNote());
         txs.setOriginalOperation(row.getOriginalOperation());
         txs.setCoinPrefix(row.isCoinPrefix());
         createdTransactions.add(txs);
@@ -466,7 +462,7 @@ public class BinanceSortedGroupV4 {
             txs.setDate(bean.getDate());
             txs.setMergedWithAnotherGroup(bean.isMergedWithAnotherGroup());
             txs.setType(REBATE);
-            txs.setRemark(bean.getRemark());
+            txs.setNote(bean.getNote());
             txs.setOriginalOperation(bean.getOriginalOperation());
             txs.setCoinPrefix(bean.isCoinPrefix());
             createdTransactions.add(txs);
@@ -604,10 +600,10 @@ public class BinanceSortedGroupV4 {
         txsBuySell.setMarketBase(baseRow.getCoin());
         txsBuySell.setAmountBase(baseRow.getChange().abs());
         txsBuySell.setType(type);
-        txsBuySell.setRemark(baseRow.getRemark());
+        txsBuySell.setNote(baseRow.getNote());
         txsBuySell.setCoinPrefix(baseRow.isCoinPrefix());
         if (relatedTransaction) {
-            txsBuySell.setRemark(baseRow.getOriginalOperation().toUpperCase());
+            txsBuySell.setNote(baseRow.getOriginalOperation().toUpperCase());
         }
         txsBuySell.setMarketQuote(quoteRow.getCoin());
         txsBuySell.setAmountQuote(quoteRow.getChange().abs());
@@ -648,9 +644,9 @@ public class BinanceSortedGroupV4 {
         txsBuySell.setMarketBase(baseRow.getCoin());
         txsBuySell.setAmountBase(baseRow.getChange().abs());
         txsBuySell.setType(type);
-        txsBuySell.setRemark(baseRow.getRemark());
+        txsBuySell.setNote(baseRow.getNote());
         if (relatedTransaction) {
-            txsBuySell.setRemark(baseRow.getOriginalOperation().toUpperCase());
+            txsBuySell.setNote(baseRow.getOriginalOperation().toUpperCase());
         }
         txsBuySell.setMarketQuote(quoteRow.getCoin());
         txsBuySell.setAmountQuote(quoteRow.getChange().abs());
@@ -658,7 +654,7 @@ public class BinanceSortedGroupV4 {
         return txsBuySell;
     }
 
-    private void addRow(BinanceBeanV4 row, int groupSize) {
+    private void addRow(BinanceBeanV4 row, int groupSize)  {
         if (row.getOriginalOperation().equals(OPERATION_TYPE_FEE.code)) {
             if (rowsFees.containsKey(row.getCoin())) {
                 rowsFees.get(row.getCoin()).add(row);
@@ -675,6 +671,38 @@ public class BinanceSortedGroupV4 {
                 newList.add(row);
                 rowsDeposit.put(row.getCoin(), newList);
             }
+        } else if (OPERATION_TYPE_SIMPLE_EARN_LOCKED_REDEMPTION.equals(row.getOperationType())) {
+            OPERATION_TYPE_SIMPLE_EARN_LOCKED_REDEMPTION.setMultiRowType(OPERATION_TYPE_SIMPLE_EARN_LOCKED_REDEMPTION.code, false);
+            if (rowsDeposit.containsKey(row.getCoin())) {
+                rowsDeposit.get(row.getCoin()).add(row);
+            } else {
+                List<BinanceBeanV4> newList = new ArrayList<>();
+                newList.add(row);
+                rowsDeposit.put(row.getCoin(), newList);
+            }
+            if (rowsWithdrawal.containsKey(row.getCoin())) {
+                try {
+                    var rowWithdrawal = (BinanceBeanV4) row.clone();
+                    rowWithdrawal.setType(WITHDRAWAL);
+                    rowWithdrawal.setNote(SIMPLE_EARN_LOCKED_REDEMPTION_BINANCE_EARN.code);
+                    rowWithdrawal.setChange(rowWithdrawal.getChange().negate());
+                    rowsWithdrawal.get(row.getCoin()).add(rowWithdrawal);
+                } catch (CloneNotSupportedException e) {
+                    throw new DataValidationException("Cannot make withdrawal from the line ");
+                }
+            } else {
+                try {
+                    var rowClone = (BinanceBeanV4) row.clone();
+                    rowClone.setType(WITHDRAWAL);
+                    rowClone.setNote(SIMPLE_EARN_LOCKED_REDEMPTION_BINANCE_EARN.code);
+                    rowClone.setChange(rowClone.getChange().negate());
+                    List<BinanceBeanV4> newList = new ArrayList<>();
+                    newList.add(rowClone);
+                    rowsWithdrawal.put(rowClone.getCoin(), newList);
+                } catch (CloneNotSupportedException e) {
+                    throw new DataValidationException("Cannot make withdrawal from the line ");
+                }
+            }
         } else if (List.of(OPERATION_TYPE_STAKING_PURCHASE.code, OPERATION_TYPE_STAKING_REWARDS.code,
             OPERATION_TYPE_STAKING_REDEMPTION.code).contains(row.getOriginalOperation())) {
             if (rowsStakings.containsKey(row.getCoin())) {
@@ -684,7 +712,9 @@ public class BinanceSortedGroupV4 {
                 newList.add(row);
                 rowsStakings.put(row.getCoin(), newList);
             }
-        } else if (List.of(OPERATION_TYPE_WITHDRAWAL.code, OPERATION_TYPE_FIAT_WITHDRAWAL.code).contains(row.getOriginalOperation())) {
+        } else if (List.of(OPERATION_TYPE_WITHDRAWAL.code, OPERATION_TYPE_FIAT_WITHDRAWAL.code,
+                OPERATION_TYPE_FIAT_WITHDRAW.code, OPERATION_TYPE_C2C_TRANSFER.code)
+            .contains(row.getOriginalOperation())) {
             if (rowsWithdrawal.containsKey(row.getCoin())) {
                 rowsWithdrawal.get(row.getCoin()).add(row);
             } else {

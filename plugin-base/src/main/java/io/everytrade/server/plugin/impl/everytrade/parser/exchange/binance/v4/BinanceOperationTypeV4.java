@@ -41,6 +41,10 @@ public enum BinanceOperationTypeV4 {
     OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_SUBSCRIPTION("SIMPLE EARN FLEXIBLE SUBSCRIPTION", false),
     OPERATION_TYPE_BNB_VAULT_REWARDS("BNB VAULT REWARDS", false),
     OPERATION_TYPE_SIMPLE_EARN_LOCKED_REWARDS("SIMPLE EARN LOCKED REWARDS", false),
+    OPERATION_TYPE_FIAT_WITHDRAW("FIAT WITHDRAW", false),
+    OPERATION_TYPE_C2C_TRANSFER("C2C TRANSFER", false),
+    OPERATION_TYPE_BINANCE_CARD_SPENDING("BINANCE CARD SPENDING", false),
+    OPERATION_TYPE_SIMPLE_EARN_LOCKED_REDEMPTION("SIMPLE EARN LOCKED REDEMPTION", true),
 
     // UNSUPPORTED OPERATIONS
     OPERATION_TYPE_MARGIN_LOAN("MARGIN LOAN", true),
@@ -71,10 +75,11 @@ public enum BinanceOperationTypeV4 {
     OPERATION_TYPE_REFEREE_REBATES("REFEREE REBATES", true),
 
     //REMARKS
-    REMARKS_NO_FEE("WITHDRAW FEE IS INCLUDED", true);
+    REMARKS_NO_FEE("WITHDRAW FEE IS INCLUDED", true),
+    SIMPLE_EARN_LOCKED_REDEMPTION_BINANCE_EARN("SIMPLE EARN LOCKED REDEMPTION, BINANCE EARN", true);
 
     public final String code;
-    public final boolean isMultiRowType;
+    public boolean isMultiRowType;
 
     BinanceOperationTypeV4(String code, boolean isMultiRowType) {
         this.code = code;
@@ -88,6 +93,14 @@ public enum BinanceOperationTypeV4 {
             }
         }
         return null;
+    }
+
+    public void setMultiRowType(String name, boolean status) {
+        for (BinanceOperationTypeV4 e : values()) {
+            if (e.code.equalsIgnoreCase(name)) {
+                e.isMultiRowType = status;
+            }
+        }
     }
 
 }
