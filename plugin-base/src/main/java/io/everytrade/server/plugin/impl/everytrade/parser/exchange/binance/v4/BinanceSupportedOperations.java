@@ -141,7 +141,7 @@ public class BinanceSupportedOperations {
 
         REQUIRED_NEGATIVE_VALUE_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_FIAT_WITHDRAW.code);
         REQUIRED_NEGATIVE_VALUE_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_C2C_TRANSFER.code);
-        REQUIRED_NEGATIVE_VALUE_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_BINANCE_CARD_SPENDING.code);
+//        REQUIRED_NEGATIVE_VALUE_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_BINANCE_CARD_SPENDING.code);
 
     }
 }
