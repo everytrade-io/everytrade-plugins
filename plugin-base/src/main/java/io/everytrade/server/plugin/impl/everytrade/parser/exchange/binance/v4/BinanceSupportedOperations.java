@@ -20,6 +20,8 @@ public class BinanceSupportedOperations {
 
     public static final List<String> CREATE_ONE_ROW_TRANSACTION_WHEN_EXCEPTION = new ArrayList<>();
 
+    public static final List<String> REQUIRED_NEGATIVE_VALUE_TYPES = new ArrayList<>();
+
     static {
         // supported accounts
         SUPPORTED_ACCOUNT_TYPES.add(BinanceOperationTypeV4.ACCOUNT_TYPE_SPOT.code);
@@ -55,6 +57,9 @@ public class BinanceSupportedOperations {
         SUPPORTED_OPERATION_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_SUBSCRIPTION.code);
         SUPPORTED_OPERATION_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_BNB_VAULT_REWARDS.code);
         SUPPORTED_OPERATION_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_LOCKED_REWARDS.code);
+        SUPPORTED_OPERATION_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_FIAT_WITHDRAW.code);
+        SUPPORTED_OPERATION_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_C2C_TRANSFER.code);
+        SUPPORTED_OPERATION_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_LOCKED_REDEMPTION.code);
 
         CREATE_ONE_ROW_TRANSACTION_WHEN_EXCEPTION.add(BinanceOperationTypeV4.OPERATION_TYPE_FEE.code);
         CREATE_ONE_ROW_TRANSACTION_WHEN_EXCEPTION.add(BinanceOperationTypeV4.OPERATION_TYPE_BUY.code);
@@ -95,6 +100,9 @@ public class BinanceSupportedOperations {
         WRITE_ORIGINAL_OPERATION_AS_NOTE.add(BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_LOCKED_REWARDS.code);
         WRITE_ORIGINAL_OPERATION_AS_NOTE.add(BinanceOperationTypeV4.OPERATION_TYPE_COMMISSION_REBATE.code);
         WRITE_ORIGINAL_OPERATION_AS_NOTE.add(BinanceOperationTypeV4.OPERATION_TYPE_CARD_CASHBACK.code);
+        WRITE_ORIGINAL_OPERATION_AS_NOTE.add(BinanceOperationTypeV4.OPERATION_TYPE_FIAT_WITHDRAW.code);
+        WRITE_ORIGINAL_OPERATION_AS_NOTE.add(BinanceOperationTypeV4.OPERATION_TYPE_C2C_TRANSFER.code);
+        WRITE_ORIGINAL_OPERATION_AS_NOTE.add(BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_LOCKED_REDEMPTION.code);
 
         //unsupported accounts
         UNSUPPORTED_ACCOUNT_TYPES.add(BinanceOperationTypeV4.ACCOUNT_TYPE_CROSS_MARGIN.code);
@@ -130,5 +138,10 @@ public class BinanceSupportedOperations {
         UNSUPPORTED_OPERATION_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_INSURANCE_FUND_COMPENSATION.code);
         UNSUPPORTED_OPERATION_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_REALIZE_PROFIT_AND_LOSS.code);
         UNSUPPORTED_OPERATION_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_REFEREE_REBATES.code);
+
+        REQUIRED_NEGATIVE_VALUE_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_FIAT_WITHDRAW.code);
+        REQUIRED_NEGATIVE_VALUE_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_C2C_TRANSFER.code);
+//        REQUIRED_NEGATIVE_VALUE_TYPES.add(BinanceOperationTypeV4.OPERATION_TYPE_BINANCE_CARD_SPENDING.code);
+
     }
 }

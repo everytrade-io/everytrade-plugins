@@ -2,6 +2,7 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4;
 
 import com.univocity.parsers.annotations.Format;
 import com.univocity.parsers.annotations.Parsed;
+import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
@@ -28,6 +29,9 @@ import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SAVING_DISTRIBUTION;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_REDEMPTION;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_SUBSCRIPTION;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_LOCKED_REDEMPTION;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceSupportedOperations.REQUIRED_NEGATIVE_VALUE_TYPES;
+import static java.math.BigDecimal.ZERO;
 import static java.util.Collections.emptyList;
 import static lombok.AccessLevel.PRIVATE;
 
@@ -40,7 +44,7 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @FieldDefaults(level = PRIVATE)
-public class BinanceBeanV4 extends ExchangeBean {
+public class BinanceBeanV4 extends ExchangeBean implements Cloneable {
 
     public static final String LD_COIN_CURRENCY_PREFIX = "LD";
     Instant date;
@@ -50,6 +54,7 @@ public class BinanceBeanV4 extends ExchangeBean {
     BinanceOperationTypeV4 operationType;
     Currency coin;
     BigDecimal change;
+    String note;
     String remark;
     String originalCoin;
     boolean coinPrefix;
@@ -113,7 +118,7 @@ public class BinanceBeanV4 extends ExchangeBean {
             this.setMessage("Unsupported type of operation " + value);
         }
         if (BinanceSupportedOperations.WRITE_ORIGINAL_OPERATION_AS_NOTE.contains(value)) {
-            setRemark(value);
+            setNote(value);
         }
         try {
             this.operationType = BinanceOperationTypeV4.getEnum(value);
@@ -148,10 +153,18 @@ public class BinanceBeanV4 extends ExchangeBean {
     public void setChange(String change) {
         try {
             this.change = new BigDecimal(change);
+            boolean contains = REQUIRED_NEGATIVE_VALUE_TYPES.contains(operationType.code);
+            if (contains && this.change.compareTo(ZERO) > 0) {
+                throw new DataValidationException("Expected negative value");
+            }
         } catch (NumberFormatException e) {
             this.setUnsupportedRow(true);
             this.setMessage("Wrong \"Change\" value: " + change + "; ");
         }
+    }
+
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
     }
 
     public void setChange(BigDecimal change) {
@@ -163,8 +176,8 @@ public class BinanceBeanV4 extends ExchangeBean {
         this.remark = remark;
     }
 
-    public void setNote(String remark) {
-        this.remark = remark;
+    public String getRemark() {
+        return this.note;
     }
 
     public void setRowId(int rowId) {
@@ -191,10 +204,11 @@ public class BinanceBeanV4 extends ExchangeBean {
         if (UNKNOWN.equals(type) || isUnsupportedRow()) {
             throw new DataIgnoredException(getMessage());
         }
-        if (BinanceSupportedOperations.WRITE_ORIGINAL_OPERATION_AS_NOTE.contains(originalOperation)) {
-            remark = originalOperation;
+        if (BinanceSupportedOperations.WRITE_ORIGINAL_OPERATION_AS_NOTE.contains(originalOperation)
+            && !OPERATION_TYPE_SIMPLE_EARN_LOCKED_REDEMPTION.equals(operationType) ) {
+            note = originalOperation;
             if (isCoinPrefix()) {
-                remark += ", " + originalCoin;
+                note += ", " + originalCoin;
             }
         }
         if (feeTransactions.size() > 0) {
@@ -222,7 +236,7 @@ public class BinanceBeanV4 extends ExchangeBean {
                     REWARD,
                     amountBase,
                     null,
-                    remark,
+                    note,
                     null
                 ),
                 emptyList()
@@ -239,7 +253,7 @@ public class BinanceBeanV4 extends ExchangeBean {
                     REBATE,
                     amountBase,
                     marketBase,
-                    remark
+                    note
                 ),
                 emptyList()
             );
@@ -255,7 +269,7 @@ public class BinanceBeanV4 extends ExchangeBean {
                     FEE,
                     fee,
                     feeCurrency,
-                    remark
+                    note
                 ),
                 emptyList()
             );
@@ -271,7 +285,7 @@ public class BinanceBeanV4 extends ExchangeBean {
                     EARNING,
                     amountBase,
                     null,
-                    remark,
+                    note,
                     null,
                     null
                 ),
@@ -289,7 +303,7 @@ public class BinanceBeanV4 extends ExchangeBean {
                     STAKE,
                     amountBase,
                     null,
-                    remark,
+                    note,
                     null,
                     null
                 ),
@@ -307,7 +321,7 @@ public class BinanceBeanV4 extends ExchangeBean {
                     STAKING_REWARD,
                     amountBase,
                     null,
-                    remark,
+                    note,
                     null,
                     null
                 ),
@@ -325,7 +339,7 @@ public class BinanceBeanV4 extends ExchangeBean {
                     UNSTAKE,
                     amountBase,
                     null,
-                    remark,
+                    note,
                     null,
                     null
                 ),
@@ -343,7 +357,7 @@ public class BinanceBeanV4 extends ExchangeBean {
                     type,
                     amountBase,
                     null,
-                    remark,
+                    note,
                     null
                 ),
                 related
@@ -360,7 +374,7 @@ public class BinanceBeanV4 extends ExchangeBean {
                     type,
                     amountBase.setScale(ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE),
                     (amountQuote != null) ? evalUnitPrice(amountQuote, amountBase) : null,
-                    remark,
+                    note,
                     null
                 ),
                 related
