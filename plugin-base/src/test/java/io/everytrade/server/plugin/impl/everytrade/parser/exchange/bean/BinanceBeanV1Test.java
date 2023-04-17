@@ -61,6 +61,37 @@ class BinanceBeanV1Test {
     }
 
     @Test
+    void testCorrectParsingRawTransactionBuy1inchTransaction() {
+        final String row = "2022-04-17 10:16:12;1INCHUSDT;BUY;1.508;99.4;149.8952;0.0994;1INCH\n";
+
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
+        var b = actual;
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-04-17T10:16:12Z"),
+                Currency._1INCH,
+                Currency.USDT,
+                TransactionType.BUY,
+                new BigDecimal("99.4000000000"),
+                new BigDecimal("1.5080000000")
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    null,
+                    Instant.parse("2022-04-17T10:16:12Z"),
+                    Currency._1INCH,
+                    Currency._1INCH,
+                    TransactionType.FEE,
+                    new BigDecimal("0.0994"),
+                    Currency._1INCH
+                )
+            )
+        );
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
     void testCorrectParsingRawTransactionBuyDiffFeeCurrency() {
         final String row = "2020-02-04 16:19:07;LTCBTC;BUY;0.007393;1.61;0.01190273;0.00161;BTC\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
