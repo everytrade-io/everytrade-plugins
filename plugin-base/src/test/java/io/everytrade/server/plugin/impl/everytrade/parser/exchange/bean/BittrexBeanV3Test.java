@@ -14,6 +14,10 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
+import static io.everytrade.server.model.Currency.CRV;
+import static io.everytrade.server.model.Currency.USDT;
+import static io.everytrade.server.model.TransactionType.BUY;
+import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -65,7 +69,7 @@ class BittrexBeanV3Test {
                     Instant.parse("2020-07-31T11:32:59Z"),
                     Currency.USD,
                     Currency.USD,
-                    TransactionType.FEE,
+                    FEE,
                     new BigDecimal("0.0570894"),
                     Currency.USD
                 )
@@ -85,7 +89,7 @@ class BittrexBeanV3Test {
                 Instant.parse("2020-07-31T11:35:21Z"),
                 Currency.LTC,
                 Currency.USD,
-                TransactionType.BUY,
+                BUY,
                 new BigDecimal("0.49750262"),
                 new BigDecimal("57.14699999")
             ),
@@ -95,9 +99,41 @@ class BittrexBeanV3Test {
                     Instant.parse("2020-07-31T11:35:21Z"),
                     Currency.USD,
                     Currency.USD,
-                    TransactionType.FEE,
+                    FEE,
                     new BigDecimal("0.05686182"),
                     Currency.USD
+                )
+            )
+        );
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+
+    @Test
+    void testCorrectParsingMarketBuyAsBuy() {
+        final String row = "d844f3cc-db55-48d1-89a4-cb13a89e5265,USDT-CRV,1/7/2022 5:20:33 AM,MARKET_BUY,,7.45197136,0.00000000," +
+            "0.09372716,37.49086791,5.030999999710,False,,0.00000000,True,1/7/2022 5:20:33 AM,3,\n";
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
+
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                "d844f3cc-db55-48d1-89a4-cb13a89e5265",
+                Instant.parse("2022-01-07T05:20:33Z"),
+                CRV,
+                USDT,
+                BUY,
+                new BigDecimal("7.4519713600"),
+                new BigDecimal("5.0309999997")
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    "d844f3cc-db55-48d1-89a4-cb13a89e5265" + FEE_UID_PART,
+                    Instant.parse("2022-01-07T05:20:33Z"),
+                    USDT,
+                    USDT,
+                    FEE,
+                    new BigDecimal("0.0937271600"),
+                    USDT
                 )
             )
         );

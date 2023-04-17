@@ -41,7 +41,7 @@ public class BinanceBeanV1 extends ExchangeBean {
     private Currency feeCoin;
 
     static {
-        getTradeablePairs().forEach(t -> fastCurrencyPair.put(t.toString().replace("/", ""), t));
+        getTradeablePairs().forEach(t -> fastCurrencyPair.put(t.toString().replace("/", "").replace("_",""), t));
     }
 
     //Date
