@@ -680,7 +680,9 @@ public enum Currency {
     SWEAT(false, Instant.parse("2023-01-16T00:00:00Z"), "Sweat Economy"),
     WILD(false, Instant.parse("2021-09-02T00:00:00Z"), "Wilder World"),
     ZCX(false, Instant.parse("2021-09-02T00:00:00Z"), "Unizen"),
-    EZ(false, Instant.parse("2020-10-22T00:00:00Z"), "EasyFi");
+    EZ(false, Instant.parse("2020-10-22T00:00:00Z"), "EasyFi"),
+    TGBP(false, Instant.parse("2021-03-10T00:00:00Z"), "TrueGBP"),
+    KAS(false, Instant.parse("2022-06-07T00:00:00Z"), "Kaspa");
 
     String code;
     int decimalDigits;

@@ -33,6 +33,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexB
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexBeanV3;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseProBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.GeneralBytesBeanV3;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OpenNodeV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OpenNodeV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OpenNodeV3;
@@ -659,6 +660,18 @@ public class EverytradeCsvMultiParser implements ICsvParser {
 
         /* GENERAL_BYTES */
         DELIMITERS.forEach(delimiter -> {
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(CsvHeader.of(
+                    "Terminal SN","Server Time","Terminal Time","Local Transaction Id","Remote Transaction Id","Type",
+                    "Cash Amount","Cash Currency","Crypto Amount","Crypto Currency","Used Discount","Actual Discount (%)",
+                    "Destination Address","Related Remote Transaction Id","Identity","Status","Phone Number","Transaction Detail",
+                    "Transaction Note","Rate Incl. Fee","Rate Without Fee","Fixed Transaction Fee","Expected Profit Percent Setting",
+                    "Expected Profit Value","Crypto Setting Name","Transaction Scoring Result","Expense","Expense Currency",
+                    "Classification"
+                ).withSeparator(delimiter)))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(GeneralBytesBeanV3.class, delimiter))
+                .supportedExchange(GENERAL_BYTES)
+                .build());
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
                 .headers(List.of(CsvHeader.of(
                     "Terminal SN", "Server Time", "Terminal Time", "Local Transaction Id", "Remote Transaction Id",
