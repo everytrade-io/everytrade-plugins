@@ -22,6 +22,8 @@ public class CoinMateDataUtil {
     public static final String WITHDRAWAL_OPERATION = "WITHDRAWAL";
     public static final String INSTANT_BUY_OPERATION = "INSTANT_BUY";
     public static final String INSTANT_SELL_OPERATION = "INSTANT_SELL";
+    public static final String BALANCE_MOVE_CREDIT = "BALANCE_MOVE_CREDIT";
+    public static final String BALANCE_MOVE_DEBIT = "BALANCE_MOVE_DEBIT";
 
     public static void adaptTransactionStatus(String status) {
         switch (status) {
@@ -51,8 +53,8 @@ public class CoinMateDataUtil {
             case BUY_OPERATION, QUICK_BUY_OPERATION, (INSTANT_BUY_OPERATION) -> BUY;
             case (SELL_OPERATION), (QUICK_SELL_OPERATION), (INSTANT_SELL_OPERATION) -> SELL;
             case ("NEW_USER_REWARD"), ("AFFILIATE"), ("REFERRAL") -> REWARD;
-            case (DEPOSIT_OPERATION) -> DEPOSIT;
-            case (WITHDRAWAL_OPERATION) -> WITHDRAWAL;
+            case (DEPOSIT_OPERATION), (BALANCE_MOVE_CREDIT) -> DEPOSIT;
+            case (WITHDRAWAL_OPERATION), (BALANCE_MOVE_DEBIT) -> WITHDRAWAL;
             default -> throw new DataIgnoredException(String.format("Unsupported transaction %s", type));
         };
     }
