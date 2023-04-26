@@ -31,6 +31,7 @@ import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binanc
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_FIAT_WITHDRAW;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_FIAT_WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_LARGE_OTC_TRADING;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_REFERRAL_COMMISSION;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SAVING_DISTRIBUTION;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SELL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_INTEREST;
@@ -80,7 +81,8 @@ public class BinanceSwitcher {
             || OPERATION_TYPE_TRANSACTION_REVENUE.code.equals(operationType)) {
             return BUY;
         }
-        if (OPERATION_TYPE_DISTRIBUTION.code.equals(operationType) || OPERATION_TYPE_BNB_VAULT_REWARDS.code.equals(operationType)) {
+        if (OPERATION_TYPE_DISTRIBUTION.code.equals(operationType) || OPERATION_TYPE_BNB_VAULT_REWARDS.code.equals(operationType)
+            || OPERATION_TYPE_REFERRAL_COMMISSION.code.equals(operationType)) {
             return REWARD;
         }
         if (OPERATION_TYPE_COMMISSION_REBATE.code.equals(operationType) || OPERATION_TYPE_CARD_CASHBACK.code.equals(operationType)
