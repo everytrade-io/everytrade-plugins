@@ -25,6 +25,7 @@ import static io.everytrade.server.model.Currency.DOGE;
 import static io.everytrade.server.model.Currency.DOT;
 import static io.everytrade.server.model.Currency.ETH;
 import static io.everytrade.server.model.Currency.EUR;
+import static io.everytrade.server.model.Currency.KSM;
 import static io.everytrade.server.model.Currency.NEAR;
 import static io.everytrade.server.model.Currency.REEF;
 import static io.everytrade.server.model.Currency.ROSE;
@@ -955,6 +956,61 @@ class BinanceBeanV4Test {
             List.of()
         );
         TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
+    }
+
+    @Test
+    void testStakingReferralCommission() {
+        final String row0 = "367642709,2022-01-15 16:15:42,SPOT,Transaction Buy,KSM,0.18300000,\"\"\n";
+        final String row1 = "367642709,2022-01-15 16:15:42,SPOT,Transaction Spend,BTC,-0.00118950,\"\"\n";
+        final String row2 = "367642709,2022-01-15 16:15:42,SPOT,Fee,KSM,-0.00018300,\"\"\n";
+        final String row3 = "367642709,2022-01-15 16:15:42,SPOT,Referral Commission,KSM,0.00001830,\"\"\n";
+        final String join = row0 + row1 + row2 + row3;
+
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + join);
+
+        final TransactionCluster expected0 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-01-15T16:15:42Z"),
+                KSM,
+                BTC,
+                BUY,
+                new BigDecimal("0.1830000000"),
+                new BigDecimal("0.0065000000"),
+                "TRANSACTION BUY",
+                null
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    null,
+                    Instant.parse("2022-01-15T16:15:42Z"),
+                    KSM,
+                    KSM,
+                    FEE,
+                    new BigDecimal("0.00018300"),
+                    KSM
+                )
+            )
+        );
+
+        final TransactionCluster expected1 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-01-15T16:15:42Z"),
+                KSM,
+                KSM,
+                REWARD,
+                new BigDecimal("0.00001830"),
+                null,
+                "REFERRAL COMMISSION",
+                null,
+                null
+            ),
+            List.of()
+        );
+        TestUtils.testTxs(expected0.getMain(), actual.get(0).getMain());
+        TestUtils.testTxs(expected0.getRelated().get(0), actual.get(0).getRelated().get(0));
+        TestUtils.testTxs(expected1.getMain(), actual.get(1).getMain());
     }
 
     @Test
