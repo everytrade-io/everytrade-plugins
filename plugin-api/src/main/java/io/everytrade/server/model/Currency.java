@@ -682,7 +682,11 @@ public enum Currency {
     ZCX(false, Instant.parse("2021-09-02T00:00:00Z"), "Unizen"),
     EZ(false, Instant.parse("2020-10-22T00:00:00Z"), "EasyFi"),
     TGBP(false, Instant.parse("2021-03-10T00:00:00Z"), "TrueGBP"),
-    KAS(false, Instant.parse("2022-06-07T00:00:00Z"), "Kaspa");
+    KAS(false, Instant.parse("2022-06-07T00:00:00Z"), "Kaspa"),
+    XAVA(false, Instant.parse("2021-08-05T00:00:00Z"), "Avalaunch"),
+    FALCONS(false, Instant.parse("2022-02-02T00:00:00Z"), "FalconSwaps Token"),
+    BOSON(false, Instant.parse("2023-03-28T00:00:00Z"), "Boson Protocol"),
+    BSN(false, Instant.parse("2023-03-28T00:00:00Z"), "Boson Protocol");
 
     String code;
     int decimalDigits;
