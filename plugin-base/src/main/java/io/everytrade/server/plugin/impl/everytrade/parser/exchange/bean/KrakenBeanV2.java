@@ -67,6 +67,7 @@ public class KrakenBeanV2 extends ExchangeBean {
         CURRENCY_LONG_CODES.put("XXBT", Currency.BTC);
         CURRENCY_SHORT_CODES.put("XDG", Currency.DOGE);
         CURRENCY_LONG_CODES.put("XXDG", Currency.DOGE);
+        CURRENCY_LONG_CODES.put("ZEUR", Currency.EUR);
 
         for (Currency value : Currency.values()) {
             if (value.equals(Currency.BTC)) {
