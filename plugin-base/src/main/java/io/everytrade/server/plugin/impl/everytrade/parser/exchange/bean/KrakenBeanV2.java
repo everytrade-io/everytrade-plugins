@@ -149,7 +149,7 @@ public class KrakenBeanV2 extends ExchangeBean {
         if (feeAmount.abs().compareTo(BigDecimal.ZERO) > 0) {
 
             var feeTxs = new FeeRebateImportedTransactionBean(
-                null,
+                txid + FEE_UID_PART,
                 time,
                 feeCurrency,
                 feeCurrency,
@@ -177,7 +177,7 @@ public class KrakenBeanV2 extends ExchangeBean {
         } else {
             TransactionCluster cluster = new TransactionCluster(
                 new ImportedTransactionBean(
-                    refid,
+                    txid,
                     time,
                     marketBase,
                     marketQuote,
