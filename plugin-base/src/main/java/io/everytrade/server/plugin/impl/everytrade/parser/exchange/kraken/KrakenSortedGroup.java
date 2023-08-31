@@ -169,7 +169,8 @@ public class KrakenSortedGroup {
     }
 
     private void addRow(KrakenBeanV2 row) {
-        if (row.getType().equals(KrakenConstants.TYPE_TRADE.code)) {
+        if (row.getType().equals(KrakenConstants.TYPE_TRADE.code) || row.getType().equals(KrakenConstants.TYPE_SPEND.code)
+        || row.getType().equals(KrakenConstants.TYPE_RECEIVE.code)) {
             rowsTrades.add(row);
         } else if (row.getType().equals(KrakenConstants.TYPE_DEPOSIT.code)) {
             rowsDeposit.add(row);
