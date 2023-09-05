@@ -138,8 +138,10 @@ public class KrakenConnector implements IConnector {
 
         var depositsWithdrawals = downloadDepositsAndWithdrawals(downloadState);
         var stakings = downloadStakings(downloadState);
+        var spendReceive = downloadSpendAndReceive(downloadState);
         funding.addAll(depositsWithdrawals);
         funding.addAll(stakings);
+        userTrades.addAll(spendReceive);
         return getResult(userTrades,funding, downloadState);
     }
 
