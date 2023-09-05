@@ -34,6 +34,10 @@ public class XChangeConnectorParser {
         final List<ParsingProblem> parsingProblems = new ArrayList<>();
         return getParseResult(userTrades, funding, parsingProblems);
     }
+    public ParseResult getParseResultWithProblems(List<UserTrade> userTrades, List<FundingRecord> funding,
+                                             List<ParsingProblem> parsingProblems) {
+        return getParseResult(userTrades, funding, parsingProblems);
+    }
 
     public ParseResult getParseResult(List<UserTrade> userTrades, List<FundingRecord> funding, List<ParsingProblem> parsingProblems) {
         final List<TransactionCluster> transactionClusters = tradesToCluster(userTrades, parsingProblems);
