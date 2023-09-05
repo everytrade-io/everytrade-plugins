@@ -1,12 +1,12 @@
 package io.everytrade.server.plugin.impl.everytrade;
 
-import io.everytrade.server.model.SupportedExchange;
 import io.everytrade.server.plugin.api.IPlugin;
 import io.everytrade.server.plugin.api.connector.ConnectorDescriptor;
 import io.everytrade.server.plugin.api.connector.ConnectorParameterDescriptor;
 import io.everytrade.server.plugin.api.connector.ConnectorParameterType;
 import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.connector.IConnector;
+import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -16,25 +16,36 @@ import org.knowm.xchange.ExchangeSpecification;
 import org.knowm.xchange.currency.Currency;
 import org.knowm.xchange.dto.account.FundingRecord;
 import org.knowm.xchange.dto.trade.UserTrade;
+import org.knowm.xchange.kraken.KrakenAdapters;
 import org.knowm.xchange.kraken.KrakenExchange;
 import org.knowm.xchange.kraken.KrakenUtils;
 import org.knowm.xchange.kraken.dto.account.DepostitStatus;
+import org.knowm.xchange.kraken.dto.account.KrakenLedger;
+import org.knowm.xchange.kraken.dto.account.LedgerType;
 import org.knowm.xchange.kraken.dto.account.WithdrawStatus;
+import org.knowm.xchange.kraken.dto.trade.KrakenOrderType;
+import org.knowm.xchange.kraken.dto.trade.KrakenTrade;
+import org.knowm.xchange.kraken.dto.trade.KrakenType;
 import org.knowm.xchange.kraken.service.KrakenAccountService;
 import org.knowm.xchange.kraken.service.KrakenTradeHistoryParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.math.RoundingMode;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static io.everytrade.server.model.SupportedExchange.KRAKEN;
+import static io.everytrade.server.plugin.api.parser.ParsingProblemType.ROW_PARSING_FAILED;
+import static java.math.BigDecimal.ZERO;
 import static java.util.Collections.emptyList;
 import static lombok.AccessLevel.PRIVATE;
 import static org.knowm.xchange.dto.account.FundingRecord.Type.DEPOSIT;
@@ -45,11 +56,15 @@ import static org.knowm.xchange.dto.account.FundingRecord.Type.WITHDRAWAL;
 public class KrakenConnector implements IConnector {
     private static final Logger LOG = LoggerFactory.getLogger(KrakenConnector.class);
     private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "krkApiConnector";
+    private static final String WRONG_NUMBER_OF_TRANSACTIONS = "wrong number of txs - expected (1x RECEIVE and 1x SEND)";
+    private static final String SPEND_POSITIVE_NUMBER = "Spend - transaction amount must be negative";
+    private static final String RECEIVE_POSITIVE_NUMBER = "Receive - transaction amount must be positive";
 
-    // According Kraken rules https://support.kraken.com/hc/en-us/articles/206548367-What-are-the-API-rate-limits-
     private static final int MAX_TRADE_REQUESTS_COUNT = 7;
     private static final Duration SLEEP_BETWEEN_TRADE_REQUESTS = Duration.ofMillis(6 * 1000);
     private static final Duration SLEEP_BETWEEN_FUNDING_REQUESTS = Duration.ofMillis(3 * 1000);
+
+    private List<ParsingProblem> parsingProblems = new ArrayList<>();
 
     private static final ConnectorParameterDescriptor PARAMETER_API_SECRET =
         new ConnectorParameterDescriptor(
@@ -93,6 +108,8 @@ public class KrakenConnector implements IConnector {
         this.exchange = ExchangeFactory.INSTANCE.createExchange(exSpec);
     }
 
+
+
     @Override
     public String getId() {
         return ID;
@@ -129,7 +146,7 @@ public class KrakenConnector implements IConnector {
     private DownloadResult getResult(List<UserTrade> trades, List<FundingRecord> funding, KrakenDownloadState state ) {
         var xchangeParser = new XChangeConnectorParser();
         xchangeParser.setExchange(KRAKEN);
-        return new DownloadResult(xchangeParser.getParseResult(trades, funding), state.serialize());
+        return new DownloadResult(xchangeParser.getParseResultWithProblems(trades, funding, parsingProblems), state.serialize());
     }
 
     private List<UserTrade> downloadTrades(KrakenDownloadState state) {
@@ -145,9 +162,17 @@ public class KrakenConnector implements IConnector {
             krakenTradeHistoryParams.setEndId(state.getTradeFirstTxUidAfterGap());
         }
 
-        final List<UserTrade> downloadedBlock;
+        List<UserTrade> downloadedBlock;
         try {
-            downloadedBlock = tradeService.getTradeHistory(krakenTradeHistoryParams).getUserTrades();
+            var rowDownloadedBlock = tradeService.getTradeHistory(krakenTradeHistoryParams).getUserTrades();
+            try {
+                downloadedBlock =
+                    rowDownloadedBlock.stream()
+                        .sorted(Comparator.comparingDouble(trade -> Double.parseDouble(((UserTrade) trade).getOrderUserReference())))
+                        .collect(Collectors.toList());
+            } catch (Exception e) {
+                downloadedBlock = rowDownloadedBlock;
+            }
         } catch (IOException e) {
             throw new IllegalStateException("Download user trade history failed.", e);
         }
@@ -245,9 +270,110 @@ public class KrakenConnector implements IConnector {
         return result;
     }
 
+    private void validateReceiveSendPair(List<KrakenLedger> pair) {
+        if (pair.size() != 2 ||
+            !(("RECEIVE".equalsIgnoreCase(pair.get(0).getLedgerType().toString())
+                && "SPEND".equalsIgnoreCase(pair.get(1).getLedgerType().toString())) ||
+                ("RECEIVE".equalsIgnoreCase(pair.get(1).getLedgerType().toString())
+                    && "SPEND".equalsIgnoreCase(pair.get(0).getLedgerType().toString())))) {
+            throw new IllegalArgumentException(WRONG_NUMBER_OF_TRANSACTIONS);
+        }
+        KrakenLedger spend;
+        KrakenLedger receive;
+        if (pair.get(0).getLedgerType().toString().equalsIgnoreCase(LedgerType.SPEND.toString())) {
+            spend = pair.get(0);
+            receive = pair.get(1);
+        } else {
+            spend = pair.get(1);
+            receive = pair.get(0);
+        }
+        if (spend.getTransactionAmount().compareTo(ZERO) > 1) {
+            throw new IllegalArgumentException(SPEND_POSITIVE_NUMBER);
+        }
+
+        if (receive.getTransactionAmount().compareTo(ZERO) < 1) {
+            throw new IllegalArgumentException(RECEIVE_POSITIVE_NUMBER);
+        }
+    }
+
+    private List<UserTrade> downloadSpendAndReceive(KrakenDownloadState state) {
+        var accountService = (KrakenAccountService) exchange.getAccountService();
+        try {
+            var ledgers = accountService.getKrakenLedgerInfo(LedgerType.SALE, null, null, null,
+                state.getSpendReceiveFromUnixTimestamp(), null, null);
+            var keys = ledgers.keySet();
+            List<KrakenLedger> rowData = ledgers.values().stream().toList();
+            Map<String, List<KrakenLedger>> pairsReceiveSend = new HashMap<>();
+            rowData.forEach(leger -> {
+                    try {
+                        if (pairsReceiveSend.get(leger.getRefId()) == null) {
+                            List<KrakenLedger> list = new ArrayList<>();
+                            list.add(leger);
+                            pairsReceiveSend.put(leger.getRefId(), list);
+                        } else {
+                            List<KrakenLedger> krakenLedgers = pairsReceiveSend.get(leger.getRefId());
+                            krakenLedgers.add(leger);
+                        }
+                    } catch (Exception e) {
+                        parsingProblems.add(new ParsingProblem(ledgers.toString(), e.getMessage(), ROW_PARSING_FAILED));
+                    }
+                }
+            );
+            var resultsKeys = pairsReceiveSend.keySet();
+            List<KrakenTrade> krakenTrades = new ArrayList<>();
+            Map<String, KrakenTrade> sells = new HashMap<>();
+
+            for (String key : resultsKeys) {
+                var receiveSpendPair = pairsReceiveSend.get(key);
+                try {
+                    validateReceiveSendPair(receiveSpendPair);
+                    KrakenLedger spend;
+                    KrakenLedger receive;
+                    if (receiveSpendPair.get(0).getLedgerType().toString().equalsIgnoreCase(LedgerType.SPEND.toString())) {
+                        spend = receiveSpendPair.get(0);
+                        receive = receiveSpendPair.get(1);
+                    } else {
+                        spend = receiveSpendPair.get(1);
+                        receive = receiveSpendPair.get(0);
+                    }
+                    var krakenTrade = new KrakenTrade(receive.getRefId(),
+                        currencySwitcher(spend.getAsset()).concat(currencySwitcher((receive.getAsset()))),
+                        spend.getUnixTime(),
+                        KrakenType.SELL,
+                        KrakenOrderType.LIMIT, spend.getTransactionAmount().abs().divide(receive.getTransactionAmount(),
+                        RoundingMode.HALF_UP), receive.getTransactionAmount(), receive.getFee(), spend.getTransactionAmount().abs(),
+                        null, null, null, null, null, null, null, null, null, null, null);
+                    krakenTrades.add(krakenTrade);
+                } catch (Exception e) {
+                    parsingProblems.add(new ParsingProblem(receiveSpendPair.toString(), e.getMessage(), ROW_PARSING_FAILED));
+                }
+
+            }
+            krakenTrades.forEach(t -> sells.put(t.getOrderTxId(), t));
+            if (!ledgers.isEmpty()) {
+                var maxTimeValue = ledgers.values().stream().mapToDouble(KrakenLedger::getUnixTime).max().getAsDouble();
+                state.setSpendReceiveFromUnixTimestamp(String.valueOf(maxTimeValue));
+            }
+            return KrakenAdapters.adaptTradesHistory(sells).getUserTrades();
+        } catch (IOException e) {
+            throw new IllegalStateException("Download receive spend history failed.", e);
+        }
+    }
+
     private List<FundingRecord> removeOldStakes(List<FundingRecord> block, KrakenDownloadState state) {
         var lastDate = state.getStakeLastTimestamp() == null ? 0 : state.getStakeLastTimestamp();
         return block.stream().filter(r -> r.getDate().getTime() > lastDate).collect(Collectors.toList());
+    }
+
+    private String currencySwitcher(String currency) {
+        Map<String, String> currencySwitcher = new HashMap<>();
+        currencySwitcher.put("ZEUR", "EUR");
+
+        if (currencySwitcher.get(currency) != null) {
+            return currencySwitcher.get(currency);
+        } else {
+            return currency;
+        }
     }
 
     private List<FundingRecord> downloadStakings(KrakenDownloadState state) {

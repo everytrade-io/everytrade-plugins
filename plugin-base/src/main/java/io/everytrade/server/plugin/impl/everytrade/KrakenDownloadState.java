@@ -23,6 +23,7 @@ public class KrakenDownloadState {
     Long depositFromTimestamp;
     Long withdrawalFromTimestamp;
     Long stakeLastTimestamp;
+    String spendReceiveFromUnixTimestamp;
 
     public String serialize() {
         final String result = new StringBuilder()
@@ -31,7 +32,8 @@ public class KrakenDownloadState {
             .append(tradeLastTxUidAfterGap == null ? "" : tradeLastTxUidAfterGap).append(SERIALIZATION_SEPARATOR)
             .append(depositFromTimestamp == null ? "" :  depositFromTimestamp).append(SERIALIZATION_SEPARATOR)
             .append(withdrawalFromTimestamp == null ? "" :  withdrawalFromTimestamp).append(SERIALIZATION_SEPARATOR)
-            .append(stakeLastTimestamp == null ? "" : stakeLastTimestamp)
+            .append(stakeLastTimestamp == null ? "" : stakeLastTimestamp).append(SERIALIZATION_SEPARATOR)
+            .append(spendReceiveFromUnixTimestamp == null ? "" : spendReceiveFromUnixTimestamp)
             .toString();
 
         if (result.length() > MAX_LENGTH_DOWNLOADED_TXUID) {
@@ -56,13 +58,15 @@ public class KrakenDownloadState {
         String depositTimestamp = getGroupValueOrNull(splitValues, 4);
         String withdrawalTimestamp = getGroupValueOrNull(splitValues, 5);
         String stakeLastTimestamp = getGroupValueOrNull(splitValues, 6);
+        String spendReceiveUnixTimestamp = getGroupValueOrNull(splitValues, 7);
         return new KrakenDownloadState(
             getGroupValueOrNull(splitValues, 1),
             getGroupValueOrNull(splitValues, 2),
             getGroupValueOrNull(splitValues, 3),
             depositTimestamp == null ? null : Long.valueOf(depositTimestamp),
             withdrawalTimestamp == null ? null : Long.valueOf(withdrawalTimestamp),
-            stakeLastTimestamp == null ? null : Long.valueOf(stakeLastTimestamp)
+            stakeLastTimestamp == null ? null : Long.valueOf(stakeLastTimestamp),
+            spendReceiveUnixTimestamp == null ? null : spendReceiveUnixTimestamp
         );
     }
 
@@ -72,7 +76,8 @@ public class KrakenDownloadState {
             tradeLastTxUidAfterGap == null &&
             depositFromTimestamp == null &&
             withdrawalFromTimestamp == null &&
-            stakeLastTimestamp == null;
+            stakeLastTimestamp == null &&
+            spendReceiveFromUnixTimestamp == null;
     }
 
     private static String getGroupValueOrNull(String[] values, int group) {
