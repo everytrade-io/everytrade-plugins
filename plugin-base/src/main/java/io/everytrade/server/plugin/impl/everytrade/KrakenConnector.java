@@ -339,10 +339,9 @@ public class KrakenConnector implements IConnector {
                         receive = receiveSpendPair.get(0);
                     }
                     var krakenTrade = new KrakenTrade(receive.getRefId(),
-                        currencySwitcher(spend.getAsset()).concat(currencySwitcher((receive.getAsset()))),
-                        spend.getUnixTime(),
-                        KrakenType.SELL,
-                        KrakenOrderType.LIMIT, spend.getTransactionAmount().abs().divide(receive.getTransactionAmount(),
+                        currencySwitcher(spend.getAsset()).concat("/").concat(currencySwitcher((receive.getAsset()))),
+                        spend.getUnixTime(), KrakenType.SELL, KrakenOrderType.LIMIT,
+                        spend.getTransactionAmount().abs().divide(receive.getTransactionAmount(),
                         RoundingMode.HALF_UP), receive.getTransactionAmount(), receive.getFee(), spend.getTransactionAmount().abs(),
                         null, null, null, null, null, null, null, null, null, null, null);
                     krakenTrades.add(krakenTrade);
