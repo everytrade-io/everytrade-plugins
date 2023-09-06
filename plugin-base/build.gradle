@@ -63,7 +63,7 @@ dependencies {
      * only for temporary use till pull request confirmation https://github.com/knowm/XChange/pull/4448
      */
     //    pluginCompile "org.knowm.xchange:xchange-kraken:$xchangeVersion"
-    pluginCompile "com.github.martinkyov.Xchange:xchange-kraken:435cdbfb23a9a5a1f3b39b7495b6b1ad000e0f27"
+    pluginCompile "com.github.martinkyov.Xchange:xchange-kraken:4180fdf746103c892a11197aa5e375319deea350"
 
 
     /*
