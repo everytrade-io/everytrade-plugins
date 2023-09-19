@@ -686,7 +686,24 @@ public enum Currency {
     XAVA(false, Instant.parse("2021-08-05T00:00:00Z"), "Avalaunch"),
     FALCONS(false, Instant.parse("2022-02-02T00:00:00Z"), "FalconSwaps Token"),
     BOSON(false, Instant.parse("2023-03-28T00:00:00Z"), "Boson Protocol"),
-    BSN(false, Instant.parse("2023-03-28T00:00:00Z"), "Boson Protocol");
+    BSN(false, Instant.parse("2023-03-28T00:00:00Z"), "Boson Protocol"),
+    AXL(false, Instant.parse("2023-02-01T00:00:00Z"), "Axelar"),
+    BLD(false, Instant.parse("2023-02-07T00:00:00Z"), "Agoric"),
+    PUNK(false, Instant.parse("2023-04-03T00:00:00Z"), "Punk Vault"),
+    SOMM(false, Instant.parse("2023-04-03T00:00:00Z"), "Sommelier"),
+    VEGA(false, Instant.parse("2022-09-29T00:00:00Z"), "Vega Protocol"),
+    C2(false, Instant.parse("2018-02-21T00:00:00Z"), "Coin2.1"),
+    GEMZ(false, Instant.parse("2022-03-23T00:00:00Z"), "BattleMechs"),
+    GRC(false, Instant.parse("2015-03-01T00:00:00Z"), "GridCoin"),
+    HUC(false, Instant.parse("2014-02-12T00:00:00Z"), "HunterCoin"),
+    NAUT(false, Instant.parse("2021-10-28T00:00:00Z"), "Astronaut"),
+    NEOS(false, Instant.parse("2014-08-21T00:00:00Z"), "NeosCoin"),
+    NXC(false, Instant.parse("2016-12-07T00:00:00Z"), "Nexium"),
+    PASC(false, Instant.parse("2016-11-27T00:00:00Z"), "Pascal"),
+    POT(false, Instant.parse("2014-02-02T00:00:00Z"), "PotCoin"),
+    QORA(false, Instant.parse("2014-05-22T00:00:00Z"), "Qora"),
+    VOX(false, Instant.parse("2021-09-16T00:00:00Z"), "Vox.Finance"),
+    XVC(false, Instant.parse("2015-03-01T00:00:00Z"), "Vcash");
 
     String code;
     int decimalDigits;
