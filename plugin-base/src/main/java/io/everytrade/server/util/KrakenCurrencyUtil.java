@@ -18,6 +18,8 @@ public class KrakenCurrencyUtil {
         CURRENCY_LONG_CODES.put("XXLT", Currency.LTC);
         CURRENCY_SHORT_CODES.put("XLTC", Currency.LTC);
         CURRENCY_LONG_CODES.put("XXLTC", Currency.LTC);
+        CURRENCY_SHORT_CODES.put("XETC", Currency.ETC);
+
 
         CURRENCY_SHORT_CODES.put("XDG", Currency.DOGE);
         CURRENCY_LONG_CODES.put("XXDG", Currency.DOGE);
@@ -26,6 +28,32 @@ public class KrakenCurrencyUtil {
         CURRENCY_EXCEPTION_CODES.put("KAVA21", Currency.KAVA);
         CURRENCY_EXCEPTION_CODES.put("DOT28", Currency.DOT);
         CURRENCY_EXCEPTION_CODES.put("ETH2", Currency.ETH);
+
+        CURRENCY_SHORT_CODES.put("ZUSD", Currency.USD);
+        CURRENCY_SHORT_CODES.put("ZJPY", Currency.JPY);
+        CURRENCY_SHORT_CODES.put("ZGBP", Currency.GBP);
+        CURRENCY_SHORT_CODES.put("ZEUR", Currency.EUR);
+        CURRENCY_SHORT_CODES.put("ZCHF", Currency.CHF);
+        CURRENCY_SHORT_CODES.put("ZCAD", Currency.CAD);
+        CURRENCY_SHORT_CODES.put("ZAUD", Currency.AUD);
+        CURRENCY_SHORT_CODES.put("ZRX", Currency.ZRX);
+        CURRENCY_SHORT_CODES.put("XZEC", Currency.ZEC);
+        CURRENCY_LONG_CODES.put("XXVN", Currency.VEN);
+        CURRENCY_LONG_CODES.put("XXTZ", Currency.XTZ);
+        CURRENCY_LONG_CODES.put("XXRP", Currency.XRP);
+        CURRENCY_LONG_CODES.put("XXMR", Currency.XMR);
+        CURRENCY_LONG_CODES.put("XXLM", Currency.XLM);
+        CURRENCY_LONG_CODES.put("XXDG", Currency.DOGE);
+        CURRENCY_LONG_CODES.put("XXBT", Currency.BTC);
+        CURRENCY_SHORT_CODES.put("XBT", Currency.BTC);
+        CURRENCY_LONG_CODES.put("XREPV2", Currency.REPV2);
+        CURRENCY_LONG_CODES.put("XREP", Currency.REP);
+        CURRENCY_LONG_CODES.put("XMLN", Currency.MLN);
+        CURRENCY_LONG_CODES.put("XLTC", Currency.LTC);
+        CURRENCY_LONG_CODES.put("XETH", Currency.ETH);
+        CURRENCY_LONG_CODES.put("XETC", Currency.ETC);
+        CURRENCY_LONG_CODES.put("XXLTC", Currency.LTC);
+        CURRENCY_SHORT_CODES.put("XDG", Currency.DOGE);
 
         for (Currency value : Currency.values()) {
             if (value.equals(Currency.BTC)) {
@@ -88,6 +116,18 @@ public class KrakenCurrencyUtil {
             }
         }
         return value;
+    }
+
+    public static Currency fromCode(String code) {
+        final Currency currencyLong = CURRENCY_LONG_CODES.get(code);
+        if (currencyLong != null) {
+            return currencyLong;
+        }
+        final Currency currencyShort = CURRENCY_SHORT_CODES.get(code);
+        if (currencyShort != null) {
+            return currencyShort;
+        }
+        return Currency.fromCode(code);
     }
 
 }
