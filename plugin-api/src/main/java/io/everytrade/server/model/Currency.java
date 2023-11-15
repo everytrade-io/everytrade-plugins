@@ -703,7 +703,31 @@ public enum Currency {
     POT(false, Instant.parse("2014-02-02T00:00:00Z"), "PotCoin"),
     QORA(false, Instant.parse("2014-05-22T00:00:00Z"), "Qora"),
     VOX(false, Instant.parse("2021-09-16T00:00:00Z"), "Vox.Finance"),
-    XVC(false, Instant.parse("2015-03-01T00:00:00Z"), "Vcash");
+    XVC(false, Instant.parse("2015-03-01T00:00:00Z"), "Vcash"),
+    WPOKT(false, Instant.parse("2023-10-31T00:00:00Z"), "Wrapped Pocket"),
+    SPONGE(false, Instant.parse("2023-05-05T00:00:00Z"), "SpongeBob"),
+    MNT(false, Instant.parse("2023-07-17T00:00:00Z"), "Mantle"),
+    POOH(false, Instant.parse("2023-05-08T00:00:00Z"), "POOH"),
+    PARA(false, Instant.parse("2023-11-04T00:00:00Z"), "Parallel Finance"),
+    OXY(false, Instant.parse("2023-02-19T00:00:00Z"), "Oxygen"),
+    FIDA(false, Instant.parse("2023-03-29T00:00:00Z"), "Bonfida"),
+    KILT(false, Instant.parse("2022-09-01T00:00:00Z"), "KILT Protocol"),
+    SUI(false, Instant.parse("2023-05-04T00:00:00Z"), "Sui"),
+    MV(false, Instant.parse("2022-02-10T00:00:00Z"), "GensoKishi Metaverse"),
+    RARE(false, Instant.parse("2022-09-29T00:00:00Z"), "SuperRare"),
+    CVX(false, Instant.parse("2021-08-12T00:00:00Z"), "Convex Finance"),
+    XRT(false, Instant.parse("2020-08-20T00:00:00Z"), "Robonomics Network"),
+    GST(false, Instant.parse("2022-01-27T00:00:00Z"), "Green Satoshi Token"),
+    TOKE(false, Instant.parse("2021-08-26T00:00:00Z"), "Tokemak"),
+    PLA(false, Instant.parse("2021-07-29T00:00:00Z"), "PlayDapp"),
+    PSTAKE(false, Instant.parse("2023-11-03T00:00:00Z"), "pSTAKE Finance"),
+    SBR(false, Instant.parse("2021-09-16T00:00:00Z"), "Saber"),
+    RPL(false, Instant.parse("2018-07-12T00:00:00Z"), "Rocket Pool"),
+    BSX(false, Instant.parse("2022-08-18T00:00:00Z"), "Basilisk"),
+    BRICK(false, Instant.parse("2023-11-04T00:00:00Z"), "r/FortNiteBR Bricks"),
+    CSM(false, Instant.parse("2023-11-04T00:00:00Z"), "Crust Shadow"),
+    GHST(false, Instant.parse("2022-10-27T00:00:00Z"), "Aavegotchi"),
+    GARI(false, Instant.parse("2022-08-25T00:00:00Z"), "Gari Network");
 
     String code;
     int decimalDigits;

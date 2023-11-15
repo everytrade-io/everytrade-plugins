@@ -5,6 +5,7 @@ import com.univocity.parsers.annotations.Headers;
 import com.univocity.parsers.annotations.Parsed;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
+import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
@@ -17,7 +18,7 @@ import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 @Headers(sequence = {"txid", "pair", "time", "type", "cost", "fee", "vol"}, extract = true)
 public class KrakenBeanV1 extends ExchangeBean {
@@ -37,14 +38,54 @@ public class KrakenBeanV1 extends ExchangeBean {
 
     @Parsed(field = "pair")
     public void setPair(String pair) {
-        String mBase = findCurrencyCode(pair, true);
-        String mQuote = findCurrencyCode(pair, false);
-        if (!pair.equals(mBase.concat(mQuote))) {
-            throw new DataValidationException(String.format("Can not parse pair %s.", pair));
+        try {
+            CurrencyPair currPair = findKrakenCurrencyPair(pair);
+            this.pairBase = currPair.getBase();
+            this.pairQuote = currPair.getQuote();
+        } catch (Exception ignored) {
+            findStandardPair(pair);
         }
+    }
 
-        this.pairBase = KrakenCurrencyUtil.findCurrencyByCode(mBase);
-        this.pairQuote = KrakenCurrencyUtil.findCurrencyByCode(mQuote);
+    private void findStandardPair(String pair) {
+        try {
+            CurrencyPair currPair = findKrakenCurrencyPair(pair.replaceAll("Z", ""));
+            this.pairBase = currPair.getBase();
+            this.pairQuote = currPair.getQuote();
+        } catch (Exception ignore) {
+            try {
+                CurrencyPair currPair = findKrakenCurrencyPair(pair.replaceFirst("X", ""));
+                this.pairBase = currPair.getBase();
+                this.pairQuote = currPair.getQuote();
+            } catch (Exception e) {
+                try {
+                    if (pair.length() == 6) {
+                        this.pairBase = KrakenCurrencyUtil.fromCode(pair.substring(0, 3));
+                        String quote = pair.substring(3, 6);
+                        this.pairQuote = KrakenCurrencyUtil.fromCode(quote);
+                    } else if (pair.length() == 7) {
+                        try {
+                            this.pairBase = KrakenCurrencyUtil.fromCode(pair.substring(0, 4));
+                            this.pairQuote = KrakenCurrencyUtil.fromCode(pair.substring(4, 7));
+                        } catch (Exception ign) {
+                            this.pairBase = KrakenCurrencyUtil.fromCode(pair.substring(0, 3));
+                            String quote = pair.substring(3, 7);
+                            this.pairQuote = KrakenCurrencyUtil.fromCode(quote);
+                        }
+                    } else if (pair.length() == 8) {
+                        this.pairBase = KrakenCurrencyUtil.fromCode(pair.substring(0, 4));
+                        String quote = pair.substring(4, 8);
+                        this.pairQuote = KrakenCurrencyUtil.fromCode(quote);
+                    } else if (pair.contains("Z") && pair.contains("X")) {
+                        CurrencyPair currPair = findKrakenCurrencyPair(pair.replaceAll("Z", "").replaceFirst("X", ""));
+                        this.pairBase = currPair.getBase();
+                        this.pairQuote = currPair.getQuote();
+                    }
+                } catch (Exception ex) {
+                    throw new DataValidationException(String.format("Can not parse pair %s.", pair));
+                }
+            }
+        }
     }
 
     @Parsed(field = "time")
@@ -113,54 +154,34 @@ public class KrakenBeanV1 extends ExchangeBean {
         );
     }
 
-    private String findCurrencyCode(String pairCode, boolean isFindingBase) {
-        List<String> matchedShortCodes = KrakenCurrencyUtil.CURRENCY_SHORT_CODES
+    private CurrencyPair findKrakenCurrencyPair(String pairCode) {
+
+        Map<String, Currency> currencyShortCodes = KrakenCurrencyUtil.CURRENCY_SHORT_CODES;
+        Map<String, Currency> currencyLongCodes = KrakenCurrencyUtil.CURRENCY_LONG_CODES;
+
+        List<String> matchedShortCodes = currencyShortCodes
             .keySet()
             .stream()
-            .filter(prefix -> isFindingBase ? pairCode.startsWith(prefix) : pairCode.endsWith(prefix))
-            .collect(Collectors.toList());
-        List<String> matchedLongCodes = KrakenCurrencyUtil.CURRENCY_LONG_CODES
+            .filter(prefix -> (pairCode.startsWith(prefix) && (currencyShortCodes.containsKey(pairCode.replaceFirst(prefix, "")) ||
+                currencyLongCodes.containsKey(pairCode.replaceFirst(prefix, "")))))
+            .toList();
+        List<String> matchedLongCodes = currencyLongCodes
             .keySet()
             .stream()
-            .filter(prefix -> isFindingBase ? pairCode.startsWith(prefix) : pairCode.endsWith(prefix))
-            .collect(Collectors.toList());
+            .filter(prefix -> (pairCode.startsWith(prefix) && (currencyShortCodes.containsKey(pairCode.replaceFirst(prefix, "")) ||
+                currencyLongCodes.containsKey(pairCode.replaceFirst(prefix, "")))))
+            .toList();
 
-        final boolean foundBothCodes = matchedShortCodes.size() == 1 && matchedLongCodes.size() == 1;
-        final boolean foundLongCode = matchedLongCodes.size() == 1 && matchedShortCodes.isEmpty();
-        final boolean foundShortCode = matchedShortCodes.size() == 1 && matchedLongCodes.isEmpty();
-
-        if (foundBothCodes) {
-            final String matchedShortCode = matchedShortCodes.get(0);
-            final String matchedLongCode = matchedLongCodes.get(0);
-            final boolean foundCurrenciesMatch =
-                KrakenCurrencyUtil.CURRENCY_SHORT_CODES.get(matchedShortCode).equals(
-                    KrakenCurrencyUtil.CURRENCY_LONG_CODES.get(matchedLongCode)
-                );
-            if (foundCurrenciesMatch) {
-                return matchedLongCode;
-            } else {
-                throw new DataValidationException(String.format(
-                    "Found different %s currency codes (%s,%s) in pair code %s.",
-                    isFindingBase ? "base" : "quote",
-                    matchedShortCode,
-                    matchedLongCode,
-                    pairCode
-                ));
-            }
+        if (matchedLongCodes.size() == 1 && matchedShortCodes.isEmpty()) {
+            return new CurrencyPair(matchedLongCodes.get(0), pairCode.replaceFirst(matchedLongCodes.get(0), ""));
+        } else if (matchedShortCodes.size() == 1 && matchedLongCodes.isEmpty()) {
+            return new CurrencyPair(matchedShortCodes.get(0), pairCode.replaceFirst(matchedShortCodes.get(0), ""));
+        } else {
+            throw new DataValidationException(String.format(
+                "Unknown currency code in pair code %s.",
+                pairCode
+            ));
         }
-
-        if (foundLongCode) {
-            return matchedLongCodes.get(0);
-        }
-
-        if (foundShortCode) {
-            return matchedShortCodes.get(0);
-        }
-
-        throw new DataValidationException(String.format(
-            "Unknown %s currency code in pair code %s.",
-            isFindingBase ? "base" : "quote",
-            pairCode
-        ));
     }
+
 }
