@@ -6,7 +6,6 @@ import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BaseClusterData;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BaseTransactionMapper;
 
 import java.math.BigDecimal;
 import java.time.Instant;

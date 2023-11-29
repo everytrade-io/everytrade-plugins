@@ -47,6 +47,8 @@ import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.model.TransactionType.STAKE;
 import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
 import static io.everytrade.server.model.TransactionType.UNSTAKE;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.REBATE_UID_PART;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class BinanceBeanV4Test {
@@ -88,7 +90,7 @@ class BinanceBeanV4Test {
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
-                    null,
+                    FEE_UID_PART,
                     Instant.parse("2021-01-05T02:38:00Z"),
                     EUR,
                     EUR,
@@ -137,7 +139,7 @@ class BinanceBeanV4Test {
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
-                    null,
+                    FEE_UID_PART,
                     Instant.parse("2021-01-05T02:38:00Z"),
                     EUR,
                     EUR,
@@ -171,7 +173,7 @@ class BinanceBeanV4Test {
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
-                    null,
+                    FEE_UID_PART,
                     Instant.parse("2022-01-01T10:56:29Z"),
                     BNB,
                     BNB,
@@ -206,7 +208,7 @@ class BinanceBeanV4Test {
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
-                    null,
+                    FEE_UID_PART,
                     Instant.parse("2022-01-01T10:56:29Z"),
                     EUR,
                     EUR,
@@ -230,7 +232,7 @@ class BinanceBeanV4Test {
 
         final TransactionCluster expected1 = new TransactionCluster(
             new ImportedTransactionBean(
-                null,
+                REBATE_UID_PART,
                 Instant.parse("2022-02-26T05:48:48Z"),
                 BNB,
                 BNB,
@@ -244,7 +246,7 @@ class BinanceBeanV4Test {
         );
         final TransactionCluster expected2 = new TransactionCluster(
             new ImportedTransactionBean(
-                null,
+                REBATE_UID_PART,
                 Instant.parse("2022-02-26T05:48:48Z"),
                 BNB,
                 BNB,
@@ -271,7 +273,7 @@ class BinanceBeanV4Test {
 
         final TransactionCluster expected1 = new TransactionCluster(
             new ImportedTransactionBean(
-                null,
+                REBATE_UID_PART,
                 Instant.parse("2022-08-10T13:25:58Z"),
                 SOL,
                 SOL,

@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static io.everytrade.server.model.TransactionType.BUY;
+import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
@@ -95,9 +96,9 @@ public class BlockchainApiTransactionBean {
             related = List.of(new FeeRebateImportedTransactionBean(
                     id + FEE_UID_PART,
                     timestamp,
-                    base,
-                    quote,
-                    TransactionType.FEE,
+                    feeCurrency,
+                    feeCurrency,
+                    FEE,
                     feeAmount,
                     feeCurrency
                 )

@@ -13,6 +13,14 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
+import static io.everytrade.server.model.Currency.ADA;
+import static io.everytrade.server.model.Currency.BNB;
+import static io.everytrade.server.model.Currency.BTC;
+import static io.everytrade.server.model.Currency.BUSD;
+import static io.everytrade.server.model.TransactionType.BUY;
+import static io.everytrade.server.model.TransactionType.FEE;
+import static io.everytrade.server.model.TransactionType.SELL;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -71,21 +79,21 @@ class BinanceBeanV3Test {
             new ImportedTransactionBean(
                 null,
                 Instant.parse("2020-05-29T11:13:27Z"),
-                Currency.ADA,
-                Currency.BTC,
-                TransactionType.BUY,
+                ADA,
+                BTC,
+                BUY,
                 new BigDecimal("3813.0000000000"),
                 new BigDecimal("0.2622674071")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
-                    null,
+                    FEE_UID_PART,
                     Instant.parse("2020-05-29T11:13:27Z"),
-                    Currency.ADA,
-                    Currency.ADA,
-                    TransactionType.FEE,
+                    ADA,
+                    ADA,
+                    FEE,
                     new BigDecimal("3813.0000000000"),
-                    Currency.ADA
+                    ADA
                 )
             )
         );
@@ -116,9 +124,9 @@ class BinanceBeanV3Test {
             new ImportedTransactionBean(
                 null,
                 Instant.parse("2021-06-02T16:45:27Z"),
-                Currency.BTC,
-                Currency.BUSD,
-                TransactionType.BUY,
+                BTC,
+                BUSD,
+                BUY,
                 new BigDecimal("0.0009100000"),
                 new BigDecimal("37850.0000000000")
             ),
@@ -128,21 +136,21 @@ class BinanceBeanV3Test {
             new ImportedTransactionBean(
                 null,
                 Instant.parse("2021-06-02T16:07:12Z"),
-                Currency.BTC,
-                Currency.BUSD,
-                TransactionType.SELL,
+                BTC,
+                BUSD,
+                SELL,
                 new BigDecimal("0.0009090000"),
                 new BigDecimal("37900.0000000000")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
-                    null,
+                    FEE_UID_PART,
                     Instant.parse("2021-06-02T16:07:12Z"),
-                    Currency.BNB,
-                    Currency.BNB,
-                    TransactionType.FEE,
+                    BNB,
+                    BNB,
+                    FEE,
                     new BigDecimal("1.0000000000"),
-                    Currency.BNB
+                    BNB
                 )
             )
         );

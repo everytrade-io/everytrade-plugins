@@ -214,7 +214,7 @@ public class BinanceBeanV4 extends ExchangeBean implements Cloneable {
         if (feeTransactions.size() > 0) {
             for (BinanceBeanV4 fee : feeTransactions) {
                 var feeTxs = new FeeRebateImportedTransactionBean(
-                    null,
+                    FEE_UID_PART,
                     fee.getDate(),
                     fee.getFeeCurrency(),
                     fee.getFeeCurrency(),
@@ -246,7 +246,7 @@ public class BinanceBeanV4 extends ExchangeBean implements Cloneable {
         if (REBATE.equals(type)) {
             return new TransactionCluster(
                 new FeeRebateImportedTransactionBean(
-                    null,
+                    REBATE_UID_PART,
                     date,
                     marketBase,
                     marketBase,
@@ -262,7 +262,7 @@ public class BinanceBeanV4 extends ExchangeBean implements Cloneable {
         if (FEE.equals(type)) {
             return new TransactionCluster(
                 new FeeRebateImportedTransactionBean(
-                    null,
+                    FEE_UID_PART,
                     date,
                     feeCurrency,
                     feeCurrency,

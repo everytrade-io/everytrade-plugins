@@ -96,6 +96,7 @@ public class CoinmateConnector implements IConnector {
         exSpec.setUserName(username);
         exSpec.setApiKey(apiKey);
         exSpec.setSecretKey(secret);
+        exSpec.setHttpReadTimeout(Integer.MAX_VALUE);
         this.exchange = ExchangeFactory.INSTANCE.createExchange(exSpec);
     }
 

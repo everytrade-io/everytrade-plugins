@@ -125,7 +125,7 @@ public class OpenNodeV1 extends ExchangeBean {
                 try {
                     related = List.of(
                         new FeeRebateImportedTransactionBean(
-                            null,
+                            openNodeId + FEE_UID_PART,
                             createdAt,
                             feeCurrency,
                             feeCurrency,
@@ -141,7 +141,7 @@ public class OpenNodeV1 extends ExchangeBean {
             }
             cluster = new TransactionCluster(
                 new ImportedTransactionBean(
-                    null,
+                    openNodeId,
                     createdAt,
                     baseCurrency,
                     quoteCurrency,

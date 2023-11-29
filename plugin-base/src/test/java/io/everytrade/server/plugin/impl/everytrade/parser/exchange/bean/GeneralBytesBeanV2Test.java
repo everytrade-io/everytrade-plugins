@@ -14,6 +14,10 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
+import static io.everytrade.server.model.Currency.CZK;
+import static io.everytrade.server.model.Currency.LTC;
+import static io.everytrade.server.model.TransactionType.FEE;
+import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -59,8 +63,8 @@ class GeneralBytesBeanV2Test {
             new ImportedTransactionBean(
                 "L-R",
                 Instant.parse("2020-12-07T15:33:55Z"),
-                Currency.LTC,
-                Currency.CZK,
+                LTC,
+                CZK,
                 TransactionType.BUY,
                 new BigDecimal("0.107841"),
                 new BigDecimal("1854.5822089929"),
@@ -71,11 +75,11 @@ class GeneralBytesBeanV2Test {
                 new FeeRebateImportedTransactionBean(
                     "L-R" + FEE_UID_PART,
                     Instant.parse("2020-12-07T15:33:55Z"),
-                    Currency.LTC,
-                    Currency.CZK,
-                    TransactionType.FEE,
+                    LTC,
+                    LTC,
+                    FEE,
                     new BigDecimal("0.0053"),
-                    Currency.LTC,
+                    LTC,
                     "R"
                 )
             )
@@ -92,9 +96,9 @@ class GeneralBytesBeanV2Test {
             new ImportedTransactionBean(
                 "L-R",
                 Instant.parse("2020-12-10T15:02:41Z"),
-                Currency.LTC,
-                Currency.CZK,
-                TransactionType.SELL,
+                LTC,
+                CZK,
+                SELL,
                 new BigDecimal("0.04595383"),
                 new BigDecimal("2176.0971827593"),
                 "R",
@@ -104,11 +108,11 @@ class GeneralBytesBeanV2Test {
                 new FeeRebateImportedTransactionBean(
                     "L-R" + FEE_UID_PART,
                     Instant.parse("2020-12-10T15:02:41Z"),
-                    Currency.LTC,
-                    Currency.CZK,
-                    TransactionType.FEE,
+                    LTC,
+                    LTC,
+                    FEE,
                     new BigDecimal("0.0001"),
-                    Currency.LTC,
+                    LTC,
                     "R"
                 )
             )
@@ -125,9 +129,9 @@ class GeneralBytesBeanV2Test {
             new ImportedTransactionBean(
                 "L-R",
                 Instant.parse("2018-08-06T06:38:43Z"),
-                Currency.LTC,
-                Currency.CZK,
-                TransactionType.SELL,
+                LTC,
+                CZK,
+                SELL,
                 new BigDecimal("0.04595383"),
                 new BigDecimal("2176.0971827593"),
                 "R",
@@ -137,11 +141,11 @@ class GeneralBytesBeanV2Test {
                 new FeeRebateImportedTransactionBean(
                     "L-R" + FEE_UID_PART,
                     Instant.parse("2018-08-06T06:38:43Z"),
-                    Currency.LTC,
-                    Currency.CZK,
-                    TransactionType.FEE,
+                    LTC,
+                    LTC,
+                    FEE,
                     new BigDecimal("0.0001"),
-                    Currency.LTC,
+                    LTC,
                     "R"
                 )
             )
@@ -158,9 +162,9 @@ class GeneralBytesBeanV2Test {
             new ImportedTransactionBean(
                 "L-R",
                 Instant.parse("2018-08-06T06:38:00Z"),
-                Currency.LTC,
-                Currency.CZK,
-                TransactionType.SELL,
+                LTC,
+                CZK,
+                SELL,
                 new BigDecimal("0.04595383"),
                 new BigDecimal("2176.0971827593"),
                 "R",
@@ -170,11 +174,11 @@ class GeneralBytesBeanV2Test {
                 new FeeRebateImportedTransactionBean(
                     "L-R" + FEE_UID_PART,
                     Instant.parse("2018-08-06T06:38:00Z"),
-                    Currency.LTC,
-                    Currency.CZK,
-                    TransactionType.FEE,
+                    LTC,
+                    LTC,
+                    FEE,
                     new BigDecimal("0.0001"),
-                    Currency.LTC,
+                    LTC,
                     "R"
                 )
             )

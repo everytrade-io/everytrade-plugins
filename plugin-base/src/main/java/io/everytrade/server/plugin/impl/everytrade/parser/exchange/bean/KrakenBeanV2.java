@@ -27,6 +27,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static io.everytrade.server.model.TransactionType.FEE;
 import static lombok.AccessLevel.PRIVATE;
 
 @EqualsAndHashCode(callSuper = true)
@@ -153,7 +154,7 @@ public class KrakenBeanV2 extends ExchangeBean {
                 time,
                 feeCurrency,
                 feeCurrency,
-                TransactionType.FEE,
+                FEE,
                 feeAmount,
                 feeCurrency
             );
