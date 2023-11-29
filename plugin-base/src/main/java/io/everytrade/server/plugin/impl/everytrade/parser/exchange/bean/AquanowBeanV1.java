@@ -107,7 +107,7 @@ public class AquanowBeanV1  extends ExchangeBean {
         } else {
             related = List.of(
                 new FeeRebateImportedTransactionBean(
-                    null,
+                    FEE_UID_PART,
                     date,
                     marketBase,
                     marketBase,

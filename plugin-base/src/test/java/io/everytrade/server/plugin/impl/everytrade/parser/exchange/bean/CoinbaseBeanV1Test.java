@@ -27,6 +27,7 @@ import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -92,7 +93,7 @@ class CoinbaseBeanV1Test {
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
-                    null,
+                    FEE_UID_PART,
                     Instant.parse("2020-09-27T18:36:58Z"),
                     EUR,
                     EUR,
@@ -213,7 +214,7 @@ class CoinbaseBeanV1Test {
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
-                    null,
+                    FEE_UID_PART,
                     Instant.parse("2019-09-25T14:37:00Z"),
                     USD,
                     USD,
@@ -243,7 +244,7 @@ class CoinbaseBeanV1Test {
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
-                    null,
+                    FEE_UID_PART,
                     Instant.parse("2017-12-22T08:28:33Z"),
                     CZK,
                     CZK,
@@ -273,7 +274,7 @@ class CoinbaseBeanV1Test {
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
-                    null,
+                    FEE_UID_PART,
                     Instant.parse("2020-03-09T05:17:11Z"),
                     EUR,
                     EUR,
@@ -336,7 +337,7 @@ class CoinbaseBeanV1Test {
                 null,
                 Instant.parse("2020-05-15T20:04:01Z"),
                 Currency.BTC,
-                Currency.CZK,
+                CZK,
                 TransactionType.BUY,
                 new BigDecimal("0.01104395"),
                 new BigDecimal("241342.9977498993"),
@@ -345,13 +346,13 @@ class CoinbaseBeanV1Test {
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
-                    null,
+                    FEE_UID_PART,
                     Instant.parse("2020-05-15T20:04:01Z"),
-                    Currency.CZK,
-                    Currency.CZK,
+                    CZK,
+                    CZK,
                     TransactionType.FEE,
                     new BigDecimal("106.44"),
-                    Currency.CZK
+                    CZK
                 )
             )
         );

@@ -13,6 +13,9 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
+import static io.everytrade.server.model.Currency.BTC;
+import static io.everytrade.server.model.Currency.CZK;
+import static io.everytrade.server.model.TransactionType.BUY;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -53,8 +56,8 @@ class GeneralBytesBeanV1Test {
             new ImportedTransactionBean(
                 "L-R",
                 Instant.parse("2018-08-06T05:35:35.0Z"),
-                Currency.BTC,
-                Currency.CZK,
+                BTC,
+                CZK,
                 TransactionType.SELL,
                 new BigDecimal("0.031637"),
                 new BigDecimal("158042.7979896956"),
@@ -75,9 +78,9 @@ class GeneralBytesBeanV1Test {
             new ImportedTransactionBean(
                 "L-R",
                 Instant.parse("2018-08-06T04:44:44.0Z"),
-                Currency.BTC,
-                Currency.CZK,
-                TransactionType.BUY,
+                BTC,
+                CZK,
+                BUY,
                 new BigDecimal("0.052674"),
                 new BigDecimal("151877.5866651479"),
                 "R",
@@ -97,9 +100,9 @@ class GeneralBytesBeanV1Test {
             new ImportedTransactionBean(
                 "L-R",
                 Instant.parse("2018-08-06T06:38:43Z"),
-                Currency.BTC,
-                Currency.CZK,
-                TransactionType.BUY,
+                BTC,
+                CZK,
+                BUY,
                 new BigDecimal("0.052674"),
                 new BigDecimal("151877.5866651479"),
                 "R",
@@ -119,9 +122,9 @@ class GeneralBytesBeanV1Test {
             new ImportedTransactionBean(
                 "L-R",
                 Instant.parse("2018-08-06T06:38:00Z"),
-                Currency.BTC,
-                Currency.CZK,
-                TransactionType.BUY,
+                BTC,
+                CZK,
+                BUY,
                 new BigDecimal("0.052674"),
                 new BigDecimal("151877.5866651479"),
                 "R",

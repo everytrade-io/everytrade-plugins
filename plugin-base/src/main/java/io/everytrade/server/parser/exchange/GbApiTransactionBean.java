@@ -80,8 +80,8 @@ public class GbApiTransactionBean {
             related = List.of(new FeeRebateImportedTransactionBean(
                     uid + FEE_UID_PART,
                     timestamp,
-                    baseCurrency,
-                    quoteCurrency,
+                    parseGbCurrency(expenseCurrency),
+                    parseGbCurrency(expenseCurrency),
                     TransactionType.FEE,
                     expense,
                     parseGbCurrency(expenseCurrency),

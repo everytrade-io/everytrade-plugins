@@ -149,7 +149,7 @@ public class CoinbaseBeanV1 extends ExchangeBean {
             try {
                 related = List.of(
                     new FeeRebateImportedTransactionBean(
-                        null,
+                        FEE_UID_PART,
                         timeStamp,
                         feeCurrency,
                         feeCurrency,

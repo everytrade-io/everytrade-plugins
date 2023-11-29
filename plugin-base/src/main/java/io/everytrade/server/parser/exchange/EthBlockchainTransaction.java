@@ -115,7 +115,7 @@ public class EthBlockchainTransaction {
         if (equalsToZero(feeAmount) || !withFee) {
             related = emptyList();
         } else {
-            related = List.of(new FeeRebateImportedTransactionBean(id + FEE_UID_PART, timestamp, base, quote, FEE, feeAmount, base));
+            related = List.of(new FeeRebateImportedTransactionBean(id + FEE_UID_PART, timestamp, base, base, FEE, feeAmount, base));
         }
         return new TransactionCluster(createMainTx(), related);
     }

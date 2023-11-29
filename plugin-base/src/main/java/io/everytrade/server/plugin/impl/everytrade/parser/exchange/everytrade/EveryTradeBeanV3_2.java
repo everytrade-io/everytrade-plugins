@@ -242,10 +242,10 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
             unrelated ? uid : uid + FEE_UID_PART,
             date,
             feeCurrency != null ? feeCurrency : symbolBase,
-            feeCurrency != null ? feeCurrency : symbolQuote,
+            feeCurrency != null ? feeCurrency : symbolBase,
             FEE,
             fee,
-            feeCurrency,
+            feeCurrency != null ? feeCurrency : symbolBase,
             unrelated ? note : null,
             null,
             labels

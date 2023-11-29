@@ -93,8 +93,8 @@ public class OkxApiTransactionBean {
             List.of(new FeeRebateImportedTransactionBean(
                     orderId + FEE_UID_PART,
                     timeStamp,
-                    instrumentIdBase,
-                    instrumentIdQuote,
+                    feeCurrency,
+                    feeCurrency,
                     TransactionType.FEE,
                     convertedFee,
                     feeCurrency

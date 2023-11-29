@@ -1,4 +1,4 @@
-package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
+package io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.v1;
 
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
@@ -7,6 +7,7 @@ import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BaseClusterData;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;

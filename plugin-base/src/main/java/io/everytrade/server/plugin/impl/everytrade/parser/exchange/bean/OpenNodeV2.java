@@ -120,7 +120,7 @@ public class OpenNodeV2 extends ExchangeBean {
                 try {
                     related = List.of(
                         new FeeRebateImportedTransactionBean(
-                            null,
+                            openNodeId + FEE_UID_PART,
                             createdAt,
                             currency,
                             currency,

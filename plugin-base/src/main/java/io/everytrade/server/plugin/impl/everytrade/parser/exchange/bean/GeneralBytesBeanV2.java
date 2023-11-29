@@ -19,6 +19,7 @@ import java.time.format.DateTimeParseException;
 import java.util.Collections;
 import java.util.List;
 
+import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
 import static io.everytrade.server.plugin.impl.generalbytes.GbPlugin.parseGbCurrency;
 
@@ -124,9 +125,9 @@ public class GeneralBytesBeanV2 extends ExchangeBean {
                 new FeeRebateImportedTransactionBean(
                     localTransactionId.concat("-").concat(remoteTransactionId) + FEE_UID_PART,
                     serverTime,
-                    cryptoCurrency,
-                    cashCurrency,
-                    TransactionType.FEE,
+                    expenseCurrency,
+                    expenseCurrency,
+                    FEE,
                     expense.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
                     expenseCurrency,
                     remoteTransactionId      //note

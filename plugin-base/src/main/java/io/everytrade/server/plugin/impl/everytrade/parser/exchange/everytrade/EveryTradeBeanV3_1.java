@@ -177,10 +177,10 @@ public class EveryTradeBeanV3_1 extends ExchangeBean {
             unrelated ? uid : uid + FEE_UID_PART,
             date,
             feeCurrency != null ? feeCurrency : symbolBase,
-            feeCurrency != null ? feeCurrency : symbolQuote,
+            feeCurrency != null ? feeCurrency : symbolBase,
             TransactionType.FEE,
             fee,
-            feeCurrency
+            feeCurrency != null ? feeCurrency : symbolBase
         );
     }
 

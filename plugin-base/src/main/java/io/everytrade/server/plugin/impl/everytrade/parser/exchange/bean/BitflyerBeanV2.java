@@ -120,7 +120,7 @@ public class BitflyerBeanV2 extends ExchangeBean {
                     feeCurrency,
                     TransactionType.FEE,
                     feeAmount,
-                    currencyOne
+                    feeCurrency
                 )
             );
         }

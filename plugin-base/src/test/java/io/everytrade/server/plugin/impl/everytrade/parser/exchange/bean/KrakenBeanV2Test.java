@@ -14,6 +14,8 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
+import static io.everytrade.server.model.Currency.EUR;
+import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -37,8 +39,8 @@ class KrakenBeanV2Test {
             ImportedTransactionBean.createDepositWithdrawal(
                 "LDFPEF-QAM6J-PYE4FP",
                 Instant.parse("2022-09-13T18:48:22Z"),
-                Currency.EUR,
-                Currency.EUR,
+                EUR,
+                EUR,
                 TransactionType.WITHDRAWAL,
                 new BigDecimal("720.0000"),
                 null
@@ -47,11 +49,11 @@ class KrakenBeanV2Test {
                 new FeeRebateImportedTransactionBean(
                     "LDFPEF-QAM6J-PYE4FP-fee",
                     Instant.parse("2022-09-13T18:48:22Z"),
-                    Currency.EUR,
-                    Currency.EUR,
-                    TransactionType.FEE,
+                    EUR,
+                    EUR,
+                    FEE,
                     new BigDecimal("0.0900"),
-                    Currency.EUR
+                    EUR
                 )
             )
         );
@@ -74,7 +76,7 @@ class KrakenBeanV2Test {
                 "LYVTSS-NIZAI-AC2KVR LTAHVF-RGBFO-IYNCGG",
                 Instant.parse("2022-10-12T10:00:57Z"),
                 Currency.USDT,
-                Currency.EUR,
+                EUR,
                 TransactionType.SELL,
                 new BigDecimal("1000.0000000000"),
                 new BigDecimal("1.0300000000")
@@ -83,11 +85,11 @@ class KrakenBeanV2Test {
                 new FeeRebateImportedTransactionBean(
                     "LYVTSS-NIZAI-AC2KVR LTAHVF-RGBFO-IYNCGG-fee" ,
                     Instant.parse("2022-10-12T10:00:57Z"),
-                    Currency.EUR,
-                    Currency.EUR,
-                    TransactionType.FEE,
+                    EUR,
+                    EUR,
+                    FEE,
                     new BigDecimal("15.2200"),
-                    Currency.EUR
+                    EUR
                 )
             )
         );

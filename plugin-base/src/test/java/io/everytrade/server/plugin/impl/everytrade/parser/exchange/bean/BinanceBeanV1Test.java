@@ -14,6 +14,13 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
+import static io.everytrade.server.model.Currency.BTC;
+import static io.everytrade.server.model.Currency.LTC;
+import static io.everytrade.server.model.Currency.USDT;
+import static io.everytrade.server.model.Currency._1INCH;
+import static io.everytrade.server.model.TransactionType.BUY;
+import static io.everytrade.server.model.TransactionType.FEE;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -39,21 +46,21 @@ class BinanceBeanV1Test {
             new ImportedTransactionBean(
                 null,
                 Instant.parse("2020-02-04T16:19:07Z"),
-                Currency.LTC,
-                Currency.BTC,
-                TransactionType.BUY,
+                LTC,
+                BTC,
+                BUY,
                 new BigDecimal("1.61"),
                 new BigDecimal("0.0073930000")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
-                    null,
+                    FEE_UID_PART,
                     Instant.parse("2020-02-04T16:19:07Z"),
-                    Currency.LTC,
-                    Currency.LTC,
-                    TransactionType.FEE,
+                    LTC,
+                    LTC,
+                    FEE,
                     new BigDecimal("0.00161"),
-                    Currency.LTC
+                    LTC
                 )
             )
         );
@@ -65,26 +72,25 @@ class BinanceBeanV1Test {
         final String row = "2022-04-17 10:16:12;1INCHUSDT;BUY;1.508;99.4;149.8952;0.0994;1INCH\n";
 
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
-        var b = actual;
         final TransactionCluster expected = new TransactionCluster(
             new ImportedTransactionBean(
                 null,
                 Instant.parse("2022-04-17T10:16:12Z"),
-                Currency._1INCH,
-                Currency.USDT,
-                TransactionType.BUY,
+                _1INCH,
+                USDT,
+                BUY,
                 new BigDecimal("99.4000000000"),
                 new BigDecimal("1.5080000000")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
-                    null,
+                    FEE_UID_PART,
                     Instant.parse("2022-04-17T10:16:12Z"),
-                    Currency._1INCH,
-                    Currency._1INCH,
-                    TransactionType.FEE,
+                    _1INCH,
+                    _1INCH,
+                    FEE,
                     new BigDecimal("0.0994"),
-                    Currency._1INCH
+                    _1INCH
                 )
             )
         );
@@ -99,21 +105,21 @@ class BinanceBeanV1Test {
             new ImportedTransactionBean(
                 null,
                 Instant.parse("2020-02-04T16:19:07Z"),
-                Currency.LTC,
-                Currency.BTC,
-                TransactionType.BUY,
+                LTC,
+                BTC,
+                BUY,
                 new BigDecimal("1.61"),
                 new BigDecimal("0.0073930000")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
-                    null,
+                    FEE_UID_PART,
                     Instant.parse("2020-02-04T16:19:07Z"),
-                    Currency.BTC,
-                    Currency.BTC,
-                    TransactionType.FEE,
+                    BTC,
+                    BTC,
+                    FEE,
                     new BigDecimal("0.00161"),
-                    Currency.BTC
+                    BTC
                 )
             )
         );
@@ -128,21 +134,21 @@ class BinanceBeanV1Test {
             new ImportedTransactionBean(
                 null,
                 Instant.parse("2020-02-03T11:09:51Z"),
-                Currency.LTC,
-                Currency.BTC,
+                LTC,
+                BTC,
                 TransactionType.SELL,
                 new BigDecimal("1.72"),
                 new BigDecimal("0.0074970000")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
-                    null,
+                    FEE_UID_PART,
                     Instant.parse("2020-02-03T11:09:51Z"),
-                    Currency.BTC,
-                    Currency.BTC,
-                    TransactionType.FEE,
+                    BTC,
+                    BTC,
+                    FEE,
                     new BigDecimal("0.00001289"),
-                    Currency.BTC
+                    BTC
                 )
             )
         );
@@ -157,21 +163,21 @@ class BinanceBeanV1Test {
             new ImportedTransactionBean(
                 null,
                 Instant.parse("2020-02-03T11:09:51Z"),
-                Currency.LTC,
-                Currency.BTC,
+                LTC,
+                BTC,
                 TransactionType.SELL,
                 new BigDecimal("1.72"),
                 new BigDecimal("0.0074970000")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
-                    null,
+                    FEE_UID_PART,
                     Instant.parse("2020-02-03T11:09:51Z"),
-                    Currency.LTC,
-                    Currency.LTC,
-                    TransactionType.FEE,
+                    LTC,
+                    LTC,
+                    FEE,
                     new BigDecimal("0.00001289"),
-                    Currency.LTC
+                    LTC
                 )
             )
         );
