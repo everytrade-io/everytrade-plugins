@@ -20,6 +20,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.CoinbaseUnivo
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.DefaultUnivocityExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.IMultiExchangeSpecificParser;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.KrakenDoubleQuotesUnivocitySpecificParserV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.KrakenExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.AquanowBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BinanceBeanV1;
@@ -34,6 +35,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexB
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseProBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.GeneralBytesBeanV3;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.KrakenBeanV3;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OpenNodeV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OpenNodeV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OpenNodeV3;
@@ -473,6 +475,18 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                         .withSeparator(delimiter)
                 ))
                 .parserFactory(() -> new KrakenExchangeSpecificParser(KrakenBeanV2.class, delimiter))
+                .supportedExchange(KRAKEN)
+                .build());
+
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader
+                        .of("\"txid", "\"\"ordertxid\"\"", "\"\"pair\"\"", "\"\"time\"\"", "\"\"type\"\"", "\"\"ordertype\"\"",
+                            "\"\"price\"\"", "\"\"cost\"\"", "\"\"fee\"\"", "\"\"vol\"\"",
+                            "\"\"margin\"\"", "\"\"misc\"\"","\"\"ledgers\"\"\"")
+                        .withSeparator(",")
+                ))
+                .parserFactory(() -> new KrakenDoubleQuotesUnivocitySpecificParserV1(KrakenBeanV3.class, ","))
                 .supportedExchange(KRAKEN)
                 .build());
 
