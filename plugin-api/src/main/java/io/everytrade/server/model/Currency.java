@@ -727,7 +727,13 @@ public enum Currency {
     BRICK(false, Instant.parse("2023-11-04T00:00:00Z"), "r/FortNiteBR Bricks"),
     CSM(false, Instant.parse("2023-11-04T00:00:00Z"), "Crust Shadow"),
     GHST(false, Instant.parse("2022-10-27T00:00:00Z"), "Aavegotchi"),
-    GARI(false, Instant.parse("2022-08-25T00:00:00Z"), "Gari Network");
+    GARI(false, Instant.parse("2022-08-25T00:00:00Z"), "Gari Network"),
+    PBX(false, Instant.parse("2023-11-26T00:00:00Z"), "Probinex"),
+    MOON(false, Instant.parse("2023-02-21T00:00:00Z"), "r/CryptoCurrency Moons"),
+    ACM(false, Instant.parse("2023-03-08T00:00:00Z"), "AC Milan Fan Token"),
+    BIFI(false, Instant.parse("2021-05-27T00:00:00Z"), "Beefy.Finance"),
+    PNT(false, Instant.parse("2020-07-14T00:00:00Z"), "pNetwork"),
+    INTR(false, Instant.parse("2022-08-25T00:00:00Z"), "Interlay");
 
     String code;
     int decimalDigits;

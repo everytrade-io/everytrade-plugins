@@ -795,10 +795,28 @@ public class EverytradeCsvMultiParser implements ICsvParser {
     }
 
     private ExchangeParseDetail findCsvDetailByHeader(String header) {
-        return EXCHANGE_PARSE_DETAILS.stream()
-            .filter(parseDetail -> parseDetail.getHeaders().stream().anyMatch(h -> h.matching(header)))
-            .findFirst()
-            .orElse(null);
+        String krakenHederException = "\"txid,\"\"ordertxid\"\",\"\"pair\"\",\"\"time\"\",\"\"type\"\",\"\"ordertype\"\",\"\"price\"\"," +
+            "\"\"cost\"\",\"\"fee\"\",\"\"vol\"\",\"\"margin\"\",\"\"misc\"\",\"\"ledgers\"\"\"";
+
+        if (header.equals(krakenHederException)) {
+            return ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader
+                        .of("\"txid", "\"\"ordertxid\"\"", "\"\"pair\"\"", "\"\"time\"\"", "\"\"type\"\"", "\"\"ordertype\"\"",
+                            "\"\"price\"\"", "\"\"cost\"\"", "\"\"fee\"\"", "\"\"vol\"\"",
+                            "\"\"margin\"\"", "\"\"misc\"\"", "\"\"ledgers\"\"\"")
+                        .withSeparator(",")
+                ))
+                .parserFactory(() -> new KrakenDoubleQuotesUnivocitySpecificParserV1(KrakenBeanV3.class, ","))
+                .supportedExchange(KRAKEN)
+                .build();
+        } else {
+            return EXCHANGE_PARSE_DETAILS.stream()
+
+                .filter(parseDetail -> parseDetail.getHeaders().stream().anyMatch(h -> h.matching(header)))
+                .findFirst()
+                .orElse(null);
+        }
     }
 
     private int countTransactions(List<TransactionCluster> transactionClusters) {
