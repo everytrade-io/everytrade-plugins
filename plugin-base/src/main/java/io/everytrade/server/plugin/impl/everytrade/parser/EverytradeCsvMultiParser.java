@@ -35,7 +35,6 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexB
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseProBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.GeneralBytesBeanV3;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.KrakenBeanV3;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OpenNodeV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OpenNodeV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OpenNodeV3;
@@ -55,7 +54,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.GeneralB
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.HitBtcBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.HitBtcBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.HuobiBeanV1;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.KrakenBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.KrakenBeanV4;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.LocalBitcoinsBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OkxBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.PaxfulBeanV1;
@@ -460,9 +459,13 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 .headers(List.of(
                     CsvHeader
                         .of("txid", "ordertxid", "pair", "time", "type", "ordertype", "price", "cost", "fee", "vol", "ledgers")
+                        .withSeparator(delimiter),
+                    CsvHeader
+                        .of("\"txid", "\"\"ordertxid\"\"", "\"\"pair\"\"", "\"\"time\"\"", "\"\"type\"\"", "\"\"ordertype\"\"",
+                            "\"\"price\"\"", "\"\"cost\"\"", "\"\"fee\"\"", "\"\"vol\"\"", "\"\"ledgers\"\"\"")
                         .withSeparator(delimiter)
                 ))
-                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(KrakenBeanV1.class, delimiter))
+                .parserFactory(() -> new KrakenDoubleQuotesUnivocitySpecificParserV1(KrakenBeanV4.class, delimiter))
                 .supportedExchange(KRAKEN)
                 .build());
 
@@ -475,18 +478,6 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                         .withSeparator(delimiter)
                 ))
                 .parserFactory(() -> new KrakenExchangeSpecificParser(KrakenBeanV2.class, delimiter))
-                .supportedExchange(KRAKEN)
-                .build());
-
-            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
-                .headers(List.of(
-                    CsvHeader
-                        .of("\"txid", "\"\"ordertxid\"\"", "\"\"pair\"\"", "\"\"time\"\"", "\"\"type\"\"", "\"\"ordertype\"\"",
-                            "\"\"price\"\"", "\"\"cost\"\"", "\"\"fee\"\"", "\"\"vol\"\"",
-                            "\"\"margin\"\"", "\"\"misc\"\"","\"\"ledgers\"\"\"")
-                        .withSeparator(",")
-                ))
-                .parserFactory(() -> new KrakenDoubleQuotesUnivocitySpecificParserV1(KrakenBeanV3.class, ","))
                 .supportedExchange(KRAKEN)
                 .build());
 
@@ -795,28 +786,10 @@ public class EverytradeCsvMultiParser implements ICsvParser {
     }
 
     private ExchangeParseDetail findCsvDetailByHeader(String header) {
-        String krakenHederException = "\"txid,\"\"ordertxid\"\",\"\"pair\"\",\"\"time\"\",\"\"type\"\",\"\"ordertype\"\",\"\"price\"\"," +
-            "\"\"cost\"\",\"\"fee\"\",\"\"vol\"\",\"\"margin\"\",\"\"misc\"\",\"\"ledgers\"\"\"";
-
-        if (header.equals(krakenHederException)) {
-            return ExchangeParseDetail.builder()
-                .headers(List.of(
-                    CsvHeader
-                        .of("\"txid", "\"\"ordertxid\"\"", "\"\"pair\"\"", "\"\"time\"\"", "\"\"type\"\"", "\"\"ordertype\"\"",
-                            "\"\"price\"\"", "\"\"cost\"\"", "\"\"fee\"\"", "\"\"vol\"\"",
-                            "\"\"margin\"\"", "\"\"misc\"\"", "\"\"ledgers\"\"\"")
-                        .withSeparator(",")
-                ))
-                .parserFactory(() -> new KrakenDoubleQuotesUnivocitySpecificParserV1(KrakenBeanV3.class, ","))
-                .supportedExchange(KRAKEN)
-                .build();
-        } else {
             return EXCHANGE_PARSE_DETAILS.stream()
-
                 .filter(parseDetail -> parseDetail.getHeaders().stream().anyMatch(h -> h.matching(header)))
                 .findFirst()
                 .orElse(null);
-        }
     }
 
     private int countTransactions(List<TransactionCluster> transactionClusters) {

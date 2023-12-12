@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 @Headers(sequence = {"txid", "pair", "time", "type", "cost", "fee", "vol"}, extract = true)
-public class KrakenBeanV1 extends ExchangeBean {
+public class KrakenBeanV4 extends ExchangeBean {
     private String txid;
     private Currency pairBase;
     private Currency pairQuote;
