@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static java.math.BigDecimal.ZERO;
+
 public abstract class ExchangeBean implements IImportableBean {
     public static final String UNSUPPORTED_CURRENCY_PAIR = "Unsupported currency pair ";
     public static final String UNSUPPORTED_TRANSACTION_TYPE = "Unsupported transaction type ";
@@ -82,7 +84,7 @@ public abstract class ExchangeBean implements IImportableBean {
         List<Integer> negativeValues = new ArrayList<>();
         for (int i = 0; i < values.length; i++) {
             BigDecimal value = values[i];
-            if (value.compareTo(BigDecimal.ZERO) < 0) {
+            if (value != null && ZERO.compareTo(value) > 0) {
                 negativeValues.add(i);
             }
         }

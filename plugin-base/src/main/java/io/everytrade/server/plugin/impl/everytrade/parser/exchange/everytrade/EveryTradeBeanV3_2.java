@@ -95,7 +95,7 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
         }
     }
 
-    @Parsed(field = {"QUANTY", "QUANTITY"}, defaultNullRead = "0")
+    @Parsed(field = {"QUANTY", "QUANTITY"})
     public void setQuanty(String value) {
         quantity = EverytradeCSVParserValidator.parserNumber(value);
     }
@@ -152,6 +152,7 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
         }
         validatePositivity(quantity, price, fee, rebate);
         validateDate(date);
+        validateRelatedTransaction(quantity,fee,rebate);
 
         switch (action) {
             case BUY:
@@ -282,4 +283,12 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
         );
         return new TransactionCluster(tx, getRelatedTxs());
     }
+
+    private void validateRelatedTransaction(BigDecimal quantity, BigDecimal fee, BigDecimal rebate) {
+        if(quantity != null && ZERO.compareTo(quantity) == 0 && (ZERO.compareTo(fee) != 0 || ZERO.compareTo(rebate) != 0)) {
+            throw new DataValidationException("Related transactions cannot be added to parent transactions with a value of zero.");
+        }
+    }
+
+
 }
