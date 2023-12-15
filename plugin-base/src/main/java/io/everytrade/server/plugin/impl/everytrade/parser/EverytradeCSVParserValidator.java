@@ -32,6 +32,9 @@ public class EverytradeCSVParserValidator {
         if (value.contains(",")) {
             value = value.replace(",", ".");
         }
+        if("0".equals(value)) {
+            return BigDecimal.ZERO;
+        }
         return new BigDecimal(value);
     }
 
