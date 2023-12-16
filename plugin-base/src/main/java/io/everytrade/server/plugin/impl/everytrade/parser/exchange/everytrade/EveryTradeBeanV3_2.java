@@ -152,7 +152,7 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
         }
         validatePositivity(quantity, price, fee, rebate);
         validateDate(date);
-        validateRelatedTransaction(quantity,fee,rebate);
+        validateRelatedTransactionAndMainTransaction(quantity,fee,rebate);
 
         switch (action) {
             case BUY:
@@ -284,7 +284,12 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
         return new TransactionCluster(tx, getRelatedTxs());
     }
 
-    private void validateRelatedTransaction(BigDecimal quantity, BigDecimal fee, BigDecimal rebate) {
+    private void validateRelatedTransactionAndMainTransaction(BigDecimal quantity, BigDecimal fee, BigDecimal rebate) {
+        // main
+        if((quantity == null || quantity.compareTo(ZERO) == 0) && (ZERO.compareTo(fee) == 0) && (ZERO.compareTo(rebate) == 0)) {
+            throw new DataValidationException("Row do not contain enough data for transaction");
+        }
+        // related
         if(quantity != null && ZERO.compareTo(quantity) == 0 && (ZERO.compareTo(fee) != 0 || ZERO.compareTo(rebate) != 0)) {
             throw new DataValidationException("Related transactions cannot be added to parent transactions with a value of zero.");
         }
