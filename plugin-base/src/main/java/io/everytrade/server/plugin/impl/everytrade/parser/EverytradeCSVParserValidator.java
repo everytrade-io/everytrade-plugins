@@ -24,6 +24,9 @@ public class EverytradeCSVParserValidator {
     }
 
     public static BigDecimal parserNumber(String value) {
+        if(value == null) {
+            return null;
+        }
         // e.g. 2,100.00
         if (value.contains(",") && value.contains(".")) {
             value = value.replace(",", "");
