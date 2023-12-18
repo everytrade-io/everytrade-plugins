@@ -367,12 +367,9 @@ public class KrakenConnector implements IConnector {
     }
 
     private String currencySwitcher(String currency) {
-        Map<String, String> currencySwitcher = new HashMap<>();
-        currencySwitcher.put("ZEUR", "EUR");
-
-        if (currencySwitcher.get(currency) != null) {
-            return currencySwitcher.get(currency);
-        } else {
+        try {
+            return KrakenAdapters.adaptCurrency(currency).getCurrencyCode();
+        } catch (Exception ignore) {
             return currency;
         }
     }
