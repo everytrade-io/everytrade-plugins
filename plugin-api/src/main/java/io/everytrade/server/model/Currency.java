@@ -733,7 +733,8 @@ public enum Currency {
     ACM(false, Instant.parse("2023-03-08T00:00:00Z"), "AC Milan Fan Token"),
     BIFI(false, Instant.parse("2021-05-27T00:00:00Z"), "Beefy.Finance"),
     PNT(false, Instant.parse("2020-07-14T00:00:00Z"), "pNetwork"),
-    INTR(false, Instant.parse("2022-08-25T00:00:00Z"), "Interlay");
+    INTR(false, Instant.parse("2022-08-25T00:00:00Z"), "Interlay"),
+    MM(false, Instant.parse("2022-08-02T00:00:00Z"), "Million");
 
     String code;
     int decimalDigits;
