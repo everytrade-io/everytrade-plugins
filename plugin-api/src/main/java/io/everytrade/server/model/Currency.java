@@ -734,7 +734,11 @@ public enum Currency {
     BIFI(false, Instant.parse("2021-05-27T00:00:00Z"), "Beefy.Finance"),
     PNT(false, Instant.parse("2020-07-14T00:00:00Z"), "pNetwork"),
     INTR(false, Instant.parse("2022-08-25T00:00:00Z"), "Interlay"),
-    MM(false, Instant.parse("2022-08-02T00:00:00Z"), "Million");
+    MM(false, Instant.parse("2022-08-02T00:00:00Z"), "Million"),
+    SHRAP(false, Instant.parse("2023-11-10T00:00:00Z"), "Shrapnel"),
+    BIGTIME(false, Instant.parse("2023-10-11T00:00:00Z"), "Big Time"),
+    POLIS(false, Instant.parse("2022-08-04T00:00:00Z"), "Star Atlas DAO"),
+    ORCA(false, Instant.parse("2021-09-02T00:00:00Z"), "Orca");
 
     String code;
     int decimalDigits;
