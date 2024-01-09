@@ -738,7 +738,26 @@ public enum Currency {
     SHRAP(false, Instant.parse("2023-11-10T00:00:00Z"), "Shrapnel"),
     BIGTIME(false, Instant.parse("2023-10-11T00:00:00Z"), "Big Time"),
     POLIS(false, Instant.parse("2022-08-04T00:00:00Z"), "Star Atlas DAO"),
-    ORCA(false, Instant.parse("2021-09-02T00:00:00Z"), "Orca");
+    ORCA(false, Instant.parse("2021-09-02T00:00:00Z"), "Orca"),
+    DERO(false, Instant.parse("2018-04-19T00:00:00Z"), "Dero"),
+    EVMOS(false, Instant.parse("2022-08-25T00:00:00Z"), "Evmos"),
+    PLS(false, Instant.parse("2023-04-14T00:00:00Z"), "PlutusDAO"),
+    HOPR(false, Instant.parse("2023-03-22T00:00:00Z"), "HOPR"),
+    ACS(false, Instant.parse("2023-10-28T00:00:00Z"), "Access Protocol"),
+    UPO(false, Instant.parse("2022-04-07T00:00:00Z"), "UpOnly Token"),
+    TAO(false, Instant.parse("2023-11-03T00:00:00Z"), "BitTensor"),
+    SIDUS(false, Instant.parse("2023-11-07T00:00:00Z"), "Sidus"),
+    MYRIA(false, Instant.parse("2023-04-13T00:00:00Z"), "Myria"),
+    NAKA(false, Instant.parse("2021-10-14T00:00:00Z"), "Nakamoto Games"),
+    TIA(false, Instant.parse("2023-10-31T00:00:00Z"), "Celestia"),
+    MEXC(false, Instant.parse("2019-09-19T00:00:00Z"), "MEXC Token"),
+    RIO(false, Instant.parse("2021-07-29T00:00:00Z"), "Realio Network"),
+    PYTH(false, Instant.parse("2023-11-20T00:00:00Z"), "Pyth Network"),
+    GFI(false, Instant.parse("2023-02-18T00:00:00Z"), "Goldfinch"),
+    SIN(false, Instant.parse("2021-10-21T00:00:00Z"), "Sinverse"),
+    _3ULL("3ULL", false, Instant.parse("2022-07-21T00:00:00Z"), "Playa3ull Games"),
+    GMEE(false, Instant.parse("2021-10-09T00:00:00Z"), "GAMEE"),
+    KUJI(false, Instant.parse("2022-03-24T00:00:00Z"), "Kujira");
 
     String code;
     int decimalDigits;
