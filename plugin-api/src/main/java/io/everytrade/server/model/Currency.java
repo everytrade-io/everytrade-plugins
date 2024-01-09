@@ -755,7 +755,7 @@ public enum Currency {
     PYTH(false, Instant.parse("2023-11-20T00:00:00Z"), "Pyth Network"),
     GFI(false, Instant.parse("2023-02-18T00:00:00Z"), "Goldfinch"),
     SIN(false, Instant.parse("2021-10-21T00:00:00Z"), "Sinverse"),
-    _3ULL(false, Instant.parse("2022-07-21T00:00:00Z"), "Playa3ull Games"),
+    _3ULL("3ULL", false, Instant.parse("2022-07-21T00:00:00Z"), "Playa3ull Games"),
     GMEE(false, Instant.parse("2021-10-09T00:00:00Z"), "GAMEE"),
     KUJI(false, Instant.parse("2022-03-24T00:00:00Z"), "Kujira");
 
