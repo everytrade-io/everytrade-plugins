@@ -72,9 +72,10 @@ public class BlockchainEthDownloader {
         var downloadState = DownloadState.parseFrom(lastDownloadState);
 
         List<EtherScanTransactionDto> transactionDtos = downloadEthTxs(latestBlockWithAllConfirmedTxs, downloadState);
-        transactionDtos.addAll(downloadErc20Txs(latestBlockWithAllConfirmedTxs, downloadState));
-
-        return new DownloadResult(parseTransactions(transactionDtos), downloadState.serialize());
+        List<EtherScanTransactionDto> result = new ArrayList<>(transactionDtos);
+        Collection<EtherScanErc20TransactionDto> transactionErc20Dtos = downloadErc20Txs(latestBlockWithAllConfirmedTxs, downloadState);
+        result.addAll(transactionErc20Dtos);
+        return new DownloadResult(parseTransactions(result), downloadState.serialize());
     }
 
     private Collection<EtherScanErc20TransactionDto> downloadErc20Txs(long currentBlock, DownloadState state) {
