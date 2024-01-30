@@ -223,7 +223,7 @@ public class BlockchainEthDownloader {
         }
 
         public static DownloadState parseFrom(String lastState) {
-            if (lastState == null) {
+            if (lastState == null || lastState.equals(";")) {
                 return new DownloadState(null, null);
             }
             var split = lastState.split(SEPARATOR);
