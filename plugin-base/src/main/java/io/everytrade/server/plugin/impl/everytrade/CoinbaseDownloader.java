@@ -8,9 +8,12 @@ import io.everytrade.server.util.AmountUtil;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.knowm.xchange.Exchange;
+import org.knowm.xchange.coinbase.v2.dto.account.transactions.CoinbaseShowTransactionV2;
 import org.knowm.xchange.coinbase.v2.service.CoinbaseAccountService;
+import org.knowm.xchange.coinbase.v2.service.CoinbaseAccountServiceRaw;
 import org.knowm.xchange.coinbase.v2.service.CoinbaseTradeHistoryParams;
 import org.knowm.xchange.coinbase.v2.service.CoinbaseTradeService;
+import org.knowm.xchange.coinbase.v2.service.TransactionType;
 import org.knowm.xchange.coinbase.v3.dto.transactions.CoinbaseAdvancedTradeFills;
 import org.knowm.xchange.coinbase.v3.dto.transactions.CoinbaseAdvancedTradeOrderFillsResponse;
 import org.knowm.xchange.currency.Currency;
@@ -254,15 +257,10 @@ public class CoinbaseDownloader {
         return trades;
     }
 
-    Date createDateFromText(String textTime) throws ParseException {
-        var datePattern = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-        datePattern.setTimeZone(TimeZone.getTimeZone("UTC"));
-        textTime = cleanDateText(textTime);
-        return datePattern.parse(textTime);
-    }
 
-    private List<UserTrade> downloadTrades(Map<String, WalletState> walletStates) {
+    private List<UserTrade> downloadTrades(Map<String, WalletState> walletStates) throws ParseException {
         var sortedWalletStates = sortWalletsByTxsUpdates(walletStates);
+        var accountService = (CoinbaseAccountServiceRaw) exchange.getAccountService();
         var wallets = sortedWalletStates.stream().
             collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (u, v) -> u, LinkedHashMap::new));
         final List<UserTrade> userTrades = new ArrayList<>();
@@ -283,37 +281,36 @@ public class CoinbaseDownloader {
                 while (sentRequests < MAX_REQUEST_COUNT) {
                     ++sentRequests;
                     params.setStartId(lastBuyId);
-                    final List<UserTrade> buysTradeHistoryBlock;
+                    final List<CoinbaseShowTransactionV2> rowBuys;
                     try {
-                        buysTradeHistoryBlock = tradeService.getBuyTradeHistory(params, walletId).getUserTrades();
+                        rowBuys = accountService.getExpandTransactions(walletId,params,TransactionType.BUY);
                     } catch (IOException e) {
                         throw new IllegalStateException("Download buys history failed.", e);
                     }
 
-                    if (buysTradeHistoryBlock.isEmpty()) {
+                    if (rowBuys.isEmpty()) {
                         break;
                     }
-
-                    userTrades.addAll(buysTradeHistoryBlock);
-                    lastBuyId = buysTradeHistoryBlock.get(0).getId();
+                    userTrades.addAll(convertRowBuy(rowBuys));
+                    lastBuyId = rowBuys.get(rowBuys.size()-1).getId();
                 }
 
                 while (sentRequests < MAX_REQUEST_COUNT) {
                     ++sentRequests;
                     params.setStartId(lastSellId);
-                    final List<UserTrade> sellsTradeHistoryBlock;
+                    final List<CoinbaseShowTransactionV2> rowSells;
                     try {
-                        sellsTradeHistoryBlock = tradeService.getSellTradeHistory(params, walletId).getUserTrades();
+                        rowSells = accountService.getExpandTransactions(walletId,params,TransactionType.SELL);
                     } catch (IOException e) {
                         throw new IllegalStateException("Download sells history failed.", e);
                     }
 
-                    if (sellsTradeHistoryBlock.isEmpty()) {
+                    if (rowSells.isEmpty()) {
                         break;
                     }
 
-                    userTrades.addAll(sellsTradeHistoryBlock);
-                    lastSellId = sellsTradeHistoryBlock.get(0).getId();
+                    userTrades.addAll(convertRowSell(rowSells));
+                    lastSellId = rowSells.get(rowSells.size()-1).getId();
 
                 }
                 if (sentRequests == MAX_REQUEST_COUNT) {
@@ -328,6 +325,44 @@ public class CoinbaseDownloader {
             }
         }
         return userTrades;
+    }
+
+    private List<UserTrade> convertRowBuy(List<CoinbaseShowTransactionV2> rowTxs) throws ParseException {
+        List<UserTrade> result = new ArrayList<>();
+        for (CoinbaseShowTransactionV2 rowTx : rowTxs) {
+            UserTrade trade = UserTrade.builder()
+                .originalAmount(rowTx.getAmount().getAmount())
+                .price(rowTx.getBuy().getUnitPrice().getAmount())
+                .timestamp(createDateFromTextTradeFormat(rowTx.getCreatedAt()))
+                .currencyPair(new CurrencyPair(rowTx.getAmount().getCurrency(),rowTx.getBuy().getSubtotal().getCurrency()))
+                .orderId(rowTx.getBuy().getId())
+                .id(rowTx.getId())
+                .type(Order.OrderType.BID)
+                .feeCurrency(Currency.getInstance(rowTx.getBuy().getFee().getCurrency()))
+                .feeAmount(rowTx.getBuy().getFee().getAmount())
+                .build();
+            result.add(trade);
+        }
+        return result;
+    }
+
+    private List<UserTrade> convertRowSell(List<CoinbaseShowTransactionV2> rowTxs) throws ParseException {
+        List<UserTrade> result = new ArrayList<>();
+        for (CoinbaseShowTransactionV2 rowTx : rowTxs) {
+            UserTrade trade = UserTrade.builder()
+                .originalAmount(rowTx.getAmount().getAmount())
+                .price(rowTx.getSell().getUnitPrice().getAmount())
+                .timestamp(createDateFromTextTradeFormat(rowTx.getCreatedAt()))
+                .currencyPair(new CurrencyPair(rowTx.getAmount().getCurrency(),rowTx.getSell().getSubtotal().getCurrency()))
+                .orderId(rowTx.getSell().getId())
+                .id(rowTx.getId())
+                .type(Order.OrderType.ASK)
+                .feeCurrency(Currency.getInstance(rowTx.getSell().getFee().getCurrency()))
+                .feeAmount(rowTx.getSell().getFee().getAmount())
+                .build();
+            result.add(trade);
+        }
+        return result;
     }
 
     public List<FundingRecord> downloadFunding(Map<String, WalletState> walletStates) {
@@ -519,5 +554,18 @@ public class CoinbaseDownloader {
     private String advancedTradeLastDownloadTimestamp() {
         return String.valueOf(partialLastAdvanceTradeStartDatetime) + COLON_SYMBOL + String.valueOf(partialLastAdvanceTradeEndDatetime)
             + COLON_SYMBOL + String.valueOf(completedLastAdvanceTradeEndDatetime) + COLON_SYMBOL + cursorAdvanceTrade;
+    }
+
+    Date createDateFromText(String textTime) throws ParseException {
+        var datePattern = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        datePattern.setTimeZone(TimeZone.getTimeZone("UTC"));
+        textTime = cleanDateText(textTime);
+        return datePattern.parse(textTime);
+    }
+
+    Date createDateFromTextTradeFormat(String textTime) throws ParseException {
+        var datePattern = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        datePattern.setTimeZone(TimeZone.getTimeZone("UTC"));
+        return datePattern.parse(textTime);
     }
 }
