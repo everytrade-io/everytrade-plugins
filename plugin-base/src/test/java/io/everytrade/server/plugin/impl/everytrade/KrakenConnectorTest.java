@@ -145,7 +145,7 @@ class KrakenConnectorTest {
 
         assertNotNull(tx.getUid());
         assertNotNull(tx.getExecuted());
-        assertEquals(Currency.BTC, tx.getAction().equals(SELL) ? tx.getQuote() : tx.getBase());
+        assertEquals(Currency.BTC, tx.getBase());
         assertNotNull(tx.getImported());
         assertNull(cluster.getIgnoredFeeReason());
         assertEquals(0, cluster.getIgnoredFeeTransactionCount());
@@ -154,7 +154,7 @@ class KrakenConnectorTest {
             assertEquals(volume, tx.getVolume());
         } else if (type.isBuyOrSell()) {
             assertEquals(volume, tx.getVolume());
-            assertEquals(Currency.USD, tx.getAction().equals(SELL) ? tx.getBase() : tx.getQuote());
+            assertEquals(Currency.USD, tx.getQuote());
         }
     }
 }
