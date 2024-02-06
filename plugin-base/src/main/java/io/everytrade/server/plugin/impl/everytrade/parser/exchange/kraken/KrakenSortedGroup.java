@@ -28,6 +28,7 @@ public class KrakenSortedGroup {
     // buy/sell
     KrakenBeanV2 rowBase;
     KrakenBeanV2 rowQuote;
+    KrakenBeanV2 rowFee;
 
     public KrakenBeanV2 createdTransaction = new KrakenBeanV2();
 
@@ -46,13 +47,13 @@ public class KrakenSortedGroup {
             var stTradeRow = rowsTrades.get(0);
             var ndTradeRow = rowsTrades.get(1);
             // Buy
-            if ((stTradeRow.getFee().compareTo(ZERO) == 0 && stTradeRow.getAmount().compareTo(ZERO) > 0)
-                || (ndTradeRow.getFee().compareTo(ZERO) == 0 && ndTradeRow.getAmount().compareTo(ZERO) > 0)) {
+            if ((!stTradeRow.getAsset().isFiat() && stTradeRow.getAmount().compareTo(ZERO) > 0)
+                || (!ndTradeRow.getAsset().isFiat() && ndTradeRow.getAmount().compareTo(ZERO) > 0)) {
                 return BUY;
             }
             // Sell
-            if ((stTradeRow.getFee().compareTo(ZERO) == 0 && stTradeRow.getAmount().compareTo(ZERO) < 0)
-                || (ndTradeRow.getFee().compareTo(ZERO) == 0 && ndTradeRow.getAmount().compareTo(ZERO) < 0)) {
+            if ((!stTradeRow.getAsset().isFiat() && stTradeRow.getAmount().compareTo(ZERO) < 0)
+                || (!ndTradeRow.getAsset().isFiat() && ndTradeRow.getAmount().compareTo(ZERO) < 0)) {
                 return SELL;
             }
         }
@@ -100,11 +101,25 @@ public class KrakenSortedGroup {
         }
     }
 
+    private void createFee() {
+        if (rowBase.getFee().compareTo(ZERO) == 0 && rowQuote.getFee().compareTo(ZERO) != 0) {
+            var bean = new KrakenBeanV2();
+            bean.setFeeCurrency(rowQuote.getAsset());
+            bean.setFeeAmount(rowQuote.getFee());
+            rowFee = bean;
+        }
+        if (rowQuote.getFee().compareTo(ZERO) == 0 && rowBase.getFee().compareTo(ZERO) != 0) {
+            var bean = new KrakenBeanV2();
+            bean.setFeeCurrency(rowBase.getAsset());
+            bean.setFeeAmount(rowBase.getFee());
+            rowFee = bean;
+        }
+    }
+
     public void createTransactions(TransactionType type) {
         if (type.isBuyOrSell()) {
             // set base and quote row
-            if (rowsTrades.get(0).getFee().compareTo(ZERO) == 0
-                && rowsTrades.get(1).getFee().compareTo(ZERO) != 0) {
+            if (!rowsTrades.get(0).getAsset().isFiat() && rowsTrades.get(1).getAsset().isFiat()) {
                 rowBase = rowsTrades.get(0);
                 rowQuote = rowsTrades.get(1);
             } else {
@@ -112,6 +127,7 @@ public class KrakenSortedGroup {
                 rowBase = rowsTrades.get(1);
             }
             validateBuySell();
+            createFee();
             createBuySellTxs(type);
         }
         if (type.isDepositOrWithdrawal()) {
@@ -157,8 +173,8 @@ public class KrakenSortedGroup {
         createdTransaction.setMarketQuote(rowQuote.getAsset());
         createdTransaction.setAmountBase(rowBase.getAmount());
         createdTransaction.setAmountQuote(rowQuote.getAmount());
-        createdTransaction.setFeeCurrency(rowQuote.getAsset());
-        createdTransaction.setFeeAmount(rowQuote.getFee());
+        createdTransaction.setFeeCurrency(rowFee.getFeeCurrency());
+        createdTransaction.setFeeAmount(rowFee.getFeeAmount());
         createdTransaction.setTime(rowBase.getTime());
         createdTransaction.setRowNumber(rowBase.getTime().getEpochSecond());
         createdTransaction.setTxsType(type);

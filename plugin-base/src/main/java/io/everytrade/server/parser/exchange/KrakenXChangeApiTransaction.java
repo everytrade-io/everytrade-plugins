@@ -48,17 +48,16 @@ public class KrakenXChangeApiTransaction implements IXChangeApiTransaction {
         }
         org.knowm.xchange.currency.CurrencyPair currencyPair = (org.knowm.xchange.currency.CurrencyPair) instrument;
 
-        Order.OrderType type = trade.getType();
         return XChangeApiTransaction.builder()
             .id(trade.getId())
             .timestamp(trade.getTimestamp().toInstant())
-            .type(orderTypeToTxType(type))
-            .base(convert(type != Order.OrderType.ASK ? currencyPair.base : currencyPair.counter))
-            .quote(convert(type != Order.OrderType.ASK ? currencyPair.counter : currencyPair.base))
+            .type(orderTypeToTxType(trade.getType()))
+            .base(convert(currencyPair.base))
+            .quote(convert(currencyPair.counter))
             .originalAmount(trade.getOriginalAmount())
             .price(trade.getPrice())
             .feeAmount(trade.getFeeAmount())
-            .feeCurrency((trade.getFeeCurrency() == null) ? null : convert(trade.getFeeCurrency()))
+            .feeCurrency(convert(trade.getFeeCurrency()))
             .build();
     }
 
@@ -210,9 +209,16 @@ public class KrakenXChangeApiTransaction implements IXChangeApiTransaction {
             .base(currency)
             .quote(null)
             .originalAmount(record.getAmount())
-            .feeAmount(record.getFee())
-            .feeCurrency(currency)
+            .feeAmount(getFeeAmount(record))
+            .feeCurrency(getFeeAmount(record) == null ? null : currency)
             .address(record.getAddress())
             .build();
+    }
+
+    private static BigDecimal getFeeAmount(FundingRecord record) {
+        if(record.getFee() == null) {
+            return null;
+        }
+        return BigDecimal.ZERO.compareTo(record.getFee()) != 0 ? record.getFee() : null;
     }
 }

@@ -232,9 +232,11 @@ public class KrakenConnector implements IConnector {
                     for (Currency a : assets) {
                         // getting a block of recent (last three months) deposit statuses (status contains addresses)
                         Thread.sleep(SLEEP_BETWEEN_FUNDING_REQUESTS.toMillis());
-                        List<DepostitStatus> getBlockWithAddresses = accountService.getDepositStatus(null,
+                        List<DepostitStatus> getRowBlockWithAddresses = accountService.getDepositStatus(null,
                             KrakenUtils.getKrakenCurrencyCode(a), null);
-                        depositStatuses.addAll(getBlockWithAddresses);
+                        List<DepostitStatus> depositBlock = getRowBlockWithAddresses.stream().filter(tx -> tx.getStatus().equalsIgnoreCase(
+                            "Success")).toList();
+                        depositStatuses.addAll(depositBlock);
                     }
                     // previous records - replacement
                     downloadedBlock = depositAddresses(downloadedBlock, depositStatuses);
@@ -244,9 +246,12 @@ public class KrakenConnector implements IConnector {
                     for (Currency a : assets) {
                         // getting a block of recent (last three months) deposit statuses (status contains addresses)
                         Thread.sleep(SLEEP_BETWEEN_FUNDING_REQUESTS.toMillis());
-                        List<WithdrawStatus> getBlockWithAddresses = accountService.getWithdrawStatus(null,
+                        List<WithdrawStatus> getRowBlockWithAddresses = accountService.getWithdrawStatus(null,
                             KrakenUtils.getKrakenCurrencyCode(a), null);
-                        withdrawalStatuses.addAll(getBlockWithAddresses);
+                        List<WithdrawStatus> withdrawalBlock =
+                            getRowBlockWithAddresses.stream().filter(tx -> tx.getStatus().equalsIgnoreCase(
+                            "Success")).toList();
+                        withdrawalStatuses.addAll(withdrawalBlock);
                     }
                     // previous records - replacement
                     downloadedBlock = withdrawalAddresses(downloadedBlock, withdrawalStatuses);

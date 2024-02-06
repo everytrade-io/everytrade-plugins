@@ -81,12 +81,8 @@ public class XChangeConnectorParser {
     protected List<TransactionCluster> tradesToCluster(List<UserTrade> trades, List<ParsingProblem> problems) {
         return trades.stream().map(trade -> {
                 try {
-                    if (KRAKEN == exchange) {
-                        return KrakenXChangeApiTransaction.fromTrade(trade).toTransactionCluster();
-                    } else {
-                        XChangeApiTransaction xchangeApiTransaction = XChangeApiTransaction.fromTrade(trade);
-                        return xchangeApiTransaction.toTransactionCluster();
-                    }
+                    XChangeApiTransaction xchangeApiTransaction = XChangeApiTransaction.fromTrade(trade);
+                    return xchangeApiTransaction.toTransactionCluster();
                 } catch (Exception e) {
                     logParsingError(e, problems, trade.toString());
                 }
