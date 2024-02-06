@@ -209,7 +209,7 @@ public class KrakenXChangeApiTransaction implements IXChangeApiTransaction {
             .base(currency)
             .quote(null)
             .originalAmount(record.getAmount())
-            .feeAmount(record.getFee())
+            .feeAmount(BigDecimal.ZERO.compareTo(record.getFee()) != 0 ? record.getFee() : null)
             .feeCurrency(currency)
             .address(record.getAddress())
             .build();
