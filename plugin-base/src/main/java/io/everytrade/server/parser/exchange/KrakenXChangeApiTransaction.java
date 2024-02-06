@@ -48,17 +48,16 @@ public class KrakenXChangeApiTransaction implements IXChangeApiTransaction {
         }
         org.knowm.xchange.currency.CurrencyPair currencyPair = (org.knowm.xchange.currency.CurrencyPair) instrument;
 
-        Order.OrderType type = trade.getType();
         return XChangeApiTransaction.builder()
             .id(trade.getId())
             .timestamp(trade.getTimestamp().toInstant())
-            .type(orderTypeToTxType(type))
-            .base(convert(type != Order.OrderType.ASK ? currencyPair.base : currencyPair.counter))
-            .quote(convert(type != Order.OrderType.ASK ? currencyPair.counter : currencyPair.base))
+            .type(orderTypeToTxType(trade.getType()))
+            .base(convert(currencyPair.base))
+            .quote(convert(currencyPair.counter))
             .originalAmount(trade.getOriginalAmount())
             .price(trade.getPrice())
             .feeAmount(trade.getFeeAmount())
-            .feeCurrency((trade.getFeeCurrency() == null) ? null : convert(trade.getFeeCurrency()))
+            .feeCurrency(convert(trade.getFeeCurrency()))
             .build();
     }
 
