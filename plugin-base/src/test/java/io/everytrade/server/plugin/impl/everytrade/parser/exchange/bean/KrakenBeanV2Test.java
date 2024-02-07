@@ -17,6 +17,7 @@ import java.util.List;
 import static io.everytrade.server.model.Currency.EUR;
 import static io.everytrade.server.model.Currency.LUNA2;
 import static io.everytrade.server.model.Currency.USD;
+import static io.everytrade.server.model.Currency.USDT;
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.SELL;
@@ -79,7 +80,7 @@ class KrakenBeanV2Test {
             new ImportedTransactionBean(
                 "LYVTSS-NIZAI-AC2KVR LTAHVF-RGBFO-IYNCGG",
                 Instant.parse("2022-10-12T10:00:57Z"),
-                Currency.USDT,
+                USDT,
                 EUR,
                 SELL,
                 new BigDecimal("1000.0000000000"),
@@ -170,8 +171,16 @@ class KrakenBeanV2Test {
             "\"ZUSD\",-110.4005,0.1987,580984.5330\n";
         final String row3 = "\"LEAJ5C-JKWYA-2PBSXP\",\"TMFORX-JVEEI-LZTJNI\",\"2023-12-20 12:32:22\",\"trade\",\"\",\"currency\"," +
             "\"XETH\",0.0500000000,0,0.0500000000\n";
+
+        final String row4 = "\"LVM7Z5-ETYLI-ZGL5E4\",\"TPEMO6-ADEDU-KQ735P\",\"2022-11-11 14:48:02\",\"trade\",\"\",\"currency\"," +
+            "\"ZUSD\",-108653.3953,0,0.0000\n";
+        final String row5 = "\"LHOBM5-B2C2L-RUWGDU\",\"TPEMO6-ADEDU-KQ735P\",\"2022-11-11 14:48:02\",\"trade\",\"\",\"currency\"," +
+            "\"USDT\",108835.38759578,217.67077520,108617.71682058\n";
+
         final TransactionCluster actual1 = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row0.concat(row1));
         final TransactionCluster actual2 = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row2.concat(row3));
+        final TransactionCluster actual3 = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row4.concat(row5));
+
         final TransactionCluster expected1 = new TransactionCluster(
             new ImportedTransactionBean(
                 "L4W62Z-2G4XA-QJIPVP L2CX5C-DFF5R-53JSLM",
@@ -216,8 +225,31 @@ class KrakenBeanV2Test {
                 )
             )
         );
+        final TransactionCluster expected3 = new TransactionCluster(
+            new ImportedTransactionBean(
+            "LHOBM5-B2C2L-RUWGDU LVM7Z5-ETYLI-ZGL5E4",
+            Instant.parse("2022-11-11T14:48:02Z"),
+            USDT,
+            USD,
+            BUY,
+            new BigDecimal("108835.38759578"),
+            new BigDecimal("0.9983278206")
+        ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    "LHOBM5-B2C2L-RUWGDU LVM7Z5-ETYLI-ZGL5E4-fee" ,
+                    Instant.parse("2022-11-11T14:48:02Z"),
+                    USDT,
+                    USDT,
+                    FEE,
+                    new BigDecimal("217.67077520"),
+                    USDT
+                )
+            )
+        );
         ParserTestUtils.checkEqual(expected1, actual1);
         ParserTestUtils.checkEqual(expected2, actual2);
+        ParserTestUtils.checkEqual(expected3, actual3);
     }
 
 
