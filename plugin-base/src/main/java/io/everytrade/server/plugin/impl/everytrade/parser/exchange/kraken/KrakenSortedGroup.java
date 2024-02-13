@@ -173,8 +173,8 @@ public class KrakenSortedGroup {
         createdTransaction.setMarketQuote(rowQuote.getAsset());
         createdTransaction.setAmountBase(rowBase.getAmount());
         createdTransaction.setAmountQuote(rowQuote.getAmount());
-        createdTransaction.setFeeCurrency(rowFee.getFeeCurrency());
-        createdTransaction.setFeeAmount(rowFee.getFeeAmount());
+        createdTransaction.setFeeCurrency(rowFee != null ? rowFee.getFeeCurrency() : null);
+        createdTransaction.setFeeAmount(rowFee != null ? rowFee.getFeeAmount() : null);
         createdTransaction.setTime(rowBase.getTime());
         createdTransaction.setRowNumber(rowBase.getTime().getEpochSecond());
         createdTransaction.setTxsType(type);
