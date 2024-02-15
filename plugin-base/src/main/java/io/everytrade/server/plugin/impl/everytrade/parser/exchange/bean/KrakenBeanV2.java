@@ -11,8 +11,10 @@ import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kraken.KrakenAssetCodeType;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kraken.KrakenSupportedTypes;
 import io.everytrade.server.util.KrakenCurrencyUtil;
+import io.everytrade.server.util.serialization.KrakenSubType;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.FieldDefaults;
@@ -28,20 +30,24 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static io.everytrade.server.model.TransactionType.FEE;
+import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
 import static lombok.AccessLevel.PRIVATE;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
 @FieldDefaults(level = PRIVATE)
-@Headers(sequence = {"txid", "refid", "time", "type", "asset", "amount", "fee"}, extract = true)
+@Headers(sequence = {"txid", "refid", "time", "type", "asset", "amount", "fee", "subtype"}, extract = true)
 public class KrakenBeanV2 extends ExchangeBean {
     String txid;
     String refid;
     Instant time;
     String type;
+    String subtype;
     Currency asset;
     BigDecimal amount;
     BigDecimal fee;
+    List<String> assetCodes = getAssetCodes();
+    KrakenAssetCodeType assetCode;
 
     int rowId;
     public List<Integer> usedIds = new ArrayList<>();
@@ -112,10 +118,19 @@ public class KrakenBeanV2 extends ExchangeBean {
         }
     }
 
+    @Parsed(field = "subtype")
+    public void setSubtype(String subType) {
+        this.subtype = subType;
+        if(KrakenSubType.SPOTFROMFUTURES.name().equalsIgnoreCase(subType)) {
+            setUnsupportedRow(true);
+        }
+    }
+
     @Parsed(field = "asset")
     public void setAsset(String asset) {
         try {
             this.asset = KrakenCurrencyUtil.findCurrencyByCode(asset);
+            this.assetCode = KrakenAssetCodeType.findAssetCodeByAsset(asset);
         } catch (IllegalStateException e) {
             setMessage(e.getMessage());
             this.setUnsupportedRow(true);
@@ -131,7 +146,7 @@ public class KrakenBeanV2 extends ExchangeBean {
         this.amount = amount;
     }
 
-    @Parsed(field = "fee", defaultNullRead = "0")
+    @Parsed(field = "fee")
     public void setFee(String fee) {
         fee = fee.replace(",", ".");
         this.fee = new BigDecimal(fee);
@@ -147,7 +162,7 @@ public class KrakenBeanV2 extends ExchangeBean {
         if (TransactionType.UNKNOWN.equals(type) || isUnsupportedRow() || isDuplicity()) {
             throw new DataIgnoredException(getMessage());
         }
-        if (feeAmount.abs().compareTo(BigDecimal.ZERO) > 0) {
+        if (feeAmount != null && feeAmount.abs().compareTo(BigDecimal.ZERO) > 0) {
 
             var feeTxs = new FeeRebateImportedTransactionBean(
                 txid + FEE_UID_PART,
@@ -162,6 +177,20 @@ public class KrakenBeanV2 extends ExchangeBean {
         }
 
         if (List.of(TransactionType.DEPOSIT, TransactionType.WITHDRAWAL).contains(this.txsType)) {
+            TransactionCluster cluster = new TransactionCluster(
+                ImportedTransactionBean.createDepositWithdrawal(
+                    txid,
+                    time,
+                    asset,
+                    asset,
+                    txsType,
+                    amount.abs(),
+                    null
+                ),
+                related
+            );
+            return cluster;
+        } else if (txsType.isStaking()) {
             TransactionCluster cluster = new TransactionCluster(
                 ImportedTransactionBean.createDepositWithdrawal(
                     txid,
