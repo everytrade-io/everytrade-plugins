@@ -78,7 +78,8 @@ public class KrakenCurrencyUtil {
         // Staking
         code = code.replace(".M", "")
             .replace(".S", "")
-            .replace(".P", "");
+            .replace(".P", "")
+            .replace("ETHW", "ETH");
 
         final Currency currencyLong = CURRENCY_LONG_CODES.get(code);
         if (currencyLong != null) {

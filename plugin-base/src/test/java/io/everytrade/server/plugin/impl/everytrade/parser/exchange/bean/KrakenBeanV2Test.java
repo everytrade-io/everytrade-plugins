@@ -4,24 +4,25 @@ import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
-import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
-import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
+import static io.everytrade.server.model.Currency.ADA;
 import static io.everytrade.server.model.Currency.EUR;
 import static io.everytrade.server.model.Currency.LUNA2;
+import static io.everytrade.server.model.Currency.SOL;
 import static io.everytrade.server.model.Currency.USD;
 import static io.everytrade.server.model.Currency.USDT;
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.SELL;
-import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
+import static io.everytrade.server.model.TransactionType.STAKE;
+import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
+import static io.everytrade.server.model.TransactionType.UNSTAKE;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -162,6 +163,176 @@ class KrakenBeanV2Test {
     }
 
     @Test
+    void multiParserFeeNullTest()  {
+        final String row0 = "\"L4TAIW-BZQLN-6GJBVO\",\"TPK5CG-FDJLZ-XW3CZ5\",\"2021-05-04 09:01:48\",\"trade\",\"\",\"currency\"," +
+            "\"XXRP\",-0.00337202,0,0.00000540\n";
+        final String row1 = "\"LXJPD2-JZRKA-KWIVCD\",\"TPK5CG-FDJLZ-XW3CZ5\",\"2021-05-04 09:01:48\",\"trade\",\"\",\"currency\"," +
+            "\"ZEUR\",0.0041,0,17115.3144\n";
+        final TransactionCluster actual1 = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row0.concat(row1));
+        final TransactionCluster expected1 = new TransactionCluster(
+
+            new ImportedTransactionBean(
+                "L4TAIW-BZQLN-6GJBVO LXJPD2-JZRKA-KWIVCD",
+                Instant.parse("2021-05-04T09:01:48Z"),
+                Currency.XRP,
+                EUR,
+                SELL,
+                new BigDecimal("0.0033720200"),
+                new BigDecimal("1.2158883992")
+            ),
+            List.of()
+        );
+
+        ParserTestUtils.checkEqual(expected1, actual1);
+    }
+
+    @Test
+    void parserStakingRewards()  {
+        final String row0 = "\"LHNEEH-W6XEY-5HZCHY\",\"STUYFON-WOUNJ-O37EC6\",\"2023-07-27 07:19:48\",\"staking\",\"\",\"currency\",\"ADA" +
+            ".S\",0.97142400,0,3734.27488700\n";
+        final TransactionCluster actual1 = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row0);
+        final TransactionCluster expected1 = new TransactionCluster(
+
+            new ImportedTransactionBean(
+                "LHNEEH-W6XEY-5HZCHY",
+                Instant.parse("2023-07-27T07:19:48Z"),
+                Currency.ADA,
+                ADA,
+                STAKING_REWARD,
+                new BigDecimal("0.97142400"),
+                null
+            ),
+            List.of()
+        );
+        ParserTestUtils.checkEqual(expected1, actual1);
+    }
+
+    @Test
+    void multiParserStake()  {
+        final String row0 = "\"\",\"BUU2LFX-M72QBI-XMVQOW\",\"2022-11-14 13:06:25\",\"withdrawal\",\"\",\"currency\",\"SOL\",-65" +
+            ".0000000000,0,\"\"\n";
+        final String row1 = "\"LPG5E3-QQT4A-TPBTBX\",\"BUU2LFX-M72QBI-XMVQOW\",\"2022-11-14 13:06:29\",\"transfer\",\"spottostaking\"," +
+            "\"currency\",\"SOL\",-65.0000000000,0,0.0000000000\n";
+        final String row2 = "\"\",\"RUUBAQC-A3VQ6O-YOSHVM\",\"2022-11-14 13:06:59\",\"deposit\",\"\",\"currency\",\"SOL.S\",65" +
+            ".0000000000,0,\"\"\n";
+        final String row3 = "\"LRTRDX-BJAVJ-U3VL7N\",\"RUUBAQC-A3VQ6O-YOSHVM\",\"2022-11-14 13:07:21\",\"transfer\",\"stakingfromspot\"," +
+            "\"currency\",\"SOL.S\",65.0000000000,0,105.0600142300\n";
+        final TransactionCluster actual1 =
+            ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row0.concat(row1).concat(row2).concat(row3));
+        final TransactionCluster expected1 = new TransactionCluster(
+            new ImportedTransactionBean(
+                "LRTRDX-BJAVJ-U3VL7N",
+                Instant.parse("2022-11-14T13:07:21Z"),
+                Currency.SOL,
+                SOL,
+                STAKE,
+                new BigDecimal("65.0000000000"),
+                null
+            ),
+            List.of()
+        );
+
+        ParserTestUtils.checkEqual(expected1, actual1);
+    }
+
+    @Test
+    void multiParserUnStake() {
+        final String row0 = "\"\",\"BUVMCT7-FRX4NA-XZBRQC\",\"2023-03-17 11:29:00\",\"withdrawal\",\"\",\"currency\",\"SOL.S\",-106" +
+            ".7735000000,0,\"\"\n";
+        final String row1 = "\"LFMAM5-WX6WX-4CP5JT\",\"BUVMCT7-FRX4NA-XZBRQC\",\"2023-03-17 11:29:19\",\"transfer\",\"stakingtospot\"," +
+            "\"currency\",\"SOL.S\",-106.7735000000,0,0.0000040300\n";
+        final String row2 = "\"\",\"RUTIW2A-LEDNP3-SMOINQ\",\"2023-03-17 11:30:10\",\"deposit\",\"\",\"currency\",\"SOL\",106.7735000000," +
+            "0,\"\"\n";
+        final String row3 = "\"LCZHCE-XJJM2-JJ376Q\",\"RUTIW2A-LEDNP3-SMOINQ\",\"2023-03-17 11:30:18\",\"transfer\",\"spotfromstaking\"," +
+            "\"currency\",\"SOL\",106.7735000000,0,106.7735000000\n";
+        final TransactionCluster actual1 =
+            ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row0.concat(row1).concat(row2).concat(row3));
+        final TransactionCluster expected1 = new TransactionCluster(
+
+            new ImportedTransactionBean(
+                "LCZHCE-XJJM2-JJ376Q",
+                Instant.parse("2023-03-17T11:30:18Z"),
+                Currency.SOL,
+                SOL,
+                UNSTAKE,
+                new BigDecimal("106.7735000000"),
+                null
+            ),
+            List.of()
+        );
+        ParserTestUtils.checkEqual(expected1, actual1);
+    }
+
+    @Test
+    void skipDepositInStake() {
+        final String row0 = "\"\",\"RUU3EVC-6GIYSL-6YTOMO\",\"2022-11-05 01:14:17\",\"deposit\",\"\",\"currency\",\"SOL.S\",0.0178340800," +
+            "0,\"\"\n";
+        final String row1 = "\"L5HYDN-5WP37-ZWS7K4\",\"STAYKUO-GLFCW-HF2WMS\",\"2022-11-05 15:04:28\",\"staking\",\"\",\"currency\",\"SOL" +
+            ".S\",0.0178340800,0,40.0178340800\n";
+        final TransactionCluster actual1 =
+            ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row0.concat(row1));
+        final TransactionCluster expected1 = new TransactionCluster(
+
+            new ImportedTransactionBean(
+                "L5HYDN-5WP37-ZWS7K4",
+                Instant.parse("2022-11-05T15:04:28Z"),
+                Currency.SOL,
+                SOL,
+                STAKING_REWARD,
+                new BigDecimal("0.0178340800"),
+                null
+            ),
+            List.of()
+        );
+        ParserTestUtils.checkEqual(expected1, actual1);
+    }
+
+    @Test
+    void addFuturesToIgnoredUnsupported() {
+        final String row0 = "\"\",\"RONKG4U-BILSX5-6X6H7E\",\"2022-09-16 00:19:23\",\"deposit\",\"\",\"currency\",\"ETHW\",4.0120552,0," +
+            "\"\"\n";
+        final String row1 = "\"LIA6J3-COUUA-TSOUKU\",\"RONKG4U-BILSX5-6X6H7E\",\"2022-09-16 00:20:07\",\"transfer\",\"spotfromfutures\"," +
+            "\"currency\",\"ETHW\",4.0120552,0,4.0120552\n";
+
+        final String row2 = "\"\",\"ACCYWC5-HE2CCO-5MEUWB\",\"2022-09-13 18:46:39\",\"withdrawal\",\"\",\"currency\",\"ZEUR\",-720.0000,0" +
+            ".0900,\"\"\n";
+        final String row3 = "\"LDFPEF-QAM6J-PYE4FP\",\"ACCYWC5-HE2CCO-5MEUWB\",\"2022-09-13 18:48:22\",\"withdrawal\",\"\",\"currency\"," +
+            "\"ZEUR\",-720.0000,0.0900,8.6339\n";
+
+
+        final TransactionCluster actual =
+            ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row0.concat(row1).concat(row2).concat(row3));
+        final TransactionCluster expected = new TransactionCluster(
+            ImportedTransactionBean.createDepositWithdrawal(
+                "LDFPEF-QAM6J-PYE4FP",
+                Instant.parse("2022-09-13T18:48:22Z"),
+                EUR,
+                EUR,
+                TransactionType.WITHDRAWAL,
+                new BigDecimal("720.0000"),
+                null
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    "LDFPEF-QAM6J-PYE4FP-fee",
+                    Instant.parse("2022-09-13T18:48:22Z"),
+                    EUR,
+                    EUR,
+                    FEE,
+                    new BigDecimal("0.0900"),
+                    EUR
+                )
+            )
+        );
+        ParserTestUtils.checkEqual(expected, actual);
+
+
+
+
+
+    }
+
+    @Test
     void multiParserTest2()  {
         final String row0 = "\"L4W62Z-2G4XA-QJIPVP\",\"TBYBIA-DYCWV-SG6WEN\",\"2022-11-01 16:48:43\",\"trade\",\"\",\"currency\"," +
             "\"LUNA2\",-1000.00000000,2.60000020,3697.39999980\n";
@@ -251,8 +422,5 @@ class KrakenBeanV2Test {
         ParserTestUtils.checkEqual(expected2, actual2);
         ParserTestUtils.checkEqual(expected3, actual3);
     }
-
-
-
 
 }
