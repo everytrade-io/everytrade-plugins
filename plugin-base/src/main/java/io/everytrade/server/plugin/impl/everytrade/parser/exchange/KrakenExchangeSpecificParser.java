@@ -3,6 +3,7 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.KrakenBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceSortedGroupV4;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kraken.KrakenAssetCodeType;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kraken.KrakenSortedGroup;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kraken.KrakenSupportedTypes;
 import io.everytrade.server.util.serialization.KrakenSubType;
@@ -120,7 +121,7 @@ public class KrakenExchangeSpecificParser extends DefaultUnivocityExchangeSpecif
                 // SKIP deposit before staking - "","RUU3EVC-6GIYSL-6YTOMO","2022-11-05 01:14:17","deposit","","currency",
                 // "SOL.S",0.0178340800,0,""
             } else if (values.size() == 1 && TYPE_DEPOSIT.code.equalsIgnoreCase(values.get(0).getType())
-                && List.of(STAKED, STAKING).contains(values.get(0).getAssetCode())) {
+                && values.get(0).getAssetCode() != null && List.of(STAKED, STAKING).contains(values.get(0).getAssetCode())) {
                 duplicities.add(values.get(0));
             } else {
                 result.put(entry.getKey(), values);
