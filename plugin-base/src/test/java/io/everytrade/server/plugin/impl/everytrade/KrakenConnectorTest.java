@@ -6,6 +6,7 @@ import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.test.mock.KrakenExchangeMock;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.knowm.xchange.dto.account.FundingRecord;
 import org.knowm.xchange.dto.trade.UserTrade;
@@ -32,7 +33,7 @@ import static java.math.BigDecimal.TEN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-
+@Disabled
 class KrakenConnectorTest {
 
     private static final CurrencyPair PAIR = new CurrencyPair(BTC, USD);

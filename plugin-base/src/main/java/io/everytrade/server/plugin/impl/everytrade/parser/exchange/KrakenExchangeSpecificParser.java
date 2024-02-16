@@ -18,7 +18,6 @@ import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.kraken
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.kraken.KrakenAssetCodeType.STAKING;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.kraken.KrakenConstants.TYPE_DEPOSIT;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.kraken.KrakenConstants.TYPE_TRANSFER;
-import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.kraken.KrakenConstants.TYPE_WITHDRAWAL;
 import static io.everytrade.server.util.serialization.KrakenSubType.SPOTFROMSTAKING;
 import static io.everytrade.server.util.serialization.KrakenSubType.STAKINGFROMSPOT;
 import static java.util.stream.Collectors.groupingBy;
