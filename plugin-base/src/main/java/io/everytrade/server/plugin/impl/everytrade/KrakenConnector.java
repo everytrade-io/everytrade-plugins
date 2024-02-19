@@ -81,10 +81,9 @@ public class KrakenConnector implements IConnector {
     private static final String WRONG_NUMBER_OF_TRANSACTIONS = "wrong number of txs - expected (1x RECEIVE and 1x SEND)";
     private static final String SPEND_POSITIVE_NUMBER = "Spend - transaction amount must be negative";
     private static final String RECEIVE_POSITIVE_NUMBER = "Receive - transaction amount must be positive";
+    private static final Duration SLEEP_BETWEEN_FUNDING_REQUESTS = Duration.ofMillis(3 * 1000);
 
     private static final int MAX_REQUESTS_COUNT = 50;
-    private static final Duration SLEEP_BETWEEN_TRADE_REQUESTS = Duration.ofMillis(6 * 1000);
-    private static final Duration SLEEP_BETWEEN_FUNDING_REQUESTS = Duration.ofMillis(3 * 1000);
     public static final String UID_TRADES_ID = "1";
     public static final String UID_SALE_ID = "2";
     public static final String UID_DEPOSIT_ID = "3";
@@ -215,6 +214,8 @@ public class KrakenConnector implements IConnector {
             downloadLedgers(state, accountService, startUnixId, endUnixId, offset, blocks, UID_DEPOSIT_ID, LedgerType.DEPOSIT);
         } catch (IOException e) {
             throw new IllegalStateException("Download user trade history failed.", e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
         return createFundings(blocks, DEPOSIT, null);
     }
@@ -230,6 +231,8 @@ public class KrakenConnector implements IConnector {
             downloadLedgers(state, accountService, startUnixId, endUnixId, offset, blocks, UID_WITHDRAWAL_ID, LedgerType.WITHDRAWAL);
         } catch (IOException e) {
             throw new IllegalStateException("Download user trade history failed.", e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
         return createFundings(blocks, WITHDRAWAL, null);
     }
@@ -346,14 +349,17 @@ public class KrakenConnector implements IConnector {
             return KrakenAdapters.adaptTradesHistory(sells).getUserTrades();
         } catch (IOException e) {
             throw new IllegalStateException("Download receive spend history failed.", e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 
     private static void downloadLedgers(Uids state, KrakenAccountService accountService, String startUnixId,
                                         String endUnixId, Long offset, List<KrakenLedger> blocks, String uidType,
-                                        LedgerType ledgerType) throws IOException {
+                                        LedgerType ledgerType) throws IOException, InterruptedException {
         int requests = 0;
         while (requests < MAX_REQUESTS_COUNT) {
+            Thread.sleep(SLEEP_BETWEEN_FUNDING_REQUESTS.toMillis());
             var block = accountService.getKrakenPartialLedgerInfo(ledgerType, startUnixId, endUnixId, offset);
             if (block.isEmpty()) {
                 String start = getStart(state, blocks, uidType);
@@ -529,6 +535,8 @@ public class KrakenConnector implements IConnector {
             downloadLedgers(state, accountService, startUnixId, endUnixId, offset, blocks, UID_TRADES_ID, TRADE);
         } catch (IOException e) {
             throw new IllegalStateException("Download user trade history failed.", e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
         Map<String, List<KrakenLedger>> pairs = getPairsFromBlocks(blocks);
         return convertLedgerPairsToTrade(pairs);
@@ -544,6 +552,8 @@ public class KrakenConnector implements IConnector {
             downloadLedgers(state, accountService, startUnixId, endUnixId, offset, blocks, UID_STAKING_ID, STAKING);
         } catch (IOException e) {
             throw new IllegalStateException("Download funding records history failed.", e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
         return createFundings(blocks, OTHER_INFLOW, "reward");
     }
