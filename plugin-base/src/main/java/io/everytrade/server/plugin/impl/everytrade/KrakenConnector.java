@@ -83,7 +83,7 @@ public class KrakenConnector implements IConnector {
     private static final String WRONG_NUMBER_OF_TRANSACTIONS = "wrong number of txs - expected (1x RECEIVE and 1x SEND)";
     private static final String SPEND_POSITIVE_NUMBER = "Spend - transaction amount must be negative";
     private static final String RECEIVE_POSITIVE_NUMBER = "Receive - transaction amount must be positive";
-    private static final Duration SLEEP_BETWEEN_FUNDING_REQUESTS = Duration.ofMillis(1 * 2000);
+    private static final Duration SLEEP_BETWEEN_FUNDING_REQUESTS = Duration.ofMillis(3 * 1000);
 
     private static final int MAX_REQUESTS_COUNT = 50;
     public static final String UID_TRADES_ID = "1";
