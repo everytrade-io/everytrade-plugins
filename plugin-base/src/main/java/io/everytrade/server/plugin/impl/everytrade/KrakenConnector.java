@@ -58,6 +58,7 @@ import java.util.stream.Collectors;
 import static io.everytrade.server.model.SupportedExchange.KRAKEN;
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.SELL;
+import static io.everytrade.server.plugin.api.parser.ParsingProblemType.PARSED_ROW_IGNORED;
 import static io.everytrade.server.plugin.api.parser.ParsingProblemType.ROW_PARSING_FAILED;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.DECIMAL_DIGITS;
 import static io.everytrade.server.util.serialization.SequenceIdentifierType.END;
@@ -72,6 +73,7 @@ import static org.knowm.xchange.dto.account.FundingRecord.Type.WITHDRAWAL;
 import static org.knowm.xchange.kraken.dto.account.LedgerType.SALE;
 import static org.knowm.xchange.kraken.dto.account.LedgerType.STAKING;
 import static org.knowm.xchange.kraken.dto.account.LedgerType.TRADE;
+import static org.knowm.xchange.kraken.dto.account.LedgerType.TRANSFER;
 
 @RequiredArgsConstructor
 @FieldDefaults(makeFinal = true, level = PRIVATE)
@@ -81,7 +83,7 @@ public class KrakenConnector implements IConnector {
     private static final String WRONG_NUMBER_OF_TRANSACTIONS = "wrong number of txs - expected (1x RECEIVE and 1x SEND)";
     private static final String SPEND_POSITIVE_NUMBER = "Spend - transaction amount must be negative";
     private static final String RECEIVE_POSITIVE_NUMBER = "Receive - transaction amount must be positive";
-    private static final Duration SLEEP_BETWEEN_FUNDING_REQUESTS = Duration.ofMillis(3 * 1000);
+    private static final Duration SLEEP_BETWEEN_FUNDING_REQUESTS = Duration.ofMillis(1 * 2000);
 
     private static final int MAX_REQUESTS_COUNT = 50;
     public static final String UID_TRADES_ID = "1";
@@ -145,56 +147,49 @@ public class KrakenConnector implements IConnector {
     }
 
     @Override
-    public DownloadResult getTransactions(String downloadStateStr) {
-        Uids downloadState = getDefaultUids();
-        if (downloadStateStr != null) {
-            try {
-                downloadState = ConnectorSerialization.deserialize(downloadStateStr);
-            } catch (Exception e) {
-                KrakenDownloadState state = KrakenDownloadState.deserialize(downloadStateStr);
-            }
+    public DownloadResult getTransactions(String savedState) {
+        Uids state = getDefaultUids();
+        if (savedState != null) {
+                state = ConnectorSerialization.deserialize(savedState);
         }
-
         var userTrades = new ArrayList<UserTrade>();
-        List<FundingRecord> funding = new ArrayList<>();
-        funding.addAll(downloadStaking(downloadState));
-        funding.addAll(downloadDeposits(downloadState));
-        funding.addAll(downloadWithdrawal(downloadState));
-        var spendReceive = downloadSpendAndReceive(downloadState);
-        userTrades.addAll(spendReceive);
-        var trades = downloadTrades(downloadState);
-        userTrades.addAll(trades);
-        return getResult(userTrades, funding, downloadState);
+        var funding = new ArrayList<FundingRecord>();
+        funding.addAll(staking(state));
+        funding.addAll(deposit(state));
+        funding.addAll(withdrawal(state));
+        userTrades.addAll(SpendAndReceive(state));
+        userTrades.addAll(trades(state));
+        return getResult(userTrades, funding, state);
     }
 
     private static Uids getDefaultUids() {
-        Uids downloadState = ConnectorSerialization.createDefaultUidMap();
+        Uids state = ConnectorSerialization.createDefaultUidMap();
         Map<SequenceIdentifierType, String> trade = new TreeMap<>();
         trade.put(START, null);
         trade.put(END, null);
         trade.put(OFFSET, null);
         Map<SequenceIdentifierType, String> sale = new TreeMap<>();
-        trade.put(START, null);
-        trade.put(END, null);
-        trade.put(OFFSET, null);
+        sale.put(START, null);
+        sale.put(END, null);
+        sale.put(OFFSET, null);
         Map<SequenceIdentifierType, String> deposit = new TreeMap<>();
-        trade.put(START, null);
-        trade.put(END, null);
-        trade.put(OFFSET, null);
+        deposit.put(START, null);
+        deposit.put(END, null);
+        deposit.put(OFFSET, null);
         Map<SequenceIdentifierType, String> withdrawal = new TreeMap<>();
-        trade.put(START, null);
-        trade.put(END, null);
-        trade.put(OFFSET, null);
+        withdrawal.put(START, null);
+        withdrawal.put(END, null);
+        withdrawal.put(OFFSET, null);
         Map<SequenceIdentifierType, String> staking = new TreeMap<>();
-        trade.put(START, null);
-        trade.put(END, null);
-        trade.put(OFFSET, null);
-        downloadState.addUid(UID_TRADES_ID, new Uid(trade));
-        downloadState.addUid(UID_SALE_ID, new Uid(trade));
-        downloadState.addUid(UID_DEPOSIT_ID, new Uid(trade));
-        downloadState.addUid(UID_WITHDRAWAL_ID, new Uid(trade));
-        downloadState.addUid(UID_STAKING_ID, new Uid(trade));
-        return downloadState;
+        staking.put(START, null);
+        staking.put(END, null);
+        staking.put(OFFSET, null);
+        state.addUid(UID_TRADES_ID, new Uid(trade));
+        state.addUid(UID_SALE_ID, new Uid(sale));
+        state.addUid(UID_DEPOSIT_ID, new Uid(deposit));
+        state.addUid(UID_WITHDRAWAL_ID, new Uid(withdrawal));
+        state.addUid(UID_STAKING_ID, new Uid(staking));
+        return state;
     }
 
     private DownloadResult getResult(List<UserTrade> trades, List<FundingRecord> funding, Uids state) {
@@ -204,7 +199,7 @@ public class KrakenConnector implements IConnector {
             ConnectorSerialization.serialize(state));
     }
 
-    private List<FundingRecord> downloadDeposits(Uids state) {
+    private List<FundingRecord> deposit(Uids state) {
         var accountService = (KrakenAccountService) exchange.getAccountService();
         String startUnixId = getStartState(state, UID_DEPOSIT_ID);
         String endUnixId = getEndState(state, UID_DEPOSIT_ID);
@@ -220,7 +215,7 @@ public class KrakenConnector implements IConnector {
         return createFundings(blocks, DEPOSIT, null);
     }
 
-    private List<FundingRecord> downloadWithdrawal(Uids state) {
+    private List<FundingRecord> withdrawal(Uids state) {
         var accountService = (KrakenAccountService) exchange.getAccountService();
         String startUnixId = getStartState(state, UID_WITHDRAWAL_ID);
         String endUnixId = getEndState(state, UID_WITHDRAWAL_ID);
@@ -292,7 +287,7 @@ public class KrakenConnector implements IConnector {
         }
     }
 
-    private List<UserTrade> downloadSpendAndReceive(Uids state) {
+    private List<UserTrade> SpendAndReceive(Uids state) {
         var accountService = (KrakenAccountService) exchange.getAccountService();
         String startUnixId = getStartState(state, UID_SALE_ID);
         String endUnixId = getEndState(state, UID_SALE_ID);
@@ -468,27 +463,56 @@ public class KrakenConnector implements IConnector {
         }
     }
 
+    private List<KrakenLedger> findBaseAndQuote(List<KrakenLedger> ledgerPairs) {
+        List<KrakenLedger> pairs = new ArrayList<>();
+            if(switchKrakenAssetToCurrency(ledgerPairs.get(0).getAsset()).isFiat()
+                && !switchKrakenAssetToCurrency(ledgerPairs.get(1).getAsset()).isFiat()) {
+                pairs.add(ledgerPairs.get(1));
+                pairs.add(ledgerPairs.get(0));
+            } else if(!switchKrakenAssetToCurrency(ledgerPairs.get(0).getAsset()).isFiat()
+                && switchKrakenAssetToCurrency(ledgerPairs.get(1).getAsset()).isFiat()) {
+                pairs.add(ledgerPairs.get(0));
+                pairs.add(ledgerPairs.get(1));
+            } else {
+                throw new DataValidationException("Uknown base transaction");
+            }
+        return pairs;
+    }
+
+    private KrakenLedger findFee(KrakenLedger base, KrakenLedger quote) {
+        KrakenLedger fee = null;
+        try {
+            if(base.getFee().compareTo(ZERO) >= 0 && quote.getFee().compareTo(ZERO) == 0) {
+                fee = base;
+            } else if (quote.getFee().compareTo(ZERO) >= 0 && base.getFee().compareTo(ZERO) == 0) {
+                fee = quote;
+            } else {
+                parsingProblems.add(new ParsingProblem("Cannot find fee", base.toString(), PARSED_ROW_IGNORED));
+            }
+        } catch (Exception e) {
+            parsingProblems.add(new ParsingProblem("Cannot find fee", e.getMessage(), PARSED_ROW_IGNORED));
+        }
+        return fee;
+    }
+
     private UserTrade convertLedgerPairToTrade(List<KrakenLedger> ledgerPairs) {
-        TransactionType action = getTransactionType(ledgerPairs);
+        var pairs = findBaseAndQuote(ledgerPairs);
+        var base = pairs.get(0);
+        var quote = pairs.get(1);
 
-        var currency0 = switchKrakenAssetToCurrency(ledgerPairs.get(0).getAsset());
-        var currency1 = switchKrakenAssetToCurrency(ledgerPairs.get(1).getAsset());
+        TransactionType type = getTransactionType(base,quote);
+        KrakenLedger fee = findFee(base,quote);
 
-        var base = currency0.isFiat() ? ledgerPairs.get(1) : ledgerPairs.get(0);
-        var quote = currency1.isFiat() ? ledgerPairs.get(1) : ledgerPairs.get(0);
-
-        var feeCurrency = base.getFee().compareTo(ZERO) > 0 ? base.getAsset() : quote.getAsset();
-        var feeAmount = base.getFee().compareTo(ZERO) > 0 ? base.getFee() : quote.getFee();
 
         return UserTrade.builder()
             .id(base.getRefId())
             .timestamp(convertUnixToDate(base.getUnixTime()))
-            .originalAmount(base.getTransactionAmount())
+            .originalAmount(base.getTransactionAmount().abs())
             .currencyPair(new CurrencyPair(translateKrakenCurrency(base.getAsset()), translateKrakenCurrency(quote.getAsset())))
-            .type(action.equals(BUY) ? Order.OrderType.BID : Order.OrderType.ASK)
-            .price(base.getTransactionAmount().divide(quote.getTransactionAmount(), DECIMAL_DIGITS, HALF_UP))
-            .feeCurrency(translateKrakenCurrency(feeCurrency))
-            .feeAmount(feeAmount)
+            .type(type.equals(BUY) ? Order.OrderType.BID : Order.OrderType.ASK)
+            .price(quote.getTransactionAmount().divide(base.getTransactionAmount(),DECIMAL_DIGITS, HALF_UP).abs())
+            .feeCurrency(translateKrakenCurrency(fee.getAsset()))
+            .feeAmount(fee.getFee().abs())
             .build();
     }
 
@@ -508,24 +532,17 @@ public class KrakenConnector implements IConnector {
         return trades;
     }
 
-    private TransactionType getTransactionType(List<KrakenLedger> pair) {
-        var currency1 = switchKrakenAssetToCurrency(pair.get(0).getAsset());
-        var volume1 = pair.get(0).getTransactionAmount();
-        var currency2 = switchKrakenAssetToCurrency(pair.get(1).getAsset());
-        var volume2 = pair.get(1).getTransactionAmount();
-
-        if ((currency1.isFiat() && (volume1.compareTo(ZERO) > 0))
-            && (!currency2.isFiat() && (volume2.compareTo(ZERO) < 0))) {
-            return SELL;
-        } else if ((currency2.isFiat() && (volume2.compareTo(ZERO) > 0))
-            && (!currency1.isFiat() && (volume1.compareTo(ZERO) < 0))) {
+    private TransactionType getTransactionType(KrakenLedger base, KrakenLedger quote) {
+        if (base.getTransactionAmount().compareTo(ZERO) >= 0 && quote.getTransactionAmount().compareTo(ZERO) <= 0) {
+            return BUY;
+        } else if (base.getTransactionAmount().compareTo(ZERO) <= 0 && quote.getTransactionAmount().compareTo(ZERO) >= 0) {
             return SELL;
         } else {
-            return BUY;
+            throw new DataValidationException("Unknown transaction type");
         }
     }
 
-    private List<UserTrade> downloadTrades(Uids state) {
+    private List<UserTrade> trades(Uids state) {
         var accountService = (KrakenAccountService) exchange.getAccountService();
         String startUnixId = getStartState(state, UID_TRADES_ID);
         String endUnixId = getEndState(state, UID_TRADES_ID);
@@ -542,7 +559,7 @@ public class KrakenConnector implements IConnector {
         return convertLedgerPairsToTrade(pairs);
     }
 
-    private List<FundingRecord> downloadStaking(Uids state) {
+    private List<FundingRecord> staking(Uids state) {
         var accountService = (KrakenAccountService) exchange.getAccountService();
         String startUnixId = getStartState(state, UID_STAKING_ID);
         String endUnixId = getEndState(state, UID_STAKING_ID);
