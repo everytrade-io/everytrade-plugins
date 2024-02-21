@@ -396,7 +396,6 @@ public class KrakenConnector implements IConnector {
                 state.getUidS().get(uidType).setUid(STATUS, PARTIAL_DATA_DOWNLOADED.getCode());
                 state.getUidS().get(uidType).setUid(START, startUnixId);
                 state.getUidS().get(uidType).setUid(END, endUnixId);
-                state.getUidS().get(uidType).setUid(STATUS, PARTIAL_DATA_DOWNLOADED.getCode());
                 requests++;
             } else {
                 throw new IllegalStateException("Unidentified state - ledger sales");
