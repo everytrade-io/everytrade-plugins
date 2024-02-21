@@ -61,9 +61,12 @@ import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.plugin.api.parser.ParsingProblemType.PARSED_ROW_IGNORED;
 import static io.everytrade.server.plugin.api.parser.ParsingProblemType.ROW_PARSING_FAILED;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.DECIMAL_DIGITS;
+import static io.everytrade.server.util.serialization.DownloadedStatus.ALL_DATA_DOWNLOADED;
+import static io.everytrade.server.util.serialization.DownloadedStatus.PARTIAL_DATA_DOWNLOADED;
 import static io.everytrade.server.util.serialization.SequenceIdentifierType.END;
 import static io.everytrade.server.util.serialization.SequenceIdentifierType.OFFSET;
 import static io.everytrade.server.util.serialization.SequenceIdentifierType.START;
+import static io.everytrade.server.util.serialization.SequenceIdentifierType.STATUS;
 import static java.math.BigDecimal.ZERO;
 import static java.math.RoundingMode.HALF_UP;
 import static lombok.AccessLevel.PRIVATE;
@@ -73,7 +76,6 @@ import static org.knowm.xchange.dto.account.FundingRecord.Type.WITHDRAWAL;
 import static org.knowm.xchange.kraken.dto.account.LedgerType.SALE;
 import static org.knowm.xchange.kraken.dto.account.LedgerType.STAKING;
 import static org.knowm.xchange.kraken.dto.account.LedgerType.TRADE;
-import static org.knowm.xchange.kraken.dto.account.LedgerType.TRANSFER;
 
 @RequiredArgsConstructor
 @FieldDefaults(makeFinal = true, level = PRIVATE)
@@ -83,7 +85,7 @@ public class KrakenConnector implements IConnector {
     private static final String WRONG_NUMBER_OF_TRANSACTIONS = "wrong number of txs - expected (1x RECEIVE and 1x SEND)";
     private static final String SPEND_POSITIVE_NUMBER = "Spend - transaction amount must be negative";
     private static final String RECEIVE_POSITIVE_NUMBER = "Receive - transaction amount must be positive";
-    private static final Duration SLEEP_BETWEEN_FUNDING_REQUESTS = Duration.ofMillis(1 * 2000);
+    private static final Duration SLEEP_BETWEEN_FUNDING_REQUESTS = Duration.ofMillis(3 * 1000);
 
     private static final int MAX_REQUESTS_COUNT = 50;
     public static final String UID_TRADES_ID = "1";
@@ -164,32 +166,47 @@ public class KrakenConnector implements IConnector {
 
     private static Uids getDefaultUids() {
         Uids state = ConnectorSerialization.createDefaultUidMap();
+        String start = getDefaultStart();
+        String end = getDefaultEnd();
         Map<SequenceIdentifierType, String> trade = new TreeMap<>();
-        trade.put(START, null);
-        trade.put(END, null);
-        trade.put(OFFSET, null);
+        trade.put(START, start);
+        trade.put(END, end);
+        trade.put(OFFSET, "0");
+        trade.put(STATUS, PARTIAL_DATA_DOWNLOADED.getCode());
         Map<SequenceIdentifierType, String> sale = new TreeMap<>();
-        sale.put(START, null);
-        sale.put(END, null);
-        sale.put(OFFSET, null);
+        sale.put(START, start);
+        sale.put(END, end);
+        sale.put(OFFSET, "0");
+        sale.put(STATUS,  PARTIAL_DATA_DOWNLOADED.getCode());
         Map<SequenceIdentifierType, String> deposit = new TreeMap<>();
-        deposit.put(START, null);
-        deposit.put(END, null);
-        deposit.put(OFFSET, null);
+        deposit.put(START, start);
+        deposit.put(END, end);
+        deposit.put(OFFSET, "0");
+        deposit.put(STATUS,  PARTIAL_DATA_DOWNLOADED.getCode());
         Map<SequenceIdentifierType, String> withdrawal = new TreeMap<>();
-        withdrawal.put(START, null);
-        withdrawal.put(END, null);
-        withdrawal.put(OFFSET, null);
+        withdrawal.put(START, start);
+        withdrawal.put(END, end);
+        withdrawal.put(OFFSET, "0");
+        withdrawal.put(STATUS,  PARTIAL_DATA_DOWNLOADED.getCode());
         Map<SequenceIdentifierType, String> staking = new TreeMap<>();
-        staking.put(START, null);
-        staking.put(END, null);
-        staking.put(OFFSET, null);
+        staking.put(START, start);
+        staking.put(END, end);
+        staking.put(OFFSET, "0");
+        staking.put(STATUS,  PARTIAL_DATA_DOWNLOADED.getCode());
         state.addUid(UID_TRADES_ID, new Uid(trade));
         state.addUid(UID_SALE_ID, new Uid(sale));
         state.addUid(UID_DEPOSIT_ID, new Uid(deposit));
         state.addUid(UID_WITHDRAWAL_ID, new Uid(withdrawal));
         state.addUid(UID_STAKING_ID, new Uid(staking));
         return state;
+    }
+
+    private static String getDefaultStart() {
+        return String.valueOf(Instant.parse("1970-01-01T00:00:00Z").getEpochSecond());
+    }
+
+    private static String getDefaultEnd() {
+        return String.valueOf(Instant.now().getEpochSecond());
     }
 
     private DownloadResult getResult(List<UserTrade> trades, List<FundingRecord> funding, Uids state) {
@@ -357,23 +374,29 @@ public class KrakenConnector implements IConnector {
             Thread.sleep(SLEEP_BETWEEN_FUNDING_REQUESTS.toMillis());
             var block = accountService.getKrakenPartialLedgerInfo(ledgerType, startUnixId, endUnixId, offset);
             if (block.isEmpty()) {
-                String start = getStart(state, blocks, uidType);
-                state.getUidS().get(uidType).setUid(OFFSET, null);
+                String start = getNewStart(state, uidType);
+                state.getUidS().get(uidType).setUid(OFFSET, "0");
                 state.getUidS().get(uidType).setUid(END, null);
                 state.getUidS().get(uidType).setUid(START, start);
+                state.getUidS().get(uidType).setUid(STATUS, ALL_DATA_DOWNLOADED.getCode());
                 break;
             } else if (block.values().size() < DEFAULT_BLOCK_SIZE) {
                 List<KrakenLedger> values = block.values().stream().toList();
                 blocks.addAll(values);
-                String start = getStart(state, blocks, uidType);
+                String start = getNewStart(state, uidType);
                 state.getUidS().get(uidType).setUid(END, null);
-                state.getUidS().get(uidType).setUid(OFFSET, null);
+                state.getUidS().get(uidType).setUid(OFFSET, "0");
                 state.getUidS().get(uidType).setUid(START, start);
+                state.getUidS().get(uidType).setUid(STATUS, ALL_DATA_DOWNLOADED.getCode());
                 break;
             } else if (block.values().size() == DEFAULT_BLOCK_SIZE) {
                 blocks.addAll(block.values());
                 offset += DEFAULT_BLOCK_SIZE;
-                state.getUidS().put(uidType, new Uid(Map.of(OFFSET, String.valueOf(offset))));
+                state.getUidS().get(uidType).setUid(OFFSET, String.valueOf(offset));
+                state.getUidS().get(uidType).setUid(STATUS, PARTIAL_DATA_DOWNLOADED.getCode());
+                state.getUidS().get(uidType).setUid(START, startUnixId);
+                state.getUidS().get(uidType).setUid(END, endUnixId);
+                state.getUidS().get(uidType).setUid(STATUS, PARTIAL_DATA_DOWNLOADED.getCode());
                 requests++;
             } else {
                 throw new IllegalStateException("Unidentified state - ledger sales");
@@ -381,26 +404,8 @@ public class KrakenConnector implements IConnector {
         }
     }
 
-    private static String getStart(Uids state, List<KrakenLedger> blocks, String uidType) {
-        KrakenLedger lastItem = blocks.stream().max(Comparator.comparing(KrakenLedger::getUnixTime)).orElse(null);
-        String start = null;
-        if (lastItem == null) {
-            start = state.getUidS().get(uidType).getUid().get(START);
-        } else {
-            double unixTime = lastItem.getUnixTime();
-            start = String.valueOf(addMillisAndConvertUnixToDate(unixTime));
-        }
-        return start;
-    }
-
-    private static double addMillisAndConvertUnixToDate(double unixTime) {
-        long millisecondsToAdd = 1;
-        long secondsPart = (long) unixTime;
-        int nanosPart = (int) ((unixTime - secondsPart) * 1_000_000_000);
-        Instant instant = Instant.ofEpochSecond(secondsPart, nanosPart);
-        instant = instant.plusMillis(millisecondsToAdd);
-        double newUnixTime = instant.getEpochSecond() + instant.getNano() / 1_000_000_000.0;
-        return newUnixTime;
+    private static String getNewStart(Uids state, String uidType) {
+            return state.getUidS().get(uidType).getUid().get(END);
     }
 
     private String getStartState(Uids state, String uidId) {
@@ -418,24 +423,19 @@ public class KrakenConnector implements IConnector {
     private String getEndState(Uids state, String uidId) {
         Map<String, Uid> uidS = state.getUidS();
         try {
+            if (uidS.get(uidId).getUid().get(END) == null) {
+                uidS.get(uidId).setUid(END, getDefaultEnd());
+            } else {
+                return uidS.get(uidId).getUid().get(END);
+            }
             return uidS.get(uidId).getUid().get(END);
         } catch (NullPointerException e) {
+            Map<SequenceIdentifierType, String> uid = new TreeMap<>();
+            uid.put(END, getDefaultEnd());
             if (uidS.get(uidId) == null) {
-                state.addUid(uidId, new Uid(new TreeMap<>()));
+                state.addUid(uidId, new Uid(uid));
             }
-            return null;
-        }
-    }
-
-    private Long getTradeOffsetState(Uids state) {
-        Map<String, Uid> uidS = state.getUidS();
-        try {
-            return Long.valueOf(uidS.get(UID_TRADES_ID).getUid().get(OFFSET));
-        } catch (Exception e) {
-            if (uidS.get(UID_TRADES_ID) == null) {
-                state.addUid(UID_TRADES_ID, new Uid(new TreeMap<>()));
-            }
-            return 0L;
+            return uidS.get(uidId).getUid().get(END);
         }
     }
 

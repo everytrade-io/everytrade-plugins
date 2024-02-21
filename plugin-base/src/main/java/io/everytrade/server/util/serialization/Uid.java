@@ -22,7 +22,7 @@ public class Uid {
 
     public void setUid(SequenceIdentifierType key, String value) {
         if (uid != null && uid.get(key) != null) {
-            uid.put(key, value == null ? "0" : value);
+            uid.put(key, value);
         } else {
             if(uid == null) {
                 uid = new TreeMap<>();
