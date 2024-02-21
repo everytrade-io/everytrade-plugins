@@ -152,7 +152,12 @@ public class KrakenConnector implements IConnector {
     public DownloadResult getTransactions(String savedState) {
         Uids state = getDefaultUids();
         if (savedState != null) {
+            try {
                 state = ConnectorSerialization.deserialize(savedState);
+            } catch (Exception e) {
+                LOG.info("Kraken state cannot be deserialize - resynchronize container");
+                throw new IllegalStateException("Old container state version - please resynchronize container");
+            }
         }
         var userTrades = new ArrayList<UserTrade>();
         var funding = new ArrayList<FundingRecord>();
