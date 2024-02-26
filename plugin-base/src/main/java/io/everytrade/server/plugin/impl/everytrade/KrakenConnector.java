@@ -162,11 +162,11 @@ public class KrakenConnector implements IConnector {
         }
         var userTrades = new ArrayList<UserTrade>();
         var funding = new ArrayList<FundingRecord>();
-//        funding.addAll(withdrawal(state));
+        funding.addAll(withdrawal(state));
         userTrades.addAll(trades(state));
-//        funding.addAll(staking(state));
-//        funding.addAll(deposit(state));
-//        userTrades.addAll(SpendAndReceive(state));
+        funding.addAll(staking(state));
+        funding.addAll(deposit(state));
+        userTrades.addAll(SpendAndReceive(state));
         return getResult(userTrades, funding, state);
     }
 
