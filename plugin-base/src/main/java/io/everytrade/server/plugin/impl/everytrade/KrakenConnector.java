@@ -97,6 +97,7 @@ public class KrakenConnector implements IConnector {
     public static final String EXCEPTION_CURRENCY = "Invalid currencies: ";
     public static final String EXCEPTION_AMOUNT = "Invalid transactionAmounts: ";
     public static final String EXCEPTION_FEE_AMOUNT = "Invalid volume of fees in: ";
+    public static final String EXCEPTION_WITHDRAWAL_PAIR_VALUES = "Invalid withdrawal pair values: ";
     public static final long DEFAULT_BLOCK_SIZE = 50;
 
     private List<ParsingProblem> parsingProblems = new ArrayList<>();
@@ -161,11 +162,11 @@ public class KrakenConnector implements IConnector {
         }
         var userTrades = new ArrayList<UserTrade>();
         var funding = new ArrayList<FundingRecord>();
-        funding.addAll(staking(state));
-        funding.addAll(deposit(state));
-        funding.addAll(withdrawal(state));
-        userTrades.addAll(SpendAndReceive(state));
+//        funding.addAll(withdrawal(state));
         userTrades.addAll(trades(state));
+//        funding.addAll(staking(state));
+//        funding.addAll(deposit(state));
+//        userTrades.addAll(SpendAndReceive(state));
         return getResult(userTrades, funding, state);
     }
 
@@ -246,6 +247,7 @@ public class KrakenConnector implements IConnector {
         List<KrakenLedger> blocks = new ArrayList<>();
         try {
             downloadLedgers(state, accountService, startUnixId, endUnixId, offset, blocks, UID_WITHDRAWAL_ID, LedgerType.WITHDRAWAL);
+            validateWithdrawals(blocks);
         } catch (IOException e) {
             throw new IllegalStateException("Download user trade history failed.", e);
         } catch (InterruptedException e) {
@@ -264,7 +266,7 @@ public class KrakenConnector implements IConnector {
         io.everytrade.server.model.Currency currency1 = switchKrakenAssetToCurrency(leger1.getAsset());
         io.everytrade.server.model.Currency currency2 = switchKrakenAssetToCurrency(ledger2.getAsset());
 
-        if ((currency1.isFiat() && currency2.isFiat()) || (!currency1.isFiat() && !currency2.isFiat())) {
+        if ((currency1.isFiat() && currency2.isFiat())) {
             throw new DataValidationException(EXCEPTION_CURRENCY + pair);
         }
         var volume1 = leger1.getTransactionAmount();
@@ -469,17 +471,30 @@ public class KrakenConnector implements IConnector {
 
     private List<KrakenLedger> findBaseAndQuote(List<KrakenLedger> ledgerPairs) {
         List<KrakenLedger> pairs = new ArrayList<>();
-            if(switchKrakenAssetToCurrency(ledgerPairs.get(0).getAsset()).isFiat()
-                && !switchKrakenAssetToCurrency(ledgerPairs.get(1).getAsset()).isFiat()) {
+        if (switchKrakenAssetToCurrency(ledgerPairs.get(0).getAsset()).isFiat()
+            && !switchKrakenAssetToCurrency(ledgerPairs.get(1).getAsset()).isFiat()) {
+            pairs.add(ledgerPairs.get(1));
+            pairs.add(ledgerPairs.get(0));
+        } else if (!switchKrakenAssetToCurrency(ledgerPairs.get(0).getAsset()).isFiat()
+            && switchKrakenAssetToCurrency(ledgerPairs.get(1).getAsset()).isFiat()) {
+            pairs.add(ledgerPairs.get(0));
+            pairs.add(ledgerPairs.get(1));
+        } else if (!switchKrakenAssetToCurrency(ledgerPairs.get(0).getAsset()).isFiat()
+            && !switchKrakenAssetToCurrency(ledgerPairs.get(1).getAsset()).isFiat()) {
+            if (ledgerPairs.get(0).getTransactionAmount().compareTo(ZERO) >= 0
+                && ledgerPairs.get(1).getTransactionAmount().compareTo(ZERO) <= 0) {
+                pairs.add(ledgerPairs.get(0));
+                pairs.add(ledgerPairs.get(1));
+            } else if (ledgerPairs.get(1).getTransactionAmount().compareTo(ZERO) >= 0
+                && ledgerPairs.get(0).getTransactionAmount().compareTo(ZERO) <= 0) {
                 pairs.add(ledgerPairs.get(1));
                 pairs.add(ledgerPairs.get(0));
-            } else if(!switchKrakenAssetToCurrency(ledgerPairs.get(0).getAsset()).isFiat()
-                && switchKrakenAssetToCurrency(ledgerPairs.get(1).getAsset()).isFiat()) {
-                pairs.add(ledgerPairs.get(0));
-                pairs.add(ledgerPairs.get(1));
             } else {
                 throw new DataValidationException("Uknown base transaction");
             }
+        } else {
+            throw new DataValidationException("Uknown base transaction");
+        }
         return pairs;
     }
 
@@ -504,9 +519,8 @@ public class KrakenConnector implements IConnector {
         var base = pairs.get(0);
         var quote = pairs.get(1);
 
-        TransactionType type = getTransactionType(base,quote);
-        KrakenLedger fee = findFee(base,quote);
-
+        TransactionType type = getTransactionType(base, quote);
+        KrakenLedger fee = findFee(base, quote);
 
         return UserTrade.builder()
             .id(base.getRefId())
@@ -514,7 +528,7 @@ public class KrakenConnector implements IConnector {
             .originalAmount(base.getTransactionAmount().abs())
             .currencyPair(new CurrencyPair(translateKrakenCurrency(base.getAsset()), translateKrakenCurrency(quote.getAsset())))
             .type(type.equals(BUY) ? Order.OrderType.BID : Order.OrderType.ASK)
-            .price(quote.getTransactionAmount().divide(base.getTransactionAmount(),DECIMAL_DIGITS, HALF_UP).abs())
+            .price(quote.getTransactionAmount().divide(base.getTransactionAmount(), DECIMAL_DIGITS, HALF_UP).abs())
             .feeCurrency(translateKrakenCurrency(fee.getAsset()))
             .feeAmount(fee.getFee().abs())
             .build();
@@ -537,7 +551,11 @@ public class KrakenConnector implements IConnector {
     }
 
     private TransactionType getTransactionType(KrakenLedger base, KrakenLedger quote) {
-        if (base.getTransactionAmount().compareTo(ZERO) >= 0 && quote.getTransactionAmount().compareTo(ZERO) <= 0) {
+        // crypto-crypto is always buy
+        if (!switchKrakenAssetToCurrency(base.getAsset()).isFiat() && !switchKrakenAssetToCurrency(quote.getAsset()).isFiat()) {
+            return BUY;
+        // base is always crypto
+        } else if (base.getTransactionAmount().compareTo(ZERO) >= 0 && quote.getTransactionAmount().compareTo(ZERO) <= 0) {
             return BUY;
         } else if (base.getTransactionAmount().compareTo(ZERO) <= 0 && quote.getTransactionAmount().compareTo(ZERO) >= 0) {
             return SELL;
@@ -591,6 +609,19 @@ public class KrakenConnector implements IConnector {
                 description));
         });
         return records;
+    }
+
+    private void validateWithdrawals(List<KrakenLedger> ledgers) {
+        var ledgersGroupedByRefId = ledgers.stream().collect(Collectors.groupingBy(KrakenLedger::getRefId));
+        List<KrakenLedger> removeLedgers = new ArrayList<>();
+        ledgers.stream().forEach(ledger -> {
+                if (ledgersGroupedByRefId.get(ledger.getRefId()).size() != 1) {
+                    parsingProblems.add(new ParsingProblem(ledger.toString(), EXCEPTION_WITHDRAWAL_PAIR_VALUES, PARSED_ROW_IGNORED));
+                    removeLedgers.add(ledger);
+                }
+            }
+        );
+        ledgers.removeAll(removeLedgers);
     }
 
     private Map<String, List<KrakenLedger>> getPairsFromBlocks(List<KrakenLedger> rowData) {
