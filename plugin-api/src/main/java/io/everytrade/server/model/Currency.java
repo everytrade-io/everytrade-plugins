@@ -757,7 +757,10 @@ public enum Currency {
     SIN(false, Instant.parse("2021-10-21T00:00:00Z"), "Sinverse"),
     _3ULL("3ULL", false, Instant.parse("2022-07-21T00:00:00Z"), "Playa3ull Games"),
     GMEE(false, Instant.parse("2021-10-09T00:00:00Z"), "GAMEE"),
-    KUJI(false, Instant.parse("2022-03-24T00:00:00Z"), "Kujira");
+    KUJI(false, Instant.parse("2022-03-24T00:00:00Z"), "Kujira"),
+    ILV(false, Instant.parse("2021-12-16T00:00:00Z"), "Illuvium"),
+    LBR(false, Instant.parse("2023-09-02T00:00:00Z"), "Lybra"),
+    PEPE(false, Instant.parse("2023-04-19T00:00:00Z"), "Pepe");
 
     String code;
     int decimalDigits;
