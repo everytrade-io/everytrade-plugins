@@ -760,7 +760,16 @@ public enum Currency {
     KUJI(false, Instant.parse("2022-03-24T00:00:00Z"), "Kujira"),
     ILV(false, Instant.parse("2021-12-16T00:00:00Z"), "Illuvium"),
     LBR(false, Instant.parse("2023-09-02T00:00:00Z"), "Lybra"),
-    PEPE(false, Instant.parse("2023-04-19T00:00:00Z"), "Pepe");
+    PEPE(false, Instant.parse("2023-04-19T00:00:00Z"), "Pepe"),
+    LMWR(false, Instant.parse("2023-11-04T00:00:00Z"), "LimeWire Token"),
+    VARA(false, Instant.parse("2024-01-21T00:00:00Z"), "Vara Network"),
+    STETH(false, Instant.parse("2021-08-12T00:00:00Z"), "Lido Staked Ether"),
+    CHEQ(false, Instant.parse("2022-09-01T00:00:00Z"), "CHEQD Network"),
+    XPRT(false, Instant.parse("2022-11-17T00:00:00Z"), "Persistence"),
+    SUNDAE(false, Instant.parse("2023-07-14T00:00:00Z"), "Sundae Token"),
+    HIPENGUINS(false, Instant.parse("2023-11-06T00:00:00Z"), "hiPENGUINS"),
+    BONK(false, Instant.parse("2022-12-29T00:00:00Z"), "Bonk");
+
 
     String code;
     int decimalDigits;
