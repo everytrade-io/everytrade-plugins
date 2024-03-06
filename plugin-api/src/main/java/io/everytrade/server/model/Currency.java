@@ -770,7 +770,6 @@ public enum Currency {
     HIPENGUINS(false, Instant.parse("2023-11-06T00:00:00Z"), "hiPENGUINS"),
     BONK(false, Instant.parse("2022-12-29T00:00:00Z"), "Bonk");
 
-
     String code;
     int decimalDigits;
     boolean fiat;
