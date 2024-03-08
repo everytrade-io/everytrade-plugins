@@ -64,7 +64,7 @@ public class BinanceBeanV3 extends ExchangeBean {
 
     @Override
     public TransactionCluster toTransactionCluster() {
-        validateCurrencyPair(pairBase, pairQuote);
+        // validateCurrencyPair(pairBase, pairQuote); already called in constructor as null check
         validatePositivity(filled, total, fee);
 
         var isIncorrectFeeCoin = (feeCurrency == null && !equalsToZero(fee));
