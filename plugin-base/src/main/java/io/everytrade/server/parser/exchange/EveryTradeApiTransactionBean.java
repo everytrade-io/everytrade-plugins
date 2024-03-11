@@ -98,6 +98,7 @@ public class EveryTradeApiTransactionBean {
             quantity,
             volume.divide(quantity, 10, RoundingMode.HALF_UP),
             note,
+            null,
             labels
         );
         return new TransactionCluster(tx, getRelatedTxs());
@@ -126,6 +127,7 @@ public class EveryTradeApiTransactionBean {
             quantity,
             volume.divide(quantity, 10, RoundingMode.HALF_UP),
             note,
+            null,
             labels
         );
         return new TransactionCluster(tx, getRelatedTxs());
