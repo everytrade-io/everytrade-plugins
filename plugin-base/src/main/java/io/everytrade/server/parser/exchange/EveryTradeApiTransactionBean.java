@@ -42,6 +42,8 @@ public class EveryTradeApiTransactionBean {
     String rebateCurrency;
     String addressFrom;
     String addressTo;
+    String note;
+    String labels;
 
     public void setTimestamp(Long timestamp) {
         this.timestamp = new Date(timestamp * 1000).toInstant();
@@ -73,7 +75,9 @@ public class EveryTradeApiTransactionBean {
             Currency.fromCode(base),
             action,
             quantity,
-            action == DEPOSIT ? addressFrom : addressTo
+            action == DEPOSIT ? addressFrom : addressTo,
+            note,
+            labels
         );
         return new TransactionCluster(tx, getRelatedTxs());
     }
@@ -92,7 +96,9 @@ public class EveryTradeApiTransactionBean {
             Currency.fromCode(quote),
             action,
             quantity,
-            volume.divide(quantity, 10, RoundingMode.HALF_UP)
+            volume.divide(quantity, 10, RoundingMode.HALF_UP),
+            note,
+            labels
         );
         return new TransactionCluster(tx, getRelatedTxs());
     }
@@ -118,7 +124,9 @@ public class EveryTradeApiTransactionBean {
             txCurrency,
             action,
             quantity,
-            volume.divide(quantity, 10, RoundingMode.HALF_UP)
+            volume.divide(quantity, 10, RoundingMode.HALF_UP),
+            note,
+            labels
         );
         return new TransactionCluster(tx, getRelatedTxs());
     }
@@ -143,7 +151,10 @@ public class EveryTradeApiTransactionBean {
             Currency.fromCode(feeCurrency),
             TransactionType.FEE,
             fee,
-            Currency.fromCode(feeCurrency)
+            Currency.fromCode(feeCurrency),
+            note,
+            null,
+            labels
         );
     }
 
@@ -155,7 +166,10 @@ public class EveryTradeApiTransactionBean {
             Currency.fromCode(rebateCurrency),
             TransactionType.REBATE,
             rebate,
-            Currency.fromCode(rebateCurrency)
+            Currency.fromCode(rebateCurrency),
+            note,
+            null,
+            labels
         );
     }
 }
