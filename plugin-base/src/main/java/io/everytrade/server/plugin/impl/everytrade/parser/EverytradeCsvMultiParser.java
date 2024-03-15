@@ -630,6 +630,7 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 .supportedExchange(EVERYTRADE)
                 .build());
 
+
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
                 .headers(List.of(
                     CsvHeader.of(
