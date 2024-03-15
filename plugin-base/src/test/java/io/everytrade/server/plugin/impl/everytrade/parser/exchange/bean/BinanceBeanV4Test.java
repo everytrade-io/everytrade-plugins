@@ -26,6 +26,7 @@ import static io.everytrade.server.model.Currency.DOT;
 import static io.everytrade.server.model.Currency.ETH;
 import static io.everytrade.server.model.Currency.EUR;
 import static io.everytrade.server.model.Currency.KSM;
+import static io.everytrade.server.model.Currency.LTC;
 import static io.everytrade.server.model.Currency.NEAR;
 import static io.everytrade.server.model.Currency.REEF;
 import static io.everytrade.server.model.Currency.ROSE;
@@ -347,6 +348,41 @@ class BinanceBeanV4Test {
         );
         TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
 
+    }
+
+    @Test
+    void testFee() {
+        final String row = "\"519616471\",\"2023-11-09 10:00:50\",\"Spot\",\"Transaction Revenue\",\"USDT\",\"5361.53976000\",\"\"\n";
+        final String row1 = "\"519616471\",\"2023-11-09 10:00:50\",\"Spot\",\"Transaction Sold\",\"LTC\",\"-71.37300000\",\"\"\n";
+        final String row2 = "\"519616471\",\"2023-11-09 10:00:50\",\"Spot\",\"Transaction Fee\",\"USDT\",\"-5.36153976\",\"\"\n";
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row.concat(row1).concat(row2));
+
+        var expected = new TransactionCluster(new ImportedTransactionBean(
+            null,
+            Instant.parse("2023-11-09T10:00:50Z"),
+            Currency.USDT,
+            LTC,
+            BUY,
+            new BigDecimal("5361.5397600000"),
+            new BigDecimal("0.0133120341"),
+            "TRANSACTION REVENUE",
+            null,
+            null
+        ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    FEE_UID_PART,
+                    Instant.parse("2023-11-09T10:00:50Z"),
+                    USDT,
+                    USDT,
+                    FEE,
+                    new BigDecimal("5.36153976"),
+                    USDT
+                )
+            )
+        );
+        TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
+        TestUtils.testTxs(expected.getRelated().get(0), actual.get(0).getRelated().get(0));
     }
 
     @Test

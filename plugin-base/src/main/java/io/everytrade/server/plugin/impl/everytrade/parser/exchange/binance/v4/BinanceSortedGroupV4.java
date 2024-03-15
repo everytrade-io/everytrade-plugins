@@ -52,6 +52,7 @@ import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binanc
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_STAKING_REDEMPTION;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_STAKING_REWARDS;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_TRANSACTION_BUY;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_TRANSACTION_FEE;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_TRANSACTION_RELATED;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_TRANSACTION_REVENUE;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_TRANSACTION_SOLD;
@@ -204,7 +205,7 @@ public class BinanceSortedGroupV4 {
     private List<BinanceBeanV4> createFee(List<BinanceBeanV4> group) {
         List<BinanceBeanV4> result = new ArrayList<>();
         for(BinanceBeanV4 row : group) {
-            if (row.getOperationType().equals(OPERATION_TYPE_FEE)) {
+            if (row.getOperationType().equals(OPERATION_TYPE_FEE) || row.getOperationType().equals(OPERATION_TYPE_TRANSACTION_FEE)) {
                 row.setInTransaction(true);
                 row.setType(TransactionType.FEE);
                 row.setFee(row.getChange().abs());
@@ -221,7 +222,7 @@ public class BinanceSortedGroupV4 {
     public void createTransactionFromOneRowData(List<BinanceBeanV4> group) {
         List<BinanceBeanV4> fees = createFee(group);
         for (BinanceBeanV4 row : group) {
-            if (row.getOperationType().equals(OPERATION_TYPE_FEE)) {
+            if (row.getOperationType().equals(OPERATION_TYPE_FEE) || row.getOperationType().equals(OPERATION_TYPE_TRANSACTION_FEE)) {
                 // ignore;
             } else if (OPERATION_TYPE_SELL.equals(row.getOperationType()) || OPERATION_TYPE_BUY.equals(row.getOperationType())) {
                 if (row.getCoin().isFiat()) {
@@ -655,7 +656,8 @@ public class BinanceSortedGroupV4 {
     }
 
     private void addRow(BinanceBeanV4 row, int groupSize)  {
-        if (row.getOriginalOperation().equals(OPERATION_TYPE_FEE.code)) {
+        if (row.getOriginalOperation().equals(OPERATION_TYPE_FEE.code)
+            || row.getOriginalOperation().equals(OPERATION_TYPE_TRANSACTION_FEE.code)) {
             if (rowsFees.containsKey(row.getCoin())) {
                 rowsFees.get(row.getCoin()).add(row);
             } else {
