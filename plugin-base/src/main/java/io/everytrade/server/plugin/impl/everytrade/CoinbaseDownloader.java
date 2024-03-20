@@ -154,7 +154,9 @@ public class CoinbaseDownloader {
             throw new IllegalStateException("Unknown last download state data");
         }
         params.setLimit(TRANSACTIONS_PER_REQUEST_LIMIT);
-        params.setCursor(cursorAdvanceTrade);
+        if (cursorAdvanceTrade != null && !cursorAdvanceTrade.equalsIgnoreCase("null")) {
+            params.setCursor(cursorAdvanceTrade);
+        }
         return params;
     }
 
@@ -192,7 +194,11 @@ public class CoinbaseDownloader {
                 advancedTradesBlock = advancedTradeOrderFillsRow.getFills();
                 cursorAdvanceTrade = advancedTradeOrderFillsRow.getCursor();
             } catch (Exception e) {
-                throw new IllegalStateException("Unable to download advanced trades. ", e);
+                if (e.getMessage().equalsIgnoreCase("HTTP status code was not OK: 403")) {
+                    return new ArrayList<>();
+                } else {
+                    throw new IllegalStateException("Unable to download advanced trades. ", e);
+                }
             }
             int size = advancedTradesBlock.size();
             if (size == 0) {
