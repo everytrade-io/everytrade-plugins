@@ -96,7 +96,7 @@ public class EveryTradeApiTransactionBean {
             Currency.fromCode(quote),
             action,
             quantity,
-            volume.divide(quantity, 10, RoundingMode.HALF_UP),
+            volume == null ? null : volume.divide(quantity, 10, RoundingMode.HALF_UP),
             note,
             null,
             labels
@@ -125,7 +125,7 @@ public class EveryTradeApiTransactionBean {
             txCurrency,
             action,
             quantity,
-            volume.divide(quantity, 10, RoundingMode.HALF_UP),
+            volume == null ? null : volume.divide(quantity, 10, RoundingMode.HALF_UP),
             note,
             null,
             labels
