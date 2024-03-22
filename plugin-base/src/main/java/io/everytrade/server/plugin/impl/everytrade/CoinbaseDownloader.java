@@ -101,12 +101,13 @@ public class CoinbaseDownloader {
         List<UserTrade> advancedTrading = new ArrayList<>();
         List<ParsingProblem> parsingProblems = new ArrayList<>();
 
-        try {
-            LOG.info("Advanced trading download start");
-            advancedTrading = downloadAdvancedTrade(parsingProblems);
-        } catch (Exception e) {
-            LOG.error("Advanced trading download error " + e.getMessage());
-        }
+//      Advance Trades are not supported by the current version of the plugin - needs its own connector
+//        try {
+//            LOG.info("Advanced trading download start");
+//            advancedTrading = downloadAdvancedTrade(parsingProblems);
+//        } catch (Exception e) {
+//            LOG.error("Advanced trading download error " + e.getMessage());
+//        }
 
         try {
             LOG.info("Trades download start");
