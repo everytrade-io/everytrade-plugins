@@ -57,7 +57,7 @@ public class CoinbaseDownloader {
     private static final String COLON_SYMBOL = ":";
     private static final String PIPE_SYMBOL = "|";
     private static final String ADVANCED_TRADE_SYMBOL_SEPARATOR = "&";
-    private static final int TRANSACTIONS_PER_REQUEST_LIMIT = 100; // please do not change, it could affect last download state logic
+    private static final int TRANSACTIONS_PER_REQUEST_LIMIT = 99; // please do not change, it could affect last download state logic
     private static final int REAL_WALLET_ID_LENGTH = 36;
     private String lastDownloadWalletState;
     private long partialLastAdvanceTradeStartDatetime;
@@ -101,12 +101,13 @@ public class CoinbaseDownloader {
         List<UserTrade> advancedTrading = new ArrayList<>();
         List<ParsingProblem> parsingProblems = new ArrayList<>();
 
-        try {
-            LOG.info("Advanced trading download start");
-            advancedTrading = downloadAdvancedTrade(parsingProblems);
-        } catch (Exception e) {
-            LOG.error("Advanced trading download error " + e.getMessage());
-        }
+//      Advance Trades are not supported by the current version of the plugin - newly needs its own connector
+//        try {
+//            LOG.info("Advanced trading download start");
+//            advancedTrading = downloadAdvancedTrade(parsingProblems);
+//        } catch (Exception e) {
+//            LOG.error("Advanced trading download error " + e.getMessage());
+//        }
 
         try {
             LOG.info("Trades download start");
