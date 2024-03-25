@@ -10,4 +10,6 @@ public class CoinBaseDataUtil {
     public static final String TRANSACTION_TYPE_REWARDS_INCOME = "Rewards Income";
     public static final String ADVANCE_TRADE_BUY = "Advance Trade Buy";
     public static final String ADVANCE_TRADE_SELL = "Advance Trade Sell";
+    public static final String STAKING_INCOME = "Staking Income";
+
 }

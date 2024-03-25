@@ -21,11 +21,13 @@ import static io.everytrade.server.model.Currency.GRT;
 import static io.everytrade.server.model.Currency.USD;
 import static io.everytrade.server.model.Currency.USDC;
 import static io.everytrade.server.model.Currency.XLM;
+import static io.everytrade.server.model.Currency.XTZ;
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.SELL;
+import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 import static java.util.Collections.emptyList;
@@ -141,6 +143,26 @@ class CoinbaseBeanV1Test {
                 new BigDecimal("16.68056713"),
                 null,
                 "Learning Reward",
+                null
+            ),
+            emptyList());
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
+    void testCorrectParsingRawTransactionStakingReward() {
+        var row = "2023-04-27 03:28:05 UTC,Staking Income,XTZ,0.000004,CZK,21.71,0.00,0.00,0,\n";
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT_SPOT + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2023-04-27T03:28:05Z"),
+                XTZ,
+                XTZ,
+                STAKING_REWARD,
+                new BigDecimal("0.0000040000"),
+                null,
+                "Staking Income",
                 null
             ),
             emptyList());

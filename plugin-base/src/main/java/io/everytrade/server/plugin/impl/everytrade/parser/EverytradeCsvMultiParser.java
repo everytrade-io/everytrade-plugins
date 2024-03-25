@@ -69,6 +69,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.everytrade.Ev
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.v1.KuCoinBuySellV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.v1.KuCoinDepositV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.v1.KuCoinWithdrawalV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.utils.ClusterValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -763,6 +764,7 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             try {
                 var cluster = p.toTransactionCluster();
                 if (cluster != null) {
+                    ClusterValidator.clusterValidator(cluster);
                     transactionClusters.add(cluster);
                 }
             } catch (DataIgnoredException e) {
