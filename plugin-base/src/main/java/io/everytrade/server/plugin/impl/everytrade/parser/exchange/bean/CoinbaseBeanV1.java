@@ -26,9 +26,11 @@ import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.REWARD;
 import static io.everytrade.server.model.TransactionType.SELL;
+import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.util.CoinBaseDataUtil.ADVANCE_TRADE_BUY;
 import static io.everytrade.server.util.CoinBaseDataUtil.ADVANCE_TRADE_SELL;
+import static io.everytrade.server.util.CoinBaseDataUtil.STAKING_INCOME;
 import static io.everytrade.server.util.CoinBaseDataUtil.TRANSACTION_TYPE_ADVANCED_TRADE;
 import static io.everytrade.server.util.CoinBaseDataUtil.TRANSACTION_TYPE_COINBASE_EARN;
 import static io.everytrade.server.util.CoinBaseDataUtil.TRANSACTION_TYPE_CONVERT;
@@ -89,6 +91,8 @@ public class CoinbaseBeanV1 extends ExchangeBean {
             transactionType = DEPOSIT;
         } else if (List.of(TRANSACTION_TYPE_REWARDS_INCOME).contains(value)) {
             transactionType = REWARD;
+        } else if (List.of(STAKING_INCOME).contains(value)) {
+            transactionType = STAKING_REWARD;
         } else {
             transactionType = detectTransactionType(value);
         }
@@ -195,7 +199,7 @@ public class CoinbaseBeanV1 extends ExchangeBean {
                 transactionType.name().equalsIgnoreCase(type) ? null : type,
                 null
             );
-        } else if (type.equalsIgnoreCase(TRANSACTION_TYPE_LEARNING_REWARD)) {
+        } else if (List.of(TRANSACTION_TYPE_LEARNING_REWARD,STAKING_INCOME).contains(type)) {
             main = new ImportedTransactionBean(
                 null,
                 timeStamp,
