@@ -827,7 +827,20 @@ public enum Currency {
     STOS(false, Instant.parse("2021-09-09T00:00:00Z"), "Stratos"),
     STRP(false, Instant.parse("2022-08-04T00:00:00Z"), "Strips Finance"),
     WSKR(false, Instant.parse("2023-10-03T00:00:00Z"), "Wiskers"),
-    XGF(false, Instant.parse("2023-08-26T00:00:00Z"), "X GF");
+    XGF(false, Instant.parse("2023-08-26T00:00:00Z"), "X GF"),
+    VANRY(false, Instant.parse("2022-08-11T00:00:00Z"), "Vanar Chain"),
+    ZETA(false, Instant.parse("2024-02-18T00:00:00Z"), "Zetachain"),
+    PRIMAL(false, Instant.parse("2023-02-23T00:00:00Z"), "Primal"),
+    FRA(false, Instant.parse("2023-01-19T00:00:00Z"), "Findora"),
+    BLUR(false, Instant.parse("2023-02-09T00:00:00Z"), "Blur"),
+    DC(false, Instant.parse("2023-03-16T00:00:00Z"), "Dogechain"),
+    MTS(false, Instant.parse("2022-08-25T00:00:00Z"), "Metastrike"),
+    ROUTE(false, Instant.parse("2021-02-11T00:00:00Z"), "Router Protocol"),
+    RDNT(false, Instant.parse("2022-08-18T00:00:00Z"), "Radiant Capital"),
+    L1000UNC(false, Instant.parse("2022-12-29T00:00:00Z"), "1000LUNC"),
+    SEI(false, Instant.parse("2023-08-15T00:00:00Z"), "Sei"),
+    TOKEN(false, Instant.parse("2023-10-27T00:00:00Z"), "TokenFi"),
+    WLD(false, Instant.parse("2023-07-24T00:00:00Z"), "Worldcoin");
 
     String code;
     int decimalDigits;
