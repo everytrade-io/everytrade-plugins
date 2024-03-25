@@ -1,5 +1,6 @@
 package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
+import com.univocity.parsers.annotations.Format;
 import com.univocity.parsers.annotations.Parsed;
 import com.univocity.parsers.annotations.Replace;
 import io.everytrade.server.model.Currency;
@@ -12,17 +13,25 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredE
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import io.everytrade.server.plugin.impl.everytrade.parser.utils.CoinbaseProCurrencySwitch;
 
+import javax.ws.rs.POST;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.Locale;
 
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.REWARD;
+import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
+import static io.everytrade.server.util.CoinBaseDataUtil.ADVANCE_TRADE_BUY;
+import static io.everytrade.server.util.CoinBaseDataUtil.ADVANCE_TRADE_SELL;
 import static io.everytrade.server.util.CoinBaseDataUtil.TRANSACTION_TYPE_ADVANCED_TRADE;
 import static io.everytrade.server.util.CoinBaseDataUtil.TRANSACTION_TYPE_COINBASE_EARN;
 import static io.everytrade.server.util.CoinBaseDataUtil.TRANSACTION_TYPE_CONVERT;
@@ -50,15 +59,23 @@ public class CoinbaseBeanV1 extends ExchangeBean {
 
     @Parsed(field = "Timestamp")
     public void setTimeStamp(String value) {
-        timeStamp = Instant.parse(value);
+        try {
+            timeStamp = Instant.parse(value);
+        } catch (DateTimeParseException e) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss 'UTC'")
+                .withZone(ZoneId.of("UTC"));
+            timeStamp = Instant.from(formatter.parse(value));
+        }
     }
 
     @Parsed(field = "Transaction Type")
     public void setTransactionType(String value) {
         type = value;
+        if (List.of(ADVANCE_TRADE_BUY, ADVANCE_TRADE_SELL, TRANSACTION_TYPE_ADVANCED_TRADE).contains(value)) {
+            advancedTrade = true;
+        }
         if (value.contains(TRANSACTION_TYPE_ADVANCED_TRADE)) {
             value = value.replace(TRANSACTION_TYPE_ADVANCED_TRADE, "");
-            advancedTrade = true;
         }
         if (value.contains(TRANSACTION_TYPE_COINBASE_EARN) || value.contains(TRANSACTION_TYPE_LEARNING_REWARD)) {
             transactionType = EARNING;
@@ -67,6 +84,10 @@ public class CoinbaseBeanV1 extends ExchangeBean {
             transactionType = BUY;
         } else if (TRANSACTION_TYPE_SEND.equalsIgnoreCase(value)) {
             transactionType = WITHDRAWAL;
+        } else if (ADVANCE_TRADE_SELL.equalsIgnoreCase(value)) {
+            transactionType = SELL;
+        } else if (ADVANCE_TRADE_BUY.equalsIgnoreCase(value)) {
+            transactionType = BUY;
         } else if (TRANSACTION_TYPE_RECEIVE.equalsIgnoreCase(value)) {
             transactionType = DEPOSIT;
         } else if (List.of(TRANSACTION_TYPE_REWARDS_INCOME).contains(value)) {
@@ -189,6 +210,18 @@ public class CoinbaseBeanV1 extends ExchangeBean {
                 transactionType.name().equalsIgnoreCase(type) ? null : type,
                 null
             );
+        } else if (List.of(ADVANCE_TRADE_BUY, ADVANCE_TRADE_SELL).contains(type)) {
+            main = new ImportedTransactionBean(
+                null,
+                timeStamp,
+                asset,
+                detectQuoteCurrency(spotPriceCurrency),
+                transactionType,
+                quantityTransacted.abs().setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
+                null,
+                transactionType.name().equalsIgnoreCase(type) ? null : type,
+                null
+            );
         } else {
             final Currency baseCurrency = detectBaseCurrency(notes);
             final BigDecimal volume = detectBasePrice(notes);
@@ -236,7 +269,7 @@ public class CoinbaseBeanV1 extends ExchangeBean {
                 }
             }
             return address;
-        } catch (IndexOutOfBoundsException e) {
+        } catch (NullPointerException | IndexOutOfBoundsException ex) {
             return "";
         }
     }
