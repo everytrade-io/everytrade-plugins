@@ -61,7 +61,8 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
     }
 
     @Parsed(field = "DATE")
-    @Format(formats = {"dd.MM.yy HH:mm:ss", "dd.MM.yy HH:mm", "yyyy-MM-dd HH:mm:ss"}, options = {"locale=US", "timezone=UTC"})
+    @Format(formats = {"dd.MM.yy HH:mm:ss", "dd.MM.yyyy HH:mm:ss", "dd.MM.yy HH:mm", "yyyy-MM-dd HH:mm:ss"}, options = {"locale=US",
+        "timezone=UTC"})
     public void setDate(Date value) {
         date = value.toInstant();
     }
@@ -239,7 +240,10 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
     }
 
     private FeeRebateImportedTransactionBean createFeeTransactionBean(boolean unrelated) {
-        return new FeeRebateImportedTransactionBean(
+        if (action.equals(FEE) && fee.compareTo(ZERO) == 0 && quantity != null && quantity.compareTo(ZERO) != 0) {
+            fee = quantity;
+        }
+        FeeRebateImportedTransactionBean feeRebateImportedTransactionBean = new FeeRebateImportedTransactionBean(
             unrelated ? uid : uid + FEE_UID_PART,
             date,
             feeCurrency != null ? feeCurrency : symbolBase,
@@ -251,6 +255,7 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
             null,
             labels
         );
+        return feeRebateImportedTransactionBean;
     }
 
     private FeeRebateImportedTransactionBean createRebateTransactionBean(boolean unrelated) {

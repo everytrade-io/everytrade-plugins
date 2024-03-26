@@ -17,6 +17,7 @@ import java.util.List;
 import static io.everytrade.server.model.Currency.BTC;
 import static io.everytrade.server.model.Currency.CZK;
 import static io.everytrade.server.model.Currency.EUR;
+import static io.everytrade.server.model.Currency.SOL;
 import static io.everytrade.server.model.TransactionType.AIRDROP;
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.EARNING;
@@ -209,6 +210,28 @@ class EveryTradeBeanV3_2Test {
                 "nnnnnn",
                 null,
                 "Label1"
+            ),
+            List.of()
+        );
+        ParserTestUtils.checkEqualUnrelated(expected, actual);
+    }
+
+    @Test
+    void testCorrectParsingRawTransactionFeeUnrelated2() {
+        final String row = "5;05.12.2023 00:00:00;SOL;FEE;\"6,60E-06\";;;;;;;7G7A9R894GcG1HyWtUmH4BCvknvsukL39N9E8NSHFhjH;3wjAoceD4w2P7Rf7ERDLyfTq61pFE7BAQM4Jdgjrhn24;;\n";
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new FeeRebateImportedTransactionBean(
+                "5",
+                Instant.parse("2023-12-05T00:00:00Z"),
+                SOL,
+                SOL,
+                FEE,
+                new BigDecimal("0.00000660"),
+                SOL,
+                null,
+                null,
+                null
             ),
             List.of()
         );
