@@ -218,7 +218,8 @@ class EveryTradeBeanV3_2Test {
 
     @Test
     void testCorrectParsingRawTransactionFeeUnrelated2() {
-        final String row = "5;05.12.2023 00:00:00;SOL;FEE;\"6,60E-06\";;;;;;;7G7A9R894GcG1HyWtUmH4BCvknvsukL39N9E8NSHFhjH;3wjAoceD4w2P7Rf7ERDLyfTq61pFE7BAQM4Jdgjrhn24;;\n";
+        final String row = "5;05.12.2023 00:00:00;SOL;FEE;\"6,60E-06\";;;;;;" +
+            ";7G7A9R894GcG1HyWtUmH4BCvknvsukL39N9E8NSHFhjH;3wjAoceD4w2P7Rf7ERDLyfTq61pFE7BAQM4Jdgjrhn24;;\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
             new FeeRebateImportedTransactionBean(
