@@ -840,7 +840,22 @@ public enum Currency {
     L1000UNC(false, Instant.parse("2022-12-29T00:00:00Z"), "1000LUNC"),
     SEI(false, Instant.parse("2023-08-15T00:00:00Z"), "Sei"),
     TOKEN(false, Instant.parse("2023-10-27T00:00:00Z"), "TokenFi"),
-    WLD(false, Instant.parse("2023-07-24T00:00:00Z"), "Worldcoin");
+    WLD(false, Instant.parse("2023-07-24T00:00:00Z"), "Worldcoin"),
+    SATS(false, Instant.parse("2023-06-12T00:00:00Z"), "SATS"),
+    _1000SATS("1000SATS",false, Instant.parse("2023-06-12T00:00:00Z"), "SATS"),
+    ACE(false, Instant.parse("2023-12-18T00:00:00Z"), "Fusionist"),
+    ARKM(false, Instant.parse("2023-10-23T00:00:00Z"), "Arkham"),
+    COMBO(false, Instant.parse("2019-08-22T00:00:00Z"), "COMBO"),
+    CYBER(false, Instant.parse("2023-10-19T00:00:00Z"), "CyberConnect"),
+    EDU(false, Instant.parse("2023-06-27T00:00:00Z"), "EDU Coin"),
+    HIFI(false, Instant.parse("2023-09-25T00:00:00Z"), "Hifi Finance"),
+    ID(false, Instant.parse("2023-04-28T00:00:00Z"), "Space ID"),
+    MAV(false, Instant.parse("2023-06-28T00:00:00Z"), "Maverick Token"),
+    MEME(false, Instant.parse("2023-11-03T00:00:00Z"), "Memecoin"),
+    NTRN(false, Instant.parse("2023-11-06T00:00:00Z"), "Neutron"),
+    ORBS(false, Instant.parse("2019-03-28T00:00:00Z"), "Orbs"),
+    ORDI(false, Instant.parse("2023-05-08T00:00:00Z"), "Ordinals"),
+    PENDLE(false, Instant.parse("2021-09-02T00:00:00Z"), "Pendle");
 
     String code;
     int decimalDigits;
