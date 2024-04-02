@@ -578,6 +578,15 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                             "\"Processing fees paid (in merchant account currency)\"", "\"Net settled amount\"",
                             "\"Settlement currency\"", "\"Automatically converted to merchant account currency\"",
                             "\"Payment method\"", "\"Order ID\"", "\"Metadata\"", "\"Metadata \"\"email\"\"\"")
+                        .withSeparator(delimiter),
+                    CsvHeader
+                        .of("\"OpenNode ID\"", "\"Description\"", "\"Payment request date (mm/dd/yyyy UTC)\"",
+                            "\"Payment request time (UTC)\"", "\"Settlement date (mm/dd/yyyy UTC)\"", "\"Settlement time (UTC)\"",
+                            "\"Payment amount (BTC)\"", "\"Originating amount\"", "\"Originating currency\"",
+                            "\"Merchant currency amount\"", "\"Merchant account currency\"", "\"Processing fees paid (BTC)\"",
+                            "\"Processing fees paid (in merchant account currency)\"", "\"Net settled amount\"",
+                            "\"Settlement currency\"", "\"Automatically converted to merchant account currency\"",
+                            "\"Payment method\"", "\"Order ID\"", "\"Metadata\"", "\"Metadata \"\"metadata.email\"\"\"")
                         .withSeparator(delimiter)
                 ))
                 .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(OpenNodeV1.class, delimiter))
