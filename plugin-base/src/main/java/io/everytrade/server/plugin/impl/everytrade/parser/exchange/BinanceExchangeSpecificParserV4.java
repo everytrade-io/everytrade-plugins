@@ -34,7 +34,7 @@ import static java.math.BigDecimal.ZERO;
 import static java.util.stream.Collectors.groupingBy;
 
 public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpecificParser implements IExchangeSpecificParser,
-        IMultiExchangeSpecificParser<BinanceBeanV4> {
+    IMultiExchangeSpecificParser<BinanceBeanV4> {
 
     private static final long TRANSACTION_MERGE_TOLERANCE_MS = 1000;
     List<BinanceBeanV4> originalRows;
@@ -81,8 +81,8 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
                 var rowsInGroup = entry.getValue();
                 Instant key = (Instant) entry.getKey();
                 List<BinanceBeanV4> smallAssetExchange = rowsInGroup.stream()
-                        .filter(r -> r.getOriginalOperation().equalsIgnoreCase(OPERATION_TYPE_SMALL_ASSETS_EXCHANGE_BNB.code))
-                        .collect(Collectors.toList());
+                    .filter(r -> r.getOriginalOperation().equalsIgnoreCase(OPERATION_TYPE_SMALL_ASSETS_EXCHANGE_BNB.code))
+                    .collect(Collectors.toList());
                 if (smallAssetExchange.size() == 0) {
                     result.put(key, rowsInGroup);
                 } else if (smallAssetExchange.size() == rowsInGroup.size()) {
@@ -94,7 +94,7 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
                         result.put(key, rowsInGroup);
                     } else {
                         rowsInGroup = rowsInGroup.stream().sorted(Comparator.comparingInt(BinanceBeanV4::getRowId))
-                                .collect(Collectors.toList());
+                            .collect(Collectors.toList());
                         int i = 0;
                         for (BinanceBeanV4 row : rowsInGroup) {
                             if (i % 2 == 0) {
@@ -149,7 +149,7 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
         for (BinanceBeanV4 row : rows) {
             if (!row.getOperationType().isMultiRowType) { // test yes
                 if (List.of(OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_SUBSCRIPTION.code, OPERATION_TYPE_SAVING_DISTRIBUTION.code,
-                        OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_REDEMPTION.code).contains(row.getOriginalOperation())) {
+                    OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_REDEMPTION.code).contains(row.getOriginalOperation())) {
                     row.setNote(row.getOriginalOperation().toUpperCase());
                     if (row.getChange().compareTo(ZERO) < 0) {
                         row.setType(WITHDRAWAL);
@@ -185,7 +185,8 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
         }
         return result;
     }
-    private BinanceBeanV4 cloneRewardToStake(BinanceBeanV4 row){
+
+    private BinanceBeanV4 cloneRewardToStake(BinanceBeanV4 row) {
         BinanceBeanV4 clone = new BinanceBeanV4();
         clone.setRowNumber(row.getDate().getEpochSecond());
         clone.setDate(row.getDate());
@@ -227,10 +228,10 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
         for (Map.Entry<?, List<BinanceBeanV4>> entry : rowGroups.entrySet()) {
             var rowsInGroup = entry.getValue();
             List<BinanceBeanV4> unSupportedRow = rowsInGroup.stream()
-                    .filter(r -> r.isUnsupportedRow() == true)
-                    .collect(Collectors.toList());
+                .filter(r -> r.isUnsupportedRow() == true)
+                .collect(Collectors.toList());
             var isOneOrMoreUnsupportedRows =
-                    !unSupportedRow.isEmpty();
+                !unSupportedRow.isEmpty();
             if (!isOneOrMoreUnsupportedRows) {
                 result.put(entry.getKey(), entry.getValue());
             } else {
@@ -254,10 +255,10 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
     private Map<Instant, List<BinanceBeanV4>> mergeGroupsInTimeWithinTolerance(Map<Instant, List<BinanceBeanV4>> groups) {
         Map<Instant, List<BinanceBeanV4>> result = new HashMap<>();
         Map<Instant, List<BinanceBeanV4>> sortedMap = groups.entrySet()
-                .stream()
-                .sorted(Comparator.comparing(Map.Entry::getKey))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
-                        (oldValue, newValue) -> oldValue, LinkedHashMap::new));
+            .stream()
+            .sorted(Comparator.comparing(Map.Entry::getKey))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+                (oldValue, newValue) -> oldValue, LinkedHashMap::new));
 
         Instant previousKey = Instant.EPOCH;
         List<BinanceBeanV4> previousValues = new ArrayList<>();
@@ -265,7 +266,7 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
             var currentKey = entry.getKey();
             var currentValues = entry.getValue();
             if ((currentKey.minusMillis(TRANSACTION_MERGE_TOLERANCE_MS).equals(previousKey)
-                    || currentKey.minusMillis(TRANSACTION_MERGE_TOLERANCE_MS).isBefore(previousKey))) {
+                || currentKey.minusMillis(TRANSACTION_MERGE_TOLERANCE_MS).isBefore(previousKey))) {
                 List<BinanceBeanV4> all = currentValues;
                 all.addAll(previousValues);
                 all.forEach(r -> {
