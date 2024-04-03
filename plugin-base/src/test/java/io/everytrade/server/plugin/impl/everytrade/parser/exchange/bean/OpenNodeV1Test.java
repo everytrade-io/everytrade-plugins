@@ -54,8 +54,8 @@ class OpenNodeV1Test {
     @Test
     void testCorrectParsingRawTransactionBuy() {
         final String row = "\"5a5d41b9-337e-4fc4-baa0-6278e14d5c24\",\"Test\",\"06/15/2022\",\"07:56 PM\",\"06/15/2022\",\"07:56 PM\",\"0" +
-            ".00000196\",\"1.00\",\"CZK\",\"1.00\",\"CZK\",\"0.00000001\",\"0\",\"0.00000195\",\"BTC\",\"No\",\"BTC Lightning\"," +
-            "\"preset-3724010e-a70b-46b4-98ea-bd367ee367f5\",\"Luboš Kovařík\",\"info@stosuj.cz\",{},\n";
+                ".00000196\",\"1.00\",\"CZK\",\"1.00\",\"CZK\",\"0.00000001\",\"0\",\"0.00000195\",\"BTC\",\"No\",\"BTC Lightning\"," +
+                "\"preset-3724010e-a70b-46b4-98ea-bd367ee367f5\",\"Luboš Kovařík\",\"info@stosuj.cz\",{},\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
             new ImportedTransactionBean(
