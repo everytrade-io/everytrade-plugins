@@ -16,7 +16,7 @@ import java.time.Instant;
 import java.util.List;
 
 import static io.everytrade.server.model.Currency.ADA;
-import static io.everytrade.server.model.Currency.ALGO;
+import static io.everytrade.server.model.Currency.BETH;
 import static io.everytrade.server.model.Currency.BNB;
 import static io.everytrade.server.model.Currency.BTC;
 import static io.everytrade.server.model.Currency.BUSD;
@@ -33,7 +33,6 @@ import static io.everytrade.server.model.Currency.ROSE;
 import static io.everytrade.server.model.Currency.RUNE;
 import static io.everytrade.server.model.Currency.SHIB;
 import static io.everytrade.server.model.Currency.SOL;
-import static io.everytrade.server.model.Currency.USD;
 import static io.everytrade.server.model.Currency.USDC;
 import static io.everytrade.server.model.Currency.USDT;
 import static io.everytrade.server.model.Currency.UST;
@@ -75,31 +74,31 @@ class BinanceBeanV4Test {
         String row15 = "63676019,2021-01-05 02:38:00,Spot,Fee,EUR,-10.0,\n";
 
         final String join =
-            row0 + row1 + row2 + row3 + row4 + row5 + row6 + row7 + row8 + row9 + row10 + row11 + row12 + row13 + row14 + row15;
+                row0 + row1 + row2 + row3 + row4 + row5 + row6 + row7 + row8 + row9 + row10 + row11 + row12 + row13 + row14 + row15;
 
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + join);
 
         final TransactionCluster expected = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2021-01-05T02:38:00Z"),
-                USDT,
-                EUR,
-                BUY,
-                new BigDecimal("327.1600000000"),
-                new BigDecimal("1.2360000000")
-            ),
-            List.of(
-                new FeeRebateImportedTransactionBean(
-                    FEE_UID_PART,
-                    Instant.parse("2021-01-05T02:38:00Z"),
-                    EUR,
-                    EUR,
-                    FEE,
-                    new BigDecimal("20.0"),
-                    EUR
-                )
-            ));
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2021-01-05T02:38:00Z"),
+                        USDT,
+                        EUR,
+                        BUY,
+                        new BigDecimal("327.1600000000"),
+                        new BigDecimal("1.2360000000")
+                ),
+                List.of(
+                        new FeeRebateImportedTransactionBean(
+                                FEE_UID_PART,
+                                Instant.parse("2021-01-05T02:38:00Z"),
+                                EUR,
+                                EUR,
+                                FEE,
+                                new BigDecimal("20.0"),
+                                EUR
+                        )
+                ));
         TestUtils.testTxs(expected.getRelated().get(0), actual.getRelated().get(0));
         TestUtils.testTxs(expected.getMain(), actual.getMain());
     }
@@ -124,31 +123,31 @@ class BinanceBeanV4Test {
         String row15 = "63676019,2021-01-05 02:38:00,Spot,Fee,EUR,-10.0,\n";
 
         final String join =
-            row0 + row1 + row2 + row3 + row4 + row5 + row6 + row7 + row8 + row9 + row10 + row11 + row12 + row13 + row14 + row15;
+                row0 + row1 + row2 + row3 + row4 + row5 + row6 + row7 + row8 + row9 + row10 + row11 + row12 + row13 + row14 + row15;
 
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + join);
 
         final TransactionCluster expected = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2021-01-05T02:38:00Z"),
-                USDT,
-                EUR,
-                SELL,
-                new BigDecimal("327.1600000000"),
-                new BigDecimal("1.2360000000")
-            ),
-            List.of(
-                new FeeRebateImportedTransactionBean(
-                    FEE_UID_PART,
-                    Instant.parse("2021-01-05T02:38:00Z"),
-                    EUR,
-                    EUR,
-                    FEE,
-                    new BigDecimal("20.0"),
-                    EUR
-                )
-            ));
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2021-01-05T02:38:00Z"),
+                        USDT,
+                        EUR,
+                        SELL,
+                        new BigDecimal("327.1600000000"),
+                        new BigDecimal("1.2360000000")
+                ),
+                List.of(
+                        new FeeRebateImportedTransactionBean(
+                                FEE_UID_PART,
+                                Instant.parse("2021-01-05T02:38:00Z"),
+                                EUR,
+                                EUR,
+                                FEE,
+                                new BigDecimal("20.0"),
+                                EUR
+                        )
+                ));
         TestUtils.testTxs(expected.getRelated().get(0), actual.getRelated().get(0));
         TestUtils.testTxs(expected.getMain(), actual.getMain());
     }
@@ -163,26 +162,26 @@ class BinanceBeanV4Test {
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + join);
 
         final TransactionCluster expected = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2022-01-01T10:56:29Z"),
-                ETH,
-                BTC,
-                BUY,
-                new BigDecimal("76.6597000000"),
-                new BigDecimal("0.1695806271")
-            ),
-            List.of(
-                new FeeRebateImportedTransactionBean(
-                    FEE_UID_PART,
-                    Instant.parse("2022-01-01T10:56:29Z"),
-                    BNB,
-                    BNB,
-                    FEE,
-                    new BigDecimal("0.00011168"),
-                    BNB
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2022-01-01T10:56:29Z"),
+                        ETH,
+                        BTC,
+                        BUY,
+                        new BigDecimal("76.6597000000"),
+                        new BigDecimal("0.1695806271")
+                ),
+                List.of(
+                        new FeeRebateImportedTransactionBean(
+                                FEE_UID_PART,
+                                Instant.parse("2022-01-01T10:56:29Z"),
+                                BNB,
+                                BNB,
+                                FEE,
+                                new BigDecimal("0.00011168"),
+                                BNB
+                        )
                 )
-            )
         );
         TestUtils.testTxs(expected.getRelated().get(0), actual.getRelated().get(0));
         TestUtils.testTxs(expected.getMain(), actual.getMain());
@@ -198,26 +197,26 @@ class BinanceBeanV4Test {
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + join);
 
         final TransactionCluster expected = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2022-01-01T10:56:29Z"),
-                Currency.USDT,
-                EUR,
-                SELL,
-                new BigDecimal("9820.0000000000"),
-                new BigDecimal("1.1310000000")
-            ),
-            List.of(
-                new FeeRebateImportedTransactionBean(
-                    FEE_UID_PART,
-                    Instant.parse("2022-01-01T10:56:29Z"),
-                    EUR,
-                    EUR,
-                    FEE,
-                    new BigDecimal("11.10642"),
-                    EUR
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2022-01-01T10:56:29Z"),
+                        USDT,
+                        EUR,
+                        SELL,
+                        new BigDecimal("9820.0000000000"),
+                        new BigDecimal("1.1310000000")
+                ),
+                List.of(
+                        new FeeRebateImportedTransactionBean(
+                                FEE_UID_PART,
+                                Instant.parse("2022-01-01T10:56:29Z"),
+                                EUR,
+                                EUR,
+                                FEE,
+                                new BigDecimal("11.10642"),
+                                EUR
+                        )
                 )
-            )
         );
         TestUtils.testTxs(expected.getRelated().get(0), actual.getRelated().get(0));
         TestUtils.testTxs(expected.getMain(), actual.getMain());
@@ -232,32 +231,32 @@ class BinanceBeanV4Test {
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + join);
 
         final TransactionCluster expected1 = new TransactionCluster(
-            new ImportedTransactionBean(
-                REBATE_UID_PART,
-                Instant.parse("2022-02-26T05:48:48Z"),
-                BNB,
-                BNB,
-                REBATE,
-                new BigDecimal("0.00066906"),
-                null,
-                "CARD CASHBACK",
-                null
-            ),
-            List.of()
+                new ImportedTransactionBean(
+                        REBATE_UID_PART,
+                        Instant.parse("2022-02-26T05:48:48Z"),
+                        BNB,
+                        BNB,
+                        REBATE,
+                        new BigDecimal("0.00066906"),
+                        null,
+                        "CARD CASHBACK",
+                        null
+                ),
+                List.of()
         );
         final TransactionCluster expected2 = new TransactionCluster(
-            new ImportedTransactionBean(
-                REBATE_UID_PART,
-                Instant.parse("2022-02-26T05:48:48Z"),
-                BNB,
-                BNB,
-                REBATE,
-                new BigDecimal("0.00006234"),
-                null,
-                "CARD CASHBACK",
-                null
-            ),
-            List.of()
+                new ImportedTransactionBean(
+                        REBATE_UID_PART,
+                        Instant.parse("2022-02-26T05:48:48Z"),
+                        BNB,
+                        BNB,
+                        REBATE,
+                        new BigDecimal("0.00006234"),
+                        null,
+                        "CARD CASHBACK",
+                        null
+                ),
+                List.of()
         );
 
         TestUtils.testTxs(expected1.getMain(), actual.get(0).getMain());
@@ -273,33 +272,33 @@ class BinanceBeanV4Test {
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + join);
 
         final TransactionCluster expected1 = new TransactionCluster(
-            new ImportedTransactionBean(
-                REBATE_UID_PART,
-                Instant.parse("2022-08-10T13:25:58Z"),
-                SOL,
-                SOL,
-                REBATE,
-                new BigDecimal("0.00182000"),
-                null,
-                "COMMISSION REBATE",
-                null
-            ),
-            List.of()
+                new ImportedTransactionBean(
+                        REBATE_UID_PART,
+                        Instant.parse("2022-08-10T13:25:58Z"),
+                        SOL,
+                        SOL,
+                        REBATE,
+                        new BigDecimal("0.00182000"),
+                        null,
+                        "COMMISSION REBATE",
+                        null
+                ),
+                List.of()
         );
 
         final TransactionCluster expected2 = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2022-08-10T13:25:58Z"),
-                SOL,
-                SOL,
-                REBATE,
-                new BigDecimal("0.00220000"),
-                null,
-                "COMMISSION REBATE",
-                null
-            ),
-            List.of()
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2022-08-10T13:25:58Z"),
+                        SOL,
+                        SOL,
+                        REBATE,
+                        new BigDecimal("0.00220000"),
+                        null,
+                        "COMMISSION REBATE",
+                        null
+                ),
+                List.of()
         );
         TestUtils.testTxs(expected1.getMain(), actual.get(0).getMain());
         TestUtils.testTxs(expected2.getMain(), actual.get(1).getMain());
@@ -311,20 +310,58 @@ class BinanceBeanV4Test {
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row);
 
         final TransactionCluster expected1 = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2022-11-09T03:02:17Z"),
-                USDT,
-                USDT,
-                REBATE,
-                new BigDecimal("0.01626671"),
-                null,
-                "CASHBACK VOUCHER",
-                null
-            ),
-            List.of()
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2022-11-09T03:02:17Z"),
+                        USDT,
+                        USDT,
+                        REBATE,
+                        new BigDecimal("0.01626671"),
+                        null,
+                        "CASHBACK VOUCHER",
+                        null
+                ),
+                List.of()
         );
         TestUtils.testTxs(expected1.getMain(), actual.get(0).getMain());
+    }
+
+    @Test
+    void testTypeETH2_0() {
+        final String row = "40360729,2020-12-28 09:27:37,Spot,ETH 2.0 Staking Rewards,BETH,0.00119837,\"\"\n";
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row);
+
+        final TransactionCluster expectedStake = new TransactionCluster(
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2020-12-28T09:27:37Z"),
+                        BETH,
+                        BETH,
+                        STAKE,
+                        new BigDecimal("0.00119837"),
+                        null,
+                        null,
+                        null
+                ),
+                List.of()
+        );
+
+        final TransactionCluster expectedStakeReward = new TransactionCluster(
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2020-12-28T09:27:37Z"),
+                        BETH,
+                        BETH,
+                        STAKING_REWARD,
+                        new BigDecimal("0.00119837"),
+                        null,
+                        null,
+                        null
+                ),
+                List.of()
+        );
+        TestUtils.testTxs(expectedStake.getMain(), actual.get(1).getMain());
+        TestUtils.testTxs(expectedStakeReward.getMain(), actual.get(0).getMain());
     }
 
     @Test
@@ -333,18 +370,18 @@ class BinanceBeanV4Test {
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row);
 
         final TransactionCluster expected = new TransactionCluster(
-            ImportedTransactionBean.createDepositWithdrawal(
-                null,
-                Instant.parse("2022-03-02T17:02:42Z"),
-                USDT,
-                USDT,
-                DEPOSIT,
-                new BigDecimal("236.79617000"),
-                null,
-                "SIMPLE EARN FLEXIBLE SUBSCRIPTION, LDUSDT",
-                null
-            ),
-            List.of()
+                ImportedTransactionBean.createDepositWithdrawal(
+                        null,
+                        Instant.parse("2022-03-02T17:02:42Z"),
+                        USDT,
+                        USDT,
+                        DEPOSIT,
+                        new BigDecimal("236.79617000"),
+                        null,
+                        "SIMPLE EARN FLEXIBLE SUBSCRIPTION, LDUSDT",
+                        null
+                ),
+                List.of()
         );
         TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
 
@@ -358,28 +395,28 @@ class BinanceBeanV4Test {
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row.concat(row1).concat(row2));
 
         var expected = new TransactionCluster(new ImportedTransactionBean(
-            null,
-            Instant.parse("2023-11-09T10:00:50Z"),
-            Currency.USDT,
-            LTC,
-            BUY,
-            new BigDecimal("5361.5397600000"),
-            new BigDecimal("0.0133120341"),
-            "TRANSACTION REVENUE",
-            null,
-            null
+                null,
+                Instant.parse("2023-11-09T10:00:50Z"),
+                USDT,
+                LTC,
+                BUY,
+                new BigDecimal("5361.5397600000"),
+                new BigDecimal("0.0133120341"),
+                "TRANSACTION REVENUE",
+                null,
+                null
         ),
-            List.of(
-                new FeeRebateImportedTransactionBean(
-                    FEE_UID_PART,
-                    Instant.parse("2023-11-09T10:00:50Z"),
-                    USDT,
-                    USDT,
-                    FEE,
-                    new BigDecimal("5.36153976"),
-                    USDT
+                List.of(
+                        new FeeRebateImportedTransactionBean(
+                                FEE_UID_PART,
+                                Instant.parse("2023-11-09T10:00:50Z"),
+                                USDT,
+                                USDT,
+                                FEE,
+                                new BigDecimal("5.36153976"),
+                                USDT
+                        )
                 )
-            )
         );
         TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
         TestUtils.testTxs(expected.getRelated().get(0), actual.get(0).getRelated().get(0));
@@ -391,18 +428,18 @@ class BinanceBeanV4Test {
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row);
 
         final TransactionCluster expected = new TransactionCluster(
-            ImportedTransactionBean.createDepositWithdrawal(
-                null,
-                Instant.parse("2022-03-02T17:02:42Z"),
-                USDT,
-                USDT,
-                WITHDRAWAL,
-                new BigDecimal("236.79617000"),
-                null,
-                "SIMPLE EARN FLEXIBLE SUBSCRIPTION",
-                null
-            ),
-            List.of()
+                ImportedTransactionBean.createDepositWithdrawal(
+                        null,
+                        Instant.parse("2022-03-02T17:02:42Z"),
+                        USDT,
+                        USDT,
+                        WITHDRAWAL,
+                        new BigDecimal("236.79617000"),
+                        null,
+                        "SIMPLE EARN FLEXIBLE SUBSCRIPTION",
+                        null
+                ),
+                List.of()
         );
         TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
     }
@@ -413,18 +450,18 @@ class BinanceBeanV4Test {
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row);
 
         final TransactionCluster expected = new TransactionCluster(
-            ImportedTransactionBean.createDepositWithdrawal(
-                null,
-                Instant.parse("2022-03-31T16:36:00Z"),
-                USDT,
-                USDT,
-                WITHDRAWAL,
-                new BigDecimal("300.00000000"),
-                null,
-                "SIMPLE EARN FLEXIBLE REDEMPTION, LDUSDT",
-                null
-            ),
-            List.of()
+                ImportedTransactionBean.createDepositWithdrawal(
+                        null,
+                        Instant.parse("2022-03-31T16:36:00Z"),
+                        USDT,
+                        USDT,
+                        WITHDRAWAL,
+                        new BigDecimal("300.00000000"),
+                        null,
+                        "SIMPLE EARN FLEXIBLE REDEMPTION, LDUSDT",
+                        null
+                ),
+                List.of()
         );
         TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
     }
@@ -435,18 +472,18 @@ class BinanceBeanV4Test {
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row);
 
         final TransactionCluster expected = new TransactionCluster(
-            ImportedTransactionBean.createDepositWithdrawal(
-                null,
-                Instant.parse("2022-03-31T16:36:00Z"),
-                USDT,
-                USDT,
-                DEPOSIT,
-                new BigDecimal("300.00000000"),
-                null,
-                "SIMPLE EARN FLEXIBLE REDEMPTION",
-                null
-            ),
-            List.of()
+                ImportedTransactionBean.createDepositWithdrawal(
+                        null,
+                        Instant.parse("2022-03-31T16:36:00Z"),
+                        USDT,
+                        USDT,
+                        DEPOSIT,
+                        new BigDecimal("300.00000000"),
+                        null,
+                        "SIMPLE EARN FLEXIBLE REDEMPTION",
+                        null
+                ),
+                List.of()
         );
         TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
     }
@@ -457,18 +494,18 @@ class BinanceBeanV4Test {
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row);
 
         final TransactionCluster expected = new TransactionCluster(
-            ImportedTransactionBean.createDepositWithdrawal(
-                null,
-                Instant.parse("2020-11-26T08:55:38Z"),
-                BTC,
-                BTC,
-                DEPOSIT,
-                new BigDecimal("0.01155980"),
-                null,
-                "SAVINGS DISTRIBUTION, LDBTC",
-                null
-            ),
-            List.of()
+                ImportedTransactionBean.createDepositWithdrawal(
+                        null,
+                        Instant.parse("2020-11-26T08:55:38Z"),
+                        BTC,
+                        BTC,
+                        DEPOSIT,
+                        new BigDecimal("0.01155980"),
+                        null,
+                        "SAVINGS DISTRIBUTION, LDBTC",
+                        null
+                ),
+                List.of()
         );
         TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
     }
@@ -479,18 +516,18 @@ class BinanceBeanV4Test {
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row);
 
         final TransactionCluster expected = new TransactionCluster(
-            ImportedTransactionBean.createDepositWithdrawal(
-                null,
-                Instant.parse("2020-11-26T08:55:38Z"),
-                BTC,
-                BTC,
-                WITHDRAWAL,
-                new BigDecimal("0.01155980"),
-                null,
-                "SAVINGS DISTRIBUTION",
-                null
-            ),
-            List.of()
+                ImportedTransactionBean.createDepositWithdrawal(
+                        null,
+                        Instant.parse("2020-11-26T08:55:38Z"),
+                        BTC,
+                        BTC,
+                        WITHDRAWAL,
+                        new BigDecimal("0.01155980"),
+                        null,
+                        "SAVINGS DISTRIBUTION",
+                        null
+                ),
+                List.of()
         );
         TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
     }
@@ -505,26 +542,26 @@ class BinanceBeanV4Test {
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + join);
 
         final TransactionCluster expected = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2022-01-01T10:58:15Z"),
-                ETH,
-                BTC,
-                BUY,
-                new BigDecimal("4477.4000000000"),
-                new BigDecimal("1.3170000000")
-            ),
-            List.of(
-                new FeeRebateImportedTransactionBean(
-                    null,
-                    Instant.parse("2022-01-01T10:58:15Z"),
-                    BNB,
-                    BNB,
-                    FEE,
-                    new BigDecimal("0.00859660"),
-                    BNB
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2022-01-01T10:58:15Z"),
+                        ETH,
+                        BTC,
+                        BUY,
+                        new BigDecimal("4477.4000000000"),
+                        new BigDecimal("1.3170000000")
+                ),
+                List.of(
+                        new FeeRebateImportedTransactionBean(
+                                null,
+                                Instant.parse("2022-01-01T10:58:15Z"),
+                                BNB,
+                                BNB,
+                                FEE,
+                                new BigDecimal("0.00859660"),
+                                BNB
+                        )
                 )
-            )
         );
         TestUtils.testTxs(expected.getRelated().get(0), actual.getRelated().get(0));
         TestUtils.testTxs(expected.getMain(), actual.getMain());
@@ -539,18 +576,18 @@ class BinanceBeanV4Test {
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + join);
 
         final TransactionCluster expected = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2022-01-12T18:00:24Z"),
-                DOGE,
-                USDT,
-                BUY,
-                new BigDecimal("481.5840000000"),
-                new BigDecimal("6.2294428386"),
-                "LARGE OTC TRADING",
-                null
-            ),
-            List.of()
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2022-01-12T18:00:24Z"),
+                        DOGE,
+                        USDT,
+                        BUY,
+                        new BigDecimal("481.5840000000"),
+                        new BigDecimal("6.2294428386"),
+                        "LARGE OTC TRADING",
+                        null
+                ),
+                List.of()
         );
         TestUtils.testTxs(expected.getMain(), actual.getMain());
     }
@@ -564,18 +601,18 @@ class BinanceBeanV4Test {
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + join);
 
         final TransactionCluster expected = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2022-08-08T12:22:18Z"),
-                USDC,
-                USDT,
-                BUY,
-                new BigDecimal("7524.8147036600"),
-                new BigDecimal("0.9998700779"),
-                "LARGE OTC TRADING",
-                null
-            ),
-            List.of()
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2022-08-08T12:22:18Z"),
+                        USDC,
+                        USDT,
+                        BUY,
+                        new BigDecimal("7524.8147036600"),
+                        new BigDecimal("0.9998700779"),
+                        "LARGE OTC TRADING",
+                        null
+                ),
+                List.of()
         );
         TestUtils.testTxs(expected.getMain(), actual.getMain());
     }
@@ -589,18 +626,18 @@ class BinanceBeanV4Test {
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + join);
 
         final TransactionCluster expected = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2022-01-12T18:00:24Z"),
-                DOGE,
-                USDT,
-                BUY,
-                new BigDecimal("481.5840000000"),
-                new BigDecimal("6.2294428386"),
-                "LARGE OTC TRADING",
-                null
-            ),
-            List.of()
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2022-01-12T18:00:24Z"),
+                        DOGE,
+                        USDT,
+                        BUY,
+                        new BigDecimal("481.5840000000"),
+                        new BigDecimal("6.2294428386"),
+                        "LARGE OTC TRADING",
+                        null
+                ),
+                List.of()
         );
         TestUtils.testTxs(expected.getMain(), actual.getMain());
     }
@@ -614,18 +651,18 @@ class BinanceBeanV4Test {
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + join);
 
         final TransactionCluster expected = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2022-04-06T23:15:18Z"),
-                RUNE,
-                UST,
-                BUY,
-                new BigDecimal("14513.3168943000"),
-                new BigDecimal("0.1073303015"),
-                "LARGE OTC TRADING",
-                null
-            ),
-            List.of()
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2022-04-06T23:15:18Z"),
+                        RUNE,
+                        UST,
+                        BUY,
+                        new BigDecimal("14513.3168943000"),
+                        new BigDecimal("0.1073303015"),
+                        "LARGE OTC TRADING",
+                        null
+                ),
+                List.of()
         );
         TestUtils.testTxs(expected.getMain(), actual.getMain());
     }
@@ -641,33 +678,33 @@ class BinanceBeanV4Test {
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + join);
 
         final TransactionCluster expected1 = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2020-11-24T15:44:58Z"),
-                BNB,
-                EUR,
-                BUY,
-                new BigDecimal("0.0000390800"),
-                new BigDecimal("28.5056294780"),
-                "SMALL ASSETS EXCHANGE BNB",
-                null
-            ),
-            List.of()
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2020-11-24T15:44:58Z"),
+                        BNB,
+                        EUR,
+                        BUY,
+                        new BigDecimal("0.0000390800"),
+                        new BigDecimal("28.5056294780"),
+                        "SMALL ASSETS EXCHANGE BNB",
+                        null
+                ),
+                List.of()
         );
 
         final TransactionCluster expected2 = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2020-11-24T15:44:58Z"),
-                BNB,
-                USDT,
-                BUY,
-                new BigDecimal("0.0001040500"),
-                new BigDecimal("33.6670831331"),
-                "SMALL ASSETS EXCHANGE BNB",
-                null
-            ),
-            List.of()
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2020-11-24T15:44:58Z"),
+                        BNB,
+                        USDT,
+                        BUY,
+                        new BigDecimal("0.0001040500"),
+                        new BigDecimal("33.6670831331"),
+                        "SMALL ASSETS EXCHANGE BNB",
+                        null
+                ),
+                List.of()
         );
         TestUtils.testTxs(expected1.getMain(), actual.get(0).getMain());
         TestUtils.testTxs(expected2.getMain(), actual.get(1).getMain());
@@ -686,93 +723,93 @@ class BinanceBeanV4Test {
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + join);
 
         final TransactionCluster expected0 = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2021-07-20T16:24:10Z"),
-                ADA,
-                USDT,
-                SELL,
-                new BigDecimal("0.0050000000"),
-                null,
-                "SMALL ASSETS EXCHANGE BNB",
-                null
-            ),
-            List.of()
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2021-07-20T16:24:10Z"),
+                        ADA,
+                        USDT,
+                        SELL,
+                        new BigDecimal("0.0050000000"),
+                        null,
+                        "SMALL ASSETS EXCHANGE BNB",
+                        null
+                ),
+                List.of()
         );
 
         final TransactionCluster expected1 = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2021-07-20T16:24:10Z"),
-                BNB,
-                USDT,
-                BUY,
-                new BigDecimal("0.0012564500"),
-                null,
-                "SMALL ASSETS EXCHANGE BNB",
-                null
-            ),
-            List.of()
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2021-07-20T16:24:10Z"),
+                        BNB,
+                        USDT,
+                        BUY,
+                        new BigDecimal("0.0012564500"),
+                        null,
+                        "SMALL ASSETS EXCHANGE BNB",
+                        null
+                ),
+                List.of()
         );
 
         final TransactionCluster expected2 = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2021-07-20T16:24:10Z"),
-                USDT,
-                USDT,
-                SELL,
-                new BigDecimal("0.0088763600"),
-                null,
-                "SMALL ASSETS EXCHANGE BNB",
-                null
-            ),
-            List.of()
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2021-07-20T16:24:10Z"),
+                        USDT,
+                        USDT,
+                        SELL,
+                        new BigDecimal("0.0088763600"),
+                        null,
+                        "SMALL ASSETS EXCHANGE BNB",
+                        null
+                ),
+                List.of()
         );
 
         final TransactionCluster expected3 = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2021-07-20T16:24:10Z"),
-                BTC,
-                USDT,
-                SELL,
-                new BigDecimal("5.400E-7"),
-                null,
-                "SMALL ASSETS EXCHANGE BNB",
-                null
-            ),
-            List.of()
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2021-07-20T16:24:10Z"),
+                        BTC,
+                        USDT,
+                        SELL,
+                        new BigDecimal("5.400E-7"),
+                        null,
+                        "SMALL ASSETS EXCHANGE BNB",
+                        null
+                ),
+                List.of()
         );
 
         final TransactionCluster expected4 = new TransactionCluster(
-            ImportedTransactionBean.createDepositWithdrawal(
-                null,
-                Instant.parse("2021-07-20T16:24:10Z"),
-                EUR,
-                EUR,
-                DEPOSIT,
-                new BigDecimal("100"),
-                null,
-                "SMALL ASSETS EXCHANGE BNB",
-                null
-            ),
-            List.of()
+                ImportedTransactionBean.createDepositWithdrawal(
+                        null,
+                        Instant.parse("2021-07-20T16:24:10Z"),
+                        EUR,
+                        EUR,
+                        DEPOSIT,
+                        new BigDecimal("100"),
+                        null,
+                        "SMALL ASSETS EXCHANGE BNB",
+                        null
+                ),
+                List.of()
         );
 
         final TransactionCluster expected5 = new TransactionCluster(
-            ImportedTransactionBean.createDepositWithdrawal(
-                null,
-                Instant.parse("2021-07-20T16:24:10Z"),
-                EUR,
-                EUR,
-                WITHDRAWAL,
-                new BigDecimal("100"),
-                null,
-                "SMALL ASSETS EXCHANGE BNB",
-                null
-            ),
-            List.of()
+                ImportedTransactionBean.createDepositWithdrawal(
+                        null,
+                        Instant.parse("2021-07-20T16:24:10Z"),
+                        EUR,
+                        EUR,
+                        WITHDRAWAL,
+                        new BigDecimal("100"),
+                        null,
+                        "SMALL ASSETS EXCHANGE BNB",
+                        null
+                ),
+                List.of()
         );
 
         TestUtils.testTxs(expected0.getMain(), actual.get(0).getMain());
@@ -789,19 +826,19 @@ class BinanceBeanV4Test {
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row);
 
         final TransactionCluster expected = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2020-11-28T00:59:18Z"),
-                BTC,
-                BTC,
-                EARNING,
-                new BigDecimal("0.00000038"),
-                null,
-                "SIMPLE EARN FLEXIBLE INTEREST",
-                null,
-                null
-            ),
-            List.of()
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2020-11-28T00:59:18Z"),
+                        BTC,
+                        BTC,
+                        EARNING,
+                        new BigDecimal("0.00000038"),
+                        null,
+                        "SIMPLE EARN FLEXIBLE INTEREST",
+                        null,
+                        null
+                ),
+                List.of()
         );
 
         TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
@@ -813,19 +850,19 @@ class BinanceBeanV4Test {
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row);
 
         final TransactionCluster expected = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2020-11-28T00:59:18Z"),
-                ETH,
-                ETH,
-                EARNING,
-                new BigDecimal("0.00011628"),
-                null,
-                "SIMPLE EARN FLEXIBLE INTEREST",
-                null,
-                null
-            ),
-            List.of()
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2020-11-28T00:59:18Z"),
+                        ETH,
+                        ETH,
+                        EARNING,
+                        new BigDecimal("0.00011628"),
+                        null,
+                        "SIMPLE EARN FLEXIBLE INTEREST",
+                        null,
+                        null
+                ),
+                List.of()
         );
         TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
     }
@@ -836,19 +873,19 @@ class BinanceBeanV4Test {
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row);
 
         final TransactionCluster expected = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2020-11-29T00:59:53Z"),
-                BTC,
-                BTC,
-                EARNING,
-                new BigDecimal("0.00000038"),
-                null,
-                "SIMPLE EARN FLEXIBLE INTEREST",
-                null,
-                null
-            ),
-            List.of()
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2020-11-29T00:59:53Z"),
+                        BTC,
+                        BTC,
+                        EARNING,
+                        new BigDecimal("0.00000038"),
+                        null,
+                        "SIMPLE EARN FLEXIBLE INTEREST",
+                        null,
+                        null
+                ),
+                List.of()
         );
         TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
     }
@@ -863,29 +900,29 @@ class BinanceBeanV4Test {
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + join);
 
         final TransactionCluster expected = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2021-06-25T14:11:52Z"),
-                SHIB,
-                USDT,
-                BUY,
-                new BigDecimal("4324216.0000000000"),
-                new BigDecimal("0.0000074400"),
-                "TRANSACTION BUY",
-                null,
-                null
-            ),
-            List.of(
-                new FeeRebateImportedTransactionBean(
-                    null,
-                    Instant.parse("2021-06-25T14:11:52Z"),
-                    SHIB,
-                    SHIB,
-                    FEE,
-                    new BigDecimal("4324.22000000"),
-                    SHIB
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2021-06-25T14:11:52Z"),
+                        SHIB,
+                        USDT,
+                        BUY,
+                        new BigDecimal("4324216.0000000000"),
+                        new BigDecimal("0.0000074400"),
+                        "TRANSACTION BUY",
+                        null,
+                        null
+                ),
+                List.of(
+                        new FeeRebateImportedTransactionBean(
+                                null,
+                                Instant.parse("2021-06-25T14:11:52Z"),
+                                SHIB,
+                                SHIB,
+                                FEE,
+                                new BigDecimal("4324.22000000"),
+                                SHIB
+                        )
                 )
-            )
         );
 
         TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
@@ -901,29 +938,29 @@ class BinanceBeanV4Test {
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + join);
 
         final TransactionCluster expected = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2021-07-12T19:28:23Z"),
-                BUSD,
-                BTC,
-                BUY,
-                new BigDecimal("85.1823841700"),
-                new BigDecimal("0.0000302762"),
-                "TRANSACTION REVENUE",
-                null,
-                null
-            ),
-            List.of(
-                new FeeRebateImportedTransactionBean(
-                    null,
-                    Instant.parse("2021-07-12T19:28:23Z"),
-                    BUSD,
-                    BUSD,
-                    FEE,
-                    new BigDecimal("0.08518238"),
-                    BUSD
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2021-07-12T19:28:23Z"),
+                        BUSD,
+                        BTC,
+                        BUY,
+                        new BigDecimal("85.1823841700"),
+                        new BigDecimal("0.0000302762"),
+                        "TRANSACTION REVENUE",
+                        null,
+                        null
+                ),
+                List.of(
+                        new FeeRebateImportedTransactionBean(
+                                null,
+                                Instant.parse("2021-07-12T19:28:23Z"),
+                                BUSD,
+                                BUSD,
+                                FEE,
+                                new BigDecimal("0.08518238"),
+                                BUSD
+                        )
                 )
-            )
         );
 
         TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
@@ -939,34 +976,34 @@ class BinanceBeanV4Test {
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + join);
 
         final TransactionCluster expected0 = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2022-01-21T05:27:51Z"),
-                ETH,
-                CZK,
-                BUY,
-                new BigDecimal("0.0233993100"),
-                new BigDecimal("62886.4697292356"),
-                "BUY CRYPTO",
-                null,
-                null
-            ),
-            List.of()
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2022-01-21T05:27:51Z"),
+                        ETH,
+                        CZK,
+                        BUY,
+                        new BigDecimal("0.0233993100"),
+                        new BigDecimal("62886.4697292356"),
+                        "BUY CRYPTO",
+                        null,
+                        null
+                ),
+                List.of()
         );
 
         final TransactionCluster expected1 = new TransactionCluster(
-            ImportedTransactionBean.createDepositWithdrawal(
-                null,
-                Instant.parse("2022-01-21T05:27:49Z"),
-                CZK,
-                CZK,
-                DEPOSIT,
-                new BigDecimal("1471.50000000"),
-                null,
-                "BUY CRYPTO",
-                null
-            ),
-            List.of()
+                ImportedTransactionBean.createDepositWithdrawal(
+                        null,
+                        Instant.parse("2022-01-21T05:27:49Z"),
+                        CZK,
+                        CZK,
+                        DEPOSIT,
+                        new BigDecimal("1471.50000000"),
+                        null,
+                        "BUY CRYPTO",
+                        null
+                ),
+                List.of()
         );
         TestUtils.testTxs(expected0.getMain(), actual.get(0).getMain());
         TestUtils.testTxs(expected1.getMain(), actual.get(1).getMain());
@@ -979,19 +1016,19 @@ class BinanceBeanV4Test {
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row);
 
         final TransactionCluster expected = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2022-01-01T00:48:07Z"),
-                DOT,
-                DOT,
-                STAKING_REWARD,
-                new BigDecimal("0.00044214"),
-                null,
-                "STAKING REWARDS",
-                null,
-                null
-            ),
-            List.of()
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2022-01-01T00:48:07Z"),
+                        DOT,
+                        DOT,
+                        STAKING_REWARD,
+                        new BigDecimal("0.00044214"),
+                        null,
+                        "STAKING REWARDS",
+                        null,
+                        null
+                ),
+                List.of()
         );
         TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
     }
@@ -1007,44 +1044,44 @@ class BinanceBeanV4Test {
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + join);
 
         final TransactionCluster expected0 = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2022-01-15T16:15:42Z"),
-                KSM,
-                BTC,
-                BUY,
-                new BigDecimal("0.1830000000"),
-                new BigDecimal("0.0065000000"),
-                "TRANSACTION BUY",
-                null
-            ),
-            List.of(
-                new FeeRebateImportedTransactionBean(
-                    null,
-                    Instant.parse("2022-01-15T16:15:42Z"),
-                    KSM,
-                    KSM,
-                    FEE,
-                    new BigDecimal("0.00018300"),
-                    KSM
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2022-01-15T16:15:42Z"),
+                        KSM,
+                        BTC,
+                        BUY,
+                        new BigDecimal("0.1830000000"),
+                        new BigDecimal("0.0065000000"),
+                        "TRANSACTION BUY",
+                        null
+                ),
+                List.of(
+                        new FeeRebateImportedTransactionBean(
+                                null,
+                                Instant.parse("2022-01-15T16:15:42Z"),
+                                KSM,
+                                KSM,
+                                FEE,
+                                new BigDecimal("0.00018300"),
+                                KSM
+                        )
                 )
-            )
         );
 
         final TransactionCluster expected1 = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2022-01-15T16:15:42Z"),
-                KSM,
-                KSM,
-                REWARD,
-                new BigDecimal("0.00001830"),
-                null,
-                "REFERRAL COMMISSION",
-                null,
-                null
-            ),
-            List.of()
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2022-01-15T16:15:42Z"),
+                        KSM,
+                        KSM,
+                        REWARD,
+                        new BigDecimal("0.00001830"),
+                        null,
+                        "REFERRAL COMMISSION",
+                        null,
+                        null
+                ),
+                List.of()
         );
         TestUtils.testTxs(expected0.getMain(), actual.get(0).getMain());
         TestUtils.testTxs(expected0.getRelated().get(0), actual.get(0).getRelated().get(0));
@@ -1058,19 +1095,19 @@ class BinanceBeanV4Test {
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row);
 
         final TransactionCluster expected = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2020-12-27T02:36:24Z"),
-                REEF,
-                REEF,
-                REWARD,
-                new BigDecimal("27.07578576"),
-                null,
-                "BNB VAULT REWARDS",
-                null,
-                null
-            ),
-            List.of()
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2020-12-27T02:36:24Z"),
+                        REEF,
+                        REEF,
+                        REWARD,
+                        new BigDecimal("27.07578576"),
+                        null,
+                        "BNB VAULT REWARDS",
+                        null,
+                        null
+                ),
+                List.of()
         );
         TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
     }
@@ -1082,19 +1119,19 @@ class BinanceBeanV4Test {
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row);
 
         final TransactionCluster expected = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2022-09-27T03:56:38Z"),
-                ADA,
-                ADA,
-                EARNING,
-                new BigDecimal("0.02587789"),
-                null,
-                "SIMPLE EARN LOCKED REWARDS",
-                null,
-                null
-            ),
-            List.of()
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2022-09-27T03:56:38Z"),
+                        ADA,
+                        ADA,
+                        EARNING,
+                        new BigDecimal("0.02587789"),
+                        null,
+                        "SIMPLE EARN LOCKED REWARDS",
+                        null,
+                        null
+                ),
+                List.of()
         );
         TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
     }
@@ -1106,19 +1143,19 @@ class BinanceBeanV4Test {
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row);
 
         final TransactionCluster expected = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2022-01-04T01:08:57Z"),
-                DOT,
-                DOT,
-                UNSTAKE,
-                new BigDecimal("1.40212298"),
-                null,
-                "STAKING REDEMPTION",
-                null,
-                null
-            ),
-            List.of()
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2022-01-04T01:08:57Z"),
+                        DOT,
+                        DOT,
+                        UNSTAKE,
+                        new BigDecimal("1.40212298"),
+                        null,
+                        "STAKING REDEMPTION",
+                        null,
+                        null
+                ),
+                List.of()
         );
         TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
     }
@@ -1130,19 +1167,19 @@ class BinanceBeanV4Test {
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row);
 
         final TransactionCluster expected = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2022-01-04T21:17:14Z"),
-                ADA,
-                ADA,
-                STAKE,
-                new BigDecimal("200.09109425"),
-                null,
-                "STAKING PURCHASE",
-                null,
-                null
-            ),
-            List.of()
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2022-01-04T21:17:14Z"),
+                        ADA,
+                        ADA,
+                        STAKE,
+                        new BigDecimal("200.09109425"),
+                        null,
+                        "STAKING PURCHASE",
+                        null,
+                        null
+                ),
+                List.of()
         );
         TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
     }
@@ -1161,51 +1198,51 @@ class BinanceBeanV4Test {
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + join);
 
         final TransactionCluster expected0 = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2021-06-10T09:52:01Z"),
-                USDT,
-                ADA,
-                BUY,
-                new BigDecimal("15.6727000000"),
-                new BigDecimal("0.6380521544"),
-                "BINANCE CONVERT",
-                null,
-                null
-            ),
-            List.of()
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2021-06-10T09:52:01Z"),
+                        USDT,
+                        ADA,
+                        BUY,
+                        new BigDecimal("15.6727000000"),
+                        new BigDecimal("0.6380521544"),
+                        "BINANCE CONVERT",
+                        null,
+                        null
+                ),
+                List.of()
         );
 
         final TransactionCluster expected1 = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2021-06-10T09:54:06Z"),
-                USDT,
-                ADA,
-                BUY,
-                new BigDecimal("15.7186000000"),
-                new BigDecimal("0.6361889736"),
-                "BINANCE CONVERT",
-                null,
-                null
-            ),
-            List.of()
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2021-06-10T09:54:06Z"),
+                        USDT,
+                        ADA,
+                        BUY,
+                        new BigDecimal("15.7186000000"),
+                        new BigDecimal("0.6361889736"),
+                        "BINANCE CONVERT",
+                        null,
+                        null
+                ),
+                List.of()
         );
 
         final TransactionCluster expected2 = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2021-06-10T09:54:26Z"),
-                USDT,
-                EUR,
-                SELL,
-                new BigDecimal("31.4059602600"),
-                new BigDecimal("0.8219628474"),
-                "BINANCE CONVERT",
-                null,
-                null
-            ),
-            List.of()
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2021-06-10T09:54:26Z"),
+                        USDT,
+                        EUR,
+                        SELL,
+                        new BigDecimal("31.4059602600"),
+                        new BigDecimal("0.8219628474"),
+                        "BINANCE CONVERT",
+                        null,
+                        null
+                ),
+                List.of()
         );
         TestUtils.testTxs(expected0.getMain(), actual.get(0).getMain());
         TestUtils.testTxs(expected1.getMain(), actual.get(2).getMain());
@@ -1222,35 +1259,35 @@ class BinanceBeanV4Test {
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + join);
 
         final TransactionCluster expected0 = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2021-05-12T18:39:47Z"),
-                BTC,
-                CZK,
-                BUY,
-                new BigDecimal("0.0008370000"),
-                new BigDecimal("1172043.0107526882"),
-                "TRANSACTION RELATED",
-                null,
-                null
-            ),
-            List.of()
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2021-05-12T18:39:47Z"),
+                        BTC,
+                        CZK,
+                        BUY,
+                        new BigDecimal("0.0008370000"),
+                        new BigDecimal("1172043.0107526882"),
+                        "TRANSACTION RELATED",
+                        null,
+                        null
+                ),
+                List.of()
         );
 
         final TransactionCluster expected1 = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2021-05-12T18:39:47Z"),
-                CZK,
-                CZK,
-                DEPOSIT,
-                new BigDecimal("981.00000000"),
-                null,
-                null,
-                null,
-                null
-            ),
-            List.of()
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2021-05-12T18:39:47Z"),
+                        CZK,
+                        CZK,
+                        DEPOSIT,
+                        new BigDecimal("981.00000000"),
+                        null,
+                        null,
+                        null,
+                        null
+                ),
+                List.of()
         );
 
         TestUtils.testTxs(expected0.getMain(), actual.get(0).getMain());
@@ -1273,103 +1310,103 @@ class BinanceBeanV4Test {
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + join);
 
         final TransactionCluster expected0 = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2022-07-17T11:14:21Z"),
-                BUSD,
-                ETH,
-                BUY,
-                new BigDecimal("121.0459440000"),
-                new BigDecimal("0.0007336057")
-            ),
-            List.of()
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2022-07-17T11:14:21Z"),
+                        BUSD,
+                        ETH,
+                        BUY,
+                        new BigDecimal("121.0459440000"),
+                        new BigDecimal("0.0007336057")
+                ),
+                List.of()
         );
 
         final TransactionCluster expected1 = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2022-07-17T11:14:22Z"),
-                BTC,
-                USDT,
-                SELL,
-                new BigDecimal("0.0009400000"),
-                null
-            ),
-            List.of(
-                new FeeRebateImportedTransactionBean(
-                    null,
-                    Instant.parse("2022-07-17T11:14:22Z"),
-                    BNB,
-                    BNB,
-                    FEE,
-                    new BigDecimal("0.00005936"),
-                    BNB
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2022-07-17T11:14:22Z"),
+                        BTC,
+                        USDT,
+                        SELL,
+                        new BigDecimal("0.0009400000"),
+                        null
+                ),
+                List.of(
+                        new FeeRebateImportedTransactionBean(
+                                null,
+                                Instant.parse("2022-07-17T11:14:22Z"),
+                                BNB,
+                                BNB,
+                                FEE,
+                                new BigDecimal("0.00005936"),
+                                BNB
+                        )
                 )
-            )
         );
         final TransactionCluster expected2 = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2022-07-17T11:14:22Z"),
-                ETH,
-                USDT,
-                BUY,
-                new BigDecimal("0.0147000000"),
-                null
-            ),
-            List.of()
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2022-07-17T11:14:22Z"),
+                        ETH,
+                        USDT,
+                        BUY,
+                        new BigDecimal("0.0147000000"),
+                        null
+                ),
+                List.of()
         );
 
         final TransactionCluster expected3 = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2022-07-17T11:14:22Z"),
-                BUSD,
-                USDT,
-                BUY,
-                new BigDecimal("20.1385694000"),
-                null
-            ),
-            List.of()
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2022-07-17T11:14:22Z"),
+                        BUSD,
+                        USDT,
+                        BUY,
+                        new BigDecimal("20.1385694000"),
+                        null
+                ),
+                List.of()
         );
 
         final TransactionCluster expected4 = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2022-07-17T11:14:22Z"),
-                BUSD,
-                USDT,
-                SELL,
-                new BigDecimal("50.1036354000"),
-                null
-            ),
-            List.of()
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2022-07-17T11:14:22Z"),
+                        BUSD,
+                        USDT,
+                        SELL,
+                        new BigDecimal("50.1036354000"),
+                        null
+                ),
+                List.of()
         );
 
         final TransactionCluster expected5 = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2022-07-17T11:14:22Z"),
-                BUSD,
-                USDT,
-                SELL,
-                new BigDecimal("20.0303670000"),
-                null
-            ),
-            List.of()
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2022-07-17T11:14:22Z"),
+                        BUSD,
+                        USDT,
+                        SELL,
+                        new BigDecimal("20.0303670000"),
+                        null
+                ),
+                List.of()
         );
 
         final TransactionCluster expected6 = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2022-07-17T11:14:22Z"),
-                BTC,
-                USDT,
-                BUY,
-                new BigDecimal("0.0023400000"),
-                null
-            ),
-            List.of()
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2022-07-17T11:14:22Z"),
+                        BTC,
+                        USDT,
+                        BUY,
+                        new BigDecimal("0.0023400000"),
+                        null
+                ),
+                List.of()
         );
         TestUtils.testTxs(expected0.getMain(), actual.get(6).getMain());
         TestUtils.testTxs(expected1.getMain(), actual.get(0).getMain());
@@ -1392,29 +1429,29 @@ class BinanceBeanV4Test {
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + join);
 
         final TransactionCluster expected0 = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2022-07-19T16:29:34Z"),
-                BUSD,
-                NEAR,
-                BUY,
-                new BigDecimal("20.3872000000"),
-                new BigDecimal("0.2256317690")
-            ),
-            List.of()
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2022-07-19T16:29:34Z"),
+                        BUSD,
+                        NEAR,
+                        BUY,
+                        new BigDecimal("20.3872000000"),
+                        new BigDecimal("0.2256317690")
+                ),
+                List.of()
         );
 
         final TransactionCluster expected1 = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2022-07-19T16:29:35Z"),
-                NEAR,
-                BUSD,
-                BUY,
-                new BigDecimal("4.6000000000"),
-                new BigDecimal("4.4340000000")
-            ),
-            List.of()
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2022-07-19T16:29:35Z"),
+                        NEAR,
+                        BUSD,
+                        BUY,
+                        new BigDecimal("4.6000000000"),
+                        new BigDecimal("4.4340000000")
+                ),
+                List.of()
         );
         TestUtils.testTxs(expected0.getMain(), actual.get(0).getMain());
         TestUtils.testTxs(expected1.getMain(), actual.get(1).getMain());
@@ -1428,25 +1465,26 @@ class BinanceBeanV4Test {
         final var actual = ParserTestUtils.getParseResult(HEADER_CORRECT + join);
 
         final TransactionCluster expected = new TransactionCluster(
-            ImportedTransactionBean.createDepositWithdrawal(
-                null,
-                Instant.parse("2021-05-18T18:19:50Z"),
-                EUR,
-                EUR,
-                WITHDRAWAL,
-                new BigDecimal("8000.00000000"),
-                null,
-                "FIAT WITHDRAW",
-                null
-            ),
-            List.of()
+                ImportedTransactionBean.createDepositWithdrawal(
+                        null,
+                        Instant.parse("2021-05-18T18:19:50Z"),
+                        EUR,
+                        EUR,
+                        WITHDRAWAL,
+                        new BigDecimal("8000.00000000"),
+                        null,
+                        "FIAT WITHDRAW",
+                        null
+                ),
+                List.of()
         );
 
         var expectedProblem = new ParsingProblem("[38065325, 2021-05-18 18:19:50, SPOT, Fiat Withdraw, EUR, 8000.00000000, null]",
-            "Expected negative value\nInternal state when error was thrown: Unable to set value '8000.00000000' of type" +
-                " 'java.lang.String' to method 'setChange' of class io.everytrade.server.plugin.impl.everytrade.parser.exchange." +
-                "binance.v4.BinanceBeanV4\nline=3, column=0, record=2, charIndex=194, headers=[User_ID, UTC_Time, Account, Operation," +
-                " Coin, Change, Remark], value=8000.00000000", ParsingProblemType.PARSED_ROW_IGNORED);
+                "Expected negative value\nInternal state when error was thrown: Unable to set value '8000.00000000' of type" +
+                        " 'java.lang.String' to method 'setChange' of class io.everytrade.server.plugin.impl.everytrade.parser.exchange." +
+                        "binance.v4.BinanceBeanV4\nline=3, column=0, record=2, charIndex=194, " +
+                        "headers=[User_ID, UTC_Time, Account, Operation," +
+                        " Coin, Change, Remark], value=8000.00000000", ParsingProblemType.PARSED_ROW_IGNORED);
 
         TestUtils.testTxs(expected.getMain(), actual.getTransactionClusters().get(0).getMain());
         assertEquals(expectedProblem.getMessage(), actual.getParsingProblems().get(0).getMessage());
@@ -1462,24 +1500,25 @@ class BinanceBeanV4Test {
         final var actual = ParserTestUtils.getParseResult(HEADER_CORRECT + join);
 
         final TransactionCluster expected = new TransactionCluster(
-            ImportedTransactionBean.createDepositWithdrawal(
-                null,
-                Instant.parse("2022-10-24T18:10:22Z"),
-                USDT,
-                USDT,
-                WITHDRAWAL,
-                new BigDecimal("1500.00000000"),
-                null,
-                "C2C TRANSFER",
-                null
-            ),
-            List.of()
+                ImportedTransactionBean.createDepositWithdrawal(
+                        null,
+                        Instant.parse("2022-10-24T18:10:22Z"),
+                        USDT,
+                        USDT,
+                        WITHDRAWAL,
+                        new BigDecimal("1500.00000000"),
+                        null,
+                        "C2C TRANSFER",
+                        null
+                ),
+                List.of()
         );
         var expectedProblem = new ParsingProblem("[39388188, 2022-10-24 18:10:22, SPOT, C2C Transfer, USDT, 1500.00000000, null]",
-            "Expected negative value\nInternal state when error was thrown: Unable to set value '1500.00000000' of type" +
-                " 'java.lang.String' to method 'setChange' of class io.everytrade.server.plugin.impl.everytrade.parser.exchange." +
-                "binance.v4.BinanceBeanV4\nline=3, column=0, record=2, charIndex=194, headers=[User_ID, UTC_Time, Account, Operation" +
-                ", Coin, Change, Remark], value=1500.00000000", ParsingProblemType.PARSED_ROW_IGNORED);
+                "Expected negative value\nInternal state when error was thrown: Unable to set value '1500.00000000' of type" +
+                        " 'java.lang.String' to method 'setChange' of class io.everytrade.server.plugin.impl.everytrade.parser.exchange." +
+                        "binance.v4.BinanceBeanV4\nline=3, column=0, record=2, " +
+                        "charIndex=194, headers=[User_ID, UTC_Time, Account, Operation" +
+                        ", Coin, Change, Remark], value=1500.00000000", ParsingProblemType.PARSED_ROW_IGNORED);
 
         TestUtils.testTxs(expected.getMain(), actual.getTransactionClusters().get(0).getMain());
         assertEquals(expectedProblem.getMessage(), actual.getParsingProblems().get(0).getMessage());
@@ -1492,33 +1531,33 @@ class BinanceBeanV4Test {
         final var actual = ParserTestUtils.getParseResult(HEADER_CORRECT + row);
 
         final TransactionCluster expected0 = new TransactionCluster(
-            ImportedTransactionBean.createDepositWithdrawal(
-                null,
-                Instant.parse("2022-11-03T02:51:24Z"),
-                ROSE,
-                ROSE,
-                DEPOSIT,
-                new BigDecimal("302.52300337"),
-                null,
-                "SIMPLE EARN LOCKED REDEMPTION",
-                null
-            ),
-            List.of()
+                ImportedTransactionBean.createDepositWithdrawal(
+                        null,
+                        Instant.parse("2022-11-03T02:51:24Z"),
+                        ROSE,
+                        ROSE,
+                        DEPOSIT,
+                        new BigDecimal("302.52300337"),
+                        null,
+                        "SIMPLE EARN LOCKED REDEMPTION",
+                        null
+                ),
+                List.of()
         );
 
         final TransactionCluster expected1 = new TransactionCluster(
-            ImportedTransactionBean.createDepositWithdrawal(
-                null,
-                Instant.parse("2022-11-03T02:51:24Z"),
-                ROSE,
-                ROSE,
-                WITHDRAWAL,
-                new BigDecimal("302.52300337"),
-                null,
-                "SIMPLE EARN LOCKED REDEMPTION, BINANCE EARN",
-                null
-            ),
-            List.of()
+                ImportedTransactionBean.createDepositWithdrawal(
+                        null,
+                        Instant.parse("2022-11-03T02:51:24Z"),
+                        ROSE,
+                        ROSE,
+                        WITHDRAWAL,
+                        new BigDecimal("302.52300337"),
+                        null,
+                        "SIMPLE EARN LOCKED REDEMPTION, BINANCE EARN",
+                        null
+                ),
+                List.of()
         );
 //      Test doesnt work well in build process
 //        TestUtils.testTxs(expected0.getMain(), actual.getTransactionClusters().get(0).getMain());

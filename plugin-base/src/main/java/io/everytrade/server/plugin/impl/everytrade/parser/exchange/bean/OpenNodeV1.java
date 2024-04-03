@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 
 import static io.everytrade.server.model.Currency.BTC;
 import static io.everytrade.server.model.TransactionType.BUY;
@@ -83,13 +84,14 @@ public class OpenNodeV1 extends ExchangeBean {
     private Instant combineDateAndTime(String day, String time) {
         try {
             String stringDate = String.format("%s %s", day, time);
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy hh:mm a");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy hh:mm a", Locale.US);
             final LocalDateTime localDateTime = LocalDateTime.parse(stringDate, formatter);
             return localDateTime.toInstant(ZoneOffset.UTC);
         } catch (Exception e) {
             throw new DataIgnoredException("Wrong settlement date/time format. ");
         }
     }
+
 
     @Override
     public TransactionCluster toTransactionCluster() {
