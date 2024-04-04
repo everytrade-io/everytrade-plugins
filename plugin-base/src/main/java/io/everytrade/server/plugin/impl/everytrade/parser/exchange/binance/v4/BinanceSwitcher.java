@@ -26,7 +26,8 @@ import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binanc
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_COMMISSION_REBATE;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_DEPOSIT;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_DISTRIBUTION;
-import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_ETH2_0;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_ETH2_0_STAKING;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_ETH2_0_STAKING_REWARDS;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_FEE;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_FIAT_DEPOSIT;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_FIAT_WITHDRAW;
@@ -56,7 +57,8 @@ public class BinanceSwitcher {
 
     public static TransactionType operationTypeSwitcher(String operationType) {
         operationType = operationType.toUpperCase();
-        if (OPERATION_TYPE_BUY.code.equals(operationType) || OPERATION_TYPE_BINANCE_CONVERT.code.equals(operationType)) {
+        if (OPERATION_TYPE_BUY.code.equals(operationType) || OPERATION_TYPE_BINANCE_CONVERT.code.equals(operationType)
+              || OPERATION_TYPE_ETH2_0_STAKING.code.equals(operationType)) {
             return BUY;
         }
         if (OPERATION_TYPE_SELL.code.equals(operationType) || OPERATION_TYPE_TRANSACTION_SPEND.code.equals(operationType)
@@ -95,13 +97,13 @@ public class BinanceSwitcher {
             || OPERATION_TYPE_SIMPLE_EARN_LOCKED_REWARDS.code.equals(operationType)) {
             return EARNING;
         }
-        if (OPERATION_TYPE_STAKING_REWARDS.code.equals(operationType) || OPERATION_TYPE_ETH2_0.code.equals(operationType)) {
+        if (OPERATION_TYPE_STAKING_REWARDS.code.equals(operationType) || OPERATION_TYPE_ETH2_0_STAKING_REWARDS.code.equals(operationType)) {
             return STAKING_REWARD;
         }
         if (OPERATION_TYPE_STAKING_REDEMPTION.code.equals(operationType)) {
             return UNSTAKE;
         }
-        if (OPERATION_TYPE_STAKING_PURCHASE.code.equals(operationType)) {
+        if (OPERATION_TYPE_STAKING_PURCHASE.code.equals(operationType)){
             return STAKE;
         }
         return UNKNOWN;

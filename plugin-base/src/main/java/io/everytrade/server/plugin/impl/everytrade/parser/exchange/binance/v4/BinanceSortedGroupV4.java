@@ -1,8 +1,11 @@
 package io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4;
 
 import com.univocity.parsers.common.DataValidationException;
+import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
+import lombok.Data;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -12,10 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import io.everytrade.server.model.Currency;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
-import lombok.Data;
-
 import static io.everytrade.server.model.Currency.BNB;
 import static io.everytrade.server.model.Currency.USDT;
 import static io.everytrade.server.model.TransactionType.BUY;
@@ -24,6 +23,8 @@ import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.REBATE;
 import static io.everytrade.server.model.TransactionType.REWARD;
 import static io.everytrade.server.model.TransactionType.SELL;
+import static io.everytrade.server.model.TransactionType.STAKE;
+import static io.everytrade.server.model.TransactionType.UNSTAKE;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BINANCE_CONVERT;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BNB_VAULT_REWARDS;
@@ -35,6 +36,7 @@ import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binanc
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_COMMISSION_REBATE;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_DEPOSIT;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_DISTRIBUTION;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_ETH2_0_STAKING;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_FEE;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_FIAT_DEPOSIT;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_FIAT_WITHDRAW;
@@ -569,6 +571,7 @@ public class BinanceSortedGroupV4 {
     }
 
     private void createBuySellTxs() {
+
         var stRow = rowBuySellRelated.get(0);
         var ndRow = rowBuySellRelated.get(1);
         BinanceBeanV4 baseRow;
@@ -589,7 +592,23 @@ public class BinanceSortedGroupV4 {
             quoteRow = ndRow;
         }
 
+
         var txsBuySell = new BinanceBeanV4();
+        if (baseRow.getCoin().equals(Currency.ETH)) {
+            if (baseRow.getChange().compareTo(ZERO) < 0){
+                txsBuySell.setType(STAKE);
+                newBinanceBeanV4(stRow, baseRow, quoteRow, relatedTransaction, txsBuySell);
+            } else if (baseRow.getChange().compareTo(ZERO) > 0) {
+                txsBuySell.setType(UNSTAKE);
+                newBinanceBeanV4(stRow, baseRow, quoteRow, relatedTransaction, txsBuySell);
+            }
+        } else {
+            txsBuySell.setType(type);
+            newBinanceBeanV4(stRow, baseRow, quoteRow, relatedTransaction, txsBuySell);
+        }
+    }
+
+    private void newBinanceBeanV4(BinanceBeanV4 stRow, BinanceBeanV4 baseRow, BinanceBeanV4 quoteRow, boolean relatedTransaction, BinanceBeanV4 txsBuySell) {
         txsBuySell.setDate(baseRow.getDate());
         txsBuySell.usedIds.addAll(baseRow.usedIds);
         txsBuySell.usedIds.addAll(quoteRow.usedIds);
@@ -600,7 +619,6 @@ public class BinanceSortedGroupV4 {
         txsBuySell.setRowValues(strings);
         txsBuySell.setMarketBase(baseRow.getCoin());
         txsBuySell.setAmountBase(baseRow.getChange().abs());
-        txsBuySell.setType(type);
         txsBuySell.setNote(baseRow.getNote());
         txsBuySell.setCoinPrefix(baseRow.isCoinPrefix());
         if (relatedTransaction) {
@@ -811,6 +829,24 @@ public class BinanceSortedGroupV4 {
                 List<BinanceBeanV4> newList = new ArrayList<>();
                 newList.add(row);
                 rowsEarnings.put(row.getCoin(), newList);
+            }
+        } else if (row.getOriginalOperation().equals(OPERATION_TYPE_ETH2_0_STAKING.code)) {
+            if (row.getType().equals(BUY)){
+                if (rowsBuySellRelated.containsKey(row.getCoin())) {
+                    rowsBuySellRelated.get(row.getCoin()).add(row);
+                } else {
+                    List<BinanceBeanV4> newList = new ArrayList<>();
+                    newList.add(row);
+                    rowsBuySellRelated.put(row.getCoin(), newList);
+                }
+            } else if (row.getType().equals(STAKE)) {
+                if (rowsStakings.containsKey(row.getCoin())) {
+                    rowsStakings.get(row.getCoin()).add(row);
+                } else {
+                    List<BinanceBeanV4> newList = new ArrayList<>();
+                    newList.add(row);
+                    rowsStakings.put(row.getCoin(), newList);
+                }
             }
         } else {
             throw new DataIgnoredException("Row " + row.getRowId() + " cannot be added due to wrong operation. ");
