@@ -8,6 +8,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -593,23 +594,35 @@ public class BinanceSortedGroupV4 {
         }
 
 
-        var txsBuySell = new BinanceBeanV4();
-        if (baseRow.getCoin().equals(Currency.ETH)) {
-            if (baseRow.getChange().compareTo(ZERO) < 0){
+        int secondTx = 1;
+        for (int i = 0; i < rowBuySellRelated.size(); i++) {
+            var txsBuySell = new BinanceBeanV4();
+            if (i == secondTx && baseRow.getCoin().code().equals("BETH") && quoteRow.getCoin().code().equals("ETH")){
+                txsBuySell.setDate(baseRow.getDate());
                 txsBuySell.setType(STAKE);
-                newBinanceBeanV4(stRow, baseRow, quoteRow, relatedTransaction, txsBuySell);
-            } else if (baseRow.getChange().compareTo(ZERO) > 0) {
+            } else if (i == secondTx && baseRow.getCoin().code().equals("ETH") && quoteRow.getCoin().code().equals("BETH")) {
+                txsBuySell.setDate(baseRow.getDate());
                 txsBuySell.setType(UNSTAKE);
-                newBinanceBeanV4(stRow, baseRow, quoteRow, relatedTransaction, txsBuySell);
+            } else {
+                Instant date = stRow.getDate();
+                if (quoteRow.getChange().compareTo(ZERO) < 0 && quoteRow.getCoin().code().equals("ETH") && baseRow.getChange().compareTo(ZERO) > 0
+                        && baseRow.getCoin().code().equals("BETH")){
+                    date = baseRow.getDate().minusSeconds(1);
+                } else if (quoteRow.getChange().compareTo(ZERO) < 0 && quoteRow.getCoin().code().equals("BETH") && baseRow.getChange().compareTo(ZERO) > 0
+                        && baseRow.getCoin().code().equals("ETH")){
+                    date = baseRow.getDate().plusSeconds(1);
+                }
+                txsBuySell.setDate(date);
+                txsBuySell.setType(type);
             }
-        } else {
-            txsBuySell.setType(type);
-            newBinanceBeanV4(stRow, baseRow, quoteRow, relatedTransaction, txsBuySell);
+            if (baseRow.getOperationType().code.equals("ETH 2.0 STAKING") && txsBuySell.getType().equals(UNSTAKE)){
+                baseRow = quoteRow;
+            }
+            createdTransactions.add(newBinanceBeanV4(stRow, baseRow, quoteRow, relatedTransaction, txsBuySell));
         }
     }
 
-    private void newBinanceBeanV4(BinanceBeanV4 stRow, BinanceBeanV4 baseRow, BinanceBeanV4 quoteRow, boolean relatedTransaction, BinanceBeanV4 txsBuySell) {
-        txsBuySell.setDate(baseRow.getDate());
+    private BinanceBeanV4 newBinanceBeanV4(BinanceBeanV4 stRow, BinanceBeanV4 baseRow, BinanceBeanV4 quoteRow, boolean relatedTransaction, BinanceBeanV4 txsBuySell) {
         txsBuySell.usedIds.addAll(baseRow.usedIds);
         txsBuySell.usedIds.addAll(quoteRow.usedIds);
         txsBuySell.setMergedWithAnotherGroup(baseRow.isMergedWithAnotherGroup());
@@ -627,7 +640,7 @@ public class BinanceSortedGroupV4 {
         txsBuySell.setMarketQuote(quoteRow.getCoin());
         txsBuySell.setAmountQuote(quoteRow.getChange().abs());
         ExchangeBean.validateCurrencyPair(txsBuySell.getMarketBase(), txsBuySell.getMarketQuote());
-        createdTransactions.add(txsBuySell);
+        return txsBuySell;
     }
 
     private BinanceBeanV4 createSmallAssetExchangeBuySellTx(List<BinanceBeanV4> rows) {
@@ -793,7 +806,8 @@ public class BinanceSortedGroupV4 {
                 row.getOriginalOperation().equals(OPERATION_TYPE_TRANSACTION_BUY.code) ||
                 row.getOriginalOperation().equals(OPERATION_TYPE_TRANSACTION_SPEND.code) ||
                 row.getOriginalOperation().equals(OPERATION_TYPE_TRANSACTION_REVENUE.code) ||
-                row.getOriginalOperation().equals(OPERATION_TYPE_TRANSACTION_SOLD.code)
+                row.getOriginalOperation().equals(OPERATION_TYPE_TRANSACTION_SOLD.code) ||
+                    row.getOriginalOperation().equals(OPERATION_TYPE_ETH2_0_STAKING.code)
         ) {
             if (rowsBuySellRelated.containsKey(row.getCoin())) {
                 rowsBuySellRelated.get(row.getCoin()).add(row);
@@ -829,24 +843,6 @@ public class BinanceSortedGroupV4 {
                 List<BinanceBeanV4> newList = new ArrayList<>();
                 newList.add(row);
                 rowsEarnings.put(row.getCoin(), newList);
-            }
-        } else if (row.getOriginalOperation().equals(OPERATION_TYPE_ETH2_0_STAKING.code)) {
-            if (row.getType().equals(BUY)){
-                if (rowsBuySellRelated.containsKey(row.getCoin())) {
-                    rowsBuySellRelated.get(row.getCoin()).add(row);
-                } else {
-                    List<BinanceBeanV4> newList = new ArrayList<>();
-                    newList.add(row);
-                    rowsBuySellRelated.put(row.getCoin(), newList);
-                }
-            } else if (row.getType().equals(STAKE)) {
-                if (rowsStakings.containsKey(row.getCoin())) {
-                    rowsStakings.get(row.getCoin()).add(row);
-                } else {
-                    List<BinanceBeanV4> newList = new ArrayList<>();
-                    newList.add(row);
-                    rowsStakings.put(row.getCoin(), newList);
-                }
             }
         } else {
             throw new DataIgnoredException("Row " + row.getRowId() + " cannot be added due to wrong operation. ");

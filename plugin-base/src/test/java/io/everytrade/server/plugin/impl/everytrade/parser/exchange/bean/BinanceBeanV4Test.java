@@ -365,7 +365,7 @@ class BinanceBeanV4Test {
     }
 
     @Test
-    void testTypeETH2_0TwoRowTx() {
+    void testTypeETH2_0TwoRowTxSTAKE() {
         final String row = "40360729,2020-12-02 13:20:22,Spot,ETH 2.0 Staking,BETH,3.26000000,\"\"\n";
         final String row1 = "40360729,2020-12-02 13:20:22,Spot,ETH 2.0 Staking,ETH,-3.26000000,\"\"\n";
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row.concat(row1));
@@ -373,7 +373,7 @@ class BinanceBeanV4Test {
         final TransactionCluster expectedStake = new TransactionCluster(
                 new ImportedTransactionBean(
                         "40360729",
-                        Instant.parse("2020-12-02T13:20:22Z"),
+                        Instant.parse("2020-12-02T13:20:21Z"),
                         BETH,
                         ETH,
                         BUY,
@@ -399,8 +399,46 @@ class BinanceBeanV4Test {
                 ),
                 List.of()
         );
-//        TestUtils.testTxs(expectedStake.getMain(), actual.get(0).getMain());
-        TestUtils.testTxs(expectedStakeReward.getMain(), actual.get(0).getMain());
+        TestUtils.testTxs(expectedStake.getMain(), actual.get(0).getMain());
+        TestUtils.testTxs(expectedStakeReward.getMain(), actual.get(1).getMain());
+    }
+    @Test
+    void testTypeETH2_0TwoRowTxUNSTAKE() {
+        final String row = "40360729,2020-12-02 13:20:22,Spot,ETH 2.0 Staking,BETH,-3.26000000,\"\"\n";
+        final String row1 = "40360729,2020-12-02 13:20:22,Spot,ETH 2.0 Staking,ETH,3.26000000,\"\"\n";
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row.concat(row1));
+
+        final TransactionCluster expectedStake = new TransactionCluster(
+                new ImportedTransactionBean(
+                        "40360729",
+                        Instant.parse("2020-12-02T13:20:23Z"),
+                        ETH,
+                        BETH,
+                        BUY,
+                        new BigDecimal("3.2600000000"),
+                        new BigDecimal("1.0000000000"),
+                        null,
+                        null
+                ),
+                List.of()
+        );
+
+        final TransactionCluster expectedStakeReward = new TransactionCluster(
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2020-12-02T13:20:22Z"),
+                        BETH,
+                        BETH,
+                        UNSTAKE,
+                        new BigDecimal("3.26000000"),
+                        null,
+                        null,
+                        null
+                ),
+                List.of()
+        );
+        TestUtils.testTxs(expectedStake.getMain(), actual.get(0).getMain());
+        TestUtils.testTxs(expectedStakeReward.getMain(), actual.get(1).getMain());
     }
 
     @Test
