@@ -593,36 +593,46 @@ public class BinanceSortedGroupV4 {
             quoteRow = ndRow;
         }
 
-
-        int secondTx = 1;
-        for (int i = 0; i < rowBuySellRelated.size(); i++) {
-            var txsBuySell = new BinanceBeanV4();
-            if (i == secondTx && baseRow.getCoin().code().equals("BETH") && quoteRow.getCoin().code().equals("ETH")){
-                txsBuySell.setDate(baseRow.getDate());
-                txsBuySell.setType(STAKE);
-            } else if (i == secondTx && baseRow.getCoin().code().equals("ETH") && quoteRow.getCoin().code().equals("BETH")) {
-                txsBuySell.setDate(baseRow.getDate());
-                txsBuySell.setType(UNSTAKE);
-            } else {
-                Instant date = stRow.getDate();
-                if (quoteRow.getChange().compareTo(ZERO) < 0 && quoteRow.getCoin().code().equals("ETH") && baseRow.getChange().compareTo(ZERO) > 0
-                        && baseRow.getCoin().code().equals("BETH")){
-                    date = baseRow.getDate().minusSeconds(1);
-                } else if (quoteRow.getChange().compareTo(ZERO) < 0 && quoteRow.getCoin().code().equals("BETH") && baseRow.getChange().compareTo(ZERO) > 0
-                        && baseRow.getCoin().code().equals("ETH")){
-                    date = baseRow.getDate().plusSeconds(1);
+        if (baseRow.getOperationType().code.equals("ETH 2.0 STAKING")) {
+            for (int i = 0; i < rowBuySellRelated.size(); i++) {
+                var txsBuySell = newBinanceBeanV4(stRow, baseRow, quoteRow, relatedTransaction);
+                if (i == 1 && baseRow.getCoin().code().equals("BETH") && quoteRow.getCoin().code().equals("ETH")){
+                    txsBuySell.setDate(baseRow.getDate());
+                    txsBuySell.setType(STAKE);
+                } else if (i == 1 && baseRow.getCoin().code().equals("ETH") && quoteRow.getCoin().code().equals("BETH")) {
+                    txsBuySell.setDate(baseRow.getDate());
+                    txsBuySell.setType(UNSTAKE);
+                } else {
+                    Instant date = stRow.getDate();
+                    if (quoteRow.getChange().compareTo(ZERO) < 0 && quoteRow.getCoin().code().equals("ETH")
+                            && baseRow.getChange().compareTo(ZERO) > 0
+                            && baseRow.getCoin().code().equals("BETH")){
+                        date = baseRow.getDate().minusSeconds(1);
+                    } else if (quoteRow.getChange().compareTo(ZERO) < 0 && quoteRow.getCoin().code().equals("BETH")
+                            && baseRow.getChange().compareTo(ZERO) > 0
+                            && baseRow.getCoin().code().equals("ETH")){
+                        date = baseRow.getDate().plusSeconds(1);
+                    }
+                    txsBuySell.setDate(date);
+                    txsBuySell.setType(type);
                 }
-                txsBuySell.setDate(date);
-                txsBuySell.setType(type);
+                if (baseRow.getOperationType().code.equals("ETH 2.0 STAKING") && txsBuySell.getType().equals(UNSTAKE)){
+                    txsBuySell.setMarketBase(txsBuySell.getMarketQuote());
+                }
+                createdTransactions.add(txsBuySell);
             }
-            if (baseRow.getOperationType().code.equals("ETH 2.0 STAKING") && txsBuySell.getType().equals(UNSTAKE)){
-                baseRow = quoteRow;
-            }
-            createdTransactions.add(newBinanceBeanV4(stRow, baseRow, quoteRow, relatedTransaction, txsBuySell));
+        } else {
+            var txsBuySell = newBinanceBeanV4(stRow, baseRow, quoteRow, relatedTransaction);
+            txsBuySell.setType(type);
+            txsBuySell.setDate(baseRow.getDate());
+            createdTransactions.add(txsBuySell);
         }
+
+
     }
 
-    private BinanceBeanV4 newBinanceBeanV4(BinanceBeanV4 stRow, BinanceBeanV4 baseRow, BinanceBeanV4 quoteRow, boolean relatedTransaction, BinanceBeanV4 txsBuySell) {
+    private BinanceBeanV4 newBinanceBeanV4(BinanceBeanV4 stRow, BinanceBeanV4 baseRow, BinanceBeanV4 quoteRow, boolean relatedTransaction) {
+        BinanceBeanV4 txsBuySell = new BinanceBeanV4(); // Create a new instance
         txsBuySell.usedIds.addAll(baseRow.usedIds);
         txsBuySell.usedIds.addAll(quoteRow.usedIds);
         txsBuySell.setMergedWithAnotherGroup(baseRow.isMergedWithAnotherGroup());
@@ -642,6 +652,7 @@ public class BinanceSortedGroupV4 {
         ExchangeBean.validateCurrencyPair(txsBuySell.getMarketBase(), txsBuySell.getMarketQuote());
         return txsBuySell;
     }
+
 
     private BinanceBeanV4 createSmallAssetExchangeBuySellTx(List<BinanceBeanV4> rows) {
         var stRow = rows.get(0);
