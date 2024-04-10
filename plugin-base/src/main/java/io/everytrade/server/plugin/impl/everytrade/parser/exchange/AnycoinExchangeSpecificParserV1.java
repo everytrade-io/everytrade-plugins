@@ -1,29 +1,29 @@
 package io.everytrade.server.plugin.impl.everytrade.parser.exchange;
 
 import io.everytrade.server.model.TransactionType;
-import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.anycoin.AnycoinBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.anycoin.AnycoinSortedGroupV1;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceBeanV4;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
-import java.util.stream.Collectors;
 
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.anycoin.AnycoinOperationTypeV1.OPERATION_TYPE_TRADE_REFUND;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.anycoin.AnycoinSupportedOperations.UNSUPPORTED_OPERATION_TYPES;
 import static java.util.stream.Collectors.groupingBy;
 
-public class AnycoinExchangeSpecificParserV1 extends DefaultUnivocityExchangeSpecificParser implements IExchangeSpecificParser, IMultiExchangeSpecificParser<AnycoinBeanV1> {
+public class AnycoinExchangeSpecificParserV1 extends DefaultUnivocityExchangeSpecificParser implements IExchangeSpecificParser,
+        IMultiExchangeSpecificParser<AnycoinBeanV1> {
 
     List<AnycoinBeanV1> originalRows;
     List<AnycoinBeanV1> unSupportedRows = new ArrayList<>();
     List<AnycoinBeanV1> rowsWithOneRowTransactionType = new ArrayList<>();
     List<AnycoinBeanV1> rowsWithMultipleRowTransactionType = new ArrayList<>();
+
+    LinkedList<AnycoinBeanV1> currenciesToBeIgnored = new LinkedList<>();
+    LinkedList<AnycoinBeanV1> notUsing = new LinkedList<>();
 
     public AnycoinExchangeSpecificParserV1(Class<? extends ExchangeBean> exchangeBean, String delimiter) {
         super(exchangeBean, delimiter);
@@ -42,11 +42,21 @@ public class AnycoinExchangeSpecificParserV1 extends DefaultUnivocityExchangeSpe
     }
 
     private void filterRowsByType(List<AnycoinBeanV1> rows) {
-        String orderId = rows.get(0).getOrderId();
         rows
                 .forEach(r -> {
-                    if (r.getOperationType().code.equals("WITHDRAWAL_BLOCK") || r.getOperationType().code.equals("WITHDRAWAL_UNBLOCK")){
+                    if (r.getOperationType() == null || r.getType() == null) {
                         unSupportedRows.add(r);
+                    } else if (r.getCoin().code().equalsIgnoreCase("ETH") &&
+                            (r.getType().equalsIgnoreCase("stake") || r.getType().equalsIgnoreCase("unstake"))) {
+                        currenciesToBeIgnored.add(r);
+                    } else if (r.getOperationType().code.equals("WITHDRAWAL_BLOCK") ||
+                            r.getOperationType().code.equals("WITHDRAWAL_UNBLOCK")) {
+                        unSupportedRows.add(r);
+                    } else if (r.getCurrencyEndsWithS() == null && r.getType().equalsIgnoreCase("unstake")) {
+                        currenciesToBeIgnored.add(r);
+                    } else if (r.getCurrencyEndsWithS() != null && r.getType().equalsIgnoreCase("stake") &&
+                            !r.getCoin().code().equals("ETH2")) {
+                        currenciesToBeIgnored.add(r);
                     } else if (r.getOperationType().isMultiRowType) {
                         rowsWithMultipleRowTransactionType.add(r);
                     } else {
@@ -75,38 +85,146 @@ public class AnycoinExchangeSpecificParserV1 extends DefaultUnivocityExchangeSpe
 
     private List<AnycoinBeanV1> prepareBeansForTransactionsFromOneRowTypes(List<AnycoinBeanV1> singleRow) {
         List<AnycoinBeanV1> result = new ArrayList<>();
-        AnycoinBeanV1 newBean = new AnycoinBeanV1();
-        if (singleRow.size() < 1) {
-            return result;
-        }
-        for (AnycoinBeanV1 beanV1 : singleRow){
-            if (beanV1.getType().equalsIgnoreCase("deposit")) {
-                newBean.setOperationType(beanV1.getOperationType());
-                newBean.setDate(beanV1.getDate().toString());
-                newBean.setMarketBase(beanV1.getCoin());
-                newBean.setBaseAmount(beanV1.getAmount());
-                newBean.setMarketQuote(beanV1.getCoin());
-                newBean.setQuoteAmount(beanV1.getAmount());
-                newBean.setTransactionType(TransactionType.DEPOSIT);
-                newBean.setType(beanV1.getOperationType().code);
-                result.add(newBean);
-            } else if (beanV1.getType().equalsIgnoreCase("withdrawal")) {
-                newBean.setOperationType(beanV1.getOperationType());
-                newBean.setDate(beanV1.getDate().toString());
-                newBean.setMarketBase(beanV1.getCoin());
-                newBean.setBaseAmount(beanV1.getAmount());
-                newBean.setMarketQuote(beanV1.getCoin());
-                newBean.setQuoteAmount(beanV1.getAmount());
-                newBean.setTransactionType(TransactionType.WITHDRAWAL);
-                newBean.setType(beanV1.getOperationType().code);
-                result.add(newBean);
-            } else {
-                unSupportedRows.add(beanV1);
+        for (AnycoinBeanV1 beanV1 : singleRow) {
+            AnycoinBeanV1 newBean = new AnycoinBeanV1();
+            switch (beanV1.getType().toLowerCase()) {
+                case "stake" -> {
+                    if (beanV1.getCoin().code().equals("ETH2")) {
+                        prepareStakeBeans(beanV1, result);
+                    } else {
+                        prepareStakeBeansWithCurrency(beanV1, newBean, result);
+                    }
+                }
+                case "unstake" -> {
+                    if (beanV1.getCoin().code().equals("ETH2")) {
+                        prepareUnstakeBeans(beanV1, result);
+                    } else {
+                        prepareUnstakeBeansWithCurrency(beanV1, newBean, result);
+                    }
+                }
+                case "stake_reward" -> prepareStakeRewardBeans(beanV1, newBean, result);
+                case "deposit" -> prepareDepositBeans(beanV1, newBean, result);
+                case "withdrawal" -> prepareWithdrawalBeans(beanV1, newBean, result);
+                default -> unSupportedRows.add(beanV1);
             }
         }
-
         return result;
     }
+    private void prepareStakeBeans(AnycoinBeanV1 newBean, List<AnycoinBeanV1> result) {
+
+        newBean.setDate(newBean.getDate().toString());
+        newBean.setMarketBase(newBean.getCoin());
+        newBean.setBaseAmount(newBean.getAmount());
+        newBean.setMarketQuote(newBean.getCoin());
+        newBean.setQuoteAmount(newBean.getAmount());
+        newBean.setTransactionType(TransactionType.STAKE);
+        newBean.setType(newBean.getOperationType().code);
+
+        AnycoinBeanV1 buyBean = new AnycoinBeanV1();
+        AnycoinBeanV1 ethBean = currenciesToBeIgnored.removeLast();
+        buyBean.setDate(ethBean.getDate().toString());
+        buyBean.setMarketBase(newBean.getCoin());
+        buyBean.setBaseAmount(newBean.getAmount());
+        buyBean.setMarketQuote(ethBean.getCoin());
+        buyBean.setQuoteAmount(ethBean.getAmount());
+        buyBean.setTransactionType(TransactionType.BUY);
+        buyBean.setType("BUY");
+
+        result.add(buyBean);
+        result.add(newBean);
+    }
+
+    private void prepareStakeBeansWithCurrency(AnycoinBeanV1 beanV1, AnycoinBeanV1 newBean, List<AnycoinBeanV1> result) {
+        AnycoinBeanV1 beanEndsWithS = currenciesToBeIgnored.removeLast();
+        newBean.setOperationType(beanEndsWithS.getOperationType());
+        newBean.setDate(beanV1.getDate().toString());
+        newBean.setMarketBase(beanEndsWithS.getCoin());
+        newBean.setBaseAmount(beanEndsWithS.getAmount().abs());
+        newBean.setTransactionType(TransactionType.STAKE);
+        newBean.setType(beanEndsWithS.getOperationType().code);
+
+        result.add(newBean);
+    }
+
+    private void prepareUnstakeBeans(AnycoinBeanV1 newBean, List<AnycoinBeanV1> result) {
+        newBean.setDate(newBean.getDate().toString());
+        newBean.setMarketBase(newBean.getCoin());
+        newBean.setBaseAmount(newBean.getAmount().abs());
+        newBean.setMarketQuote(newBean.getCoin());
+        newBean.setQuoteAmount(newBean.getAmount());
+        newBean.setTransactionType(TransactionType.UNSTAKE);
+        newBean.setType(newBean.getOperationType().code);
+
+        AnycoinBeanV1 buyBean = new AnycoinBeanV1();
+        AnycoinBeanV1 ethBean = currenciesToBeIgnored.removeLast();
+        buyBean.setDate(ethBean.getDate().toString());
+        buyBean.setMarketBase(ethBean.getCoin());
+        buyBean.setBaseAmount(ethBean.getAmount());
+        buyBean.setMarketQuote(newBean.getCoin());
+        buyBean.setQuoteAmount(newBean.getAmount());
+        buyBean.setTransactionType(TransactionType.BUY);
+        buyBean.setType("BUY");
+
+        result.add(buyBean);
+        result.add(newBean);
+    }
+
+    private void prepareUnstakeBeansWithCurrency(AnycoinBeanV1 beanV1, AnycoinBeanV1 newBean, List<AnycoinBeanV1> result) {
+        currenciesToBeIgnored.removeLast();
+        newBean.setOperationType(beanV1.getOperationType());
+        newBean.setDate(beanV1.getDate().toString());
+        newBean.setMarketBase(beanV1.getCoin());
+        newBean.setBaseAmount(beanV1.getAmount().abs());
+        newBean.setTransactionType(TransactionType.UNSTAKE);
+        newBean.setType(beanV1.getOperationType().code);
+
+        result.add(newBean);
+    }
+
+    private void prepareStakeRewardBeans(AnycoinBeanV1 beanV1, AnycoinBeanV1 newBean, List<AnycoinBeanV1> result) {
+        newBean.setDate(beanV1.getDate().toString());
+        newBean.setMarketBase(beanV1.getCoin());
+        newBean.setBaseAmount(beanV1.getAmount());
+        newBean.setTransactionType(TransactionType.STAKING_REWARD);
+        newBean.setType(beanV1.getOperationType().code);
+
+        AnycoinBeanV1 stakeBean = new AnycoinBeanV1();
+        stakeBean.setDate(beanV1.getDate().plusSeconds(1).toString());
+        stakeBean.setMarketBase(beanV1.getCoin());
+        stakeBean.setBaseAmount(beanV1.getAmount());
+        stakeBean.setTransactionType(TransactionType.STAKE);
+        stakeBean.setType("STAKE");
+
+        result.add(stakeBean);
+        result.add(newBean);
+    }
+
+    private void prepareDepositBeans(AnycoinBeanV1 beanV1, AnycoinBeanV1 newBean, List<AnycoinBeanV1> result) {
+        newBean.setOperationType(beanV1.getOperationType());
+        newBean.setDate(beanV1.getDate().toString());
+        newBean.setMarketBase(beanV1.getCoin());
+        newBean.setBaseAmount(beanV1.getAmount());
+        newBean.setMarketQuote(beanV1.getCoin());
+        newBean.setQuoteAmount(beanV1.getAmount());
+        newBean.setTransactionType(TransactionType.DEPOSIT);
+        newBean.setType(beanV1.getOperationType().code);
+
+        result.add(newBean);
+    }
+
+    private void prepareWithdrawalBeans(AnycoinBeanV1 beanV1, AnycoinBeanV1 newBean, List<AnycoinBeanV1> result) {
+        newBean.setOperationType(beanV1.getOperationType());
+        newBean.setDate(beanV1.getDate().toString());
+        newBean.setMarketBase(beanV1.getCoin());
+        newBean.setBaseAmount(beanV1.getAmount());
+        newBean.setMarketQuote(beanV1.getCoin());
+        newBean.setQuoteAmount(beanV1.getAmount());
+        newBean.setTransactionType(TransactionType.WITHDRAWAL);
+        newBean.setType(beanV1.getOperationType().code);
+
+        result.add(newBean);
+    }
+
 
     @Override
     public Map<String, List<AnycoinBeanV1>> createGroupsFromRows(List<AnycoinBeanV1> rows) {
