@@ -15,11 +15,13 @@ import java.time.Instant;
 import java.util.List;
 
 import static io.everytrade.server.model.Currency.ADA;
+import static io.everytrade.server.model.Currency.ATOM;
 import static io.everytrade.server.model.Currency.BTC;
 import static io.everytrade.server.model.Currency.CZK;
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.SELL;
+import static io.everytrade.server.model.TransactionType.STAKE;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -167,5 +169,29 @@ public class AnycoinBeanV1Test {
         String header = "Date,Type,Amount,Currency,Order ID";
         var parser = new EverytradeCsvMultiParser().parse(file, header);
         var varTwo = parser;
+    }
+
+    @Test
+    void testStake() {
+        final String row0 = "2022-11-07T14:39:54.400Z,stake,-1.43092234,ATOM\n";
+        final String row1 = "2022-11-07T14:45:15.967Z,stake,1.43092234,ATOM.S\n";
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row0.concat(row1));
+
+        final TransactionCluster expected = new TransactionCluster(
+                new ImportedTransactionBean(
+                        "258362",
+                        Instant.parse("2021-09-10T08:46:47.763Z"),
+                        ATOM,
+                        ATOM,
+                        STAKE,
+                        new BigDecimal("-52"),
+                        null,
+                        null,
+                        null
+                ),
+                List.of()
+        );
+
+        TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
     }
 }
