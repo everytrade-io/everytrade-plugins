@@ -18,10 +18,15 @@ import static io.everytrade.server.model.Currency.ADA;
 import static io.everytrade.server.model.Currency.ATOM;
 import static io.everytrade.server.model.Currency.BTC;
 import static io.everytrade.server.model.Currency.CZK;
+import static io.everytrade.server.model.Currency.ETH;
+import static io.everytrade.server.model.Currency.ETH2;
+import static io.everytrade.server.model.Currency.SOL;
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.STAKE;
+import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
+import static io.everytrade.server.model.TransactionType.UNSTAKE;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -175,16 +180,16 @@ public class AnycoinBeanV1Test {
     void testStake() {
         final String row0 = "2022-11-07T14:39:54.400Z,stake,-1.43092234,ATOM\n";
         final String row1 = "2022-11-07T14:45:15.967Z,stake,1.43092234,ATOM.S\n";
-        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row0.concat(row1));
+        var actual = ParserTestUtils.getParseResult(HEADER_CORRECT + row0.concat(row1));
 
         final TransactionCluster expected = new TransactionCluster(
                 new ImportedTransactionBean(
-                        "258362",
-                        Instant.parse("2021-09-10T08:46:47.763Z"),
+                        null,
+                        Instant.parse("2022-11-07T14:39:54.400Z"),
                         ATOM,
                         ATOM,
                         STAKE,
-                        new BigDecimal("-52"),
+                        new BigDecimal("1.43092234"),
                         null,
                         null,
                         null
@@ -192,6 +197,188 @@ public class AnycoinBeanV1Test {
                 List.of()
         );
 
-        TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
+        TestUtils.testTxs(expected.getMain(), actual.getTransactionClusters().get(0).getMain());
     }
+    @Test
+    void testUnstake() {
+        final String row0 = "2022-11-27T07:25:31.020Z,unstake,-0.38908456,ATOM.S\n";
+        final String row1 = "2022-11-27T07:29:33.918Z,unstake,0.38908456,ATOM\n";
+        var actual = ParserTestUtils.getParseResult(HEADER_CORRECT + row0.concat(row1));
+
+        final TransactionCluster expected = new TransactionCluster(
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2022-11-27T07:25:31.020Z"),
+                        ATOM,
+                        ATOM,
+                        UNSTAKE,
+                        new BigDecimal("0.38908456"),
+                        null,
+                        null,
+                        null
+                ),
+                List.of()
+        );
+
+        TestUtils.testTxs(expected.getMain(), actual.getTransactionClusters().get(0).getMain());
+    }
+
+    @Test
+    void testStakeReward() {
+        final String row0 = "2022-10-29T14:24:12.531Z,stake_reward,0.00334145,SOL.S\n";
+        var actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row0);
+
+        final TransactionCluster expectedStake = new TransactionCluster(
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2022-10-29T14:24:12.531Z"),
+                        SOL,
+                        SOL,
+                        STAKING_REWARD,
+                        new BigDecimal("0.00334145"),
+                        null,
+                        null,
+                        null
+                ),
+                List.of()
+        );
+
+        final TransactionCluster expectedStakeReward = new TransactionCluster(
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2022-10-29T14:24:13.531Z"), // +1 second
+                        SOL,
+                        SOL,
+                        STAKE,
+                        new BigDecimal("0.00334145"),
+                        null,
+                        null,
+                        null
+                ),
+                List.of()
+        );
+
+
+        TestUtils.testTxs(expectedStakeReward.getMain(), actual.get(0).getMain());
+        TestUtils.testTxs(expectedStake.getMain(), actual.get(1).getMain());
+    }
+
+    @Test
+    void testStakeETH2() {
+        final String row0 = "2024-01-01T09:32:02.361Z,stake,-0.0105416,ETH,\n";
+        final String row1 = "2024-01-01T09:32:49.003Z,stake,0.0105416,ETH2.S\n";
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row0.concat(row1));
+
+        final TransactionCluster expectedBuy = new TransactionCluster(
+                new ImportedTransactionBean(
+                        "",
+                        Instant.parse("2024-01-01T09:32:02.361Z"),
+                        ETH2,
+                        ETH,
+                        BUY,
+                        new BigDecimal("0.0105416"),
+                        new BigDecimal("1.0000000000"),
+                        null,
+                        null
+                ),
+                List.of()
+        );
+        final TransactionCluster expectedStake = new TransactionCluster(
+                new ImportedTransactionBean(
+                        "",
+                        Instant.parse("2024-01-01T09:32:49.003Z"),
+                        ETH2,
+                        ETH2,
+                        STAKE,
+                        new BigDecimal("0.0105416"),
+                        null,
+                        null,
+                        null
+                ),
+                List.of()
+        );
+
+        TestUtils.testTxs(expectedBuy.getMain(), actual.get(0).getMain());
+        TestUtils.testTxs(expectedStake.getMain(), actual.get(1).getMain());
+    }
+
+    @Test
+    void testUnstakeETH2() {
+        final String row0 = "2024-03-15T17:26:14.826Z,unstake,-0.21907795,ETH2.S\n";
+        final String row1 = "2024-03-15T17:27:01.354Z,unstake,0.21907795,ETH\n";
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row0.concat(row1));
+
+        final TransactionCluster expectedBuy = new TransactionCluster(
+                new ImportedTransactionBean(
+                        "",
+                        Instant.parse("2024-03-15T17:27:01.354Z"),
+                        ETH,
+                        ETH2,
+                        BUY,
+                        new BigDecimal("0.21907795"),
+                        new BigDecimal("1.0000000000"),
+                        null,
+                        null
+                ),
+                List.of()
+        );
+        final TransactionCluster expectedStake = new TransactionCluster(
+                new ImportedTransactionBean(
+                        "",
+                        Instant.parse("2024-03-15T17:26:14.826Z"),
+                        ETH2,
+                        ETH2,
+                        UNSTAKE,
+                        new BigDecimal("0.21907795"),
+                        null,
+                        null,
+                        null
+                ),
+                List.of()
+        );
+
+        TestUtils.testTxs(expectedBuy.getMain(), actual.get(0).getMain());
+        TestUtils.testTxs(expectedStake.getMain(), actual.get(1).getMain());
+    }
+
+    @Test
+    void testStakeRewardETH2() {
+        final String row0 = "2024-01-04T01:07:53.536Z,stake_reward,0.000117,ETH2.S\n";
+        var actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row0);
+
+        final TransactionCluster expectedStakeReward = new TransactionCluster(
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2024-01-04T01:07:53.536Z"),
+                        ETH2,
+                        ETH2,
+                        STAKING_REWARD,
+                        new BigDecimal("0.000117"),
+                        null,
+                        null,
+                        null
+                ),
+                List.of()
+        );
+
+        final TransactionCluster expectedStake = new TransactionCluster(
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2024-01-04T01:07:54.536Z"), // +1 second
+                        ETH2,
+                        ETH2,
+                        STAKE,
+                        new BigDecimal("0.000117"),
+                        null,
+                        null,
+                        null
+                ),
+                List.of()
+        );
+
+
+        TestUtils.testTxs(expectedStake.getMain(), actual.get(0).getMain());
+        TestUtils.testTxs(expectedStakeReward.getMain(), actual.get(1).getMain());
+    }
+
 }
