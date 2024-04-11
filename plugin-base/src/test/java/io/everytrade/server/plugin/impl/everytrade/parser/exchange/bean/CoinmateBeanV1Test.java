@@ -256,6 +256,28 @@ class CoinmateBeanV1Test {
     }
 
     @Test
+    void testReferralAsReward() {
+        final String row = "11338953;2024-02-01 22:15:05;M;REFERRAL;500;CZK; ; ; ; ;500;CZK;Referral bonus\n";
+
+        final String x = "ID;Datum;Účet;Typ;Částka;Částka měny;Cena;Cena měny;Poplatek;Poplatek měny;" +
+                "Celkem;Celkem měny;Popisek;Status;První zůstatek po;První zůstatek po měně;Druhý zůstatek po;Druhý zůstatek po měně\n";
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
+        final TransactionCluster expected = new TransactionCluster(
+                new ImportedTransactionBean(
+                        "8477834",
+                        Instant.parse("2021-08-16T09:42:00Z"),
+                        CZK,
+                        CZK,
+                        REWARD,
+                        new BigDecimal("1.84599318"),
+                        null
+                ),
+                emptyList()
+        );
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
     void testIgnoredTransactionType() {
         var row = "4;2019-08-30 05:05:24;DEPOSITZ;0.0019;BTC;8630.7;EUR;0.03443649;EUR;16.43276649;EUR;;OK\n";
         var parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
@@ -274,4 +296,6 @@ class CoinmateBeanV1Test {
         final String error = parsingProblem.getMessage();
         assertTrue(error.contains(ExchangeBean.UNSUPPORTED_STATUS_TYPE.concat("n/a")));
     }
+
+
 }
