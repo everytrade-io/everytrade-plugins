@@ -77,7 +77,7 @@ public class CoinmateBeanV1 extends ExchangeBean {
         } else if (WITHDRAWAL_OPERATION.equals(type)) {
             this.type = WITHDRAWAL;
         } else if (type == null && address.contains("User:") && address.contains("(ID:") && address.contains("Account ID:")
-            || "AFFILIATE".equalsIgnoreCase(type)) {
+            || "AFFILIATE".equalsIgnoreCase(type) || "REFERRAL".equalsIgnoreCase(type)){
             this.type = REWARD;
         } else {
             throw new DataIgnoredException(UNSUPPORTED_TRANSACTION_TYPE.concat(type));

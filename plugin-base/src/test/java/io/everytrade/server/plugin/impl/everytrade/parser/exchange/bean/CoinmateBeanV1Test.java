@@ -257,19 +257,18 @@ class CoinmateBeanV1Test {
 
     @Test
     void testReferralAsReward() {
-        final String row = "11338953;2024-02-01 22:15:05;M;REFERRAL;500;CZK; ; ; ; ;500;CZK;Referral bonus\n";
-
-        final String x = "ID;Datum;Účet;Typ;Částka;Částka měny;Cena;Cena měny;Poplatek;Poplatek měny;" +
-                "Celkem;Celkem měny;Popisek;Status;První zůstatek po;První zůstatek po měně;Druhý zůstatek po;Druhý zůstatek po měně\n";
+        final String row = "11338953;2024-02-01 22:15:05;REFERRAL;500;CZK; ; ; ; ;500;CZK;Referral bonus;OK\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
                 new ImportedTransactionBean(
-                        "8477834",
-                        Instant.parse("2021-08-16T09:42:00Z"),
+                        "11338953",
+                        Instant.parse("2024-02-01T22:15:05Z"),
                         CZK,
                         CZK,
                         REWARD,
-                        new BigDecimal("1.84599318"),
+                        new BigDecimal("500"),
+                        null,
+                        "REFERRAL",
                         null
                 ),
                 emptyList()
