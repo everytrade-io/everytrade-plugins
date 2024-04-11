@@ -6,10 +6,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class AnycoinCurrencySwitcher {
-    public static final Map<String, Currency> switcher = new HashMap<>();
+    public static final Map<String, Currency> SWITCHER = new HashMap<>();
 
     static {
-        switcher.put("XDG", Currency.DOGE);
+        SWITCHER.put("XDG", Currency.DOGE);
     }
 
 }
