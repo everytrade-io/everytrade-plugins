@@ -175,7 +175,6 @@ public class AnycoinBeanV1Test {
         var parser = new EverytradeCsvMultiParser().parse(file, header);
         var varTwo = parser;
     }
-
     @Test
     void testStake() {
         final String row0 = "2022-11-07T14:39:54.400Z,stake,-1.43092234,ATOM\n";
