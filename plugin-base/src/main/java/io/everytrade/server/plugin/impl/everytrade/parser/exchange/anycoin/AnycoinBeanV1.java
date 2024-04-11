@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.DECIMAL_DIGITS;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.anycoin.AnycoinCurrencySwitcher.switcher;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.anycoin.AnycoinSupportedOperations.UNSUPPORTED_OPERATION_TYPES;
 
 @EqualsAndHashCode(callSuper = true)
@@ -65,11 +66,16 @@ public class AnycoinBeanV1 extends ExchangeBean {
 
     @Parsed(field = "Currency")
     public void setCoin(String coin) {
+
         if (coin.endsWith(".S")) {
             currencyEndsWithS = coin;
             coin = coin.substring(0, coin.length() - 2);
         }
-        this.coin = Currency.fromCode(coin);
+        if (switcher.containsKey(coin)) {
+            this.coin = switcher.get(coin);
+        } else {
+            this.coin = Currency.fromCode(coin);
+        }
     }
 
     @Parsed(field = "Order ID")
