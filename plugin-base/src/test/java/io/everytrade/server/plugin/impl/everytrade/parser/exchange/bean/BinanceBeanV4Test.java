@@ -448,7 +448,8 @@ class BinanceBeanV4Test {
         final ParseResult actual = ParserTestUtils.getParseResult(HEADER_CORRECT + row.concat(row1));
 
         var expectedProblem = new ParsingProblem("[38065325, 2021-05-18 18:19:50, SPOT, Fiat Withdraw, EUR, 8000.00000000, null]",
-            "Row id 2: ; One or more rows in group ( rows:  2; 3;) is unsupported; Transactions do not have both positive and negative amounts", ParsingProblemType.PARSED_ROW_IGNORED);
+            "Row id 2: ; One or more rows in group ( rows:  2; 3;) is unsupported; Transactions do not have both positive and " +
+                "negative amounts", ParsingProblemType.PARSED_ROW_IGNORED);
 
         assertEquals(expectedProblem.getMessage(), actual.getParsingProblems().get(0).getMessage());
     }
