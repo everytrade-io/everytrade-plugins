@@ -334,7 +334,7 @@ class BinanceBeanV4Test {
         final TransactionCluster expectedStake = new TransactionCluster(
                 new ImportedTransactionBean(
                         null,
-                        Instant.parse("2020-12-28T09:27:37Z"),
+                        Instant.parse("2020-12-28T09:27:38Z"),
                         BETH,
                         BETH,
                         STAKE,

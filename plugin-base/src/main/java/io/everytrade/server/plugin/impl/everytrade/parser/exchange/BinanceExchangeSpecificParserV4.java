@@ -185,17 +185,16 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
         }
         return result;
     }
-
     private BinanceBeanV4 cloneRewardToStake(BinanceBeanV4 row) {
-        BinanceBeanV4 clone = new BinanceBeanV4();
-        clone.setRowNumber(row.getDate().getEpochSecond());
-        clone.setDate(row.getDate());
-        String[] strings = {"Row id " + row.usedIds.toString() + " " + row.getOriginalOperation()};
-        clone.setRowValues(strings);
-        clone.setAmountBase(row.getChange().abs());
-        clone.setMarketBase(row.getCoin());
-        clone.setType(STAKE);
-        return clone;
+        try {
+            BinanceBeanV4 clone = (BinanceBeanV4) row.clone();
+            clone.setType(STAKE);
+            clone.setDate(row.getDate().plusSeconds(1));
+            return clone;
+        } catch (CloneNotSupportedException ignore) {
+            row.setNote("ETH 2.0 STAKE not added");
+        }
+        return row;
     }
 
     private List<BinanceBeanV4> prepareBeansForTransactionsFromMultiRows(List<BinanceBeanV4> rows) {
