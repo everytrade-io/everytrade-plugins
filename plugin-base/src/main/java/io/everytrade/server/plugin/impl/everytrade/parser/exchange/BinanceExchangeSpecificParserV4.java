@@ -185,6 +185,17 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
         }
         return result;
     }
+    private BinanceBeanV4 cloneRewardToStake(BinanceBeanV4 row) {
+        try {
+            BinanceBeanV4 clone = (BinanceBeanV4) row.clone();
+            clone.setType(STAKE);
+            clone.setDate(row.getDate().plusSeconds(1));
+            return clone;
+        } catch (CloneNotSupportedException ignore) {
+            row.setNote("ETH 2.0 STAKE not added");
+        }
+        return row;
+    }
 
     private BinanceBeanV4 cloneRewardToStake(BinanceBeanV4 row) {
         BinanceBeanV4 clone = new BinanceBeanV4();
