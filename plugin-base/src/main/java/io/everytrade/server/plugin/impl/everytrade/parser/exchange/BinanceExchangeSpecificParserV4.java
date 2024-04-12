@@ -197,6 +197,18 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
         return row;
     }
 
+    private BinanceBeanV4 cloneRewardToStake(BinanceBeanV4 row) {
+        BinanceBeanV4 clone = new BinanceBeanV4();
+        clone.setRowNumber(row.getDate().getEpochSecond());
+        clone.setDate(row.getDate());
+        String[] strings = {"Row id " + row.usedIds.toString() + " " + row.getOriginalOperation()};
+        clone.setRowValues(strings);
+        clone.setAmountBase(row.getChange().abs());
+        clone.setMarketBase(row.getCoin());
+        clone.setType(STAKE);
+        return clone;
+    }
+
     private List<BinanceBeanV4> prepareBeansForTransactionsFromMultiRows(List<BinanceBeanV4> rows) {
         var groupedRowsByTime = createGroupsFromRows(rowsWithMultipleRowTransactionType);
         Map<Instant, List<BinanceBeanV4>> sortedGroupsByDate = new TreeMap<>(groupedRowsByTime);
