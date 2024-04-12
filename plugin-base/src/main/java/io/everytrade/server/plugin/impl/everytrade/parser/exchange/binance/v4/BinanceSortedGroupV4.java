@@ -80,6 +80,7 @@ public class BinanceSortedGroupV4 {
     Map<Currency, List<BinanceBeanV4>> rowsRebate = new HashMap<>();
     Map<Currency, List<BinanceBeanV4>> rowsEarnings = new HashMap<>();
     Map<Currency, List<BinanceBeanV4>> rowsStakings = new HashMap<>();
+    Map<Currency, List<BinanceBeanV4>> rowsStakingETH2_0 = new HashMap<>();
 
     // afterSum
     List<BinanceBeanV4> rowDeposit = new ArrayList<>();
@@ -91,6 +92,7 @@ public class BinanceSortedGroupV4 {
     List<BinanceBeanV4> rowEarnings = new ArrayList<>();
     List<BinanceBeanV4> rowStakings = new ArrayList<>();
     List<BinanceBeanV4> smallAssetExchange = new ArrayList<>();
+    List<BinanceBeanV4> rowStakingETH2_0 = new ArrayList<>();
 
     public List<BinanceBeanV4> createdTransactions = new ArrayList<>();
 
@@ -130,6 +132,7 @@ public class BinanceSortedGroupV4 {
         rowRebate = sumRows(rowsRebate);
         rowEarnings = sumRows(rowsEarnings);
         rowStakings = sumRows(rowsStakings);
+        rowStakingETH2_0 = sumRows(rowsStakingETH2_0);
     }
 
     private List<BinanceBeanV4> sumRows(Map<Currency, List<BinanceBeanV4>> rows) {
@@ -174,6 +177,22 @@ public class BinanceSortedGroupV4 {
         var minus = stValue.multiply(ndValue); // must be everytime minus
         if (minus.compareTo(ZERO) > 0) {
             throw new DataValidationException("Wrong change value");
+        }
+    }
+
+    private void validateStakingETH2_0() {
+        boolean containsETH = rowStakingETH2_0.stream()
+            .anyMatch(row -> row.getCoin().equals(Currency.ETH));
+
+        if (!containsETH) {
+            throw new DataValidationException("No transaction contains ETH as a currency");
+        }
+
+        boolean hasPositive = rowStakingETH2_0.stream().anyMatch(row -> row.getChange().compareTo(BigDecimal.ZERO) > 0);
+        boolean hasNegative = rowStakingETH2_0.stream().anyMatch(row -> row.getChange().compareTo(BigDecimal.ZERO) < 0);
+
+        if (!(hasPositive && hasNegative)) {
+            throw new DataValidationException("Transactions do not have both positive and negative amounts");
         }
     }
 
@@ -266,10 +285,16 @@ public class BinanceSortedGroupV4 {
         int earningsNum = rowsEarnings.size();
         int stakingsNum = rowsStakings.size();
         int smallAssetExchangeNum = smallAssetExchange.size();
+        int stakingETH2_0Num = rowsStakingETH2_0.size();
 
         if (buySellNum > 0) {
             validateBuySell();
             createBuySellTxs();
+        }
+
+        if (stakingETH2_0Num > 0) {
+            validateStakingETH2_0();
+            createStakingETH2_0Txs();
         }
 
         if (depositNum > 0 || withdrawNum > 0) {
@@ -593,41 +618,78 @@ public class BinanceSortedGroupV4 {
             quoteRow = ndRow;
         }
 
-        if (baseRow.getOperationType().code.equals("ETH 2.0 STAKING")) {
-            for (int i = 0; i < rowBuySellRelated.size(); i++) {
-                var txsBuySell = newBinanceBeanV4(stRow, baseRow, quoteRow, relatedTransaction);
-                if (i == 1 && baseRow.getCoin().code().equals("BETH") && quoteRow.getCoin().code().equals("ETH")){
-                    txsBuySell.setDate(baseRow.getDate());
-                    txsBuySell.setType(STAKE);
-                } else if (i == 1 && baseRow.getCoin().code().equals("ETH") && quoteRow.getCoin().code().equals("BETH")) {
-                    txsBuySell.setDate(baseRow.getDate());
-                    txsBuySell.setType(UNSTAKE);
-                } else {
-                    Instant date = stRow.getDate();
-                    if (quoteRow.getChange().compareTo(ZERO) < 0 && quoteRow.getCoin().code().equals("ETH")
-                            && baseRow.getChange().compareTo(ZERO) > 0
-                            && baseRow.getCoin().code().equals("BETH")){
-                        date = baseRow.getDate().minusSeconds(1);
-                    } else if (quoteRow.getChange().compareTo(ZERO) < 0 && quoteRow.getCoin().code().equals("BETH")
-                            && baseRow.getChange().compareTo(ZERO) > 0
-                            && baseRow.getCoin().code().equals("ETH")){
-                        date = baseRow.getDate().plusSeconds(1);
-                    }
-                    txsBuySell.setDate(date);
-                    txsBuySell.setType(type);
-                }
-                if (baseRow.getOperationType().code.equals("ETH 2.0 STAKING") && txsBuySell.getType().equals(UNSTAKE)){
-                    txsBuySell.setMarketBase(txsBuySell.getMarketQuote());
-                }
-                createdTransactions.add(txsBuySell);
-            }
-        } else {
-            var txsBuySell = newBinanceBeanV4(stRow, baseRow, quoteRow, relatedTransaction);
-            txsBuySell.setType(type);
-            txsBuySell.setDate(baseRow.getDate());
-            createdTransactions.add(txsBuySell);
-        }
+        var txsBuySell = newBinanceBeanV4(stRow, baseRow, quoteRow, relatedTransaction);
+        txsBuySell.setType(type);
+        txsBuySell.setDate(baseRow.getDate());
+        createdTransactions.add(txsBuySell);
 
+//        if (baseRow.getOperationType().equals(OPERATION_TYPE_ETH2_0_STAKING)) {
+//            for (int i = 0; i < rowBuySellRelated.size(); i++) {
+//
+//                if (i == 1 && baseRow.getCoin().code().equals("BETH") && quoteRow.getCoin().code().equals("ETH")){
+//                    txsBuySell.setDate(baseRow.getDate());
+//                    txsBuySell.setType(STAKE);
+//                } else if (i == 1 && baseRow.getCoin().code().equals("ETH") && quoteRow.getCoin().code().equals("BETH")) {
+//                    txsBuySell.setDate(baseRow.getDate());
+//                    txsBuySell.setType(UNSTAKE);
+//                } else {
+//
+//                    if (quoteRow.getChange().compareTo(ZERO) < 0 && quoteRow.getCoin().code().equals("ETH")
+//                            && baseRow.getChange().compareTo(ZERO) > 0
+//                            && baseRow.getCoin().code().equals("BETH")){
+//                        date = baseRow.getDate().minusSeconds(1);
+//                    } else if (quoteRow.getChange().compareTo(ZERO) < 0 && quoteRow.getCoin().code().equals("BETH")
+//                            && baseRow.getChange().compareTo(ZERO) > 0
+//                            && baseRow.getCoin().code().equals("ETH")){
+//                        date = baseRow.getDate().plusSeconds(1);
+//                    }
+//
+//                }
+//                if (baseRow.getOperationType().code.equals("ETH 2.0 STAKING") && txsBuySell.getType().equals(UNSTAKE)){
+//                    txsBuySell.setMarketBase(txsBuySell.getMarketQuote());
+//                }
+//
+//            }
+//        }
+    }
+
+    private void createStakingETH2_0Txs() {
+        BinanceBeanV4 ETHtx = rowStakingETH2_0.stream()
+            .filter(row -> row.getCoin().equals(Currency.ETH))
+            .findFirst()
+            .orElse(null);
+
+        BinanceBeanV4 secondCurrencyTx = rowStakingETH2_0.stream()
+            .filter(row -> !row.getCoin().equals(Currency.ETH))
+            .findFirst()
+            .orElse(null);
+
+        if (ETHtx != null && ETHtx.getChange().compareTo(ZERO) < 0) {
+            if (secondCurrencyTx != null) {
+                var buyBean = newBinanceBeanV4(ETHtx, secondCurrencyTx, ETHtx, false);
+                buyBean.setType(BUY);
+                buyBean.setDate(ETHtx.getDate().minusSeconds(1));
+                createdTransactions.add(buyBean);
+
+                var stakeBean = newBinanceBeanV4(ETHtx, secondCurrencyTx, secondCurrencyTx, false);
+                stakeBean.setType(STAKE);
+                stakeBean.setDate(ETHtx.getDate());
+                createdTransactions.add(stakeBean);
+            }
+        } else if (ETHtx != null && ETHtx.getChange().compareTo(ZERO) > 0) {
+            if (secondCurrencyTx != null) {
+                var buyBean = newBinanceBeanV4(ETHtx, ETHtx, secondCurrencyTx, false);
+                buyBean.setType(BUY);
+                buyBean.setDate(ETHtx.getDate().plusSeconds(1));
+                createdTransactions.add(buyBean);
+
+                var unstakeBean = newBinanceBeanV4(ETHtx, secondCurrencyTx, secondCurrencyTx, false);
+                unstakeBean.setType(UNSTAKE);
+                unstakeBean.setDate(ETHtx.getDate());
+                createdTransactions.add(unstakeBean);
+            }
+
+        }
 
     }
 
@@ -808,6 +870,14 @@ public class BinanceSortedGroupV4 {
         } else if (row.getOriginalOperation().equals(OPERATION_TYPE_SMALL_ASSETS_EXCHANGE_BNB.code)) {
             row.setNote(row.getOriginalOperation().toUpperCase());
             smallAssetExchange.add(row);
+        } else if (row.getOriginalOperation().equals(OPERATION_TYPE_ETH2_0_STAKING.code)){
+            if (rowsStakingETH2_0.containsKey(row.getCoin())) {
+                rowsStakingETH2_0.get(row.getCoin()).add(row);
+            } else {
+                List<BinanceBeanV4> newList = new ArrayList<>();
+                newList.add(row);
+                rowsStakingETH2_0.put(row.getCoin(), newList);
+            }
         } else if (
             row.getOriginalOperation().equals(OPERATION_TYPE_BUY.code) ||
                 row.getOriginalOperation().equals(OPERATION_TYPE_SELL.code) ||
@@ -817,8 +887,7 @@ public class BinanceSortedGroupV4 {
                 row.getOriginalOperation().equals(OPERATION_TYPE_TRANSACTION_BUY.code) ||
                 row.getOriginalOperation().equals(OPERATION_TYPE_TRANSACTION_SPEND.code) ||
                 row.getOriginalOperation().equals(OPERATION_TYPE_TRANSACTION_REVENUE.code) ||
-                row.getOriginalOperation().equals(OPERATION_TYPE_TRANSACTION_SOLD.code) ||
-                    row.getOriginalOperation().equals(OPERATION_TYPE_ETH2_0_STAKING.code)
+                row.getOriginalOperation().equals(OPERATION_TYPE_TRANSACTION_SOLD.code)
         ) {
             if (rowsBuySellRelated.containsKey(row.getCoin())) {
                 rowsBuySellRelated.get(row.getCoin()).add(row);
