@@ -6,10 +6,12 @@ import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.plugin.impl.everytrade.parser.EverytradeCsvMultiParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -257,8 +259,8 @@ class CoinmateBeanV1Test {
 
     @Test
     void testReferralAsReward() {
-        final String row = "11338953;2024-02-01 22:15:05;REFERRAL;500;CZK; ; ; ; ;500;CZK;Referral bonus;OK\n";
-        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
+        final String row = "11338953;2024-02-01 22:15:05;M;REFERRAL;500;CZK;;;;;500;CZK;Referral bonus;OK;500;CZK;;\n";
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_THREE + row);
         final TransactionCluster expected = new TransactionCluster(
                 new ImportedTransactionBean(
                         "11338953",
