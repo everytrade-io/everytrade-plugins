@@ -5,6 +5,7 @@ import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.binanceStakeException.BinanceStakeException;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -104,7 +105,9 @@ public class BinanceSortedGroupV4 {
             }
             sumAllRows();
             createTransactionsFromMultiRowData();
-        } catch (Exception ignore) {
+        } catch (BinanceStakeException e) {
+            throw new DataValidationException(e.getMessage());
+        }catch (Exception ignore) {
             if (group.get(0).isMergedWithAnotherGroup()) {
                 throw new DataValidationException(ignore.getMessage());
             } else {
@@ -185,14 +188,14 @@ public class BinanceSortedGroupV4 {
             .anyMatch(row -> row.getCoin().equals(Currency.ETH));
 
         if (!containsETH) {
-            throw new DataValidationException("No transaction contains ETH as a currency");
+            throw new BinanceStakeException("No transaction contains ETH as a currency");
         }
 
         boolean hasPositive = rowStakingETH2_0.stream().anyMatch(row -> row.getChange().compareTo(BigDecimal.ZERO) > 0);
         boolean hasNegative = rowStakingETH2_0.stream().anyMatch(row -> row.getChange().compareTo(BigDecimal.ZERO) < 0);
 
         if (!(hasPositive && hasNegative)) {
-            throw new DataValidationException("Transactions do not have both positive and negative amounts");
+            throw new BinanceStakeException("Transactions do not have both positive and negative amounts");
         }
     }
 

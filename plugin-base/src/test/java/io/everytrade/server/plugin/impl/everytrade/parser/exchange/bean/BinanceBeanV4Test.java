@@ -442,6 +442,18 @@ class BinanceBeanV4Test {
     }
 
     @Test
+    void testTypeETH2_0_FAIL() {
+        final String row = "40360729,2020-12-02 13:20:22,Spot,ETH 2.0 Staking,BETH,-3.26000000,\"\"\n";
+        final String row1 = "40360729,2020-12-02 13:20:22,Spot,ETH 2.0 Staking,ETH,-3.26000000,\"\"\n";
+        final ParseResult actual = ParserTestUtils.getParseResult(HEADER_CORRECT + row.concat(row1));
+
+        var expectedProblem = new ParsingProblem("[38065325, 2021-05-18 18:19:50, SPOT, Fiat Withdraw, EUR, 8000.00000000, null]",
+            "Row id 2: ; One or more rows in group ( rows:  2; 3;) is unsupported; Transactions do not have both positive and negative amounts", ParsingProblemType.PARSED_ROW_IGNORED);
+
+        assertEquals(expectedProblem.getMessage(), actual.getParsingProblems().get(0).getMessage());
+    }
+
+    @Test
     void testSimpleEarn0() {
         final String row = "86879943,2022-03-02 17:02:42,Earn,Simple Earn Flexible Subscription,LDUSDT,236.79617000,\"\"\n";
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row);
