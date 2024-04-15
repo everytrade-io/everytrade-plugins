@@ -46,7 +46,7 @@ class BittrexBeanV1Test {
                 Currency.EUR,
                 TransactionType.BUY,
                 new BigDecimal("0.03280507"),
-                new BigDecimal("0.0338023970")
+                new BigDecimal("0.03380239700753573")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(

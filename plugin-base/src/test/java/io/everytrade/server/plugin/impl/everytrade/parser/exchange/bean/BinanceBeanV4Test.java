@@ -85,8 +85,8 @@ class BinanceBeanV4Test {
                         USDT,
                         EUR,
                         BUY,
-                        new BigDecimal("327.1600000000"),
-                        new BigDecimal("1.2360000000")
+                        new BigDecimal("327.16000000000000000"),
+                        new BigDecimal("1.23600000000000000")
                 ),
                 List.of(
                         new FeeRebateImportedTransactionBean(
@@ -134,8 +134,8 @@ class BinanceBeanV4Test {
                         USDT,
                         EUR,
                         SELL,
-                        new BigDecimal("327.1600000000"),
-                        new BigDecimal("1.2360000000")
+                        new BigDecimal("327.16000000000000000"),
+                        new BigDecimal("1.23600000000000000")
                 ),
                 List.of(
                         new FeeRebateImportedTransactionBean(
@@ -168,8 +168,8 @@ class BinanceBeanV4Test {
                         ETH,
                         BTC,
                         BUY,
-                        new BigDecimal("76.6597000000"),
-                        new BigDecimal("0.1695806271")
+                        new BigDecimal("76.65970000000000000"),
+                        new BigDecimal("0.16958062710915905")
                 ),
                 List.of(
                         new FeeRebateImportedTransactionBean(
@@ -203,8 +203,8 @@ class BinanceBeanV4Test {
                         USDT,
                         EUR,
                         SELL,
-                        new BigDecimal("9820.0000000000"),
-                        new BigDecimal("1.1310000000")
+                        new BigDecimal("9820.00000000000000000"),
+                        new BigDecimal("1.13100000000000000")
                 ),
                 List.of(
                         new FeeRebateImportedTransactionBean(
@@ -377,8 +377,8 @@ class BinanceBeanV4Test {
                         BETH,
                         ETH,
                         BUY,
-                        new BigDecimal("3.2600000000"),
-                        new BigDecimal("1.0000000000"),
+                        new BigDecimal("3.26000000000000000"),
+                        new BigDecimal("1.00000000000000000"),
                         null,
                         null
                 ),
@@ -415,8 +415,8 @@ class BinanceBeanV4Test {
                         ETH,
                         BETH,
                         BUY,
-                        new BigDecimal("3.2600000000"),
-                        new BigDecimal("1.0000000000"),
+                        new BigDecimal("3.26000000000000000"),
+                        new BigDecimal("1.00000000000000000"),
                         null,
                         null
                 ),
@@ -490,8 +490,8 @@ class BinanceBeanV4Test {
                 USDT,
                 LTC,
                 BUY,
-                new BigDecimal("5361.5397600000"),
-                new BigDecimal("0.0133120341"),
+                new BigDecimal("5361.53976000000000000"),
+                new BigDecimal("0.01331203407880724"),
                 "TRANSACTION REVENUE",
                 null,
                 null
@@ -638,8 +638,8 @@ class BinanceBeanV4Test {
                         ETH,
                         BTC,
                         BUY,
-                        new BigDecimal("4477.4000000000"),
-                        new BigDecimal("1.3170000000")
+                        new BigDecimal("4477.40000000000000000"),
+                        new BigDecimal("1.31700000000000000")
                 ),
                 List.of(
                         new FeeRebateImportedTransactionBean(
@@ -672,8 +672,8 @@ class BinanceBeanV4Test {
                         DOGE,
                         USDT,
                         BUY,
-                        new BigDecimal("481.5840000000"),
-                        new BigDecimal("6.2294428386"),
+                        new BigDecimal("481.58400000000000000"),
+                        new BigDecimal("6.22944283863251271"),
                         "LARGE OTC TRADING",
                         null
                 ),
@@ -697,8 +697,8 @@ class BinanceBeanV4Test {
                         USDC,
                         USDT,
                         BUY,
-                        new BigDecimal("7524.8147036600"),
-                        new BigDecimal("0.9998700779"),
+                        new BigDecimal("7524.81470366000000000"),
+                        new BigDecimal("0.99987007785593385"),
                         "LARGE OTC TRADING",
                         null
                 ),
@@ -722,8 +722,8 @@ class BinanceBeanV4Test {
                         DOGE,
                         USDT,
                         BUY,
-                        new BigDecimal("481.5840000000"),
-                        new BigDecimal("6.2294428386"),
+                        new BigDecimal("481.58400000000000000"),
+                        new BigDecimal("6.22944283863251271"),
                         "LARGE OTC TRADING",
                         null
                 ),
@@ -747,8 +747,8 @@ class BinanceBeanV4Test {
                         RUNE,
                         UST,
                         BUY,
-                        new BigDecimal("14513.3168943000"),
-                        new BigDecimal("0.1073303015"),
+                        new BigDecimal("14513.31689430000000000"),
+                        new BigDecimal("0.10733030150135995"),
                         "LARGE OTC TRADING",
                         null
                 ),
@@ -774,8 +774,8 @@ class BinanceBeanV4Test {
                         BNB,
                         EUR,
                         BUY,
-                        new BigDecimal("0.0000390800"),
-                        new BigDecimal("28.5056294780"),
+                        new BigDecimal("0.00003908000000000"),
+                        new BigDecimal("28.50562947799385875"),
                         "SMALL ASSETS EXCHANGE BNB",
                         null
                 ),
@@ -789,8 +789,8 @@ class BinanceBeanV4Test {
                         BNB,
                         USDT,
                         BUY,
-                        new BigDecimal("0.0001040500"),
-                        new BigDecimal("33.6670831331"),
+                        new BigDecimal("0.00010405000000000"),
+                        new BigDecimal("33.66708313310908217"),
                         "SMALL ASSETS EXCHANGE BNB",
                         null
                 ),
@@ -819,7 +819,7 @@ class BinanceBeanV4Test {
                         ADA,
                         USDT,
                         SELL,
-                        new BigDecimal("0.0050000000"),
+                        new BigDecimal("0.00500000000000000"),
                         null,
                         "SMALL ASSETS EXCHANGE BNB",
                         null
@@ -834,7 +834,7 @@ class BinanceBeanV4Test {
                         BNB,
                         USDT,
                         BUY,
-                        new BigDecimal("0.0012564500"),
+                        new BigDecimal("0.00125645000000000"),
                         null,
                         "SMALL ASSETS EXCHANGE BNB",
                         null
@@ -849,7 +849,7 @@ class BinanceBeanV4Test {
                         USDT,
                         USDT,
                         SELL,
-                        new BigDecimal("0.0088763600"),
+                        new BigDecimal("0.00887636000000000"),
                         null,
                         "SMALL ASSETS EXCHANGE BNB",
                         null
@@ -864,7 +864,7 @@ class BinanceBeanV4Test {
                         BTC,
                         USDT,
                         SELL,
-                        new BigDecimal("5.400E-7"),
+                        new BigDecimal("5.4000000000E-7"),
                         null,
                         "SMALL ASSETS EXCHANGE BNB",
                         null
@@ -996,8 +996,8 @@ class BinanceBeanV4Test {
                         SHIB,
                         USDT,
                         BUY,
-                        new BigDecimal("4324216.0000000000"),
-                        new BigDecimal("0.0000074400"),
+                        new BigDecimal("4324216.00000000000000000"),
+                        new BigDecimal("0.00000744000000000"),
                         "TRANSACTION BUY",
                         null,
                         null
@@ -1034,8 +1034,8 @@ class BinanceBeanV4Test {
                         BUSD,
                         BTC,
                         BUY,
-                        new BigDecimal("85.1823841700"),
-                        new BigDecimal("0.0000302762"),
+                        new BigDecimal("85.18238417000000000"),
+                        new BigDecimal("0.00003027621291807"),
                         "TRANSACTION REVENUE",
                         null,
                         null
@@ -1072,8 +1072,8 @@ class BinanceBeanV4Test {
                         ETH,
                         CZK,
                         BUY,
-                        new BigDecimal("0.0233993100"),
-                        new BigDecimal("62886.4697292356"),
+                        new BigDecimal("0.02339931000000000"),
+                        new BigDecimal("62886.46972923560566530"),
                         "BUY CRYPTO",
                         null,
                         null
@@ -1140,8 +1140,8 @@ class BinanceBeanV4Test {
                         KSM,
                         BTC,
                         BUY,
-                        new BigDecimal("0.1830000000"),
-                        new BigDecimal("0.0065000000"),
+                        new BigDecimal("0.18300000000000000"),
+                        new BigDecimal("0.00650000000000000"),
                         "TRANSACTION BUY",
                         null
                 ),
@@ -1294,8 +1294,8 @@ class BinanceBeanV4Test {
                         USDT,
                         ADA,
                         BUY,
-                        new BigDecimal("15.6727000000"),
-                        new BigDecimal("0.6380521544"),
+                        new BigDecimal("15.67270000000000000"),
+                        new BigDecimal("0.63805215438309927"),
                         "BINANCE CONVERT",
                         null,
                         null
@@ -1310,8 +1310,8 @@ class BinanceBeanV4Test {
                         USDT,
                         ADA,
                         BUY,
-                        new BigDecimal("15.7186000000"),
-                        new BigDecimal("0.6361889736"),
+                        new BigDecimal("15.71860000000000000"),
+                        new BigDecimal("0.63618897357271004"),
                         "BINANCE CONVERT",
                         null,
                         null
@@ -1326,8 +1326,8 @@ class BinanceBeanV4Test {
                         USDT,
                         EUR,
                         SELL,
-                        new BigDecimal("31.4059602600"),
-                        new BigDecimal("0.8219628474"),
+                        new BigDecimal("31.40596026000000000"),
+                        new BigDecimal("0.82196284737959482"),
                         "BINANCE CONVERT",
                         null,
                         null
@@ -1355,8 +1355,8 @@ class BinanceBeanV4Test {
                         BTC,
                         CZK,
                         BUY,
-                        new BigDecimal("0.0008370000"),
-                        new BigDecimal("1172043.0107526882"),
+                        new BigDecimal("0.00083700000000000"),
+                        new BigDecimal("1172043.01075268817204301"),
                         "TRANSACTION RELATED",
                         null,
                         null
@@ -1406,8 +1406,8 @@ class BinanceBeanV4Test {
                         BUSD,
                         ETH,
                         BUY,
-                        new BigDecimal("121.0459440000"),
-                        new BigDecimal("0.0007336057")
+                        new BigDecimal("121.04594400000000000"),
+                        new BigDecimal("0.00073360574560020")
                 ),
                 List.of()
         );
@@ -1419,7 +1419,7 @@ class BinanceBeanV4Test {
                         BTC,
                         USDT,
                         SELL,
-                        new BigDecimal("0.0009400000"),
+                        new BigDecimal("0.00094000000000000"),
                         null
                 ),
                 List.of(
@@ -1441,7 +1441,7 @@ class BinanceBeanV4Test {
                         ETH,
                         USDT,
                         BUY,
-                        new BigDecimal("0.0147000000"),
+                        new BigDecimal("0.01470000000000000"),
                         null
                 ),
                 List.of()
@@ -1454,7 +1454,7 @@ class BinanceBeanV4Test {
                         BUSD,
                         USDT,
                         BUY,
-                        new BigDecimal("20.1385694000"),
+                        new BigDecimal("20.13856940000000000"),
                         null
                 ),
                 List.of()
@@ -1467,7 +1467,7 @@ class BinanceBeanV4Test {
                         BUSD,
                         USDT,
                         SELL,
-                        new BigDecimal("50.1036354000"),
+                        new BigDecimal("50.10363540000000000"),
                         null
                 ),
                 List.of()
@@ -1480,7 +1480,7 @@ class BinanceBeanV4Test {
                         BUSD,
                         USDT,
                         SELL,
-                        new BigDecimal("20.0303670000"),
+                        new BigDecimal("20.03036700000000000"),
                         null
                 ),
                 List.of()
@@ -1493,7 +1493,7 @@ class BinanceBeanV4Test {
                         BTC,
                         USDT,
                         BUY,
-                        new BigDecimal("0.0023400000"),
+                        new BigDecimal("0.00234000000000000"),
                         null
                 ),
                 List.of()
@@ -1525,8 +1525,8 @@ class BinanceBeanV4Test {
                         BUSD,
                         NEAR,
                         BUY,
-                        new BigDecimal("20.3872000000"),
-                        new BigDecimal("0.2256317690")
+                        new BigDecimal("20.38720000000000000"),
+                        new BigDecimal("0.22563176895306859")
                 ),
                 List.of()
         );
@@ -1538,8 +1538,8 @@ class BinanceBeanV4Test {
                         NEAR,
                         BUSD,
                         BUY,
-                        new BigDecimal("4.6000000000"),
-                        new BigDecimal("4.4340000000")
+                        new BigDecimal("4.60000000000000000"),
+                        new BigDecimal("4.43400000000000000")
                 ),
                 List.of()
         );

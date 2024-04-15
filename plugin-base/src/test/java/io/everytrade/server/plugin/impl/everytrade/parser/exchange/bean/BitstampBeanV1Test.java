@@ -44,7 +44,7 @@ class BitstampBeanV1Test {
                 Currency.USD,
                 TransactionType.BUY,
                 new BigDecimal("0.00111167"),
-                new BigDecimal("3564.3499959520")
+                new BigDecimal("3564.34999595203612583")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(

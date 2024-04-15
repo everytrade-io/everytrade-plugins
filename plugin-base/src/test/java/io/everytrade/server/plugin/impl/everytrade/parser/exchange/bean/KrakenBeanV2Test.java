@@ -121,8 +121,8 @@ class KrakenBeanV2Test {
                 Currency.BTC,
                 EUR,
                 BUY,
-                new BigDecimal("0.1138867400"),
-                new BigDecimal("35080.9997722298")
+                new BigDecimal("0.11388674000000000"),
+                new BigDecimal("35080.99977222984870758")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -143,8 +143,8 @@ class KrakenBeanV2Test {
                 Currency.LTC,
                 EUR,
                 SELL,
-                new BigDecimal("2.8210336300"),
-                new BigDecimal("118.8299906939")
+                new BigDecimal("2.82103363000000000"),
+                new BigDecimal("118.82999069387201882")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -177,8 +177,8 @@ class KrakenBeanV2Test {
                 Currency.XRP,
                 EUR,
                 SELL,
-                new BigDecimal("0.0033720200"),
-                new BigDecimal("1.2158883992")
+                new BigDecimal("0.00337202000000000"),
+                new BigDecimal("1.21588839923843868")
             ),
             List.of()
         );
@@ -359,8 +359,8 @@ class KrakenBeanV2Test {
                 LUNA2,
                 USD,
                 SELL,
-                new BigDecimal("1000.0000000000"),
-                new BigDecimal("2.4165844000")
+                new BigDecimal("1000.00000000000000000"),
+                new BigDecimal("2.41658440000000000")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -381,8 +381,8 @@ class KrakenBeanV2Test {
                 Currency.ETH,
                 USD,
                 BUY,
-                new BigDecimal("0.0500000000"),
-                new BigDecimal("2208.0100000000")
+                new BigDecimal("0.05000000000000000"),
+                new BigDecimal("2208.01000000000000000")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -403,8 +403,8 @@ class KrakenBeanV2Test {
             USDT,
             USD,
             BUY,
-            new BigDecimal("108835.38759578"),
-            new BigDecimal("0.9983278206")
+            new BigDecimal("108835.38759578000000000"),
+            new BigDecimal("0.99832782057563916")
         ),
             List.of(
                 new FeeRebateImportedTransactionBean(

@@ -60,7 +60,7 @@ class GeneralBytesBeanV1Test {
                 CZK,
                 TransactionType.SELL,
                 new BigDecimal("0.031637"),
-                new BigDecimal("158042.7979896956"),
+                new BigDecimal("158042.79798969560957107"),
                 "R",
                 null
             ),
@@ -82,7 +82,7 @@ class GeneralBytesBeanV1Test {
                 CZK,
                 BUY,
                 new BigDecimal("0.052674"),
-                new BigDecimal("151877.5866651479"),
+                new BigDecimal("151877.58666514789080002"),
                 "R",
                 null
             ),
@@ -104,7 +104,7 @@ class GeneralBytesBeanV1Test {
                 CZK,
                 BUY,
                 new BigDecimal("0.052674"),
-                new BigDecimal("151877.5866651479"),
+                new BigDecimal("151877.58666514789080002"),
                 "R",
                 null
             ),
@@ -126,7 +126,7 @@ class GeneralBytesBeanV1Test {
                 CZK,
                 BUY,
                 new BigDecimal("0.052674"),
-                new BigDecimal("151877.5866651479"),
+                new BigDecimal("151877.58666514789080002"),
                 "R",
                 null
             ),

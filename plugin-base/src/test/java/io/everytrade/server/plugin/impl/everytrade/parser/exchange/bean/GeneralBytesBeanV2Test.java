@@ -67,7 +67,7 @@ class GeneralBytesBeanV2Test {
                 CZK,
                 TransactionType.BUY,
                 new BigDecimal("0.107841"),
-                new BigDecimal("1854.5822089929"),
+                new BigDecimal("1854.58220899286913141"),
                 "R",
                 null
             ),
@@ -100,7 +100,7 @@ class GeneralBytesBeanV2Test {
                 CZK,
                 SELL,
                 new BigDecimal("0.04595383"),
-                new BigDecimal("2176.0971827593"),
+                new BigDecimal("2176.09718275930428432"),
                 "R",
                 null
             ),
@@ -111,7 +111,7 @@ class GeneralBytesBeanV2Test {
                     LTC,
                     LTC,
                     FEE,
-                    new BigDecimal("0.0001"),
+                    new BigDecimal("0.00010000000000000"),
                     LTC,
                     "R"
                 )
@@ -133,7 +133,7 @@ class GeneralBytesBeanV2Test {
                 CZK,
                 SELL,
                 new BigDecimal("0.04595383"),
-                new BigDecimal("2176.0971827593"),
+                new BigDecimal("2176.09718275930428432"),
                 "R",
                 null
             ),
@@ -144,7 +144,7 @@ class GeneralBytesBeanV2Test {
                     LTC,
                     LTC,
                     FEE,
-                    new BigDecimal("0.0001"),
+                    new BigDecimal("0.00010000000000000"),
                     LTC,
                     "R"
                 )
@@ -166,7 +166,7 @@ class GeneralBytesBeanV2Test {
                 CZK,
                 SELL,
                 new BigDecimal("0.04595383"),
-                new BigDecimal("2176.0971827593"),
+                new BigDecimal("2176.09718275930428432"),
                 "R",
                 null
             ),
@@ -177,7 +177,7 @@ class GeneralBytesBeanV2Test {
                     LTC,
                     LTC,
                     FEE,
-                    new BigDecimal("0.0001"),
+                    new BigDecimal("0.00010000000000000"),
                     LTC,
                     "R"
                 )
