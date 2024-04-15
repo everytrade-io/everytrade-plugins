@@ -24,6 +24,8 @@ public class CoinMateDataUtil {
     public static final String INSTANT_SELL_OPERATION = "INSTANT_SELL";
     public static final String BALANCE_MOVE_CREDIT = "BALANCE_MOVE_CREDIT";
     public static final String BALANCE_MOVE_DEBIT = "BALANCE_MOVE_DEBIT";
+    public static final String AFFILIATE_OPERATION = "AFFILIATE";
+    public static final String REFERRAL_OPERATION = "REFERRAL";
 
     public static void adaptTransactionStatus(String status) {
         switch (status) {
