@@ -122,8 +122,8 @@ class BittrexBeanV3Test {
                 CRV,
                 USDT,
                 BUY,
-                new BigDecimal("7.4519713600"),
-                new BigDecimal("5.0309999997")
+                new BigDecimal("7.45197136000000000"),
+                new BigDecimal("5.03099999971000000")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(

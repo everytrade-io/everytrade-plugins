@@ -10,6 +10,7 @@ import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.EverytradeCsvMultiParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
+import io.everytrade.server.test.TestUtils;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -97,8 +98,8 @@ class CoinbaseBeanV1Test {
                 BTC,
                 EUR,
                 BUY,
-                new BigDecimal("0.03182812"),
-                new BigDecimal("9287.3848659613")
+                new BigDecimal("0.03182812000000000"),
+                new BigDecimal("9287.38486596129460364")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -126,8 +127,8 @@ class CoinbaseBeanV1Test {
                 XLM,
                 XLM,
                 EARNING,
-                new BigDecimal("4.6746120000"),
-                new BigDecimal("0.3508312562"),
+                new BigDecimal("4.67461200000000000"),
+                new BigDecimal("0.35083125615559110"),
                 "Coinbase Earn",
                 null
             ),
@@ -228,7 +229,7 @@ class CoinbaseBeanV1Test {
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT_SPOT + row);
         BigDecimal quotePrice = new BigDecimal("0.05413984");
         BigDecimal basePrice = new BigDecimal("451.212148");
-        BigDecimal unitPrice = quotePrice.divide(basePrice, 10, 3);
+        BigDecimal unitPrice = quotePrice.divide(basePrice, 17, 3);
         final TransactionCluster expected = new TransactionCluster(
             new ImportedTransactionBean(
                 null,
@@ -236,7 +237,7 @@ class CoinbaseBeanV1Test {
                 USDC,
                 BTC,
                 BUY,
-                new BigDecimal("451.2121480000"),
+                new BigDecimal("451.21214800000000000"),
                 unitPrice,
                 "Convert",
                 null
@@ -268,8 +269,8 @@ class CoinbaseBeanV1Test {
                 BTC,
                 CZK,
                 BUY,
-                new BigDecimal("0.01748102"),
-                new BigDecimal("283252.3502633142")
+                new BigDecimal("0.01748102000000000"),
+                new BigDecimal("283252.35026331415443721")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -298,8 +299,8 @@ class CoinbaseBeanV1Test {
                 BTC,
                 EUR,
                 SELL,
-                new BigDecimal("0.03517833"),
-                new BigDecimal("6831.4783561357")
+                new BigDecimal("0.03517833000000000"),
+                new BigDecimal("6831.47835613572332740")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -354,7 +355,7 @@ class CoinbaseBeanV1Test {
                 BTC,
                 BTC,
                 DEPOSIT,
-                new BigDecimal("0.001044"),
+                new BigDecimal("0.00104400000000000"),
                 null,
                 "Receive",
                 null
@@ -368,8 +369,8 @@ class CoinbaseBeanV1Test {
                 Currency.BTC,
                 CZK,
                 TransactionType.BUY,
-                new BigDecimal("0.01104395"),
-                new BigDecimal("241342.9977498993"),
+                new BigDecimal("0.01104395000000000"),
+                new BigDecimal("241342.99774989926611403"),
                 null,
                 null
             ),
@@ -419,7 +420,7 @@ class CoinbaseBeanV1Test {
                 BTC,
                 BTC,
                 WITHDRAWAL,
-                new BigDecimal("0.0103194100"),
+                new BigDecimal("0.01031941000000000"),
                 null,
                 "Send",
                 "bc1ql83d5c4dwwj4k6z8km5v8chff7688xxxxxxxxx",
@@ -434,8 +435,8 @@ class CoinbaseBeanV1Test {
                 BTC,
                 CZK,
                 BUY,
-                new BigDecimal("0.0103194100"),
-                new BigDecimal("468323.2859242922")
+                new BigDecimal("0.01031941000000000"),
+                new BigDecimal("468323.28592429218337095")
             ), List.of(
             new FeeRebateImportedTransactionBean(
                 FEE_UID_PART,

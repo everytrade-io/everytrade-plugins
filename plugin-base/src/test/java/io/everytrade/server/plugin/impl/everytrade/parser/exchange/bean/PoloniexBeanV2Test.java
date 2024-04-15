@@ -47,7 +47,7 @@ class PoloniexBeanV2Test {
                 Currency.USDT,
                 TransactionType.BUY,
                 new BigDecimal("0.5671584"),
-                new BigDecimal("9353.0776336734")
+                new BigDecimal("9353.07763367341469332")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -77,7 +77,7 @@ class PoloniexBeanV2Test {
                 Currency.USDT,
                 TransactionType.SELL,
                 new BigDecimal("0.32647158"),
-                new BigDecimal("8948.2837499975")
+                new BigDecimal("8948.28374999747298065")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(

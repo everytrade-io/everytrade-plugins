@@ -55,8 +55,8 @@ class CoinbaseProBeanV1Test {
                 Currency.LTC,
                 Currency.EUR,
                 TransactionType.BUY,
-                new BigDecimal("2.96875093"),
-                new BigDecimal("41.45")
+                new BigDecimal("2.96875093000000000"),
+                new BigDecimal("41.45000000000000000")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -65,7 +65,7 @@ class CoinbaseProBeanV1Test {
                     Currency.EUR,
                     Currency.EUR,
                     TransactionType.FEE,
-                    new BigDecimal("0.6152736302"),
+                    new BigDecimal("0.61527363024250000"),
                     Currency.EUR
                 )
             )
@@ -85,8 +85,8 @@ class CoinbaseProBeanV1Test {
                 Currency.LTC,
                 Currency.EUR,
                 TransactionType.SELL,
-                new BigDecimal("2.81680093"),
-                new BigDecimal("41.35")
+                new BigDecimal("2.81680093000000000"),
+                new BigDecimal("41.35000000000000000")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -95,7 +95,7 @@ class CoinbaseProBeanV1Test {
                     Currency.EUR,
                     Currency.EUR,
                     TransactionType.FEE,
-                    new BigDecimal("0.5823735923"),
+                    new BigDecimal("0.58237359227750000"),
                     Currency.EUR
                 )
             )

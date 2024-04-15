@@ -47,7 +47,7 @@ class HuobiBeanV1Test {
                 Currency.BTC,
                 TransactionType.BUY,
                 new BigDecimal("0.8940"),
-                new BigDecimal("0.0059284116")
+                new BigDecimal("0.00592841163310962")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -77,7 +77,7 @@ class HuobiBeanV1Test {
                 Currency.BTC,
                 TransactionType.BUY,
                 new BigDecimal("0.8940"),
-                new BigDecimal("0.0059284116")
+                new BigDecimal("0.00592841163310962")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -108,7 +108,7 @@ class HuobiBeanV1Test {
                 Currency.BTC,
                 TransactionType.SELL,
                 new BigDecimal("0.7362"),
-                new BigDecimal("0.0059766368")
+                new BigDecimal("0.00597663678348275")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -138,7 +138,7 @@ class HuobiBeanV1Test {
                 Currency.BTC,
                 TransactionType.SELL,
                 new BigDecimal("0.7362"),
-                new BigDecimal("0.0059766368")
+                new BigDecimal("0.00597663678348275")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(

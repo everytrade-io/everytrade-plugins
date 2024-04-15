@@ -65,7 +65,7 @@ class OpenNodeV1Test {
                 CZK,
                 BUY,
                 new BigDecimal("0.00000196"),
-                new BigDecimal("510204.0816326531")
+                new BigDecimal("510204.08163265306122449")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
