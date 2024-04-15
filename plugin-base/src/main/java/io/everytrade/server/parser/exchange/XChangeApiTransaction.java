@@ -94,7 +94,6 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
             .originalAmount(transaction.getAmount())
             .feeAmount(transaction.getFee())
             .feeCurrency(fee)
-            .address(CoinMateDataUtil.getAddressFromDescription(transaction.getDescription(), transaction.getTransactionType()))
             .build();
 
     }
