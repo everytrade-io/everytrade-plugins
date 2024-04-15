@@ -25,7 +25,9 @@ import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.equalsToZero;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
+import static io.everytrade.server.util.CoinMateDataUtil.AFFILIATE_OPERATION;
 import static io.everytrade.server.util.CoinMateDataUtil.BUY_OPERATION;
+import static io.everytrade.server.util.CoinMateDataUtil.REFERRAL_OPERATION;
 import static io.everytrade.server.util.CoinMateDataUtil.SELL_OPERATION;
 import static io.everytrade.server.util.CoinMateDataUtil.MARKET_BUY_OPERATION;
 import static io.everytrade.server.util.CoinMateDataUtil.MARKET_SELL_OPERATION;
@@ -77,7 +79,7 @@ public class CoinmateBeanV1 extends ExchangeBean {
         } else if (WITHDRAWAL_OPERATION.equals(type)) {
             this.type = WITHDRAWAL;
         } else if (type == null && address.contains("User:") && address.contains("(ID:") && address.contains("Account ID:")
-            || "AFFILIATE".equalsIgnoreCase(type) || "REFERRAL".equalsIgnoreCase(type)){
+            || AFFILIATE_OPERATION.equalsIgnoreCase(type) || REFERRAL_OPERATION.equalsIgnoreCase(type)){
             this.type = REWARD;
         } else {
             throw new DataIgnoredException(UNSUPPORTED_TRANSACTION_TYPE.concat(type));
