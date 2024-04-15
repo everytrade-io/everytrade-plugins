@@ -350,7 +350,7 @@ public class CoinbaseBeanV1 extends ExchangeBean {
             } else {
                 return quote;
             }
-        } catch (IllegalArgumentException ex) {
+        } catch (IllegalArgumentException e) {
         }
         throw new DataIgnoredException("Unsupported fee currency " + spotPriceCurrency + ". ");
     }
