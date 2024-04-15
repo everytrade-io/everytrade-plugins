@@ -5,7 +5,7 @@ import io.everytrade.server.model.Currency;
 import java.time.Instant;
 
 public interface IRateProvider {
-    int DECIMAL_DIGITS = 10;
+    int DECIMAL_DIGITS = 17;
 
 
     /**
