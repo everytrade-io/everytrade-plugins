@@ -11,6 +11,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static io.everytrade.server.plugin.api.rateprovider.IRateProvider.DECIMAL_DIGITS;
 import static lombok.AccessLevel.PRIVATE;
 
 @Getter
@@ -192,7 +193,7 @@ public enum Currency {
     AXS(false, Instant.parse("2020-12-10T00:00:00Z"), "Axie Infinity"),
     BAKE(false, Instant.parse("2021-05-27T00:00:00Z"), "BakerySwap"),
     BETA(false, Instant.parse("2021-10-11T00:00:00Z"), "PolyBeta Finance"),
-    BETH(false, Instant.parse("2021-12-06T00:00:00Z"), "Anchor bETH Token"),
+    BETH(false, Instant.parse("2022-02-02T00:00:00Z"), "Binance Beacon ETH"),
     BNT(false, Instant.parse("2017-06-17T00:00:00Z"), "Bancor"),
     BNX(false, Instant.parse("2021-09-09T00:00:00Z"), "BinaryX"),
     BOND(false, Instant.parse("2020-06-29T00:00:00Z"), "BarnBridge"),
@@ -837,12 +838,12 @@ public enum Currency {
     MTS(false, Instant.parse("2022-08-25T00:00:00Z"), "Metastrike"),
     ROUTE(false, Instant.parse("2021-02-11T00:00:00Z"), "Router Protocol"),
     RDNT(false, Instant.parse("2022-08-18T00:00:00Z"), "Radiant Capital"),
-    L1000UNC(false, Instant.parse("2022-12-29T00:00:00Z"), "1000LUNC"),
+    _1000LUNC("1000LUNC",false, Instant.parse("2022-12-29T00:00:00Z"), "1000LUNC"),
     SEI(false, Instant.parse("2023-08-15T00:00:00Z"), "Sei"),
     TOKEN(false, Instant.parse("2023-10-27T00:00:00Z"), "TokenFi"),
     WLD(false, Instant.parse("2023-07-24T00:00:00Z"), "Worldcoin"),
     SATS(false, Instant.parse("2023-06-12T00:00:00Z"), "SATS"),
-    _1000SATS("1000SATS",false, Instant.parse("2023-06-12T00:00:00Z"), "SATS"),
+    _1000SATS("1000SATS",false, Instant.parse("2024-01-09T00:00:00Z"), "SATS"),
     ACE(false, Instant.parse("2023-12-18T00:00:00Z"), "Fusionist"),
     ARKM(false, Instant.parse("2023-10-23T00:00:00Z"), "Arkham"),
     COMBO(false, Instant.parse("2019-08-22T00:00:00Z"), "COMBO"),
@@ -856,7 +857,10 @@ public enum Currency {
     ORBS(false, Instant.parse("2019-03-28T00:00:00Z"), "Orbs"),
     ORDI(false, Instant.parse("2023-05-08T00:00:00Z"), "Ordinals"),
     PENDLE(false, Instant.parse("2021-09-02T00:00:00Z"), "Pendle"),
-    ETH2(false, Instant.parse("2022-03-23T00:00:00Z"), "Eth 2.0 Staking by Pool-X");
+    ETH2(false, Instant.parse("2022-03-23T00:00:00Z"), "Eth 2.0 Staking by Pool-X"),
+    ULX(false, Instant.parse("2022-11-23T00:00:00Z"), "ULTRON"),
+    WBETH(false, Instant.parse("2022-11-23T00:00:00Z"), "Wrapped Beacon ETH"),
+    FLOKI(false, Instant.parse("2021-09-09T00:00:00Z"), "Floki Inu");
 
     String code;
     int decimalDigits;
@@ -866,15 +870,15 @@ public enum Currency {
     String description;
 
     Currency(boolean fiat, Instant introduction, String description) {
-        this(null, fiat ? 2 : 8, fiat, introduction, null, description);
+        this(null, fiat ? 2 : DECIMAL_DIGITS, fiat, introduction, null, description);
     }
 
     Currency(boolean fiat, Instant introduction, Instant endDate, String description) {
-        this(null, fiat ? 2 : 8, fiat, introduction, endDate, description);
+        this(null, fiat ? 2 : DECIMAL_DIGITS, fiat, introduction, endDate, description);
     }
 
     Currency(String code, boolean fiat, Instant introduction, String description) {
-        this(code, fiat ? 2 : 8, fiat, introduction, null, description);
+        this(code, fiat ? 2 : DECIMAL_DIGITS, fiat, introduction, null, description);
     }
 
     Currency(String code, int decimalDigits, boolean fiat, Instant introduction, Instant endDate, String description) {
