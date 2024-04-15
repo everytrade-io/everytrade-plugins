@@ -365,6 +365,96 @@ class BinanceBeanV4Test {
     }
 
     @Test
+    void testTypeETH2_0TwoRowTxSTAKE() {
+        final String row = "40360729,2020-12-02 13:20:22,Spot,ETH 2.0 Staking,BETH,3.26000000,\"\"\n";
+        final String row1 = "40360729,2020-12-02 13:20:22,Spot,ETH 2.0 Staking,ETH,-3.26000000,\"\"\n";
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row.concat(row1));
+
+        final TransactionCluster expectedStake = new TransactionCluster(
+                new ImportedTransactionBean(
+                        "40360729",
+                        Instant.parse("2020-12-02T13:20:21Z"),
+                        BETH,
+                        ETH,
+                        BUY,
+                        new BigDecimal("3.2600000000"),
+                        new BigDecimal("1.0000000000"),
+                        null,
+                        null
+                ),
+                List.of()
+        );
+
+        final TransactionCluster expectedStakeReward = new TransactionCluster(
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2020-12-02T13:20:22Z"),
+                        BETH,
+                        BETH,
+                        STAKE,
+                        new BigDecimal("3.26000000"),
+                        null,
+                        null,
+                        null
+                ),
+                List.of()
+        );
+        TestUtils.testTxs(expectedStake.getMain(), actual.get(0).getMain());
+        TestUtils.testTxs(expectedStakeReward.getMain(), actual.get(1).getMain());
+    }
+    @Test
+    void testTypeETH2_0TwoRowTxUNSTAKE() {
+        final String row = "40360729,2020-12-02 13:20:22,Spot,ETH 2.0 Staking,BETH,-3.26000000,\"\"\n";
+        final String row1 = "40360729,2020-12-02 13:20:22,Spot,ETH 2.0 Staking,ETH,3.26000000,\"\"\n";
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row.concat(row1));
+
+        final TransactionCluster expectedStake = new TransactionCluster(
+                new ImportedTransactionBean(
+                        "40360729",
+                        Instant.parse("2020-12-02T13:20:23Z"),
+                        ETH,
+                        BETH,
+                        BUY,
+                        new BigDecimal("3.2600000000"),
+                        new BigDecimal("1.0000000000"),
+                        null,
+                        null
+                ),
+                List.of()
+        );
+
+        final TransactionCluster expectedStakeReward = new TransactionCluster(
+                new ImportedTransactionBean(
+                        null,
+                        Instant.parse("2020-12-02T13:20:22Z"),
+                        BETH,
+                        BETH,
+                        UNSTAKE,
+                        new BigDecimal("3.26000000"),
+                        null,
+                        null,
+                        null
+                ),
+                List.of()
+        );
+        TestUtils.testTxs(expectedStake.getMain(), actual.get(0).getMain());
+        TestUtils.testTxs(expectedStakeReward.getMain(), actual.get(1).getMain());
+    }
+
+    @Test
+    void testTypeETH2_0_FAIL() {
+        final String row = "40360729,2020-12-02 13:20:22,Spot,ETH 2.0 Staking,BETH,-3.26000000,\"\"\n";
+        final String row1 = "40360729,2020-12-02 13:20:22,Spot,ETH 2.0 Staking,ETH,-3.26000000,\"\"\n";
+        final ParseResult actual = ParserTestUtils.getParseResult(HEADER_CORRECT + row.concat(row1));
+
+        var expectedProblem = new ParsingProblem("[38065325, 2021-05-18 18:19:50, SPOT, Fiat Withdraw, EUR, 8000.00000000, null]",
+            "Row id 2: ; One or more rows in group ( rows:  2; 3;) is unsupported; Transactions do not have both positive and " +
+                "negative amounts", ParsingProblemType.PARSED_ROW_IGNORED);
+
+        assertEquals(expectedProblem.getMessage(), actual.getParsingProblems().get(0).getMessage());
+    }
+
+    @Test
     void testSimpleEarn0() {
         final String row = "86879943,2022-03-02 17:02:42,Earn,Simple Earn Flexible Subscription,LDUSDT,236.79617000,\"\"\n";
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row);
@@ -1563,5 +1653,4 @@ class BinanceBeanV4Test {
 //        TestUtils.testTxs(expected0.getMain(), actual.getTransactionClusters().get(0).getMain());
 //        TestUtils.testTxs(expected1.getMain(), actual.getTransactionClusters().get(1).getMain());
     }
-
 }

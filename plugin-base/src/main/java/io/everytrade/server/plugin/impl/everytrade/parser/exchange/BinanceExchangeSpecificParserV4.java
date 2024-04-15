@@ -1,7 +1,7 @@
 package io.everytrade.server.plugin.impl.everytrade.parser.exchange;
 
 import com.univocity.parsers.common.DataValidationException;
-import io.everytrade.server.model.TransactionType;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.binanceStakeException.BinanceStakeException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceBeanV4;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceSortedGroupV4;
 
@@ -25,7 +25,7 @@ import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
 import static io.everytrade.server.model.TransactionType.UNSTAKE;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_CASHBACK_VOUCHER;
-import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_ETH2_0;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_ETH2_0_STAKING_REWARDS;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SAVING_DISTRIBUTION;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_REDEMPTION;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_SUBSCRIPTION;
@@ -166,7 +166,7 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
                 } else if (STAKING_REWARD.equals(row.getType()) || UNSTAKE.equals(row.getType()) || STAKE.equals(row.getType())) {
                     row = BinanceSortedGroupV4.createStakingsTxs(row);
                     result.add(row);
-                    if (row.getOperationType().equals(OPERATION_TYPE_ETH2_0)) {
+                    if (row.getOperationType().equals(OPERATION_TYPE_ETH2_0_STAKING_REWARDS)) {
                         var rowStake = cloneRewardToStake(row);
                         result.add(rowStake);
                     }
