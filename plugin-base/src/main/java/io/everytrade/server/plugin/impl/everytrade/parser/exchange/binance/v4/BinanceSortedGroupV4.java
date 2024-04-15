@@ -625,35 +625,6 @@ public class BinanceSortedGroupV4 {
         txsBuySell.setType(type);
         txsBuySell.setDate(baseRow.getDate());
         createdTransactions.add(txsBuySell);
-
-//        if (baseRow.getOperationType().equals(OPERATION_TYPE_ETH2_0_STAKING)) {
-//            for (int i = 0; i < rowBuySellRelated.size(); i++) {
-//
-//                if (i == 1 && baseRow.getCoin().code().equals("BETH") && quoteRow.getCoin().code().equals("ETH")){
-//                    txsBuySell.setDate(baseRow.getDate());
-//                    txsBuySell.setType(STAKE);
-//                } else if (i == 1 && baseRow.getCoin().code().equals("ETH") && quoteRow.getCoin().code().equals("BETH")) {
-//                    txsBuySell.setDate(baseRow.getDate());
-//                    txsBuySell.setType(UNSTAKE);
-//                } else {
-//
-//                    if (quoteRow.getChange().compareTo(ZERO) < 0 && quoteRow.getCoin().code().equals("ETH")
-//                            && baseRow.getChange().compareTo(ZERO) > 0
-//                            && baseRow.getCoin().code().equals("BETH")){
-//                        date = baseRow.getDate().minusSeconds(1);
-//                    } else if (quoteRow.getChange().compareTo(ZERO) < 0 && quoteRow.getCoin().code().equals("BETH")
-//                            && baseRow.getChange().compareTo(ZERO) > 0
-//                            && baseRow.getCoin().code().equals("ETH")){
-//                        date = baseRow.getDate().plusSeconds(1);
-//                    }
-//
-//                }
-//                if (baseRow.getOperationType().code.equals("ETH 2.0 STAKING") && txsBuySell.getType().equals(UNSTAKE)){
-//                    txsBuySell.setMarketBase(txsBuySell.getMarketQuote());
-//                }
-//
-//            }
-//        }
     }
 
     private void createStakingETH2_0Txs() {
