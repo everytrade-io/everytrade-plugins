@@ -855,7 +855,8 @@ public enum Currency {
     NTRN(false, Instant.parse("2023-11-06T00:00:00Z"), "Neutron"),
     ORBS(false, Instant.parse("2019-03-28T00:00:00Z"), "Orbs"),
     ORDI(false, Instant.parse("2023-05-08T00:00:00Z"), "Ordinals"),
-    PENDLE(false, Instant.parse("2021-09-02T00:00:00Z"), "Pendle");
+    PENDLE(false, Instant.parse("2021-09-02T00:00:00Z"), "Pendle"),
+    ETH2(false, Instant.parse("2022-03-23T00:00:00Z"), "Eth 2.0 Staking by Pool-X");
 
     String code;
     int decimalDigits;
@@ -910,9 +911,6 @@ public enum Currency {
 
     public static Currency fromCode(String code) {
         Objects.requireNonNull(code, "code is null");
-        if("ETH2".equalsIgnoreCase(code)) {
-            return ETH;
-        }
         for (Currency c : values()) {
             if (code.equals(c.code())) {
                 return c;

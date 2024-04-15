@@ -11,6 +11,7 @@ import io.everytrade.server.plugin.csv.CsvHeader;
 import io.everytrade.server.plugin.impl.everytrade.EveryTradePlugin;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.UnknownHeaderException;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.AnycoinExchangeSpecificParserV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BinanceExchangeSpecificParserV4;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BitfinexExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BitflyerMultiRowParser;
@@ -22,6 +23,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.IMultiExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.KrakenDoubleQuotesUnivocitySpecificParserV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.KrakenExchangeSpecificParser;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.anycoin.AnycoinBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.AquanowBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BinanceBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BinanceBeanV5;
@@ -79,6 +81,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
+import static io.everytrade.server.model.SupportedExchange.ANYCOIN;
 import static io.everytrade.server.model.SupportedExchange.AQUANOW;
 import static io.everytrade.server.model.SupportedExchange.BINANCE;
 import static io.everytrade.server.model.SupportedExchange.BITFINEX;
@@ -137,6 +140,17 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             var binanceHeader5 =
                 CsvHeader.of("Date(UTC)","Product Name","Coin","Amount")
                     .withSeparator(delimiter);
+
+            /* ANYCOIN */
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                    .headers(List.of(
+                            CsvHeader
+                                    .of("Date", "Type", "Amount", "Currency", "Order ID")
+                                    .withSeparator(delimiter)
+                    ))
+                    .parserFactory(() -> new AnycoinExchangeSpecificParserV1(AnycoinBeanV1.class, delimiter))
+                    .supportedExchange(ANYCOIN)
+                    .build());
 
             /* AQUANOW */
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()

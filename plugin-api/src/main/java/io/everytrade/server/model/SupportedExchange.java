@@ -14,6 +14,7 @@ import static lombok.AccessLevel.PRIVATE;
 @AllArgsConstructor
 @FieldDefaults(level = PRIVATE, makeFinal = true)
 public enum SupportedExchange {
+    ANYCOIN("Anycoin", "anycoin"),
     BITSTAMP("Bitstamp", "bitstamp"),
     BITTREX("Bittrex", "bittrex"),
     GENERAL_BYTES("General Bytes CAS", "generalbytes"),
@@ -42,6 +43,7 @@ public enum SupportedExchange {
     SIMPLE_COIN("SimpleCoin", "simplecoin"),
     OPEN_NODE("OpenNode", "opennode"),
     KUCOIN("KuCoin", "kucoin");
+
 
     String displayName;
     String internalId;
