@@ -10,7 +10,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import static io.everytrade.server.model.Currency.ETH;
+import static io.everytrade.server.model.Currency.ETH2;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.anycoin.AnycoinOperationTypeV1.OPERATION_TYPE_TRADE_REFUND;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.anycoin.AnycoinOperationTypeV1.OPERATION_TYPE_WITHDRAWAL_BLOCK;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.anycoin.AnycoinOperationTypeV1.OPERATION_TYPE_WITHDRAWAL_UNBLOCK;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.anycoin.AnycoinSupportedOperations.UNSUPPORTED_OPERATION_TYPES;
 import static java.util.stream.Collectors.groupingBy;
 
@@ -46,16 +50,16 @@ public class AnycoinExchangeSpecificParserV1 extends DefaultUnivocityExchangeSpe
                 .forEach(r -> {
                     if (r.getOperationType() == null || r.getType() == null) {
                         unSupportedRows.add(r);
-                    } else if (r.getCoin().code().equalsIgnoreCase("ETH") &&
+                    } else if (r.getCoin().equals(ETH) &&
                             (r.getType().equalsIgnoreCase("stake") || r.getType().equalsIgnoreCase("unstake"))) {
                         currenciesToBeIgnored.add(r);
-                    } else if (r.getOperationType().code.equals("WITHDRAWAL_BLOCK") ||
-                            r.getOperationType().code.equals("WITHDRAWAL_UNBLOCK")) {
+                    } else if (r.getOperationType().equals(OPERATION_TYPE_WITHDRAWAL_BLOCK) ||
+                            r.getOperationType().equals(OPERATION_TYPE_WITHDRAWAL_UNBLOCK)) {
                         unSupportedRows.add(r);
                     } else if (r.getCurrencyEndsWithS() == null && r.getType().equalsIgnoreCase("unstake")) {
                         currenciesToBeIgnored.add(r);
                     } else if (r.getCurrencyEndsWithS() != null && r.getType().equalsIgnoreCase("stake") &&
-                            !r.getCoin().code().equals("ETH2")) {
+                            !r.getCoin().equals(ETH2)) {
                         currenciesToBeIgnored.add(r);
                     } else if (r.getOperationType().isMultiRowType) {
                         rowsWithMultipleRowTransactionType.add(r);
@@ -89,17 +93,17 @@ public class AnycoinExchangeSpecificParserV1 extends DefaultUnivocityExchangeSpe
             AnycoinBeanV1 newBean = new AnycoinBeanV1();
             switch (beanV1.getType().toLowerCase()) {
                 case "stake" -> {
-                    if (beanV1.getCoin().code().equals("ETH2")) {
-                        prepareStakeBeans(beanV1, result);
+                    if (beanV1.getCoin().equals(ETH2)) {
+                        prepareStakeBeansWithETH2(beanV1, result);
                     } else {
-                        prepareStakeBeansWithCurrency(beanV1, newBean, result);
+                        prepareStakeBeans(beanV1, newBean, result);
                     }
                 }
                 case "unstake" -> {
-                    if (beanV1.getCoin().code().equals("ETH2")) {
-                        prepareUnstakeBeans(beanV1, result);
+                    if (beanV1.getCoin().equals(ETH2)) {
+                        prepareUnstakeBeansWithETH2(beanV1, result);
                     } else {
-                        prepareUnstakeBeansWithCurrency(beanV1, newBean, result);
+                        prepareUnstakeBeans(beanV1, newBean, result);
                     }
                 }
                 case "stake_reward" -> prepareStakeRewardBeans(beanV1, newBean, result);
@@ -110,7 +114,7 @@ public class AnycoinExchangeSpecificParserV1 extends DefaultUnivocityExchangeSpe
         }
         return result;
     }
-    private void prepareStakeBeans(AnycoinBeanV1 newBean, List<AnycoinBeanV1> result) {
+    private void prepareStakeBeansWithETH2(AnycoinBeanV1 newBean, List<AnycoinBeanV1> result) {
 
         newBean.setDate(newBean.getDate().toString());
         newBean.setMarketBase(newBean.getCoin());
@@ -134,7 +138,7 @@ public class AnycoinExchangeSpecificParserV1 extends DefaultUnivocityExchangeSpe
         result.add(newBean);
     }
 
-    private void prepareStakeBeansWithCurrency(AnycoinBeanV1 beanV1, AnycoinBeanV1 newBean, List<AnycoinBeanV1> result) {
+    private void prepareStakeBeans(AnycoinBeanV1 beanV1, AnycoinBeanV1 newBean, List<AnycoinBeanV1> result) {
         AnycoinBeanV1 beanEndsWithS = currenciesToBeIgnored.removeLast();
         newBean.setOperationType(beanEndsWithS.getOperationType());
         newBean.setDate(beanV1.getDate().toString());
@@ -146,7 +150,7 @@ public class AnycoinExchangeSpecificParserV1 extends DefaultUnivocityExchangeSpe
         result.add(newBean);
     }
 
-    private void prepareUnstakeBeans(AnycoinBeanV1 newBean, List<AnycoinBeanV1> result) {
+    private void prepareUnstakeBeansWithETH2(AnycoinBeanV1 newBean, List<AnycoinBeanV1> result) {
         newBean.setDate(newBean.getDate().toString());
         newBean.setMarketBase(newBean.getCoin());
         newBean.setBaseAmount(newBean.getAmount().abs());
@@ -169,7 +173,7 @@ public class AnycoinExchangeSpecificParserV1 extends DefaultUnivocityExchangeSpe
         result.add(newBean);
     }
 
-    private void prepareUnstakeBeansWithCurrency(AnycoinBeanV1 beanV1, AnycoinBeanV1 newBean, List<AnycoinBeanV1> result) {
+    private void prepareUnstakeBeans(AnycoinBeanV1 beanV1, AnycoinBeanV1 newBean, List<AnycoinBeanV1> result) {
         currenciesToBeIgnored.removeLast();
         newBean.setOperationType(beanV1.getOperationType());
         newBean.setDate(beanV1.getDate().toString());
