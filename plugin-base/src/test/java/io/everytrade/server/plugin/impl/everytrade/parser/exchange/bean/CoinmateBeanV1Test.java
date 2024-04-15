@@ -6,10 +6,12 @@ import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.plugin.impl.everytrade.parser.EverytradeCsvMultiParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -256,6 +258,27 @@ class CoinmateBeanV1Test {
     }
 
     @Test
+    void testReferralAsReward() {
+        final String row = "11338953;2024-02-01 22:15:05;M;REFERRAL;500;CZK;;;;;500;CZK;Referral bonus;OK;500;CZK;;\n";
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_THREE + row);
+        final TransactionCluster expected = new TransactionCluster(
+                new ImportedTransactionBean(
+                        "11338953",
+                        Instant.parse("2024-02-01T22:15:05Z"),
+                        CZK,
+                        CZK,
+                        REWARD,
+                        new BigDecimal("500"),
+                        null,
+                        "REFERRAL",
+                        null
+                ),
+                emptyList()
+        );
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
     void testIgnoredTransactionType() {
         var row = "4;2019-08-30 05:05:24;DEPOSITZ;0.0019;BTC;8630.7;EUR;0.03443649;EUR;16.43276649;EUR;;OK\n";
         var parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
@@ -274,4 +297,6 @@ class CoinmateBeanV1Test {
         final String error = parsingProblem.getMessage();
         assertTrue(error.contains(ExchangeBean.UNSUPPORTED_STATUS_TYPE.concat("n/a")));
     }
+
+
 }
