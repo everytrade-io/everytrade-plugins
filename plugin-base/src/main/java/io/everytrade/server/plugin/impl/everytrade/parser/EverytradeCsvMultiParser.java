@@ -141,8 +141,6 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 CsvHeader.of("Date(UTC)","Product Name","Coin","Amount")
                     .withSeparator(delimiter);
 
-            //anycoin, vlastni parser, vlastni beana, supported exchange,
-
             /* ANYCOIN */
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
                     .headers(List.of(

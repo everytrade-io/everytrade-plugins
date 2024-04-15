@@ -17,6 +17,13 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.everytrade.server.model.TransactionType.BUY;
+import static io.everytrade.server.model.TransactionType.DEPOSIT;
+import static io.everytrade.server.model.TransactionType.SELL;
+import static io.everytrade.server.model.TransactionType.STAKE;
+import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
+import static io.everytrade.server.model.TransactionType.UNSTAKE;
+import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.DECIMAL_DIGITS;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.anycoin.AnycoinCurrencySwitcher.SWITCHER;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.anycoin.AnycoinSupportedOperations.UNSUPPORTED_OPERATION_TYPES;
@@ -39,6 +46,8 @@ public class AnycoinBeanV1 extends ExchangeBean {
     TransactionType transactionType;
     AnycoinOperationTypeV1 operationType;
     String currencyEndsWithS;
+    boolean unsupportedRow;
+    String message;
 
 
     public String getOrderId() {
@@ -89,25 +98,27 @@ public class AnycoinBeanV1 extends ExchangeBean {
 
         if (operationType != null){
             if (UNSUPPORTED_OPERATION_TYPES.contains(operationType.code)) {
+                this.setUnsupportedRow(true);
+                this.setMessage("Unsupported type of operation " + type);
                 throw new DataIgnoredException("Ignored operation type: " + type);
             }
         }
 
-        if (TransactionType.BUY.equals(getTransactionType())) {
+        if (BUY.equals(getTransactionType())) {
             return new TransactionCluster(
                     new ImportedTransactionBean(
                             orderId,
                             date,
                             marketBase,
                             marketQuote,
-                            TransactionType.BUY,
+                            BUY,
                             baseAmount,
                             baseAmount.divide(quoteAmount.abs(), DECIMAL_DIGITS, RoundingMode.HALF_UP)
                     ),
                     related
             );
         }
-        if (TransactionType.SELL.equals(getTransactionType())) {
+        if (SELL.equals(getTransactionType())) {
 
             return new TransactionCluster(
                     new ImportedTransactionBean(
@@ -115,7 +126,7 @@ public class AnycoinBeanV1 extends ExchangeBean {
                             date,
                             marketBase, //base = trade payment
                             marketQuote, //quote = trade fill
-                            TransactionType.SELL,
+                            SELL,
                             baseAmount,
                             baseAmount.abs().divide(quoteAmount, DECIMAL_DIGITS, RoundingMode.HALF_UP)
                     ),
@@ -123,70 +134,70 @@ public class AnycoinBeanV1 extends ExchangeBean {
             );
         }
 
-        if (TransactionType.DEPOSIT.equals(getTransactionType())) {
+        if (DEPOSIT.equals(getTransactionType())) {
             return new TransactionCluster(
                     ImportedTransactionBean.createDepositWithdrawal(
                             orderId,
                             date,
                             marketBase,
                             marketQuote,
-                            TransactionType.DEPOSIT,
+                            DEPOSIT,
                             baseAmount,
                             null
                     ),
                     related
             );
         }
-        if (TransactionType.WITHDRAWAL.equals(getTransactionType())) {
+        if (WITHDRAWAL.equals(getTransactionType())) {
             return new TransactionCluster(
                     ImportedTransactionBean.createDepositWithdrawal(
                             orderId,
                             date,
                             marketBase,
                             marketQuote,
-                            TransactionType.WITHDRAWAL,
+                            WITHDRAWAL,
                             baseAmount,
                             null
                     ),
                     related
             );
         }
-        if (TransactionType.STAKE.equals(getTransactionType())) {
+        if (STAKE.equals(getTransactionType())) {
             return new TransactionCluster(
                     new ImportedTransactionBean(
                             orderId,
                             date,
                             marketBase, //potrebuju zde trade fill
                             marketBase, //a tady trade payment
-                            TransactionType.STAKE,
+                            STAKE,
                             baseAmount,
                             null
                     ),
                     related
             );
         }
-        if (TransactionType.STAKING_REWARD.equals(getTransactionType())) {
+        if (STAKING_REWARD.equals(getTransactionType())) {
             return new TransactionCluster(
                     new ImportedTransactionBean(
                             orderId,
                             date,
                             marketBase, //potrebuju zde trade fill
                             marketBase, //a tady trade payment
-                            TransactionType.STAKING_REWARD,
+                            STAKING_REWARD,
                             baseAmount,
                             null
                     ),
                     related
             );
         }
-        if (TransactionType.UNSTAKE.equals(getTransactionType())) {
+        if (UNSTAKE.equals(getTransactionType())) {
             return new TransactionCluster(
                     new ImportedTransactionBean(
                             orderId,
                             date,
                             marketBase, //potrebuju zde trade fill
                             marketBase, //a tady trade payment
-                            TransactionType.UNSTAKE,
+                            UNSTAKE,
                             baseAmount,
                             null
                     ),
