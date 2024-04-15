@@ -4,12 +4,15 @@ import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.ParseResult;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.plugin.impl.everytrade.parser.EverytradeCsvMultiParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -38,6 +41,9 @@ class CoinbaseBeanV1Test {
     private static final String HEADER_CORRECT
         = "Timestamp,Transaction Type,Asset,Quantity Transacted,EUR Spot Price at Transaction,EUR Subtotal,EUR Total " +
         "(inclusive of fees),EUR Fees,Notes\n";
+    private static final String HEADER_CORRECT2
+        = "Timestamp,Transaction Type,Asset,Quantity Transacted,Spot Price Currency,Spot Price at Transaction," +
+        "Subtotal,Total,Fees and/or Spread,Notes\n";
     private static final String HEADER_CORRECT_SEK
         = "Timestamp,Transaction Type,Asset,Quantity Transacted,SEK Spot Price at Transaction,SEK Subtotal,SEK Total " +
         "(inclusive of fees),SEK Fees,Notes\n";
@@ -67,6 +73,7 @@ class CoinbaseBeanV1Test {
             fail("Unexpected exception has been thrown.");
         }
     }
+
     @Test
     void testWrongHeader() {
         final String headerWrong
@@ -175,7 +182,7 @@ class CoinbaseBeanV1Test {
             "Sent 40.002654 XRP to rDsbeomae4FXwgQTJp9Rs64Qg9vDiTCdBv (11150057)";
         var row1 = "2021-02-01T09:28:38Z,Receive,XRP,40.002654,EUR,0.550000,\"\",\"\",\"\"," +
             "Received 40.002654 XRP";
-        final TransactionCluster actual0= ParserTestUtils.getTransactionCluster(HEADER_CORRECT_SPOT + row0);
+        final TransactionCluster actual0 = ParserTestUtils.getTransactionCluster(HEADER_CORRECT_SPOT + row0);
         final TransactionCluster actual1 = ParserTestUtils.getTransactionCluster(HEADER_CORRECT_SPOT + row1);
 
         BigDecimal quantityTransacted = new BigDecimal("40.002654");
@@ -398,5 +405,49 @@ class CoinbaseBeanV1Test {
         ParserTestUtils.checkEqual(expected2, actual2);
     }
 
+    @Test
+    void testCoinbase() {
+        var row = "2023-01-20T07:09:23Z,Send,BTC,0.01031941,CZK,19339.02,199.57,199.57,0,Sent 0.01031941 BTC to bc1ql83d5c4dwwj4k6z8km5v8chff7688xxxxxxxxx\n";
+        var row1 = "2023-01-19T22:16:25Z,Buy,BTC,0.01031941,CZK,19569.92,4832.82,4905.81,72.99,Bought 0.01031941 BTC for 4905.81 CZK\n";
+        final ParseResult actual = ParserTestUtils.getParseResult(HEADER_CORRECT2 + row.concat(row1));
 
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2023-01-20T07:09:23Z"),
+                BTC,
+                BTC,
+                WITHDRAWAL,
+                new BigDecimal("0.0103194100"),
+                null,
+                "Send",
+                "bc1ql83d5c4dwwj4k6z8km5v8chff7688xxxxxxxxx",
+                null
+            ), List.of()
+        );
+
+        final TransactionCluster expected2 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2023-01-19T22:16:25Z"),
+                BTC,
+                CZK,
+                BUY,
+                new BigDecimal("0.0103194100"),
+                new BigDecimal("468323.2859242922")
+            ), List.of(
+            new FeeRebateImportedTransactionBean(
+                FEE_UID_PART,
+                Instant.parse("2023-01-19T22:16:25Z"), //stejny cas jako sell
+                CZK,
+                CZK,
+                FEE,
+                new BigDecimal("72.99"),
+                CZK
+            )
+        )
+        );
+        ParserTestUtils.checkEqual(expected, actual.getTransactionClusters().get(0));
+        ParserTestUtils.checkEqual(expected2, actual.getTransactionClusters().get(1));
+    }
 }
