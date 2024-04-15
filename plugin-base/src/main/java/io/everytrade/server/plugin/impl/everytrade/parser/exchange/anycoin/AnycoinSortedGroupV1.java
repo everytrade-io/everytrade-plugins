@@ -1,5 +1,6 @@
 package io.everytrade.server.plugin.impl.everytrade.parser.exchange.anycoin;
 
+import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.TransactionType;
 
 import java.util.ArrayList;
@@ -13,7 +14,6 @@ public class AnycoinSortedGroupV1 {
     private AnycoinBeanV1 tradePayment;
     private AnycoinBeanV1 tradeFill;
 
-
     public void sortGroup(List<AnycoinBeanV1> group) {
 
         AnycoinBeanV1 newBean = new AnycoinBeanV1();
@@ -25,6 +25,10 @@ public class AnycoinSortedGroupV1 {
             if (bean.getOperationType().equals(AnycoinOperationTypeV1.OPERATION_TYPE_TRADE_FILL)) {
                 tradeFill = bean;
             }
+        }
+
+        if (tradePayment == null || tradeFill == null) {
+            throw new DataValidationException("Trade payment or trade fill is missing");
         }
 
         if (tradePayment.getCoin().isFiat()){
@@ -51,6 +55,11 @@ public class AnycoinSortedGroupV1 {
         createdTransactions.add(newBean);
     }
 
-
-
+    public static String parseIds(List<Integer> ids) {
+        String s = "";
+        for (int id : ids) {
+            s = s + " " + id + ";";
+        }
+        return s;
+    }
 }
