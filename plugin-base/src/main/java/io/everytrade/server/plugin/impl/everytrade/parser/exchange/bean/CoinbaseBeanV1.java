@@ -1,6 +1,5 @@
 package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
-import com.univocity.parsers.annotations.Headers;
 import com.univocity.parsers.annotations.Parsed;
 import com.univocity.parsers.annotations.Replace;
 import io.everytrade.server.model.Currency;
@@ -49,7 +48,6 @@ public class CoinbaseBeanV1 extends ExchangeBean {
     private BigDecimal spotPriceAtTransaction;
     private BigDecimal quantityTransacted;
     private BigDecimal subtotal;
-    private BigDecimal total;
     private BigDecimal fees;
     private String notes;
     private String type;
@@ -134,16 +132,6 @@ public class CoinbaseBeanV1 extends ExchangeBean {
     public void setSubtotal(String value) {
         try {
             subtotal = new BigDecimal(value).abs().setScale(ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE);
-        } catch (Exception ignore) {
-        }
-    }
-
-    @Parsed(field = "Total")
-    public void setTotal(String value) {
-        try {
-            if ((!"".equals(value) && value != null)){
-                total = new BigDecimal(value).abs().setScale(ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE);
-            }
         } catch (Exception ignore) {
         }
     }
@@ -362,7 +350,7 @@ public class CoinbaseBeanV1 extends ExchangeBean {
             } else {
                 return quote;
             }
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException ex) {
         }
         throw new DataIgnoredException("Unsupported fee currency " + spotPriceCurrency + ". ");
     }
