@@ -407,7 +407,8 @@ class CoinbaseBeanV1Test {
 
     @Test
     void testCoinbase() {
-        var row = "2023-01-20T07:09:23Z,Send,BTC,0.01031941,CZK,19339.02,199.57,199.57,0,Sent 0.01031941 BTC to bc1ql83d5c4dwwj4k6z8km5v8chff7688xxxxxxxxx\n";
+        var row = "2023-01-20T07:09:23Z,Send,BTC,0.01031941,CZK,19339.02,199.57,199.57,0," +
+            "Sent 0.01031941 BTC to bc1ql83d5c4dwwj4k6z8km5v8chff7688xxxxxxxxx\n";
         var row1 = "2023-01-19T22:16:25Z,Buy,BTC,0.01031941,CZK,19569.92,4832.82,4905.81,72.99,Bought 0.01031941 BTC for 4905.81 CZK\n";
         final ParseResult actual = ParserTestUtils.getParseResult(HEADER_CORRECT2 + row.concat(row1));
 
