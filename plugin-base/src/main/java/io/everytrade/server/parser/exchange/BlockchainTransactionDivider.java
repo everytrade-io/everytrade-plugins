@@ -20,15 +20,15 @@ import static java.math.RoundingMode.HALF_UP;
 public class BlockchainTransactionDivider {
 
     private static final int MOVE_POINT = 8;
-    private static final int DECIMAL_LIMIT = 12;
+    private static final int DECIMAL_LIMIT = 17;
 
     private BigDecimal getInputInfoSum(TxInfo txInfo) {
-        return new BigDecimal(txInfo.getInputInfos().stream().mapToLong(i -> i.getValue()).sum())
+        return new BigDecimal(txInfo.getInputInfos().stream().mapToLong(InputInfo::getValue).sum())
             .movePointLeft(MOVE_POINT);
     }
 
     private BigDecimal getOutputInfoSum(TxInfo txInfo) {
-        return new BigDecimal(txInfo.getOutputInfos().stream().mapToLong(i -> i.getValue())
+        return new BigDecimal(txInfo.getOutputInfos().stream().mapToLong(OutputInfo::getValue)
             .sum()).movePointLeft(MOVE_POINT);
     }
 
@@ -80,7 +80,7 @@ public class BlockchainTransactionDivider {
                 if (oldTransaction.isDirectionSend()) {
                     var orgRelatedInput =
                         orgInputs.stream().filter(
-                            in -> in.getAddress().equals(oldTransaction.getRelativeToAddress())).collect(Collectors.toList()).get(0);
+                            in -> in.getAddress().equals(oldTransaction.getRelativeToAddress())).toList().get(0);
                     // State 2 - split tx to several withdrawals - no. of txs is same like size of outputs;
                     if (orgInputSize == 1 && orgOutputSize > 1) {
                         for (OutputInfo output : txInfo.getOutputInfos()) {

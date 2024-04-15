@@ -33,6 +33,7 @@ import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
+import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.DECIMAL_DIGITS;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -229,7 +230,7 @@ class CoinbaseBeanV1Test {
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT_SPOT + row);
         BigDecimal quotePrice = new BigDecimal("0.05413984");
         BigDecimal basePrice = new BigDecimal("451.212148");
-        BigDecimal unitPrice = quotePrice.divide(basePrice, 17, 3);
+        BigDecimal unitPrice = quotePrice.divide(basePrice, DECIMAL_DIGITS, 3);
         final TransactionCluster expected = new TransactionCluster(
             new ImportedTransactionBean(
                 null,

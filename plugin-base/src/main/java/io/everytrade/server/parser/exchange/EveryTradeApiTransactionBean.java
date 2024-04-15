@@ -19,6 +19,7 @@ import java.util.Date;
 import java.util.List;
 
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
+import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.DECIMAL_DIGITS;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.REBATE_UID_PART;
 import static java.math.BigDecimal.ZERO;
@@ -96,7 +97,7 @@ public class EveryTradeApiTransactionBean {
             Currency.fromCode(quote),
             action,
             quantity,
-            volume.divide(quantity, 10, RoundingMode.HALF_UP),
+            volume.divide(quantity, DECIMAL_DIGITS, RoundingMode.HALF_UP),
             note,
             null,
             labels
@@ -125,7 +126,7 @@ public class EveryTradeApiTransactionBean {
             txCurrency,
             action,
             quantity,
-            volume == null ? null : volume.divide(quantity, 10, RoundingMode.HALF_UP),
+            volume == null ? null : volume.divide(quantity, DECIMAL_DIGITS, RoundingMode.HALF_UP),
             note,
             null,
             labels
