@@ -43,7 +43,7 @@ class ShakePayBeanV1Test {
                 Currency.CAD,
                 TransactionType.BUY,
                 new BigDecimal("0.09172307"),
-                new BigDecimal("10902.3825739806")
+                new BigDecimal("10902.38257398056999182")
             ),
             Collections.emptyList()
         );
@@ -62,7 +62,7 @@ class ShakePayBeanV1Test {
                 Currency.CAD,
                 TransactionType.SELL,
                 new BigDecimal("0.09172307"),
-                new BigDecimal("10902.3825739806")
+                new BigDecimal("10902.38257398056999182")
             ),
             Collections.emptyList()
         );

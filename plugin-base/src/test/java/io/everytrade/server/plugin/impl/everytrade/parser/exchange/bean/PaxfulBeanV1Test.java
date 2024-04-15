@@ -47,7 +47,7 @@ class PaxfulBeanV1Test {
                 Currency.CAD,
                 TransactionType.BUY,
                 new BigDecimal("0.03544758"),
-                new BigDecimal("8463.2011550577")
+                new BigDecimal("8463.20115505769364227")
             ),
             Collections.emptyList()
         );
@@ -67,7 +67,7 @@ class PaxfulBeanV1Test {
                 Currency.CAD,
                 TransactionType.SELL,
                 new BigDecimal("0.07126192"),
-                new BigDecimal("7016.3700332520")
+                new BigDecimal("7016.37003325198086159")
             ),
             Collections.emptyList()
         );

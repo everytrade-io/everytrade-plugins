@@ -65,7 +65,7 @@ class GeneralBytesBeanV3Test {
                 Currency.EUR,
                 TransactionType.SELL,
                 new BigDecimal("0.0134856"),
-                new BigDecimal("29661.2683158332"),
+                new BigDecimal("29661.26831583318502699"),
                 "ROPVC8",
                 "bc1q9pm3el8xmep52uu3gngmpat06fg4wscq08n039"
             ),

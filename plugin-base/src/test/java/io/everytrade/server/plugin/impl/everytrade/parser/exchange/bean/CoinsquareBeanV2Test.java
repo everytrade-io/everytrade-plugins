@@ -39,7 +39,7 @@ class CoinsquareBeanV2Test {
                 Currency.CAD,
                 TransactionType.BUY,
                 new BigDecimal("0.16625219"),
-                new BigDecimal("12029.9167186910")
+                new BigDecimal("12029.91671869104400971")
             ),
             Collections.emptyList()
         );
@@ -58,7 +58,7 @@ class CoinsquareBeanV2Test {
                 Currency.CAD,
                 TransactionType.SELL,
                 new BigDecimal("0.11040202"),
-                new BigDecimal("8684.2613930434")
+                new BigDecimal("8684.26139304335192418")
             ),
             Collections.emptyList()
         );

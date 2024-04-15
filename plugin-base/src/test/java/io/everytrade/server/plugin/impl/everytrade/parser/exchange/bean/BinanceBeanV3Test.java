@@ -82,8 +82,8 @@ class BinanceBeanV3Test {
                 ADA,
                 BTC,
                 BUY,
-                new BigDecimal("3813.0000000000"),
-                new BigDecimal("0.2622674071")
+                new BigDecimal("3813.00000000000000000"),
+                new BigDecimal("0.26226740712300026")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -92,7 +92,7 @@ class BinanceBeanV3Test {
                     ADA,
                     ADA,
                     FEE,
-                    new BigDecimal("3813.0000000000"),
+                    new BigDecimal("3813.00000000000000000"),
                     ADA
                 )
             )
