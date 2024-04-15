@@ -169,13 +169,6 @@ public class AnycoinBeanV1Test {
     }
 
     @Test
-    void testCSV() {
-        File file = new File("/Users/slithercze/Desktop", "Anycoin - Transactions.csv");
-        String header = "Date,Type,Amount,Currency,Order ID";
-        var parser = new EverytradeCsvMultiParser().parse(file, header);
-        var varTwo = parser;
-    }
-    @Test
     void testStake() {
         final String row0 = "2022-11-07T14:39:54.400Z,stake,-1.43092234,ATOM\n";
         final String row1 = "2022-11-07T14:45:15.967Z,stake,1.43092234,ATOM.S\n";
