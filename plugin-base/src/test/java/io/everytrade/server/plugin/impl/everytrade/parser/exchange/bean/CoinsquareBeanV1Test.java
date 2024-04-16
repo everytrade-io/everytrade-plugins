@@ -41,7 +41,7 @@ class CoinsquareBeanV1Test {
                 Currency.CAD,
                 TransactionType.BUY,
                 new BigDecimal("0.12823291"),
-                new BigDecimal("13061.0776905866")
+                new BigDecimal("13061.07769058660526381")
             ),
             Collections.emptyList()
         );
@@ -60,7 +60,7 @@ class CoinsquareBeanV1Test {
                 Currency.CAD,
                 TransactionType.BUY,
                 new BigDecimal("0.12823291"),
-                new BigDecimal("13061.0776905866")
+                new BigDecimal("13061.07769058660526381")
             ),
             Collections.emptyList()
         );
@@ -79,7 +79,7 @@ class CoinsquareBeanV1Test {
                 Currency.CAD,
                 TransactionType.SELL,
                 new BigDecimal("0.24064597"),
-                new BigDecimal("9439.8422712003")
+                new BigDecimal("9439.84227120030308424")
             ),
             Collections.emptyList()
         );
@@ -98,7 +98,7 @@ class CoinsquareBeanV1Test {
                 Currency.CAD,
                 TransactionType.SELL,
                 new BigDecimal("0.24064597"),
-                new BigDecimal("9439.8422712003")
+                new BigDecimal("9439.84227120030308424")
             ),
             Collections.emptyList()
         );

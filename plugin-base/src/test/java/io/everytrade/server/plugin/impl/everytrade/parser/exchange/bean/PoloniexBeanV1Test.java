@@ -44,7 +44,7 @@ class PoloniexBeanV1Test {
                 Currency.BTC,
                 TransactionType.BUY,
                 new BigDecimal("1.97419154"),
-                new BigDecimal("0.0060729822")
+                new BigDecimal("0.00607298215855995")
             ),
             Collections.emptyList()
         );
@@ -64,7 +64,7 @@ class PoloniexBeanV1Test {
                 Currency.BTC,
                 TransactionType.SELL,
                 new BigDecimal("1.97827088"),
-                new BigDecimal("0.0060604592")
+                new BigDecimal("0.00606045922285425")
             ),
             Collections.emptyList()
         );

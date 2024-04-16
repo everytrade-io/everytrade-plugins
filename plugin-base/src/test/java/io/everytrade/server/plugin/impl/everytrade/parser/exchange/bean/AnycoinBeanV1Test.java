@@ -48,7 +48,7 @@ public class AnycoinBeanV1Test {
                         CZK,
                         BUY,
                         new BigDecimal("0.00075667"),
-                        new BigDecimal("7.567E-7"),
+                        new BigDecimal("7.5667000000E-7"),
                         null,
                         null
                 ),
@@ -72,7 +72,7 @@ public class AnycoinBeanV1Test {
                         CZK,
                         SELL,
                         new BigDecimal("-52"),
-                        new BigDecimal("0.0194319880"),
+                        new BigDecimal("0.01943198804185351"),
                         null,
                         null
                 ),
@@ -269,7 +269,7 @@ public class AnycoinBeanV1Test {
                         ETH,
                         BUY,
                         new BigDecimal("0.0105416"),
-                        new BigDecimal("1.0000000000"),
+                        new BigDecimal("1.00000000000000000"),
                         null,
                         null
                 ),
@@ -308,7 +308,7 @@ public class AnycoinBeanV1Test {
                         ETH2,
                         BUY,
                         new BigDecimal("0.21907795"),
-                        new BigDecimal("1.0000000000"),
+                        new BigDecimal("1.00000000000000000"),
                         null,
                         null
                 ),

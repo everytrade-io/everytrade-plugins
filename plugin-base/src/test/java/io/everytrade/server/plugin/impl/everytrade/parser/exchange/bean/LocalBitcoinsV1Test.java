@@ -47,7 +47,7 @@ class LocalBitcoinsV1Test {
                 Currency.CAD,
                 TransactionType.BUY,
                 new BigDecimal("0.66801349"),
-                new BigDecimal("7484.8787859060")
+                new BigDecimal("7484.87878590595528243")
             ),
             Collections.emptyList()
         );
@@ -67,7 +67,7 @@ class LocalBitcoinsV1Test {
                 Currency.BTC,
                 TransactionType.SELL,
                 new BigDecimal("5000"),
-                new BigDecimal("0.0001336027")
+                new BigDecimal("0.00013360269800000")
             ),
             Collections.emptyList()
         );
@@ -87,7 +87,7 @@ class LocalBitcoinsV1Test {
                 Currency.CAD,
                 TransactionType.SELL,
                 new BigDecimal("0.01515238"),
-                new BigDecimal("8249.5291168780")
+                new BigDecimal("8249.52911687800860327")
             ),
             Collections.emptyList()
         );

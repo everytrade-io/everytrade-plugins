@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.DECIMAL_DIGITS;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.equalsToZero;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
@@ -98,7 +99,7 @@ public class GbApiTransactionBean {
                 quoteCurrency,
                 actionToTransactionType(),
                 quantity,
-                volume.divide(quantity, 10, RoundingMode.HALF_UP),
+                volume.divide(quantity, DECIMAL_DIGITS, RoundingMode.HALF_UP),
                 getRemoteUid(),
                 null
             ),
