@@ -114,7 +114,7 @@ public class CoinbaseBeanV1 extends ExchangeBean {
         quantityTransacted = value;
     }
 
-    @Parsed(field = "Spot Price Currency")
+    @Parsed(field = {"Spot Price Currency", "Price Currency"})
     public void setSpotPriceCurrency(String value) {
         spotPriceCurrency = value;
     }
@@ -322,6 +322,9 @@ public class CoinbaseBeanV1 extends ExchangeBean {
             }
             if (converted) {
                 return asset;
+            }
+            if (note == null) {
+                return Currency.fromCode(spotPriceCurrency);
             }
             if (note.contains(" from Coinbase Earn")) {
                 note = note.replace(" from Coinbase Earn", "");

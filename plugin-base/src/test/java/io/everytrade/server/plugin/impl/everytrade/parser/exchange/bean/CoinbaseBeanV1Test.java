@@ -42,9 +42,6 @@ class CoinbaseBeanV1Test {
     private static final String HEADER_CORRECT
         = "Timestamp,Transaction Type,Asset,Quantity Transacted,EUR Spot Price at Transaction,EUR Subtotal,EUR Total " +
         "(inclusive of fees),EUR Fees,Notes\n";
-    private static final String HEADER_CORRECT2
-        = "Timestamp,Transaction Type,Asset,Quantity Transacted,Spot Price Currency,Spot Price at Transaction," +
-        "Subtotal,Total,Fees and/or Spread,Notes\n";
     private static final String HEADER_CORRECT_SEK
         = "Timestamp,Transaction Type,Asset,Quantity Transacted,SEK Spot Price at Transaction,SEK Subtotal,SEK Total " +
         "(inclusive of fees),SEK Fees,Notes\n";
@@ -411,7 +408,7 @@ class CoinbaseBeanV1Test {
         var row = "2023-01-20T07:09:23Z,Send,BTC,0.01031941,CZK,19339.02,199.57,199.57,0," +
             "Sent 0.01031941 BTC to bc1ql83d5c4dwwj4k6z8km5v8chff7688xxxxxxxxx\n";
         var row1 = "2023-01-19T22:16:25Z,Buy,BTC,0.01031941,CZK,19569.92,4832.82,4905.81,72.99,Bought 0.01031941 BTC for 4905.81 CZK\n";
-        final ParseResult actual = ParserTestUtils.getParseResult(HEADER_CORRECT2 + row.concat(row1));
+        final ParseResult actual = ParserTestUtils.getParseResult(HEADER_CORRECT_SPOT_SPREAD + row.concat(row1));
 
         final TransactionCluster expected = new TransactionCluster(
             new ImportedTransactionBean(
@@ -440,7 +437,7 @@ class CoinbaseBeanV1Test {
             ), List.of(
             new FeeRebateImportedTransactionBean(
                 FEE_UID_PART,
-                Instant.parse("2023-01-19T22:16:25Z"), //stejny cas jako sell
+                Instant.parse("2023-01-19T22:16:25Z"),
                 CZK,
                 CZK,
                 FEE,
