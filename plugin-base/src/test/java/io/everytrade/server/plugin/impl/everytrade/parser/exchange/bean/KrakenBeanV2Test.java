@@ -5,6 +5,7 @@ import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.test.TestUtils;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -423,4 +424,60 @@ class KrakenBeanV2Test {
         ParserTestUtils.checkEqual(expected3, actual3);
     }
 
+    @Test
+    void stakingTest_S() {
+        final String row0 = """
+            "","RUU3EVC-6GIYSL-6YTOMO","2022-11-05 01:14:17","deposit","","currency","SOL.S",0.0178340800,0,"\"\n""";
+        final String row1 = """
+            "L5HYDN-5WP37-ZWS7K4","STAYKUO-GLFCW-HF2WMS","2022-11-05 15:04:28","staking","","currency","SOL.S",0.0178340800,0,40.0178340800\n""";
+        var actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row0.concat(row1));
+
+        final TransactionCluster expected0 = new TransactionCluster(
+            new ImportedTransactionBean(
+                "L5HYDN-5WP37-ZWS7K4",
+                Instant.parse("2022-11-05T15:04:28Z"),
+                Currency.SOL,
+                SOL,
+                STAKING_REWARD,
+                new BigDecimal("0.0178340800"),
+                null
+            ),
+            List.of()
+        );
+        final TransactionCluster expected1 = new TransactionCluster(
+            new ImportedTransactionBean(
+                "L5HYDN-5WP37-ZWS7K4",
+                Instant.parse("2022-11-05T15:04:29Z"),
+                Currency.SOL,
+                SOL,
+                STAKE,
+                new BigDecimal("0.0178340800"),
+                null
+            ),
+            List.of()
+        );
+        TestUtils.testTxs(expected0.getMain(), actual.get(0).getMain());
+        TestUtils.testTxs(expected1.getMain(), actual.get(1).getMain());
+    }
+
+    @Test
+    void testTransferStakingFromSpot() {
+        final String row0 = """
+            "L72TKM-EZ7YL-GD5DTI","FTaaRpv-BySE7xcbgINatuc8oC37RA","2023-10-29 20:23:12","transfer","stakingfromspot","currency","SOL.S",110.3898385600,0,110.3898385600\n""";
+        var actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row0);
+
+        final TransactionCluster expected0 = new TransactionCluster(
+            new ImportedTransactionBean(
+                "L72TKM-EZ7YL-GD5DTI",
+                Instant.parse("2023-10-29T20:23:12Z"),
+                Currency.SOL,
+                SOL,
+                STAKE,
+                new BigDecimal("110.3898385600"),
+                null
+            ),
+            List.of()
+        );
+        TestUtils.testTxs(expected0.getMain(), actual.get(0).getMain());
+    }
 }

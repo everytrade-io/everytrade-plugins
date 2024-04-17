@@ -156,7 +156,7 @@ public class KrakenExchangeSpecificParser extends DefaultUnivocityExchangeSpecif
             var rows = entry.getValue();
             try {
                 sortedGroup.sortGroup(rows);
-                result.add(sortedGroup.createdTransaction);
+                result.addAll(sortedGroup.createdTransactions);
             } catch (DataValidationException e) {
                 var eMess = e.getMessage();
                 var ids = rows.stream().map(r -> r.getRowId()).collect(Collectors.toList());
