@@ -429,7 +429,8 @@ class KrakenBeanV2Test {
         final String row0 = """
             "","RUU3EVC-6GIYSL-6YTOMO","2022-11-05 01:14:17","deposit","","currency","SOL.S",0.0178340800,0,"\"\n""";
         final String row1 = """
-            "L5HYDN-5WP37-ZWS7K4","STAYKUO-GLFCW-HF2WMS","2022-11-05 15:04:28","staking","","currency","SOL.S",0.0178340800,0,40.0178340800\n""";
+            "L5HYDN-5WP37-ZWS7K4","STAYKUO-GLFCW-HF2WMS","2022-11-05 15:04:28","staking","","currency",\
+            "SOL.S",0.0178340800,0,40.0178340800\n""";
         var actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row0.concat(row1));
 
         final TransactionCluster expected0 = new TransactionCluster(
@@ -463,7 +464,8 @@ class KrakenBeanV2Test {
     @Test
     void testTransferStakingFromSpot() {
         final String row0 = """
-            "L72TKM-EZ7YL-GD5DTI","FTaaRpv-BySE7xcbgINatuc8oC37RA","2023-10-29 20:23:12","transfer","stakingfromspot","currency","SOL.S",110.3898385600,0,110.3898385600\n""";
+            "L72TKM-EZ7YL-GD5DTI","FTaaRpv-BySE7xcbgINatuc8oC37RA","2023-10-29 20:23:12",\
+            "transfer","stakingfromspot","currency","SOL.S",110.3898385600,0,110.3898385600\n""";
         var actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row0);
 
         final TransactionCluster expected0 = new TransactionCluster(
