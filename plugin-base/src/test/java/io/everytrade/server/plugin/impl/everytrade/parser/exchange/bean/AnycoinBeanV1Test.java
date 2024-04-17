@@ -48,7 +48,7 @@ public class AnycoinBeanV1Test {
                         CZK,
                         BUY,
                         new BigDecimal("0.00075667"),
-                        new BigDecimal("7.5667000000E-7"),
+                        new BigDecimal("1321580.08114501698230404"),
                         null,
                         null
                 ),
@@ -71,8 +71,8 @@ public class AnycoinBeanV1Test {
                         ADA,
                         CZK,
                         SELL,
-                        new BigDecimal("-52"),
-                        new BigDecimal("0.01943198804185351"),
+                        new BigDecimal("2676"),
+                        new BigDecimal("51.46153846153846154"),
                         null,
                         null
                 ),
@@ -191,6 +191,7 @@ public class AnycoinBeanV1Test {
 
         TestUtils.testTxs(expected.getMain(), actual.getTransactionClusters().get(0).getMain());
     }
+
     @Test
     void testUnstake() {
         final String row0 = "2022-11-27T07:25:31.020Z,unstake,-0.38908456,ATOM.S\n";
