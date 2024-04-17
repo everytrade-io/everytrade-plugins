@@ -105,7 +105,6 @@ public class AnycoinExchangeSpecificParserV1 extends DefaultUnivocityExchangeSpe
 
         List<AnycoinBeanV1> result = new ArrayList<>();
         for (AnycoinBeanV1 beanFromRow : singleRow) {
-            AnycoinBeanV1 newBean = new AnycoinBeanV1();
             switch (beanFromRow.getOperationType()) {
                 case OPERATION_TYPE_STAKE -> {
                     if (beanFromRow.getCoin().equals(ETH2)) {
