@@ -59,14 +59,6 @@ public class AnycoinBeanV1Test {
     }
 
     @Test
-    void testCSV() {
-        File file = new File("/Users/slithercze/Desktop", "Anycoin - Transactions.csv");
-        String header = "Date,Type,Amount,Currency,Order ID";
-        var parser = new EverytradeCsvMultiParser().parse(file, header);
-        var varTwo = parser;
-    }
-
-    @Test
     void testSell() {
         final String row0 = "2021-09-10T08:46:44.616Z,trade payment,-52,ADA,258362\n";
         final String row1 = "2021-09-10T08:46:47.763Z,trade fill,2676,CZK,258362\n";
