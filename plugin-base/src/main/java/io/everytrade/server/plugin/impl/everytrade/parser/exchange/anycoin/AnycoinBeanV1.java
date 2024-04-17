@@ -113,7 +113,7 @@ public class AnycoinBeanV1 extends ExchangeBean {
                             marketQuote,
                             BUY,
                             baseAmount,
-                            baseAmount.divide(quoteAmount.abs(), DECIMAL_DIGITS, RoundingMode.HALF_UP)
+                            quoteAmount.abs().divide(baseAmount, DECIMAL_DIGITS, RoundingMode.HALF_UP)
                     ),
                     related
             );
@@ -127,8 +127,8 @@ public class AnycoinBeanV1 extends ExchangeBean {
                             marketBase, //base = trade payment
                             marketQuote, //quote = trade fill
                             SELL,
-                            baseAmount,
-                            baseAmount.abs().divide(quoteAmount, DECIMAL_DIGITS, RoundingMode.HALF_UP)
+                            quoteAmount,
+                            quoteAmount.divide(baseAmount.abs(), DECIMAL_DIGITS, RoundingMode.HALF_UP)
                     ),
                     related
             );
