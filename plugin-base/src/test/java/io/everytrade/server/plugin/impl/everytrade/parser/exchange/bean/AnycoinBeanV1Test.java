@@ -115,7 +115,7 @@ public class AnycoinBeanV1Test {
                         BTC,
                         BTC,
                         WITHDRAWAL,
-                        new BigDecimal("-0.07070279"),
+                        new BigDecimal("0.07070279"),
                         null
                 ),
                 List.of()
@@ -151,7 +151,7 @@ public class AnycoinBeanV1Test {
                         BTC,
                         BTC,
                         WITHDRAWAL,
-                        new BigDecimal("-0.01013927"),
+                        new BigDecimal("0.01013927"),
                         null
                 ),
                 List.of()
@@ -372,6 +372,37 @@ public class AnycoinBeanV1Test {
 
         TestUtils.testTxs(expectedStake.getMain(), actual.get(0).getMain());
         TestUtils.testTxs(expectedStakeReward.getMain(), actual.get(1).getMain());
+    }
+
+    @Test
+    void testCZK_L() {
+        final String row0 = "2023-05-12T14:18:28.342Z,,-3500,CZK.L,\n";
+        var actual = ParserTestUtils.getParseResult(HEADER_CORRECT + row0);
+
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-11-27T07:25:31.020Z"),
+                ATOM,
+                ATOM,
+                UNSTAKE,
+                new BigDecimal("0.38908456"),
+                null,
+                null,
+                null
+            ),
+            List.of()
+        );
+
+        TestUtils.testTxs(expected.getMain(), actual.getTransactionClusters().get(0).getMain());
+    }
+
+    @Test
+    void testCSV() {
+        File file = new File("/Users/slithercze/Desktop", "Anycoin - Transactions.csv");
+        String header = "Date,Type,Amount,Currency,Order ID";
+        var parser = new EverytradeCsvMultiParser().parse(file, header);
+        var varTwo = parser;
     }
 
 }

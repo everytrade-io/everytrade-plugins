@@ -156,7 +156,7 @@ public class AnycoinBeanV1 extends ExchangeBean {
                             marketBase,
                             marketQuote,
                             WITHDRAWAL,
-                            baseAmount,
+                            baseAmount.abs(),
                             null
                     ),
                     related
