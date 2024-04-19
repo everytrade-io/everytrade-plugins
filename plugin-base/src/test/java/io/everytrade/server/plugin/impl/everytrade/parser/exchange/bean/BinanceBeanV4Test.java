@@ -1657,7 +1657,7 @@ class BinanceBeanV4Test {
         final String row0 = """
             "519616471","2023-11-09 10:00:49","Spot","Transaction Sold","LTC","-1.67900000",""
             "519616471","2023-11-09 10:00:49","Spot","Transaction Revenue","USDT","11.94408000",""
-            "519616471","2023-11-09 10:00:49","Spot","Transaction Sold","SHIB","-0.15900000",""
+            "519616471","2023-11-09 10:00:49","Spot","Transaction Sold","LTC","-0.15900000",""
             "519616471","2023-11-09 10:00:49","Spot","Transaction Revenue","USDT","126.12648000",""
             "519616471","2023-11-09 10:00:49","Spot","Transaction Fee","USDT","-0.01194408",""
             "519616471","2023-11-09 10:00:49","Spot","Transaction Fee","USDT","-0.12612648",""
