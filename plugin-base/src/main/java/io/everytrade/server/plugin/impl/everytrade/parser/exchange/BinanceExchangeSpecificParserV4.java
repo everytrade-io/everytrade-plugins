@@ -1,7 +1,6 @@
 package io.everytrade.server.plugin.impl.everytrade.parser.exchange;
 
 import com.univocity.parsers.common.DataValidationException;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.binanceStakeException.BinanceStakeException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceBeanV4;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceSortedGroupV4;
 
@@ -30,6 +29,7 @@ import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binanc
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_REDEMPTION;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_SUBSCRIPTION;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SMALL_ASSETS_EXCHANGE_BNB;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_TRANSACTION_REVENUE;
 import static java.math.BigDecimal.ZERO;
 import static java.util.stream.Collectors.groupingBy;
 
@@ -264,7 +264,10 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
         for (Map.Entry<Instant, List<BinanceBeanV4>> entry : sortedMap.entrySet()) {
             var currentKey = entry.getKey();
             var currentValues = entry.getValue();
-            if ((currentKey.minusMillis(TRANSACTION_MERGE_TOLERANCE_MS).equals(previousKey)
+            if (currentValues.stream().anyMatch(op -> op.getOperationType().equals(OPERATION_TYPE_TRANSACTION_REVENUE))){
+                result.put(currentKey, currentValues);
+                continue;
+            } else if ((currentKey.minusMillis(TRANSACTION_MERGE_TOLERANCE_MS).equals(previousKey)
                 || currentKey.minusMillis(TRANSACTION_MERGE_TOLERANCE_MS).isBefore(previousKey))) {
                 List<BinanceBeanV4> all = currentValues;
                 all.addAll(previousValues);

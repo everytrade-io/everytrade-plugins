@@ -1,7 +1,5 @@
 package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
-import io.everytrade.server.model.Currency;
-import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParseResult;
@@ -485,28 +483,28 @@ class BinanceBeanV4Test {
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row.concat(row1).concat(row2));
 
         var expected = new TransactionCluster(new ImportedTransactionBean(
-                null,
-                Instant.parse("2023-11-09T10:00:50Z"),
-                USDT,
-                LTC,
-                BUY,
-                new BigDecimal("5361.53976000000000000"),
-                new BigDecimal("0.01331203407880724"),
-                "TRANSACTION REVENUE",
-                null,
-                null
+            null,
+            Instant.parse("2023-11-09T10:00:50Z"),
+            USDT,
+            LTC,
+            BUY,
+            new BigDecimal("5361.53976000000000000"),
+            new BigDecimal("0.01331203407880724"),
+            "TRANSACTION REVENUE",
+            null,
+            null
         ),
-                List.of(
-                        new FeeRebateImportedTransactionBean(
-                                FEE_UID_PART,
-                                Instant.parse("2023-11-09T10:00:50Z"),
-                                USDT,
-                                USDT,
-                                FEE,
-                                new BigDecimal("5.36153976"),
-                                USDT
-                        )
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    FEE_UID_PART,
+                    Instant.parse("2023-11-09T10:00:50Z"),
+                    USDT,
+                    USDT,
+                    FEE,
+                    new BigDecimal("5.36153976"),
+                    USDT
                 )
+            )
         );
         TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
         TestUtils.testTxs(expected.getRelated().get(0), actual.get(0).getRelated().get(0));
@@ -1028,29 +1026,29 @@ class BinanceBeanV4Test {
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + join);
 
         final TransactionCluster expected = new TransactionCluster(
-                new ImportedTransactionBean(
-                        null,
-                        Instant.parse("2021-07-12T19:28:23Z"),
-                        BUSD,
-                        BTC,
-                        BUY,
-                        new BigDecimal("85.18238417000000000"),
-                        new BigDecimal("0.00003027621291807"),
-                        "TRANSACTION REVENUE",
-                        null,
-                        null
-                ),
-                List.of(
-                        new FeeRebateImportedTransactionBean(
-                                null,
-                                Instant.parse("2021-07-12T19:28:23Z"),
-                                BUSD,
-                                BUSD,
-                                FEE,
-                                new BigDecimal("0.08518238"),
-                                BUSD
-                        )
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2021-07-12T19:28:23Z"),
+                BUSD,
+                BTC,
+                BUY,
+                new BigDecimal("85.18238417000000000"),
+                new BigDecimal("0.00003027621291807"),
+                "TRANSACTION REVENUE",
+                null,
+                null
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    null,
+                    Instant.parse("2021-07-12T19:28:23Z"),
+                    BUSD,
+                    BUSD,
+                    FEE,
+                    new BigDecimal("0.08518238"),
+                    BUSD
                 )
+            )
         );
 
         TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
@@ -1652,5 +1650,77 @@ class BinanceBeanV4Test {
 //      Test doesnt work well in build process
 //        TestUtils.testTxs(expected0.getMain(), actual.getTransactionClusters().get(0).getMain());
 //        TestUtils.testTxs(expected1.getMain(), actual.getTransactionClusters().get(1).getMain());
+    }
+
+    @Test
+    void testRevenueInAlmostSameTime() {
+        final String row0 = """
+            "519616471","2023-11-09 10:00:49","Spot","Transaction Sold","LTC","-1.67900000",""
+            "519616471","2023-11-09 10:00:49","Spot","Transaction Revenue","USDT","11.94408000",""
+            "519616471","2023-11-09 10:00:49","Spot","Transaction Sold","LTC","-0.15900000",""
+            "519616471","2023-11-09 10:00:49","Spot","Transaction Revenue","USDT","126.12648000",""
+            "519616471","2023-11-09 10:00:49","Spot","Transaction Fee","USDT","-0.01194408",""
+            "519616471","2023-11-09 10:00:49","Spot","Transaction Fee","USDT","-0.12612648",""
+            "519616471","2023-11-09 10:00:50","Spot","Transaction Revenue","USDT","5361.53976000",""
+            "519616471","2023-11-09 10:00:50","Spot","Transaction Sold","LTC","-71.37300000",""
+            "519616471","2023-11-09 10:00:50","Spot","Transaction Fee","USDT","-5.36153976",""
+             """;
+        final var actual = ParserTestUtils.getParseResult(HEADER_CORRECT + row0);
+
+        final TransactionCluster expectedSell1 = new TransactionCluster(
+            new ImportedTransactionBean(
+                "",
+                Instant.parse("2023-11-09T10:00:49Z"),
+                USDT,
+                LTC,
+                BUY,
+                new BigDecimal("138.07056000000000000"),
+                new BigDecimal("0.01331203407880724"),
+                "TRANSACTION REVENUE",
+                null
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    null,
+                    Instant.parse("2023-11-09T10:00:49Z"),
+                    USDT,
+                    USDT,
+                    FEE,
+                    new BigDecimal("0.13807056"),
+                    SOL
+                )
+            )
+        );
+
+        final TransactionCluster expectedSell2 = new TransactionCluster(
+            new ImportedTransactionBean(
+                "",
+                Instant.parse("2023-11-09T10:00:50Z"),
+                USDT,
+                LTC,
+                BUY,
+                new BigDecimal("5361.53976000000000000"),
+                new BigDecimal("0.01331203407880724"),
+                "TRANSACTION REVENUE",
+                null
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    null,
+                    Instant.parse("2023-11-09T10:00:50Z"),
+                    USDT,
+                    USDT,
+                    FEE,
+                    new BigDecimal("5.36153976"),
+                    SOL
+                )
+            )
+        );
+
+        TestUtils.testTxs(expectedSell1.getMain(), actual.getTransactionClusters().get(0).getMain());
+        TestUtils.testTxs(expectedSell1.getRelated().get(0), actual.getTransactionClusters().get(0).getRelated().get(0));
+
+        TestUtils.testTxs(expectedSell2.getMain(), actual.getTransactionClusters().get(1).getMain());
+        TestUtils.testTxs(expectedSell2.getRelated().get(0), actual.getTransactionClusters().get(1).getRelated().get(0));
     }
 }

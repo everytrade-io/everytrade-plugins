@@ -5,11 +5,10 @@ import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.binanceStakeException.BinanceStakeException;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.binanceExceptions.BinanceValidateException;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -105,7 +104,7 @@ public class BinanceSortedGroupV4 {
             }
             sumAllRows();
             createTransactionsFromMultiRowData();
-        } catch (BinanceStakeException e) {
+        } catch (BinanceValidateException e) {
             throw new DataValidationException(e.getMessage());
         }catch (Exception ignore) {
             if (group.get(0).isMergedWithAnotherGroup()) {
@@ -171,7 +170,12 @@ public class BinanceSortedGroupV4 {
     }
 
     private void validateBuySell() {
-        if (rowBuySellRelated.size() != 2) {
+        if (rowBuySellRelated.stream().map(BinanceBeanV4::getOperationType)
+                .anyMatch(row -> row.equals(OPERATION_TYPE_TRANSACTION_SPEND) ||
+                    row.equals(OPERATION_TYPE_TRANSACTION_REVENUE)) && rowBuySellRelated.size() != 2) {
+            throw new BinanceValidateException("Wrong number of currencies");
+        } else
+            if (rowBuySellRelated.size() != 2) {
             throw new DataValidationException("Wrong number of currencies");
         }
         // one of them must be plus and second minus
@@ -188,14 +192,14 @@ public class BinanceSortedGroupV4 {
             .anyMatch(row -> row.getCoin().equals(Currency.ETH));
 
         if (!containsETH) {
-            throw new BinanceStakeException("No transaction contains ETH as a currency");
+            throw new BinanceValidateException("No transaction contains ETH as a currency");
         }
 
         boolean hasPositive = rowStakingETH2_0.stream().anyMatch(row -> row.getChange().compareTo(BigDecimal.ZERO) > 0);
         boolean hasNegative = rowStakingETH2_0.stream().anyMatch(row -> row.getChange().compareTo(BigDecimal.ZERO) < 0);
 
         if (!(hasPositive && hasNegative)) {
-            throw new BinanceStakeException("Transactions do not have both positive and negative amounts");
+            throw new BinanceValidateException("Transactions do not have both positive and negative amounts");
         }
     }
 
@@ -581,6 +585,7 @@ public class BinanceSortedGroupV4 {
     }
 
     private TransactionType detectTransactionType(BinanceBeanV4 stRow, BinanceBeanV4 ndRow, boolean convert ) {
+
         if(convert) {
             return BUY;
         } else {
@@ -610,7 +615,7 @@ public class BinanceSortedGroupV4 {
         boolean relatedTransaction = isRelatedTransaction(stRow,ndRow);
         TransactionType type = detectTransactionType(stRow, ndRow, convert);
 
-        if (convert && stRow.getChange().compareTo(ZERO) < 0) {
+       if (convert && stRow.getChange().compareTo(ZERO) < 0) {
             baseRow = ndRow;
             quoteRow = stRow;
         } else if (stRow.getCoin().isFiat()) {
