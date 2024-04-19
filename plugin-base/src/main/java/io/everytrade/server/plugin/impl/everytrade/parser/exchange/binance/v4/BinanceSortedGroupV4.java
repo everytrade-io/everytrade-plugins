@@ -174,7 +174,8 @@ public class BinanceSortedGroupV4 {
                 .anyMatch(row -> row.equals(OPERATION_TYPE_TRANSACTION_SPEND) ||
                     row.equals(OPERATION_TYPE_TRANSACTION_REVENUE)) && rowBuySellRelated.size() != 2) {
             throw new BinanceValidateException("Wrong number of currencies");
-        } else if (rowBuySellRelated.size() != 2) {
+        } else
+            if (rowBuySellRelated.size() != 2) {
             throw new DataValidationException("Wrong number of currencies");
         }
         // one of them must be plus and second minus
@@ -585,10 +586,7 @@ public class BinanceSortedGroupV4 {
 
     private TransactionType detectTransactionType(BinanceBeanV4 stRow, BinanceBeanV4 ndRow, boolean convert ) {
 
-        if (stRow.getOperationType().equals(OPERATION_TYPE_TRANSACTION_SOLD)
-            || ndRow.getOperationType().equals(OPERATION_TYPE_TRANSACTION_SOLD)) {
-            return SELL;
-        } else if(convert) {
+        if(convert) {
             return BUY;
         } else {
             var isBuy = rowBuySellRelated.stream().anyMatch(row -> row.getOriginalOperation().equalsIgnoreCase(OPERATION_TYPE_BUY.code));
@@ -617,13 +615,7 @@ public class BinanceSortedGroupV4 {
         boolean relatedTransaction = isRelatedTransaction(stRow,ndRow);
         TransactionType type = detectTransactionType(stRow, ndRow, convert);
 
-        if (stRow.getOperationType().equals(OPERATION_TYPE_TRANSACTION_REVENUE)){
-            quoteRow = stRow;
-            baseRow = ndRow;
-        } else if (ndRow.getOperationType().equals(OPERATION_TYPE_TRANSACTION_REVENUE)) {
-            quoteRow = ndRow;
-            baseRow = stRow;
-        } else if (convert && stRow.getChange().compareTo(ZERO) < 0) {
+       if (convert && stRow.getChange().compareTo(ZERO) < 0) {
             baseRow = ndRow;
             quoteRow = stRow;
         } else if (stRow.getCoin().isFiat()) {
