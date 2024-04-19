@@ -36,7 +36,7 @@ public class KrakenSortedGroup {
     KrakenBeanV2 rowQuote;
     KrakenBeanV2 rowFee;
 
-    public KrakenBeanV2 createdTransaction = new KrakenBeanV2();
+    public List<KrakenBeanV2> createdTransactions = new ArrayList<>();
 
     public void sortGroup(List<KrakenBeanV2> group) {
         // nejdrive udelam map , kde hash bude currency
@@ -194,14 +194,15 @@ public class KrakenSortedGroup {
 
     private void createStaking(TransactionType type) {
         if (!rowsStaking.isEmpty()) {
-            mapStakingTxs(rowsStaking.get(0), type);
+            mapDepositAndStakingTxs(rowsStaking.get(0), type);
         }
         if (!rowsTransfer.isEmpty()) {
-            mapStakingTxs(rowsTransfer.get(0), type);
+            mapTransferStakingTxs(rowsTransfer.get(0), type);
         }
     }
 
     private void mapDepositWithdrawalTxs(KrakenBeanV2 row, TransactionType type) {
+        KrakenBeanV2 createdTransaction = new KrakenBeanV2();
         createdTransaction.setTxsType(type);
         createdTransaction.setRefid(row.getRefid());
         createdTransaction.setRowId(row.getRowId());
@@ -214,9 +215,12 @@ public class KrakenSortedGroup {
         createdTransaction.usedIds.add(row.getRowId());
         createdTransaction.setTime(row.getTime());
         createdTransaction.setRowValues();
+
+        createdTransactions.add(createdTransaction);
     }
 
-    private void mapStakingTxs(KrakenBeanV2 row, TransactionType type) {
+    private void mapDepositAndStakingTxs(KrakenBeanV2 row, TransactionType type) {
+        KrakenBeanV2 createdTransaction = new KrakenBeanV2();
         createdTransaction.setTxsType(type);
         createdTransaction.setRefid(row.getRefid());
         createdTransaction.setRowId(row.getRowId());
@@ -229,10 +233,38 @@ public class KrakenSortedGroup {
         createdTransaction.usedIds.add(row.getRowId());
         createdTransaction.setTime(row.getTime());
         createdTransaction.setRowValues();
+        createdTransactions.add(createdTransaction);
+
+        try {
+            KrakenBeanV2 clone = (KrakenBeanV2) row.clone();
+            clone.setTxsType(STAKE);
+            clone.setTime(clone.getTime().plusSeconds(1));
+            createdTransactions.add(clone);
+        } catch (CloneNotSupportedException e) {
+            row.setUnsupportedRow(true);
+        }
+
+    }
+    private void mapTransferStakingTxs(KrakenBeanV2 row, TransactionType type) {
+        KrakenBeanV2 createdTransaction = new KrakenBeanV2();
+        createdTransaction.setTxsType(type);
+        createdTransaction.setRefid(row.getRefid());
+        createdTransaction.setRowId(row.getRowId());
+        createdTransaction.setAsset(row.getAsset());
+        createdTransaction.setAmount(row.getAmount());
+        createdTransaction.setFeeAmount(row.getFee());
+        createdTransaction.setFeeCurrency(row.getAsset());
+        createdTransaction.setRowNumber(row.getTime().getEpochSecond());
+        createdTransaction.setTxid(row.getTxid());
+        createdTransaction.usedIds.add(row.getRowId());
+        createdTransaction.setTime(row.getTime());
+        createdTransaction.setRowValues();
+
+        createdTransactions.add(createdTransaction);
     }
 
     private void createBuySellTxs(TransactionType type) {
-        // mapping;
+        KrakenBeanV2 createdTransaction = new KrakenBeanV2();
         createdTransaction.setMarketBase(rowBase.getAsset());
         createdTransaction.setMarketQuote(rowQuote.getAsset());
         createdTransaction.setAmountBase(rowBase.getAmount());
@@ -246,6 +278,8 @@ public class KrakenSortedGroup {
         createdTransaction.usedIds.add(rowBase.getRowId());
         createdTransaction.usedIds.add(rowQuote.getRowId());
         createdTransaction.setRowValues();
+
+        createdTransactions.add(createdTransaction);
     }
 
     private void addRow(KrakenBeanV2 row) {

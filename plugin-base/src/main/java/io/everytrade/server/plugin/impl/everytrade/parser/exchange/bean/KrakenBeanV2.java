@@ -37,7 +37,7 @@ import static lombok.AccessLevel.PRIVATE;
 @Data
 @FieldDefaults(level = PRIVATE)
 @Headers(sequence = {"txid", "refid", "time", "type", "asset", "amount", "fee", "subtype"}, extract = true)
-public class KrakenBeanV2 extends ExchangeBean {
+public class KrakenBeanV2 extends ExchangeBean implements Cloneable{
     String txid;
     String refid;
     Instant time;
@@ -154,6 +154,10 @@ public class KrakenBeanV2 extends ExchangeBean {
 
     public void setTxsType(TransactionType txsType) {
         this.txsType = txsType;
+    }
+
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
     }
 
     @Override

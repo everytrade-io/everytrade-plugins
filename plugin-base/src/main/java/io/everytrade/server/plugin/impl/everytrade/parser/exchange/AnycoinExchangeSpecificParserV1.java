@@ -157,7 +157,6 @@ public class AnycoinExchangeSpecificParserV1 extends DefaultUnivocityExchangeSpe
 
     private void prepareStakeBeans(AnycoinBeanV1 beanFromRow,List<AnycoinBeanV1> result) {
 
-        beanFromRow.setOperationType(beanFromRow.getOperationType());
         beanFromRow.setDate(beanFromRow.getDate().toString());
         beanFromRow.setMarketBase(beanFromRow.getCoin());
         beanFromRow.setBaseAmount(beanFromRow.getAmount().abs());
@@ -195,7 +194,6 @@ public class AnycoinExchangeSpecificParserV1 extends DefaultUnivocityExchangeSpe
 
     private void prepareUnstakeBeans(AnycoinBeanV1 beanFromRow,List<AnycoinBeanV1> result) {
 
-        beanFromRow.setOperationType(beanFromRow.getOperationType());
         beanFromRow.setDate(beanFromRow.getDate().toString());
         beanFromRow.setMarketBase(beanFromRow.getCoin());
         beanFromRow.setBaseAmount(beanFromRow.getAmount().abs());
@@ -226,7 +224,6 @@ public class AnycoinExchangeSpecificParserV1 extends DefaultUnivocityExchangeSpe
 
     private void prepareDepositBeans(AnycoinBeanV1 beanFromRow,List<AnycoinBeanV1> result) {
 
-        beanFromRow.setOperationType(beanFromRow.getOperationType());
         beanFromRow.setDate(beanFromRow.getDate().toString());
         beanFromRow.setMarketBase(beanFromRow.getCoin());
         beanFromRow.setBaseAmount(beanFromRow.getAmount());
@@ -240,7 +237,6 @@ public class AnycoinExchangeSpecificParserV1 extends DefaultUnivocityExchangeSpe
 
     private void prepareWithdrawalBeans(AnycoinBeanV1 beanFromRow,List<AnycoinBeanV1> result) {
 
-        beanFromRow.setOperationType(beanFromRow.getOperationType());
         beanFromRow.setDate(beanFromRow.getDate().toString());
         beanFromRow.setMarketBase(beanFromRow.getCoin());
         beanFromRow.setBaseAmount(beanFromRow.getAmount());
