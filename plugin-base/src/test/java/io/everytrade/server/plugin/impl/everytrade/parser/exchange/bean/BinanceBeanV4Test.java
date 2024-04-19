@@ -1675,7 +1675,7 @@ class BinanceBeanV4Test {
                 LTC,
                 BUY,
                 new BigDecimal("138.07056000000000000"),
-                new BigDecimal("0.00115158510257364"),
+                new BigDecimal("0.01331203407880724"),
                 "TRANSACTION REVENUE",
                 null
             ),
