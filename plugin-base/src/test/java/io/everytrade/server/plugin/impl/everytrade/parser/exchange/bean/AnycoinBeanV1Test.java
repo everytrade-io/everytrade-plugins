@@ -20,6 +20,7 @@ import static io.everytrade.server.model.Currency.BTC;
 import static io.everytrade.server.model.Currency.CZK;
 import static io.everytrade.server.model.Currency.ETH;
 import static io.everytrade.server.model.Currency.ETH2;
+import static io.everytrade.server.model.Currency.SAND;
 import static io.everytrade.server.model.Currency.SOL;
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
@@ -71,8 +72,32 @@ public class AnycoinBeanV1Test {
                         ADA,
                         CZK,
                         SELL,
-                        new BigDecimal("2676"),
+                        new BigDecimal("52"),
                         new BigDecimal("51.46153846153846154"),
+                        null,
+                        null
+                ),
+                List.of()
+        );
+
+        TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
+    }
+
+    @Test
+    void testSell2() {
+        final String row0 = "2021-11-24T03:02:35.826Z,trade payment,-177.63419113,SAND,315998\n";
+        final String row1 = "2021-11-24T03:02:39.486Z,trade fill,24899.78,CZK,315998\n";
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row0.concat(row1));
+
+        final TransactionCluster expected = new TransactionCluster(
+                new ImportedTransactionBean(
+                        "315998",
+                        Instant.parse("2021-11-24T03:02:39.486Z"),
+                        SAND,
+                        CZK,
+                        SELL,
+                        new BigDecimal("177.63419113"),
+                        new BigDecimal("140.17447790654963420"),
                         null,
                         null
                 ),
@@ -115,7 +140,7 @@ public class AnycoinBeanV1Test {
                         BTC,
                         BTC,
                         WITHDRAWAL,
-                        new BigDecimal("-0.07070279"),
+                        new BigDecimal("0.07070279"),
                         null
                 ),
                 List.of()
@@ -151,7 +176,7 @@ public class AnycoinBeanV1Test {
                         BTC,
                         BTC,
                         WITHDRAWAL,
-                        new BigDecimal("-0.01013927"),
+                        new BigDecimal("0.01013927"),
                         null
                 ),
                 List.of()
@@ -373,5 +398,4 @@ public class AnycoinBeanV1Test {
         TestUtils.testTxs(expectedStake.getMain(), actual.get(0).getMain());
         TestUtils.testTxs(expectedStakeReward.getMain(), actual.get(1).getMain());
     }
-
 }
