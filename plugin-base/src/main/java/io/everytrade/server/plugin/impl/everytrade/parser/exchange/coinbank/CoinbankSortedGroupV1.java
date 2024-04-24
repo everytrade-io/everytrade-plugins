@@ -22,7 +22,7 @@ public class CoinbankSortedGroupV1 {
             result.setQuoteAmount(row.getPaid());
             result.setBaseAmount(row.getReceived());
 
-            BigDecimal fee = new BigDecimal(row.getFee());
+            BigDecimal fee = row.getFee();
             if (fee.signum() > 0) {
                 CoinbankBeanV1 feeTx = (CoinbankBeanV1) row.clone();
                 feeTx.setTransactionType(FEE);
@@ -47,11 +47,11 @@ public class CoinbankSortedGroupV1 {
             result.setBaseAmount(row.getPaid());
             result.setQuoteAmount(row.getReceived());
 
-            BigDecimal fee = new BigDecimal(row.getFee());
+            BigDecimal fee = row.getFee();
             if (fee.signum() > 0) {
                 CoinbankBeanV1 feeTx = (CoinbankBeanV1) row.clone();
                 feeTx.setTransactionType(FEE);
-                feeTx.setFeeCurrency(result.getMarketQuote().isFiat() ? result.getMarketQuote() : result.getMarketBase());
+                feeTx.setFeeCurrency(result.getMarketQuote().isFiat() ? result.getMarketQuote() : null);
                 result.getFeeTransactions().add(feeTx);
             }
             return result;
