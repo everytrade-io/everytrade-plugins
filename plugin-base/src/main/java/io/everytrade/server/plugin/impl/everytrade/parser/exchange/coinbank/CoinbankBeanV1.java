@@ -182,7 +182,9 @@ public class CoinbankBeanV1 extends ExchangeBean implements Cloneable {
             } catch (NullPointerException e) {
                 isFailedFee = true;
                 failedFeeMessage = "unsupported fee currency";
-                related = emptyList();
+            } catch (Exception e) {
+                isFailedFee = true;
+                failedFeeMessage = e.getMessage();
             }
         }
 
