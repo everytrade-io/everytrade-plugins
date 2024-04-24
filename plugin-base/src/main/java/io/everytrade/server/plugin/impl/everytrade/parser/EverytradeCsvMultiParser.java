@@ -16,6 +16,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BinanceExchan
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BitfinexExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BitflyerMultiRowParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.CoinBaseProExchangeSpecificParser;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.CoinbankExchangeSpecificParserV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.CoinbaseExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.CoinbaseUnivocitySpecificParserV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.DefaultUnivocityExchangeSpecificParser;
@@ -48,6 +49,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.Coinsqua
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.DVChainBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.KrakenBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.SimpleCoinBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.coinbank.CoinbankBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.everytrade.EveryTradeBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.everytrade.EveryTradeBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.everytrade.EveryTradeBeanV3;
@@ -89,6 +91,7 @@ import static io.everytrade.server.model.SupportedExchange.BITFLYER;
 import static io.everytrade.server.model.SupportedExchange.BITMEX;
 import static io.everytrade.server.model.SupportedExchange.BITSTAMP;
 import static io.everytrade.server.model.SupportedExchange.BITTREX;
+import static io.everytrade.server.model.SupportedExchange.COINBANK;
 import static io.everytrade.server.model.SupportedExchange.COINBASE;
 import static io.everytrade.server.model.SupportedExchange.COINBASE_PRO;
 import static io.everytrade.server.model.SupportedExchange.COINMATE;
@@ -292,6 +295,19 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 .supportedExchange(BITTREX)
                 .build());
 
+            /* COINBANK */
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader.of("Měna", "Symbol", "Datum", "Směr", "Zaplaceno", "Získáno", "Kurz", "Poplatek",
+                            "Zdrojová měna", "Cílová měna")
+                        .withSeparator(delimiter),
+                    CsvHeader.of("Měna", "Symbol", "Datum", "Operace", "Částka", "Stav", "Adresa", "Účet", "Tag", "Stav",
+                            "ID Stavu")
+                        .withSeparator(delimiter)
+                ))
+                .parserFactory(() -> new CoinbankExchangeSpecificParserV1(CoinbankBeanV1.class, delimiter))
+                .supportedExchange(COINBANK)
+                .build());
 
             /* COINBASE */
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
