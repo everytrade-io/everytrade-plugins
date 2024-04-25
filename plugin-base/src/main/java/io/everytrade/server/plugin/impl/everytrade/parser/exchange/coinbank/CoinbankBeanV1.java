@@ -22,6 +22,7 @@ import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.coinbank.CoinbankCurrencySwitcher.SWITCHER;
 import static java.util.Collections.emptyList;
 
 @EqualsAndHashCode(callSuper = true)
@@ -35,8 +36,8 @@ public class CoinbankBeanV1 extends ExchangeBean implements Cloneable {
     private CoinbankOperationTypeV1 operationType;
     private BigDecimal paid;
     private BigDecimal received;
-    private String rate;
-    private String fee;
+    private BigDecimal rate;
+    private BigDecimal fee;
     private Currency sourceCurrency;
     private Currency targetCurrency;
 
@@ -67,7 +68,11 @@ public class CoinbankBeanV1 extends ExchangeBean implements Cloneable {
 
     @Parsed(field = "Symbol")
     public void setSymbol(String symbol) {
-        this.symbol = Currency.fromCode(symbol);
+        if (SWITCHER.containsKey(symbol)) {
+            this.symbol = SWITCHER.get(symbol);
+        } else {
+            this.symbol = Currency.fromCode(symbol);
+        }
     }
 
     @Parsed(field = "Datum")
@@ -81,33 +86,41 @@ public class CoinbankBeanV1 extends ExchangeBean implements Cloneable {
     }
 
     @Parsed(field = "Zaplaceno")
-    public void setPaid(String paid) {
-        this.paid = new BigDecimal(paid);
+    public void setPaid(BigDecimal paid) {
+        this.paid = paid;
     }
 
     @Parsed(field = "Získáno")
-    public void setReceived(String received) {
-        this.received = new BigDecimal(received);
+    public void setReceived(BigDecimal received) {
+        this.received = received;
     }
 
     @Parsed(field = "Kurz")
-    public void setRate(String rate) {
+    public void setRate(BigDecimal rate) {
         this.rate = rate;
     }
 
     @Parsed(field = "Poplatek")
-    public void setFee(String fee) {
+    public void setFee(BigDecimal fee) {
         this.fee = fee;
     }
 
     @Parsed(field = "Zdrojová měna")
-    public void setSourceCurrency(Currency sourceCurrency) {
-        this.sourceCurrency = sourceCurrency;
+    public void setSourceCurrency(String sourceCurrency) {
+        if (SWITCHER.containsKey(sourceCurrency)) {
+            this.sourceCurrency = SWITCHER.get(sourceCurrency);
+        } else {
+            this.sourceCurrency = Currency.fromCode(sourceCurrency);
+        }
     }
 
     @Parsed(field = "Cílová měna")
-    public void setTargetCurrency(Currency targetCurrency) {
-        this.targetCurrency = targetCurrency;
+    public void setTargetCurrency(String targetCurrency) {
+        if (SWITCHER.containsKey(targetCurrency)) {
+            this.targetCurrency = SWITCHER.get(targetCurrency);
+        } else {
+            this.targetCurrency = Currency.fromCode(targetCurrency);
+        }
     }
 
     @Parsed(field = "Částka")
@@ -136,31 +149,45 @@ public class CoinbankBeanV1 extends ExchangeBean implements Cloneable {
         if (statusId != null) {
             this.statusEnum = CoinbankStatus.getEnum(Integer.parseInt(statusId));
             if (statusEnum == null) {
-                throw new DataValidationException("Wrong status id");
+                throw new DataValidationException("Unsupported status id");
             }
         }
     }
 
     @Override
     public TransactionCluster toTransactionCluster() {
-        final List<ImportedTransactionBean> related = new ArrayList<>();
+
+        List<ImportedTransactionBean> related = new ArrayList<>();
+        boolean isFailedFee = false;
+        String failedFeeMessage = "";
+
         if (isUnsupportedRow()) {
             throw new DataIgnoredException(getMessage());
         }
-        if (feeTransactions.size() > 0) {
-            for (CoinbankBeanV1 fee : feeTransactions) {
-                var feeTxs = new FeeRebateImportedTransactionBean(
-                    FEE_UID_PART,
-                    fee.getDate(),
-                    fee.getFeeCurrency(),
-                    fee.getFeeCurrency(),
-                    FEE,
-                    new BigDecimal(fee.getFee()),
-                    fee.getFeeCurrency()
-                );
-                related.add(feeTxs);
+
+        if (feeTransactions.size() > 0){
+            try {
+                for (CoinbankBeanV1 fee : feeTransactions) {
+                        var feeTxs = new FeeRebateImportedTransactionBean(
+                            FEE_UID_PART,
+                            fee.getDate(),
+                            fee.getFeeCurrency(),
+                            fee.getFeeCurrency(),
+                            FEE,
+                            fee.getFee(),
+                            fee.getFeeCurrency()
+                        );
+                        related.add(feeTxs);
+                }
+            } catch (NullPointerException e) {
+                isFailedFee = true;
+                failedFeeMessage = "unsupported fee currency";
+            } catch (Exception e) {
+                isFailedFee = true;
+                failedFeeMessage = e.getMessage();
             }
         }
+
         if (transactionType.equals(BUY)) {
             return new TransactionCluster(
                 new ImportedTransactionBean(
@@ -178,7 +205,7 @@ public class CoinbankBeanV1 extends ExchangeBean implements Cloneable {
             );
         }
         if (transactionType.equals(SELL)) {
-            return new TransactionCluster(
+            var cluster = new TransactionCluster(
                 new ImportedTransactionBean(
                     null,
                     date,
@@ -192,6 +219,10 @@ public class CoinbankBeanV1 extends ExchangeBean implements Cloneable {
                 ),
                 related
             );
+            if (isFailedFee) {
+                cluster.setFailedFee(1, String.format("Fee transaction failed - %s", failedFeeMessage));
+            }
+            return cluster;
         }
         if (transactionType.equals(WITHDRAWAL)) {
             return new TransactionCluster(
@@ -230,6 +261,8 @@ public class CoinbankBeanV1 extends ExchangeBean implements Cloneable {
 
     @Override
     public Object clone() throws CloneNotSupportedException {
-        return super.clone();
+        CoinbankBeanV1 cloned = (CoinbankBeanV1) super.clone();
+        cloned.feeTransactions = new ArrayList<>();
+        return cloned;
     }
 }
