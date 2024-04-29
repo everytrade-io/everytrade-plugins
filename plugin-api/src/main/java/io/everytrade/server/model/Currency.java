@@ -860,7 +860,11 @@ public enum Currency {
     ETH2(false, Instant.parse("2022-03-23T00:00:00Z"), "Eth 2.0 Staking by Pool-X"),
     ULX(false, Instant.parse("2022-11-23T00:00:00Z"), "ULTRON"),
     WBETH(false, Instant.parse("2022-11-23T00:00:00Z"), "Wrapped Beacon ETH"),
-    FLOKI(false, Instant.parse("2021-09-09T00:00:00Z"), "Floki Inu");
+    FLOKI(false, Instant.parse("2021-09-09T00:00:00Z"), "Floki Inu"),
+    BOME(false, Instant.parse("2024-03-14T00:00:00Z"), "BOOK OF MEME"),
+    JTO(false, Instant.parse("2023-11-06T00:00:00Z"), "Jito"),
+    VRA(false, Instant.parse("2019-03-04T00:00:00Z"), "Verasity");
+
 
     String code;
     int decimalDigits;
