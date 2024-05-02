@@ -58,7 +58,7 @@ public class BlockchainTransaction implements ITransaction {
 
         long inputRelatedValue = txInfo.getInputInfos().stream()
             .filter(inputInfo -> inputInfo.getAddress().equals(relativeToAddress))
-            .mapToLong(InputInfo::getValue).findAny().orElseThrow();
+            .mapToLong(InputInfo::getValue).sum();
         long outputValuesSum = txInfo.getOutputInfos().stream().mapToLong(OutputInfo::getValue).sum();
 
         BigDecimal inputRelatedValueBD = new BigDecimal(inputRelatedValue);
