@@ -3,9 +3,7 @@ package io.everytrade.server.plugin.impl.everytrade;
 import com.generalbytes.bitrafael.client.Client;
 import com.generalbytes.bitrafael.server.api.dto.AddressInfo;
 import com.generalbytes.bitrafael.server.api.dto.TxInfo;
-import com.generalbytes.bitrafael.tools.transaction.Transaction;
 import io.everytrade.server.model.Currency;
-import io.everytrade.server.parser.exchange.BlockchainTransactionDivider;
 import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.parser.ParseResult;
 import lombok.AllArgsConstructor;
@@ -107,7 +105,7 @@ public class BlockchainDownloader {
     }
 
     public DownloadResult download(String source) {
-        List<Transaction> transactions = new ArrayList<>();
+        List<BlockchainTransaction> transactions = new ArrayList<>();
         int request = 0;
         int page = 0;
         try {
@@ -157,22 +155,39 @@ public class BlockchainDownloader {
         return downloadResult;
     }
 
-    private List<Transaction> getNewTransactionsFromAddressInfos(Collection<AddressInfo> addressInfos) {
-        final List<Transaction> transactions = new ArrayList<>();
+    private List<BlockchainTransaction> getNewTransactionsFromAddressInfos(Collection<AddressInfo> addressInfos) {
+        final List<BlockchainTransaction> transactions = new ArrayList<>();
         long newLastTxTimestamp = 0;
         for (AddressInfo addressInfo : addressInfos) {
             final List<TxInfo> txInfos = addressInfo.getTxInfos();
             for (TxInfo txInfo : txInfos) {
-                final Transaction oldTransaction = Transaction.buildTransaction(txInfo, addressInfo.getAddress());
-                BlockchainTransactionDivider blockchainTransactionDivider = new BlockchainTransactionDivider();
-                var block = blockchainTransactionDivider.divideTransaction(txInfo, oldTransaction);
-                for (TxInfo tx : block) {
-                    final Transaction transaction = Transaction.buildTransaction(tx, addressInfo.getAddress());
-                    final long timestamp = oldTransaction.getTimestamp();
-                    final boolean newTimeStamp = timestamp >= lastTxTimestamp;
-                    final boolean newHash = !lastTxHashes.contains(oldTransaction.getTxHash());
-                    final boolean confirmed = oldTransaction.getConfirmations() >= MIN_COINFIRMATIONS;
+                final BlockchainTransaction transaction = BlockchainTransaction.buildTransaction(txInfo, addressInfo.getAddress());
 
+                final long timestamp = transaction.getTimestamp();
+                final boolean newTimeStamp = timestamp >= lastTxTimestamp;
+                final boolean newHash = !lastTxHashes.contains(transaction.getTxHash());
+                final boolean confirmed = transaction.getConfirmations() >= MIN_COINFIRMATIONS;
+
+                String operation = transaction.isDirectionSend() ? "WITHDRAWAL" : "DEPOSIT";
+
+                if (txInfo.getOutputInfos().size() > 1
+                    && txInfo.getOutputInfos()
+                    .stream()
+                    .noneMatch(outputInfo -> outputInfo.getAddress().equals(addressInfo.getAddress())) && operation.equals("WITHDRAWAL")) {
+                    List<BlockchainTransaction> builtTx = BlockchainTransaction.buildWithdrawalTxFromDifferentWallets(
+                        txInfo,
+                        addressInfo.getAddress(), transaction.isDirectionSend(),
+                        transaction.getFee());
+
+                    if (confirmed && newTimeStamp && newHash) {
+                        if (builtTx != null) {
+                            transactions.addAll(builtTx);
+                        }
+                        if (timestamp > newLastTxTimestamp) {
+                            newLastTxTimestamp = timestamp;
+                        }
+                    }
+                } else {
                     if (confirmed && newTimeStamp && newHash) {
                         transactions.add(transaction);
                         if (timestamp > newLastTxTimestamp) {
@@ -185,7 +200,8 @@ public class BlockchainDownloader {
         return transactions;
     }
 
-    private DownloadResult getTransactionsFromAddressInfos(List<Transaction> transactions, long newLastTxTimestamp, int newLastPage) {
+    private DownloadResult getTransactionsFromAddressInfos(List<BlockchainTransaction> transactions, long newLastTxTimestamp,
+                                                           int newLastPage) {
         final ParseResult parseResult = BlockchainConnectorParser.getParseResult(
             transactions,
             cryptoCurrency,
@@ -199,7 +215,7 @@ public class BlockchainDownloader {
         return new DownloadResult(parseResult, newLastTransactionId);
     }
 
-    private String getNewLastTransactionId(long newLastTxTimestamp, List<Transaction> transactions, int newLastPage) {
+    private String getNewLastTransactionId(long newLastTxTimestamp, List<BlockchainTransaction> transactions, int newLastPage) {
         if (newLastTxTimestamp == 0) {
             if (lastTransactionUid == null) {
                 return null;
@@ -214,7 +230,7 @@ public class BlockchainDownloader {
         }
         final Set<String> newLastTxHashesSet = transactions.stream()
             .filter(transaction -> transaction.getTimestamp() == newLastTxTimestamp)
-            .map(Transaction::getTxHash)
+            .map(BlockchainTransaction::getTxHash)
             .collect(Collectors.toSet());
         final String newLastTxHashes = String.join(PIPE_SYMBOL, newLastTxHashesSet);
         return newLastTxTimestamp + COLON_SYMBOL + newLastTxHashes + COLON_SYMBOL + newLastPage + COLON_SYMBOL + LIMIT;

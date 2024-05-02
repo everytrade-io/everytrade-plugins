@@ -3,13 +3,13 @@ package io.everytrade.server.parser.exchange;
 import com.generalbytes.bitrafael.client.Client;
 import com.generalbytes.bitrafael.server.api.dto.InputInfo;
 import com.generalbytes.bitrafael.server.api.dto.OutputInfo;
-import com.generalbytes.bitrafael.tools.transaction.Transaction;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.plugin.impl.everytrade.BlockchainTransaction;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import lombok.AccessLevel;
 import lombok.ToString;
@@ -48,7 +48,7 @@ public class BlockchainApiTransactionBean {
     boolean importFeesFromDeposits;
     boolean importFeesFromWithdrawals;
 
-    public BlockchainApiTransactionBean(Transaction transaction,
+    public BlockchainApiTransactionBean(BlockchainTransaction transaction,
                                         String base,
                                         String quote,
                                         boolean importDepositsAsBuys,
@@ -90,7 +90,7 @@ public class BlockchainApiTransactionBean {
 
         final boolean isIncorrectFee = !(base.equals(feeCurrency) || quote.equals(feeCurrency));
         List<ImportedTransactionBean> related;
-        if (equalsToZero(feeAmount) || isIncorrectFee || !withFee) {
+        if (DEPOSIT.equals(type) || equalsToZero(feeAmount) || isIncorrectFee || !withFee) {
             related = Collections.emptyList();
         } else {
             related = List.of(new FeeRebateImportedTransactionBean(
@@ -116,7 +116,7 @@ public class BlockchainApiTransactionBean {
         return cluster;
     }
 
-    private TransactionType resolveTxType(Transaction t) {
+    private TransactionType resolveTxType(BlockchainTransaction t) {
         if (t.isDirectionSend()) {
             return importWithdrawalsAsSells ? SELL : WITHDRAWAL;
         } else {
@@ -155,7 +155,7 @@ public class BlockchainApiTransactionBean {
         }
     }
 
-    private String oppositeAddress(Transaction t) {
+    private String oppositeAddress(BlockchainTransaction t) {
         if (type != DEPOSIT && type != WITHDRAWAL) {
             return null;
         }
