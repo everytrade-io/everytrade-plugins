@@ -71,6 +71,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.Bi
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.everytrade.EveryTradeBeanV3_1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.everytrade.EveryTradeBeanV3_2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.v1.KuCoinBuySellV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.v1.KuCoinBuySellV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.v1.KuCoinDepositV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.v1.KuCoinWithdrawalV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.utils.ClusterValidator;
@@ -755,6 +756,15 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                     "tradeCreatedAt","orderId","symbol","side","price","size","funds","fee","liquidity","feeCurrency","orderType"
                 ).withSeparator(delimiter)))
                 .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(KuCoinBuySellV1.class, delimiter))
+                .supportedExchange(KUCOIN)
+                .build());
+
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(CsvHeader.of(
+                    "UID", "Account Type", "Order ID", "Symbol", "Side", "Order Type", "Avg. Filled Price", "Filled Amount",
+                    "Filled Volume", "Filled Volume (USDT)", "Filled Time(UTC+02:00)", "Fee", "Maker/Taker", "Fee Currency"
+                ).withSeparator(delimiter)))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(KuCoinBuySellV2.class, delimiter))
                 .supportedExchange(KUCOIN)
                 .build());
 
