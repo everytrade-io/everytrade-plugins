@@ -164,10 +164,11 @@ public class BlockchainApiTransactionBean {
                 if (in.getAddress().equals(out.getAddress())) {
                     continue;
                 }
-                if (type == WITHDRAWAL) {
+                if (out.getAddress().equals(t.getRelativeToAddress())) {
                     return out.getAddress();
-                } else {
-                    return in.getAddress();
+                }
+                if (in.getAddress().equals(t.getRelativeToAddress())) {
+                    return out.getAddress();
                 }
             }
         }
