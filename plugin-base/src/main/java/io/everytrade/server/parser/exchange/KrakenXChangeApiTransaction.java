@@ -207,7 +207,7 @@ public class KrakenXChangeApiTransaction implements IXChangeApiTransaction {
             .timestamp(record.getDate().toInstant())
             .type(fundingTypeToTxType(record))
             .base(currency)
-            .quote(null)
+            .quote(currency)
             .originalAmount(record.getAmount())
             .feeAmount(getFeeAmount(record))
             .feeCurrency(getFeeAmount(record) == null ? null : currency)
