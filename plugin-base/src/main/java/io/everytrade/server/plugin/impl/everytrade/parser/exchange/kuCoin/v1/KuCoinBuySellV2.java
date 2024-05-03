@@ -12,8 +12,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Date;
 
-import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.v1.KuCoinCurrencySwitcher.SWITCHER;
-
 public class KuCoinBuySellV2 extends BaseTransactionMapper {
 
     String orderId;
@@ -44,8 +42,8 @@ public class KuCoinBuySellV2 extends BaseTransactionMapper {
     public void setSymbol(String symbol) {
         try {
             String[] symbolParts = parsePair(symbol);
-            this.baseCurrency = SWITCHER.containsKey(symbolParts[0]) ? SWITCHER.get(symbolParts[0]) : Currency.fromCode(symbolParts[0]);
-            this.quoteCurrency = SWITCHER.containsKey(symbolParts[1]) ? SWITCHER.get(symbolParts[1]) : Currency.fromCode(symbolParts[1]);
+            this.baseCurrency = Currency.fromCode(symbolParts[0]);
+            this.quoteCurrency = Currency.fromCode(symbolParts[1]);
         } catch (Exception e) {
             throw new DataValidationException(UNSUPPORTED_CURRENCY_PAIR + symbol);
         }
