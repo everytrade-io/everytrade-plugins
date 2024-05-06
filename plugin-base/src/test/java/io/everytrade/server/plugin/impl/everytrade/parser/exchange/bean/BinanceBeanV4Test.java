@@ -31,6 +31,7 @@ import static io.everytrade.server.model.Currency.ROSE;
 import static io.everytrade.server.model.Currency.RUNE;
 import static io.everytrade.server.model.Currency.SHIB;
 import static io.everytrade.server.model.Currency.SOL;
+import static io.everytrade.server.model.Currency.USD;
 import static io.everytrade.server.model.Currency.USDC;
 import static io.everytrade.server.model.Currency.USDT;
 import static io.everytrade.server.model.Currency.UST;
@@ -1722,5 +1723,47 @@ class BinanceBeanV4Test {
 
         TestUtils.testTxs(expectedSell2.getMain(), actual.getTransactionClusters().get(1).getMain());
         TestUtils.testTxs(expectedSell2.getRelated().get(0), actual.getTransactionClusters().get(1).getRelated().get(0));
+    }
+
+    @Test
+    void testBinanceCardSpending() {
+        final String row0 = "38065325,2022-02-23 17:52:04,CARD,Binance Card Spending,EUR,-225.54000000,\"\"\n";
+        final String row1 = "38065325,2022-03-25 19:31:09,CARD,Binance Card Spending,BNB,-0.00232292,\"\"\n";
+        final var actual = ParserTestUtils.getParseResult(HEADER_CORRECT + row0.concat(row1));
+
+        final TransactionCluster fiat = new TransactionCluster(
+            ImportedTransactionBean.createDepositWithdrawal(
+                null,
+                Instant.parse("2022-02-23T17:52:04Z"),
+                EUR,
+                EUR,
+                WITHDRAWAL,
+                new BigDecimal("225.54000000"),
+                null,
+                "Binance Card Spending",
+                null
+            ),
+            List.of()
+        );
+
+        final TransactionCluster crypto = new TransactionCluster(
+            ImportedTransactionBean.createDepositWithdrawal(
+                null,
+                Instant.parse("2022-03-25T19:31:09Z"),
+                BNB,
+                USD,
+                SELL,
+                new BigDecimal("0.00232292000000000"),
+                null,
+                "Binance Card Spending",
+                null
+            ),
+            List.of()
+        );
+
+
+
+        TestUtils.testTxs(fiat.getMain(), actual.getTransactionClusters().get(0).getMain());
+        TestUtils.testTxs(crypto.getMain(), actual.getTransactionClusters().get(1).getMain());
     }
 }
