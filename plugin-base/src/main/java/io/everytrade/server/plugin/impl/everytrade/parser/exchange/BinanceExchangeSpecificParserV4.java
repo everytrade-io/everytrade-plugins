@@ -28,6 +28,7 @@ import static io.everytrade.server.model.TransactionType.STAKE;
 import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
 import static io.everytrade.server.model.TransactionType.UNSTAKE;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BINANCE_CARD_SPENDING;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_CASHBACK_VOUCHER;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_ETH2_0_STAKING_REWARDS;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SAVING_DISTRIBUTION;
@@ -181,6 +182,9 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
                 if (REBATE.equals(row.getType()) || REBATE.equals(OPERATION_TYPE_CASHBACK_VOUCHER)) {
                     row = BinanceSortedGroupV4.createRebateTxs(row);
                     result.add(row);
+                } else if (OPERATION_TYPE_BINANCE_CARD_SPENDING.equals(row.getOperationType())) {
+                    List<BinanceBeanV4> createdTx = BinanceSortedGroupV4.createBinanceCardSpendingTxs(row);
+                    result.addAll(createdTx);
                 } else if (EARNING.equals(row.getType())) {
                     row = BinanceSortedGroupV4.createEarningsTxs(row);
                     result.add(row);

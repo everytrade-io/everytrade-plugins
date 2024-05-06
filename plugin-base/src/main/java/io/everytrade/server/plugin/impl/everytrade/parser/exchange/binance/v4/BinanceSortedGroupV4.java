@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static io.everytrade.server.model.Currency.BNB;
+import static io.everytrade.server.model.Currency.USD;
 import static io.everytrade.server.model.Currency.USDT;
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
@@ -547,6 +548,34 @@ public class BinanceSortedGroupV4 {
         row.setAmountBase(row.getChange().abs());
         row.setMarketBase(row.getCoin());
         return row;
+    }
+
+    public static List<BinanceBeanV4> createBinanceCardSpendingTxs(BinanceBeanV4 row) {
+
+        List<BinanceBeanV4> result = new ArrayList<>();
+
+            if (row.getCoin().isFiat()){
+                BinanceBeanV4 withdrawalBean = new BinanceBeanV4();
+                withdrawalBean.setDate(row.getDate());
+                withdrawalBean.setMarketBase(row.getCoin());
+                withdrawalBean.setAmountBase(row.getChange().abs());
+                withdrawalBean.setMarketQuote(row.getCoin());
+                withdrawalBean.setAmountQuote(row.getChange().abs());
+                withdrawalBean.setType(WITHDRAWAL);
+                withdrawalBean.setNote("Binance Card Spending");
+                result.add(withdrawalBean);
+            } else {
+                BinanceBeanV4 sellBean = new BinanceBeanV4();
+                sellBean.setDate(row.getDate());
+                sellBean.setMarketBase(row.getCoin());
+                sellBean.setAmountBase(row.getChange().abs());
+                sellBean.setMarketQuote(USD);
+                sellBean.setType(SELL);
+                sellBean.setNote("Binance Card Spending");
+                result.add(sellBean);
+            }
+
+        return result;
     }
 
     public static BinanceBeanV4 createDepositWithdrawalTxs(BinanceBeanV4 row) {
