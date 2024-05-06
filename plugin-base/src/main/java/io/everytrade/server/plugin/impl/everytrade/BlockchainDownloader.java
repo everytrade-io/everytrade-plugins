@@ -3,6 +3,7 @@ package io.everytrade.server.plugin.impl.everytrade;
 import com.generalbytes.bitrafael.client.Client;
 import com.generalbytes.bitrafael.server.api.dto.AddressInfo;
 import com.generalbytes.bitrafael.server.api.dto.TxInfo;
+import com.generalbytes.bitrafael.tools.transaction.Transaction;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.parser.ParseResult;
@@ -105,7 +106,7 @@ public class BlockchainDownloader {
     }
 
     public DownloadResult download(String source) {
-        List<BlockchainTransaction> transactions = new ArrayList<>();
+        List<Transaction> transactions = new ArrayList<>();
         int request = 0;
         int page = 0;
         try {
@@ -155,14 +156,13 @@ public class BlockchainDownloader {
         return downloadResult;
     }
 
-    private List<BlockchainTransaction> getNewTransactionsFromAddressInfos(Collection<AddressInfo> addressInfos) {
-        final List<BlockchainTransaction> transactions = new ArrayList<>();
+    private List<Transaction> getNewTransactionsFromAddressInfos(Collection<AddressInfo> addressInfos) {
+        final List<Transaction> transactions = new ArrayList<>();
         long newLastTxTimestamp = 0;
         for (AddressInfo addressInfo : addressInfos) {
             final List<TxInfo> txInfos = addressInfo.getTxInfos();
             for (TxInfo txInfo : txInfos) {
-                final BlockchainTransaction transaction = BlockchainTransaction.buildTransaction(txInfo, addressInfo.getAddress());
-
+                final Transaction transaction = Transaction.buildTransaction(txInfo, addressInfo.getAddress());
                 final long timestamp = transaction.getTimestamp();
                 final boolean newTimeStamp = timestamp >= lastTxTimestamp;
                 final boolean newHash = !lastTxHashes.contains(transaction.getTxHash());
@@ -174,7 +174,7 @@ public class BlockchainDownloader {
                     && txInfo.getOutputInfos()
                     .stream()
                     .noneMatch(outputInfo -> outputInfo.getAddress().equals(addressInfo.getAddress())) && operation.equals("WITHDRAWAL")) {
-                    List<BlockchainTransaction> builtTx = BlockchainTransaction.buildWithdrawalTxFromDifferentWallets(
+                    List<Transaction> builtTx = BlockchainTransaction.buildWithdrawalTxFromDifferentWallets(
                         txInfo,
                         addressInfo.getAddress(), transaction.isDirectionSend(),
                         transaction.getFee());
@@ -200,7 +200,7 @@ public class BlockchainDownloader {
         return transactions;
     }
 
-    private DownloadResult getTransactionsFromAddressInfos(List<BlockchainTransaction> transactions, long newLastTxTimestamp,
+    private DownloadResult getTransactionsFromAddressInfos(List<Transaction> transactions, long newLastTxTimestamp,
                                                            int newLastPage) {
         final ParseResult parseResult = BlockchainConnectorParser.getParseResult(
             transactions,
@@ -215,7 +215,7 @@ public class BlockchainDownloader {
         return new DownloadResult(parseResult, newLastTransactionId);
     }
 
-    private String getNewLastTransactionId(long newLastTxTimestamp, List<BlockchainTransaction> transactions, int newLastPage) {
+    private String getNewLastTransactionId(long newLastTxTimestamp, List<Transaction> transactions, int newLastPage) {
         if (newLastTxTimestamp == 0) {
             if (lastTransactionUid == null) {
                 return null;
@@ -230,7 +230,7 @@ public class BlockchainDownloader {
         }
         final Set<String> newLastTxHashesSet = transactions.stream()
             .filter(transaction -> transaction.getTimestamp() == newLastTxTimestamp)
-            .map(BlockchainTransaction::getTxHash)
+            .map(Transaction::getTxHash)
             .collect(Collectors.toSet());
         final String newLastTxHashes = String.join(PIPE_SYMBOL, newLastTxHashesSet);
         return newLastTxTimestamp + COLON_SYMBOL + newLastTxHashes + COLON_SYMBOL + newLastPage + COLON_SYMBOL + LIMIT;

@@ -1,5 +1,6 @@
 package io.everytrade.server.plugin.impl.everytrade;
 
+import com.generalbytes.bitrafael.tools.transaction.Transaction;
 import io.everytrade.server.parser.exchange.BlockchainApiTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParseResult;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
@@ -19,7 +20,7 @@ public class BlockchainConnectorParser {
     }
 
     public static ParseResult getParseResult(
-        List<BlockchainTransaction> transactions,
+        List<Transaction> transactions,
         String base,
         String quote,
         boolean importDepositsAsBuys,
@@ -30,7 +31,7 @@ public class BlockchainConnectorParser {
         final List<TransactionCluster> transactionClusters = new ArrayList<>();
         final List<ParsingProblem> parsingProblems = new ArrayList<>();
 
-        for (BlockchainTransaction transaction : transactions) {
+        for (Transaction transaction : transactions) {
             try {
                 BlockchainApiTransactionBean blockchainApiTransactionBean = new BlockchainApiTransactionBean(
                     transaction,

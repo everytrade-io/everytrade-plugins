@@ -3,36 +3,17 @@ package io.everytrade.server.plugin.impl.everytrade;
 import com.generalbytes.bitrafael.server.api.dto.InputInfo;
 import com.generalbytes.bitrafael.server.api.dto.OutputInfo;
 import com.generalbytes.bitrafael.server.api.dto.TxInfo;
-import com.generalbytes.bitrafael.tools.api.transaction.ITransaction;
+import com.generalbytes.bitrafael.tools.transaction.Transaction;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BlockchainTransaction implements ITransaction {
-    private final TxInfo parentTxInfo;
-
-    private final String relativeToAddress;
-    private final boolean directionSend;
-    private final long txAmount;
-    private final long fee;
+public class BlockchainTransaction extends Transaction {
 
     public BlockchainTransaction(TxInfo parentTxInfo, String relativeToAddress, boolean directionSend, long txAmount, long fee) {
-        this.parentTxInfo = parentTxInfo;
-        this.relativeToAddress = relativeToAddress;
-        this.directionSend = directionSend;
-        this.txAmount = txAmount;
-        this.fee = fee;
-    }
-
-    public static List<BlockchainTransaction> buildTransactions(List<TxInfo> txInfos, String relativeToAddress) {
-        List<BlockchainTransaction> result = new ArrayList<>();
-        for (int i = 0; i < txInfos.size(); i++) {
-            TxInfo txInfo = txInfos.get(i);
-            result.add(buildTransaction(txInfo, relativeToAddress));
-        }
-        return result;
+        super(parentTxInfo, relativeToAddress, directionSend, txAmount, fee);
     }
 
     /**
@@ -49,9 +30,9 @@ public class BlockchainTransaction implements ITransaction {
      * <li> Value of each output = (input value of the address - recalculated fee) / sum of outputs * individual output value </li>
      * <li> Fee for each individual output = recalculated fee / sum of outputs * individual output value </li>
      */
-    public static List<BlockchainTransaction> buildWithdrawalTxFromDifferentWallets(TxInfo txInfo, String relativeToAddress,
+    public static List<Transaction> buildWithdrawalTxFromDifferentWallets(TxInfo txInfo, String relativeToAddress,
                                                                                     boolean directionSend, long fee) {
-        List<BlockchainTransaction> result = new ArrayList<>();
+        List<Transaction> result = new ArrayList<>();
         if (txInfo == null) {
             return null;
         }
@@ -78,161 +59,12 @@ public class BlockchainTransaction implements ITransaction {
             long outputWithFeeLong = outputWithFee.setScale(0, RoundingMode.HALF_UP).longValue();
             long feeForOutputLong = feeForOutput.setScale(0, RoundingMode.HALF_UP).longValue();
 
-            result.add(new BlockchainTransaction(txInfo, txInfo.getOutputInfos().get(i).getAddress(), directionSend,
+            result.add(new Transaction(txInfo, txInfo.getOutputInfos().get(i).getAddress(), directionSend,
                 outputWithFeeLong,
                 feeForOutputLong));
         }
 
         return result;
-    }
-
-    public static BlockchainTransaction buildTransaction(TxInfo txInfo, String relativeToAddress) {
-        if (txInfo == null) {
-            return null;
-        }
-        if (relativeToAddress != null) {
-            long inputs = 0;
-            long outputs = 0;
-            long addrInput = 0;
-            long addrOutput = 0;
-            final List<InputInfo> inputInfos = txInfo.getInputInfos();
-            for (int j = 0; j < inputInfos.size(); j++) {
-                InputInfo inputInfo = inputInfos.get(j);
-                inputs += inputInfo.getValue();
-                if (inputInfo.getAddress().equals(relativeToAddress)) {
-                    addrInput += inputInfo.getValue();
-                }
-            }
-            final List<OutputInfo> outputInfos = txInfo.getOutputInfos();
-            for (int j = 0; j < outputInfos.size(); j++) {
-                OutputInfo outputInfo = outputInfos.get(j);
-                outputs += outputInfo.getValue();
-                if (outputInfo.getAddress().equals(relativeToAddress)) {
-                    addrOutput += outputInfo.getValue();
-                }
-            }
-
-            long fee = inputs - outputs;
-            long txAmount = inputs > 0 ? addrOutput - addrInput : outputs;
-            boolean directionSend = addrOutput - addrInput < 0;
-            return new BlockchainTransaction(txInfo, relativeToAddress, directionSend, txAmount, fee);
-        } else {
-            long inputs = 0;
-            long outputs = 0;
-            long addrInput = 0;
-            long addrOutput = 0;
-
-            String address = guessAddress(txInfo);
-
-            final List<InputInfo> inputInfos = txInfo.getInputInfos();
-            for (int j = 0; j < inputInfos.size(); j++) {
-                InputInfo inputInfo = inputInfos.get(j);
-                inputs += inputInfo.getValue();
-                if (inputInfo.getAddress().equals(address)) {
-                    addrInput += inputInfo.getValue();
-                }
-            }
-            final List<OutputInfo> outputInfos = txInfo.getOutputInfos();
-            for (int j = 0; j < outputInfos.size(); j++) {
-                OutputInfo outputInfo = outputInfos.get(j);
-                outputs += outputInfo.getValue();
-                if (outputInfo.getAddress().equals(address)) {
-                    addrOutput += outputInfo.getValue();
-                }
-            }
-            long fee = inputs - outputs;
-            boolean directionSend = addrOutput - addrInput < 0;
-            long txAmount = inputs > 0 ? addrOutput - addrInput : outputs;
-            return new BlockchainTransaction(txInfo, address, directionSend, txAmount, fee);
-        }
-    }
-
-    private static String guessAddress(TxInfo txInfo) {
-        final List<InputInfo> inputInfos = txInfo.getInputInfos();
-        final List<OutputInfo> outputInfos = txInfo.getOutputInfos();
-        for (int i = 0; i < inputInfos.size(); i++) {
-            InputInfo inputInfo = inputInfos.get(i);
-            for (int j = 0; j < outputInfos.size(); j++) {
-                OutputInfo outputInfo = outputInfos.get(j);
-                if (outputInfo.getAddress().equals(inputInfo.getAddress())) {
-                    return outputInfo.getAddress();
-                }
-            }
-        }
-        return inputInfos.get(0).getAddress();
-    }
-
-    @Override
-    public String getTxHash() {
-        return parentTxInfo.getTxHash();
-    }
-
-    @Override
-    public String getBlockHash() {
-        return parentTxInfo.getBlockHash();
-    }
-
-    @Override
-    public long getTimestamp() {
-        return parentTxInfo.getTimestamp();
-    }
-
-    @Override
-    public long getReceivedTimestamp() {
-        return parentTxInfo.getReceivedTimestamp();
-    }
-
-    @Override
-    public long getSize() {
-        return parentTxInfo.getSize();
-    }
-
-    @Override
-    public List<InputInfo> getInputInfos() {
-        return parentTxInfo.getInputInfos();
-    }
-
-    @Override
-    public List<OutputInfo> getOutputInfos() {
-        return parentTxInfo.getOutputInfos();
-    }
-
-    @Override
-    public long getBlockHeight() {
-        return parentTxInfo.getBlockHeight();
-    }
-
-    @Override
-    public long getConfirmations() {
-        return parentTxInfo.getConfirmations();
-    }
-
-    @Override
-    public boolean isDirectionSend() {
-        return directionSend;
-    }
-
-    @Override
-    public long getAmount() {
-        return txAmount;
-    }
-
-    @Override
-    public long getFee() {
-        return fee;
-    }
-
-    public String getRelativeToAddress() {
-        return relativeToAddress;
-    }
-
-    @Override
-    public String toString() {
-        return "Transaction{" +
-            "directionSend=" + directionSend +
-            ", txAmount=" + txAmount +
-            ", relativeToAddress='" + relativeToAddress + '\'' +
-            '}';
     }
 }
 
