@@ -200,8 +200,7 @@ public class BlockchainDownloader {
         return transactions;
     }
 
-    private DownloadResult getTransactionsFromAddressInfos(List<Transaction> transactions, long newLastTxTimestamp,
-                                                           int newLastPage) {
+    private DownloadResult getTransactionsFromAddressInfos(List<Transaction> transactions, long newLastTxTimestamp, int newLastPage) {
         final ParseResult parseResult = BlockchainConnectorParser.getParseResult(
             transactions,
             cryptoCurrency,
