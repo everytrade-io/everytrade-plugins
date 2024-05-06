@@ -4,6 +4,10 @@ import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceBeanV4;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceSortedGroupV4;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,6 +19,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
+import static io.everytrade.server.model.TransactionType.AIRDROP;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.REBATE;
@@ -23,6 +28,7 @@ import static io.everytrade.server.model.TransactionType.STAKE;
 import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
 import static io.everytrade.server.model.TransactionType.UNSTAKE;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BINANCE_CARD_SPENDING;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_CASHBACK_VOUCHER;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_ETH2_0_STAKING_REWARDS;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SAVING_DISTRIBUTION;
@@ -44,6 +50,22 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
 
     public BinanceExchangeSpecificParserV4(Class<? extends ExchangeBean> exchangeBean, String delimiter, boolean isRowInsideQuotes) {
         super(exchangeBean, delimiter);
+    }
+
+    @Override
+    protected void correctFile(File file) {
+        try {
+            // Load the entire content of the file into a String
+            String content = Files.lines(file.toPath(), StandardCharsets.UTF_8).collect(Collectors.joining("\n"));
+
+            // Remove all double quotes from the content
+            content = content.replace("\"", "");
+
+            // rewrite the file with the new content
+            Files.write(file.toPath(), content.getBytes(StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -160,8 +182,14 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
                 if (REBATE.equals(row.getType()) || REBATE.equals(OPERATION_TYPE_CASHBACK_VOUCHER)) {
                     row = BinanceSortedGroupV4.createRebateTxs(row);
                     result.add(row);
+                } else if (OPERATION_TYPE_BINANCE_CARD_SPENDING.equals(row.getOperationType())) {
+                    List<BinanceBeanV4> createdTx = BinanceSortedGroupV4.createBinanceCardSpendingTxs(row);
+                    result.addAll(createdTx);
                 } else if (EARNING.equals(row.getType())) {
                     row = BinanceSortedGroupV4.createEarningsTxs(row);
+                    result.add(row);
+                } else if (AIRDROP.equals(row.getType())) {
+                    row = BinanceSortedGroupV4.createAirdropTxs(row);
                     result.add(row);
                 } else if (STAKING_REWARD.equals(row.getType()) || UNSTAKE.equals(row.getType()) || STAKE.equals(row.getType())) {
                     row = BinanceSortedGroupV4.createStakingsTxs(row);

@@ -21,8 +21,8 @@ import java.util.Collections;
 import java.util.List;
 
 import static io.everytrade.server.model.TransactionType.BUY;
-import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
+import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.equalsToZero;
@@ -90,7 +90,7 @@ public class BlockchainApiTransactionBean {
 
         final boolean isIncorrectFee = !(base.equals(feeCurrency) || quote.equals(feeCurrency));
         List<ImportedTransactionBean> related;
-        if (equalsToZero(feeAmount) || isIncorrectFee || !withFee) {
+        if (DEPOSIT.equals(type) || equalsToZero(feeAmount) || isIncorrectFee || !withFee) {
             related = Collections.emptyList();
         } else {
             related = List.of(new FeeRebateImportedTransactionBean(
@@ -164,10 +164,11 @@ public class BlockchainApiTransactionBean {
                 if (in.getAddress().equals(out.getAddress())) {
                     continue;
                 }
-                if (type == WITHDRAWAL) {
+                if (out.getAddress().equals(t.getRelativeToAddress())) {
                     return out.getAddress();
-                } else {
-                    return in.getAddress();
+                }
+                if (in.getAddress().equals(t.getRelativeToAddress())) {
+                    return out.getAddress();
                 }
             }
         }

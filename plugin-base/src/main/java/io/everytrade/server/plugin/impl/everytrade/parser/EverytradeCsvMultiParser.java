@@ -141,6 +141,15 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             var binanceHeader4 =
                 CsvHeader.of("User_ID", "UTC_Time", "Account", "Operation", "Coin", "Change", "Remark")
                     .withSeparator(delimiter);
+            var binanceHeader4_v2 =
+                CsvHeader.of("\"User_ID",
+                        "\"\"UTC_Time\"\"",
+                        "\"\"Account\"\"",
+                        "\"\"Operation\"\"",
+                        "\"\"Coin\"\"",
+                        "\"\"Change\"\"",
+                        "\"\"Remark\"\"\"")
+                    .withSeparator(delimiter);
             var binanceHeader5 =
                 CsvHeader.of("Date(UTC)","Product Name","Coin","Amount")
                     .withSeparator(delimiter);
@@ -182,7 +191,7 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 .build());
 
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
-                .headers(List.of(binanceHeader4.withSeparator(delimiter)))
+                .headers(List.of(binanceHeader4.withSeparator(delimiter), binanceHeader4_v2.withSeparator(delimiter)))
                 .parserFactory(() -> new BinanceExchangeSpecificParserV4(BinanceBeanV4.class, delimiter, true))
                 .supportedExchange(BINANCE)
                 .build());
