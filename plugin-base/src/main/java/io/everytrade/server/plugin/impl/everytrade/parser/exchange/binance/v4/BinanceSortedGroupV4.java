@@ -602,7 +602,15 @@ public class BinanceSortedGroupV4 {
         return row;
     }
 
-
+    public static BinanceBeanV4 createAirdropTxs(BinanceBeanV4 row) {
+        row.setRowNumber(row.getDate().getEpochSecond());
+        String[] strings = {"Row id " + row.usedIds.toString() + " " + row.getOriginalOperation()};
+        row.setRowValues(strings);
+        row.setAmountBase(row.getChange().abs());
+        row.setMarketBase(row.getCoin());
+        row.setType(TransactionType.AIRDROP);
+        return row;
+    }
 
 
     private boolean isConvert(BinanceBeanV4 stRow, BinanceBeanV4 ndRow) {

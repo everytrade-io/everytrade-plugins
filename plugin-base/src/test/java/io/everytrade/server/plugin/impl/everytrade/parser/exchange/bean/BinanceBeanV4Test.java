@@ -22,6 +22,7 @@ import static io.everytrade.server.model.Currency.CZK;
 import static io.everytrade.server.model.Currency.DOGE;
 import static io.everytrade.server.model.Currency.DOT;
 import static io.everytrade.server.model.Currency.ETH;
+import static io.everytrade.server.model.Currency.ETHW;
 import static io.everytrade.server.model.Currency.EUR;
 import static io.everytrade.server.model.Currency.KSM;
 import static io.everytrade.server.model.Currency.LTC;
@@ -35,6 +36,7 @@ import static io.everytrade.server.model.Currency.USD;
 import static io.everytrade.server.model.Currency.USDC;
 import static io.everytrade.server.model.Currency.USDT;
 import static io.everytrade.server.model.Currency.UST;
+import static io.everytrade.server.model.TransactionType.AIRDROP;
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.EARNING;
@@ -42,16 +44,18 @@ import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.REBATE;
 import static io.everytrade.server.model.TransactionType.REWARD;
 import static io.everytrade.server.model.TransactionType.SELL;
-import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.model.TransactionType.STAKE;
 import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
 import static io.everytrade.server.model.TransactionType.UNSTAKE;
+import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.REBATE_UID_PART;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class BinanceBeanV4Test {
     public static final String HEADER_CORRECT = "\uFEFFUser_ID,UTC_Time,Account,Operation,Coin,Change,Remark\n";
+    public static final String HEADER_CORRECT_QUOTED =
+        "\"User_ID,\"\"UTC_Time\"\",\"\"Account\"\",\"\"Operation\"\",\"\"Coin\"\",\"\"Change\"\",\"\"Remark\"\"\"\n";
 
     @Test
     void testBuyRelated() {
@@ -1571,7 +1575,7 @@ class BinanceBeanV4Test {
         var expectedProblem = new ParsingProblem("[38065325, 2021-05-18 18:19:50, SPOT, Fiat Withdraw, EUR, 8000.00000000, null]",
                 "Expected negative value\nInternal state when error was thrown: Unable to set value '8000.00000000' of type" +
                         " 'java.lang.String' to method 'setChange' of class io.everytrade.server.plugin.impl.everytrade.parser.exchange." +
-                        "binance.v4.BinanceBeanV4\nline=3, column=0, record=2, charIndex=194, " +
+                        "binance.v4.BinanceBeanV4\nline=3, column=0, record=2, charIndex=189, " +
                         "headers=[User_ID, UTC_Time, Account, Operation," +
                         " Coin, Change, Remark], value=8000.00000000", ParsingProblemType.PARSED_ROW_IGNORED);
 
@@ -1606,7 +1610,7 @@ class BinanceBeanV4Test {
                 "Expected negative value\nInternal state when error was thrown: Unable to set value '1500.00000000' of type" +
                         " 'java.lang.String' to method 'setChange' of class io.everytrade.server.plugin.impl.everytrade.parser.exchange." +
                         "binance.v4.BinanceBeanV4\nline=3, column=0, record=2, " +
-                        "charIndex=194, headers=[User_ID, UTC_Time, Account, Operation" +
+                        "charIndex=189, headers=[User_ID, UTC_Time, Account, Operation" +
                         ", Coin, Change, Remark], value=1500.00000000", ParsingProblemType.PARSED_ROW_IGNORED);
 
         TestUtils.testTxs(expected.getMain(), actual.getTransactionClusters().get(0).getMain());
@@ -1726,7 +1730,32 @@ class BinanceBeanV4Test {
     }
 
     @Test
-    void testBinanceCardSpending() {
+    void testAirdrop() {
+        final String row0 = "\"495767450,\"\"2022-09-20 04:59:41\"\",\"\"Spot\"\",\"\"Airdrop Assets\"\",\"\"ETHW\"\"," +
+            "\"\"0.05152948\"\",\"\"\"\"\"\n";
+
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT_QUOTED + row0);
+
+        final TransactionCluster expected0 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-09-20T04:59:41Z"),
+                ETHW,
+                ETHW,
+                AIRDROP,
+                new BigDecimal("0.05152948"),
+                null,
+                null,
+                null
+            ),
+            List.of()
+        );
+
+        TestUtils.testTxs(expected0.getMain(), actual.get(0).getMain());
+    }
+  
+  @Test
+  void testBinanceCardSpending() {
         final String row0 = "38065325,2022-02-23 17:52:04,CARD,Binance Card Spending,EUR,-225.54000000,\"\"\n";
         final String row1 = "38065325,2022-03-25 19:31:09,CARD,Binance Card Spending,BNB,-0.00232292,\"\"\n";
         final var actual = ParserTestUtils.getParseResult(HEADER_CORRECT + row0.concat(row1));
@@ -1760,9 +1789,7 @@ class BinanceBeanV4Test {
             ),
             List.of()
         );
-
-
-
+      
         TestUtils.testTxs(fiat.getMain(), actual.getTransactionClusters().get(0).getMain());
         TestUtils.testTxs(crypto.getMain(), actual.getTransactionClusters().get(1).getMain());
     }

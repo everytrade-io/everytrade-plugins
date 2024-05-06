@@ -16,6 +16,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
 
+import static io.everytrade.server.model.TransactionType.AIRDROP;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.FEE;
@@ -224,6 +225,23 @@ public class BinanceBeanV4 extends ExchangeBean implements Cloneable {
                 );
                 related.add(feeTxs);
             }
+        }
+
+        if (AIRDROP.equals(type)) {
+            return new TransactionCluster(
+                new ImportedTransactionBean(
+                    null,
+                    date,
+                    marketBase,
+                    marketBase,
+                    AIRDROP,
+                    amountBase,
+                    null,
+                    note,
+                    null
+                ),
+                emptyList()
+            );
         }
 
         if (REWARD.equals(type)) {
