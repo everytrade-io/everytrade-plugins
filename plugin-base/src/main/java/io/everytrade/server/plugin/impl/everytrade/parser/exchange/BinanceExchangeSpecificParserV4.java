@@ -4,6 +4,10 @@ import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceBeanV4;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceSortedGroupV4;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,6 +19,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
+import static io.everytrade.server.model.TransactionType.AIRDROP;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.REBATE;
@@ -44,6 +49,22 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
 
     public BinanceExchangeSpecificParserV4(Class<? extends ExchangeBean> exchangeBean, String delimiter, boolean isRowInsideQuotes) {
         super(exchangeBean, delimiter);
+    }
+
+    @Override
+    protected void correctFile(File file) {
+        try {
+            // Load the entire content of the file into a String
+            String content = Files.lines(file.toPath(), StandardCharsets.UTF_8).collect(Collectors.joining("\n"));
+
+            // Remove all double quotes from the content
+            content = content.replace("\"", "");
+
+            // rewrite the file with the new content
+            Files.write(file.toPath(), content.getBytes(StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -162,6 +183,9 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
                     result.add(row);
                 } else if (EARNING.equals(row.getType())) {
                     row = BinanceSortedGroupV4.createEarningsTxs(row);
+                    result.add(row);
+                } else if (AIRDROP.equals(row.getType())) {
+                    row = BinanceSortedGroupV4.createAirdropTxs(row);
                     result.add(row);
                 } else if (STAKING_REWARD.equals(row.getType()) || UNSTAKE.equals(row.getType()) || STAKE.equals(row.getType())) {
                     row = BinanceSortedGroupV4.createStakingsTxs(row);
