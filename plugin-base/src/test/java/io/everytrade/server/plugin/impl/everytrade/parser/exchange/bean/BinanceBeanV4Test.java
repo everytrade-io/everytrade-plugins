@@ -1730,7 +1730,8 @@ class BinanceBeanV4Test {
 
     @Test
     void testAirdrop() {
-        final String row0 = "\"495767450,\"\"2022-09-20 04:59:41\"\",\"\"Spot\"\",\"\"Airdrop Assets\"\",\"\"ETHW\"\",\"\"0.05152948\"\",\"\"\"\"\"\n";
+        final String row0 = "\"495767450,\"\"2022-09-20 04:59:41\"\",\"\"Spot\"\",\"\"Airdrop Assets\"\",\"\"ETHW\"\"," +
+            "\"\"0.05152948\"\",\"\"\"\"\"\n";
 
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT_QUOTED + row0);
 
