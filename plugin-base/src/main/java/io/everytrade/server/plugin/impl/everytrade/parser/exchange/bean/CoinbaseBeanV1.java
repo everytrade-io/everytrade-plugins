@@ -158,8 +158,10 @@ public class CoinbaseBeanV1 extends ExchangeBean {
     public TransactionCluster toTransactionCluster() {
 
         Currency quoteCurrency = null;
-        Currency feeCurrency = null;
-        if (!transactionType.equals(WITHDRAWAL)) {
+        Currency feeCurrency;
+        if (transactionType.equals(WITHDRAWAL)) {
+            feeCurrency = Currency.fromCode(spotPriceCurrency);
+        } else {
             quoteCurrency = detectQuoteCurrency(notes);
             feeCurrency = detectFeeCurrency(quoteCurrency);
         }
