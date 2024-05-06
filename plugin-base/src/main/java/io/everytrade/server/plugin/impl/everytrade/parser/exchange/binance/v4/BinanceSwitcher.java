@@ -4,6 +4,7 @@ import io.everytrade.server.model.TransactionType;
 
 import java.util.List;
 
+import static io.everytrade.server.model.TransactionType.AIRDROP;
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.EARNING;
@@ -16,6 +17,7 @@ import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
 import static io.everytrade.server.model.TransactionType.UNKNOWN;
 import static io.everytrade.server.model.TransactionType.UNSTAKE;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_AIRDROP_ASSETS;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BINANCE_CONVERT;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BNB_VAULT_REWARDS;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BUY;
@@ -84,6 +86,9 @@ public class BinanceSwitcher {
             || OPERATION_TYPE_BUY_CRYPTO.code.equals(operationType)
             || OPERATION_TYPE_TRANSACTION_REVENUE.code.equals(operationType)) {
             return BUY;
+        }
+        if (OPERATION_TYPE_AIRDROP_ASSETS.code.equals(operationType)) {
+            return AIRDROP;
         }
         if (OPERATION_TYPE_DISTRIBUTION.code.equals(operationType) || OPERATION_TYPE_BNB_VAULT_REWARDS.code.equals(operationType)
             || OPERATION_TYPE_REFERRAL_COMMISSION.code.equals(operationType)) {
