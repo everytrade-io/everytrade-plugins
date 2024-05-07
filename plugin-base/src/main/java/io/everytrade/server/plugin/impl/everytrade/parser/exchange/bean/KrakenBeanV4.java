@@ -38,6 +38,9 @@ public class KrakenBeanV4 extends ExchangeBean {
 
     @Parsed(field = "pair")
     public void setPair(String pair) {
+        if (pair.contains("/")) {
+            pair = pair.replace("/", "");
+        }
         try {
             CurrencyPair currPair = findKrakenCurrencyPair(pair);
             this.pairBase = currPair.getBase();
