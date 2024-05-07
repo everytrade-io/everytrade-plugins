@@ -61,8 +61,8 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
     }
 
     @Parsed(field = "DATE")
-    @Format(formats = {"dd.MM.yy HH:mm:ss", "dd.MM.yyyy HH:mm:ss", "dd.MM.yy HH:mm", "yyyy-MM-dd HH:mm:ss"}, options = {"locale=US",
-        "timezone=UTC"})
+    @Format(formats = {"dd.MM.yy HH:mm:ss", "dd.MM.yyyy HH:mm:ss", "dd.MM.yy HH:mm", "yyyy-MM-dd HH:mm:ss", "dd.MM.yy"},
+        options = {"locale=US", "timezone=UTC"})
     public void setDate(Date value) {
         date = value.toInstant();
     }
