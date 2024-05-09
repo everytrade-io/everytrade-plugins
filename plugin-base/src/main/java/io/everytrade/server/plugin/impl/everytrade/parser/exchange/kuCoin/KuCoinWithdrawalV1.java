@@ -1,4 +1,4 @@
-package io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.v1;
+package io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin;
 
 import com.univocity.parsers.annotations.Format;
 import com.univocity.parsers.annotations.Parsed;
@@ -11,14 +11,13 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Date;
 
-import static io.everytrade.server.model.TransactionType.DEPOSIT;
-
-public class KuCoinDepositV1 extends BaseTransactionMapper {
+public class KuCoinWithdrawalV1 extends BaseTransactionMapper {
     Instant time;
     Currency coin;
     BigDecimal amount;
-    String remark;
     String type;
+    String walletAddress;
+    String remark;
 
     @Parsed(index = 0)
     @Format(formats = {"yyyy-MM-dd HH:mm:ss"}, options = {"locale=US", "timezone=UTC"})
@@ -40,22 +39,24 @@ public class KuCoinDepositV1 extends BaseTransactionMapper {
         this.amount = setAmountFromString(amount);
     }
 
-    @Parsed(field = "Remark")
-    public void setRemark(String remark) {
-        this.remark = remark;
-    }
-
     @Parsed(field = "Type")
     public void setType(String type) {
         this.type = type;
     }
 
+    @Parsed(field = "Wallet Address")
+    public void setWalletAddress(String walletAddress) {
+        this.walletAddress = walletAddress;
+    }
+
+    @Parsed(field = "Remark")
+    public void setRemark(String remark) {
+        this.remark = remark;
+    }
+
     @Override
     protected TransactionType findTransactionType() {
-        return switch (remark) {
-            case "Deposit" -> DEPOSIT;
-            default -> throw new DataValidationException(String.format("Unsupported transaction type %s. ", remark));
-        };
+        return TransactionType.WITHDRAWAL;
     }
 
     @Override
@@ -66,7 +67,7 @@ public class KuCoinDepositV1 extends BaseTransactionMapper {
             .base(coin)
             .quote(coin)
             .volume(amount)
-            .note(type)
+            .address(walletAddress)
             .build();
     }
 }

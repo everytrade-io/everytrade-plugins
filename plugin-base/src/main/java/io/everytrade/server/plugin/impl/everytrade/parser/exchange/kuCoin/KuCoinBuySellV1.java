@@ -1,4 +1,4 @@
-package io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.v1;
+package io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin;
 
 import com.univocity.parsers.annotations.Format;
 import com.univocity.parsers.annotations.Parsed;
@@ -12,71 +12,61 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Date;
 
-import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.v1.KuCoinCurrencySwitcher.SWITCHER;
-
-public class KuCoinBuySellV2 extends BaseTransactionMapper {
-
+public class KuCoinBuySellV1 extends BaseTransactionMapper {
+    Instant tradeCreatedAt;
     String orderId;
     CurrencyPair symbol;
     String side;
-    BigDecimal avgFilledPrice;
-    BigDecimal filledAmount;
-    BigDecimal filledVolume;
-    Instant filledTime;
+    BigDecimal price;
+    BigDecimal size;
     String feeCurrency;
     BigDecimal feeValue;
     Currency baseCurrency;
     Currency quoteCurrency;
 
-
-    @Parsed(field = "Filled Time(UTC+02:00)")
+    @Parsed(field = "tradeCreatedAt")
     @Format(formats = {"dd.MM.yyyy HH:mm:ss", "yyyy-MM-dd HH:mm:ss"}, options = {"locale=US", "timezone=UTC"})
-    public void setFilledTime(Date date) {
-        filledTime = date.toInstant();
+    public void setTradeCreatedAt(Date date) {
+        tradeCreatedAt = date.toInstant();
     }
 
-    @Parsed(field = "Order ID")
+    @Parsed(field = "orderId")
     public void setPair(String orderId) {
         this.orderId = orderId;
     }
 
-    @Parsed(field = "Symbol")
+    @Parsed(field = "symbol")
     public void setSymbol(String symbol) {
         try {
             String[] symbolParts = parsePair(symbol);
-            this.baseCurrency = SWITCHER.containsKey(symbolParts[0]) ? SWITCHER.get(symbolParts[0]) : Currency.fromCode(symbolParts[0]);
-            this.quoteCurrency = SWITCHER.containsKey(symbolParts[1]) ? SWITCHER.get(symbolParts[1]) : Currency.fromCode(symbolParts[1]);
+            this.baseCurrency = Currency.fromCode(symbolParts[0]);
+            this.quoteCurrency = Currency.fromCode(symbolParts[1]);
         } catch (Exception e) {
             throw new DataValidationException(UNSUPPORTED_CURRENCY_PAIR + symbol);
         }
     }
 
-    @Parsed(field = "Side")
+    @Parsed(field = "side")
     public void setSide(String side) {
         this.side = side;
     }
 
-    @Parsed(field = "Avg. Filled Price")
-    public void setAvgFilledPrice(BigDecimal avgFilledPrice) {
-        this.avgFilledPrice = avgFilledPrice;
+    @Parsed(field = "price")
+    public void setPrice(String price) {
+        this.price = setAmountFromString(price);
     }
 
-    @Parsed(field = "Filled Amount")
-    public void setFilledAmount(BigDecimal filledAmount) {
-        this.filledAmount = filledAmount;
+    @Parsed(field = "size")
+    public void setSize(String size) {
+        this.size = setAmountFromString(size);
     }
 
-    @Parsed(field = "Filled Volume")
-    public void setFilledVolume(BigDecimal filledVolume) {
-        this.filledVolume = filledVolume;
+    @Parsed(field = "fee")
+    public void setFee(String fee) {
+        this.feeValue = setAmountFromString(fee);
     }
 
-    @Parsed(field = "Fee")
-    public void setFee(BigDecimal feeValue) {
-        this.feeValue = feeValue;
-    }
-
-    @Parsed(field = "Fee Currency")
+    @Parsed(field = "feeCurrency")
     public void setFeeCurrency(String feeCurrency) {
         this.feeCurrency = feeCurrency;
     }
@@ -88,8 +78,8 @@ public class KuCoinBuySellV2 extends BaseTransactionMapper {
     @Override
     protected TransactionType findTransactionType() {
         return switch (side) {
-            case "BUY" -> TransactionType.BUY;
-            case "SELL" -> TransactionType.SELL;
+            case "buy" -> TransactionType.BUY;
+            case "sell" -> TransactionType.SELL;
             default -> throw new DataValidationException(String.format("Unsupported transaction type %s. ", side));
         };
     }
@@ -98,12 +88,12 @@ public class KuCoinBuySellV2 extends BaseTransactionMapper {
     protected BaseClusterData mapData() {
         return BaseClusterData.builder()
             .transactionType(findTransactionType())
-            .executed(filledTime)
+            .executed(tradeCreatedAt)
             .note(orderId)
             .base(baseCurrency)
             .quote(quoteCurrency)
-            .unitPrice(avgFilledPrice)
-            .volume(filledAmount)
+            .unitPrice(price)
+            .volume(size)
             .fee(feeCurrency)
             .feeAmount(feeValue)
             .build();
