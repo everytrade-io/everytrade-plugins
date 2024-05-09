@@ -1,4 +1,4 @@
-package io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.v1;
+package io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin;
 
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;

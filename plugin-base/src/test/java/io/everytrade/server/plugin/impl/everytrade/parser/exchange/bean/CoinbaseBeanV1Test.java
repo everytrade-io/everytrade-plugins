@@ -54,6 +54,10 @@ class CoinbaseBeanV1Test {
         = "Timestamp,Transaction Type,Asset,Quantity Transacted,Spot Price Currency,Spot Price at Transaction,Subtotal," +
         "Total (inclusive of fees and/or spread),Fees and/or Spread,Notes\n";
 
+    private static final String HEADER_WITHOUT_SPOT
+        = "ID,Timestamp,Transaction Type,Asset,Quantity Transacted,Price Currency,Price at Transaction,Subtotal,Total (inclusive of fees " +
+        "and/or spread),Fees and/or Spread,Notes\n";
+
     @Test
     void testCorrectHeader() {
         try {
@@ -448,5 +452,36 @@ class CoinbaseBeanV1Test {
         );
         ParserTestUtils.checkEqual(expected, actual.getTransactionClusters().get(0));
         ParserTestUtils.checkEqual(expected2, actual.getTransactionClusters().get(1));
+    }
+
+    @Test
+    void testWithdrawalWithFee() {
+        var row = "5fdb253d835a950001badb32,2020-12-17 09:30:37 UTC,Withdrawal,EUR,348.42,USD,1,427.22,418.68,-8.5464049,\n";
+        final ParseResult actual = ParserTestUtils.getParseResult(HEADER_WITHOUT_SPOT + row);
+
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2020-12-17T09:30:37Z"),
+                EUR,
+                EUR,
+                WITHDRAWAL,
+                new BigDecimal("348.42000000000000000"),
+                null,
+                null,
+                ""
+            ), List.of(
+            new FeeRebateImportedTransactionBean(
+                FEE_UID_PART,
+                Instant.parse("2020-12-17T09:30:37Z"),
+                USD,
+                USD,
+                FEE,
+                new BigDecimal("8.54640490000000000"),
+                USD
+            ))
+        );
+
+        ParserTestUtils.checkEqual(expected, actual.getTransactionClusters().get(0));
     }
 }

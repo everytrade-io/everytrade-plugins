@@ -22,6 +22,7 @@ public class KuCoinBuySellTest {
         "orderType\n";
     public static final String HEADER_BUY_SELL_V2 = "UID,Account Type,Order ID,Symbol,Side,Order Type,Avg. Filled Price,Filled Amount," +
         "Filled Volume,Filled Volume (USDT),Filled Time(UTC+02:00),Fee,Maker/Taker,Fee Currency\n";
+    public static final String HEADER_BUY_SELL_V3 = "UID,Account Type,Payment Account,Sell,Buy,Price,Time of Update(UTC+02:00),Status\n";
 
     @Test
     void testBuyHeaderV1() {
@@ -85,6 +86,30 @@ public class KuCoinBuySellTest {
                 SELL,
                 new BigDecimal("7634.811"),
                 new BigDecimal("0.09542"),
+                null,
+                null
+            ),
+            List.of()
+        );
+
+        TestUtils.testTxs(expected.getMain(), actual.getTransactionClusters().get(0).getMain());
+    }
+
+    @Test
+    void testSellHeaderV3() {
+        final String row0 = "****4228,mainAccount,TRADE,10285.1148 KAS,16272.9897 DOGE,1 KAS=1.5821884360493477 DOGE,2023-12-04 08:28:21," +
+            "SUCCESS\n";
+        final var actual = ParserTestUtils.getParseResult(HEADER_BUY_SELL_V3 + row0);
+
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2023-12-04T08:28:21Z"),
+                DOGE,
+                KAS,
+                BUY,
+                new BigDecimal("16272.9897"),
+                new BigDecimal("0.63203596816631675"),
                 null,
                 null
             ),

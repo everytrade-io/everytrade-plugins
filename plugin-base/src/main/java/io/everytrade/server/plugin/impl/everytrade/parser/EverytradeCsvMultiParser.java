@@ -70,10 +70,12 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v3.Bi
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceBeanV4;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.everytrade.EveryTradeBeanV3_1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.everytrade.EveryTradeBeanV3_2;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.v1.KuCoinBuySellV1;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.v1.KuCoinBuySellV2;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.v1.KuCoinDepositV1;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.v1.KuCoinWithdrawalV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.KuCoinBuySellV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.KuCoinBuySellV2;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.KuCoinBuySellV3;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.KuCoinDepositV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.KuCoinDepositWithdrawalV2;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.KuCoinWithdrawalV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.utils.ClusterValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -782,6 +784,29 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                     "Time","Coin","Amount","Type","Wallet Address","Remark"
                 ).withSeparator(delimiter)))
                 .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(KuCoinWithdrawalV1.class, delimiter))
+                .supportedExchange(KUCOIN)
+                .build());
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader.of("UID", "Account Type", "Payment Account", "Sell", "Buy", "Price", "Time of Update(UTC+02:00)", "Status")
+                        .withSeparator(delimiter)))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(KuCoinBuySellV3.class, delimiter))
+                .supportedExchange(KUCOIN)
+                .build());
+
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(CsvHeader.of(
+                    "UID","Account Type","Time(UTC+02:00)","Remarks","Status","Fee","Amount","Coin","Transfer Network"
+                ).withSeparator(delimiter)))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(KuCoinDepositWithdrawalV2.class, delimiter))
+                .supportedExchange(KUCOIN)
+                .build());
+
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader.of("UID", "Account Type", "Payment Account", "Sell", "Buy", "Price", "Time of Update(UTC+02:00)", "Status")
+                        .withSeparator(delimiter)))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(KuCoinBuySellV3.class, delimiter))
                 .supportedExchange(KUCOIN)
                 .build());
 
