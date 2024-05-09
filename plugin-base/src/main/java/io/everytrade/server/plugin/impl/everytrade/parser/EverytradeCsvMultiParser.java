@@ -786,6 +786,13 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(KuCoinWithdrawalV1.class, delimiter))
                 .supportedExchange(KUCOIN)
                 .build());
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader.of("UID", "Account Type", "Payment Account", "Sell", "Buy", "Price", "Time of Update(UTC+02:00)", "Status")
+                        .withSeparator(delimiter)))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(KuCoinBuySellV3.class, delimiter))
+                .supportedExchange(KUCOIN)
+                .build());
 
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
                 .headers(List.of(CsvHeader.of(

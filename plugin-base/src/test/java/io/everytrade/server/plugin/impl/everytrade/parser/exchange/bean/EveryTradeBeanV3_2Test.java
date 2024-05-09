@@ -14,6 +14,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.everytrade.server.model.Currency.AXL;
 import static io.everytrade.server.model.Currency.BTC;
 import static io.everytrade.server.model.Currency.CZK;
 import static io.everytrade.server.model.Currency.EUR;
@@ -37,6 +38,8 @@ class EveryTradeBeanV3_2Test {
     private static final String HEADER_CORRECT =
         "UID;DATE;SYMBOL;ACTION;QUANTITY;UNIT_PRICE;VOLUME_QUOTE;FEE;FEE_CURRENCY;REBATE;REBATE_CURRENCY;ADDRESS_FROM;ADDRESS_TO;NOTE;" +
             "LABELS\n";
+    private static final String HEADER_DATE_UPDATED = "UID,DATE,SYMBOL,ACTION,QUANTITY,UNIT_PRICE,VOLUME_QUOTE,FEE,FEE_CURRENCY,REBATE," +
+    "REBATE_CURRENCY,ADDRESS_FROM,ADDRESS_TO,NOTE,LABELS\n";
 
     @Test
     void testCorrectHeader() {
@@ -753,6 +756,41 @@ class EveryTradeBeanV3_2Test {
                     null,
                     null,
                     "Label1"
+                )
+            )
+        );
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
+    void testNewDateFormat() {
+        var row = "1,31.12.2023,Axl,STAKE REWARD,12167.60559,,,0.0014,Axl,,,axelar1jv65s3grqf6v6jl3dp4t6c9t9rk99cd8r3j5z7," +
+            "axelar1cwhkdnf59gp58637xfvwp57xlr9g26rhgp8p7d,,\n";
+        var actual = ParserTestUtils.getTransactionCluster(HEADER_DATE_UPDATED + row);
+        var expected = new TransactionCluster(
+            ImportedTransactionBean.createDepositWithdrawal(
+                "1",
+                Instant.parse("2023-12-31T00:00:00Z"),
+                AXL,
+                AXL,
+                STAKING_REWARD,
+                new BigDecimal("12167.60559"),
+                null,
+                null,
+                null
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    "1-fee",
+                    Instant.parse("2023-12-31T00:00:00Z"),
+                    AXL,
+                    AXL,
+                    FEE,
+                    new BigDecimal("0.0014"),
+                    AXL,
+                    null,
+                    null,
+                    null
                 )
             )
         );
