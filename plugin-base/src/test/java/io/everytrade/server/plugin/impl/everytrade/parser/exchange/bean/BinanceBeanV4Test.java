@@ -495,7 +495,7 @@ class BinanceBeanV4Test {
             BUY,
             new BigDecimal("5361.53976000000000000"),
             new BigDecimal("0.01331203407880724"),
-            "TRANSACTION REVENUE",
+            null,
             null,
             null
         ),
@@ -1001,7 +1001,7 @@ class BinanceBeanV4Test {
                         BUY,
                         new BigDecimal("4324216.00000000000000000"),
                         new BigDecimal("0.00000744000000000"),
-                        "TRANSACTION BUY",
+                        null,
                         null,
                         null
                 ),
@@ -1039,7 +1039,7 @@ class BinanceBeanV4Test {
                 BUY,
                 new BigDecimal("85.18238417000000000"),
                 new BigDecimal("0.00003027621291807"),
-                "TRANSACTION REVENUE",
+                null,
                 null,
                 null
             ),
@@ -1145,7 +1145,7 @@ class BinanceBeanV4Test {
                         BUY,
                         new BigDecimal("0.18300000000000000"),
                         new BigDecimal("0.00650000000000000"),
-                        "TRANSACTION BUY",
+                        null,
                         null
                 ),
                 List.of(
@@ -1681,7 +1681,7 @@ class BinanceBeanV4Test {
                 BUY,
                 new BigDecimal("138.07056000000000000"),
                 new BigDecimal("0.01331203407880724"),
-                "TRANSACTION REVENUE",
+               null,
                 null
             ),
             List.of(
@@ -1706,7 +1706,7 @@ class BinanceBeanV4Test {
                 BUY,
                 new BigDecimal("5361.53976000000000000"),
                 new BigDecimal("0.01331203407880724"),
-                "TRANSACTION REVENUE",
+                null,
                 null
             ),
             List.of(
@@ -1753,7 +1753,7 @@ class BinanceBeanV4Test {
 
         TestUtils.testTxs(expected0.getMain(), actual.get(0).getMain());
     }
-  
+
   @Test
   void testBinanceCardSpending() {
         final String row0 = "38065325,2022-02-23 17:52:04,CARD,Binance Card Spending,EUR,-225.54000000,\"\"\n";
@@ -1789,7 +1789,7 @@ class BinanceBeanV4Test {
             ),
             List.of()
         );
-      
+
         TestUtils.testTxs(fiat.getMain(), actual.getTransactionClusters().get(0).getMain());
         TestUtils.testTxs(crypto.getMain(), actual.getTransactionClusters().get(1).getMain());
     }
