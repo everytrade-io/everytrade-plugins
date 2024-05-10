@@ -1676,7 +1676,7 @@ class BinanceBeanV4Test {
                 BUY,
                 new BigDecimal("138.07056000000000000"),
                 new BigDecimal("0.01331203407880724"),
-                "TRANSACTION REVENUE",
+                null,
                 null
             ),
             List.of(
@@ -1701,7 +1701,7 @@ class BinanceBeanV4Test {
                 BUY,
                 new BigDecimal("5361.53976000000000000"),
                 new BigDecimal("0.01331203407880724"),
-                "TRANSACTION REVENUE",
+                null,
                 null
             ),
             List.of(
