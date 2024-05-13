@@ -48,6 +48,8 @@ import java.util.List;
 public class BinanceBeanV4 extends ExchangeBean implements Cloneable {
 
     public static final String LD_COIN_CURRENCY_PREFIX = "LD";
+    public static final String BINANCE_CARD_SPENDING = "Binance Card Spending";
+
     Instant date;
     String account;
     String userId;

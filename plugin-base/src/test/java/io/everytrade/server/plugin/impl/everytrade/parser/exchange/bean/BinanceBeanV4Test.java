@@ -50,6 +50,7 @@ import static io.everytrade.server.model.TransactionType.UNSTAKE;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.REBATE_UID_PART;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceBeanV4.BINANCE_CARD_SPENDING;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class BinanceBeanV4Test {
@@ -1753,7 +1754,7 @@ class BinanceBeanV4Test {
 
         TestUtils.testTxs(expected0.getMain(), actual.get(0).getMain());
     }
-  
+
   @Test
   void testBinanceCardSpending() {
         final String row0 = "38065325,2022-02-23 17:52:04,CARD,Binance Card Spending,EUR,-225.54000000,\"\"\n";
@@ -1769,7 +1770,7 @@ class BinanceBeanV4Test {
                 WITHDRAWAL,
                 new BigDecimal("225.54000000"),
                 null,
-                "Binance Card Spending",
+                BINANCE_CARD_SPENDING,
                 null
             ),
             List.of()
@@ -1784,12 +1785,12 @@ class BinanceBeanV4Test {
                 SELL,
                 new BigDecimal("0.00232292000000000"),
                 null,
-                "Binance Card Spending",
+                BINANCE_CARD_SPENDING,
                 null
             ),
             List.of()
         );
-      
+
         TestUtils.testTxs(fiat.getMain(), actual.getTransactionClusters().get(0).getMain());
         TestUtils.testTxs(crypto.getMain(), actual.getTransactionClusters().get(1).getMain());
     }
