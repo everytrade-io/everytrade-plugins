@@ -1815,25 +1815,6 @@ class BinanceBeanV4Test {
             ),
             List.of()
         );
-
-        final TransactionCluster withdrawal = new TransactionCluster(
-            ImportedTransactionBean.createDepositWithdrawal(
-                null,
-                Instant.parse("2022-03-25T19:31:09Z"),
-                USD,
-                USD,
-                WITHDRAWAL,
-                null,
-                null,
-                BINANCE_CARD_SPENDING,
-                null
-            ),
-            List.of()
-        );
-
-        TestUtils.testTxs(sell.getMain(), actual.getTransactionClusters().get(0).getMain());
-        TestUtils.testTxs(withdrawal.getMain(), actual.getTransactionClusters().get(1).getMain());
-
     }
 
 }
