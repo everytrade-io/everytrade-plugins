@@ -1794,4 +1794,46 @@ class BinanceBeanV4Test {
         TestUtils.testTxs(fiat.getMain(), actual.getTransactionClusters().get(0).getMain());
         TestUtils.testTxs(crypto.getMain(), actual.getTransactionClusters().get(1).getMain());
     }
+
+    @Test
+    void testBinanceCardSpending2() {
+        String row0 = "38065325,2022-03-25 19:31:09,CARD,Binance Card Spending,USDT,-1.72132981,\"\"\n";
+        final var actual = ParserTestUtils.getParseResult(HEADER_CORRECT + row0);
+
+        final TransactionCluster sell = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-03-25T19:31:09Z"),
+                USDT,
+                USD,
+                SELL,
+                new BigDecimal("1.72132981000000000"),
+                null,
+                BINANCE_CARD_SPENDING,
+                null,
+                null
+            ),
+            List.of()
+        );
+
+        final TransactionCluster withdrawal = new TransactionCluster(
+            ImportedTransactionBean.createDepositWithdrawal(
+                null,
+                Instant.parse("2022-03-25T19:31:09Z"),
+                USD,
+                USD,
+                WITHDRAWAL,
+                null,
+                null,
+                BINANCE_CARD_SPENDING,
+                null
+            ),
+            List.of()
+        );
+
+        TestUtils.testTxs(sell.getMain(), actual.getTransactionClusters().get(0).getMain());
+        TestUtils.testTxs(withdrawal.getMain(), actual.getTransactionClusters().get(1).getMain());
+
+    }
+
 }

@@ -6,6 +6,7 @@ import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.binanceExceptions.BinanceValidateException;
+import io.everytrade.server.plugin.impl.everytrade.rateprovider.CoinPaprikaRateProvider;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -14,6 +15,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static io.everytrade.server.model.Currency.BNB;
@@ -28,6 +30,7 @@ import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.STAKE;
 import static io.everytrade.server.model.TransactionType.UNSTAKE;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceBeanV4.BINANCE_CARD_SPENDING;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BINANCE_CONVERT;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BNB_VAULT_REWARDS;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BUY;
@@ -554,27 +557,42 @@ public class BinanceSortedGroupV4 {
 
         List<BinanceBeanV4> result = new ArrayList<>();
 
-            if (row.getCoin().isFiat()){
-                BinanceBeanV4 withdrawalBean = new BinanceBeanV4();
-                withdrawalBean.setDate(row.getDate());
-                withdrawalBean.setMarketBase(row.getCoin());
-                withdrawalBean.setAmountBase(row.getChange().abs());
-                withdrawalBean.setMarketQuote(row.getCoin());
-                withdrawalBean.setAmountQuote(row.getChange().abs());
-                withdrawalBean.setType(WITHDRAWAL);
-                withdrawalBean.setNote("Binance Card Spending");
-                result.add(withdrawalBean);
-            } else {
-                BinanceBeanV4 sellBean = new BinanceBeanV4();
-                sellBean.setDate(row.getDate());
-                sellBean.setMarketBase(row.getCoin());
-                sellBean.setAmountBase(row.getChange().abs());
-                sellBean.setMarketQuote(USD);
-                sellBean.setType(SELL);
-                sellBean.setNote("Binance Card Spending");
-                result.add(sellBean);
-            }
+        if (row.getCoin().isFiat()) {
+            BinanceBeanV4 withdrawalBean = new BinanceBeanV4();
+            withdrawalBean.setDate(row.getDate());
+            withdrawalBean.setMarketBase(row.getCoin());
+            withdrawalBean.setAmountBase(row.getChange().abs());
+            withdrawalBean.setMarketQuote(row.getCoin());
+            withdrawalBean.setAmountQuote(row.getChange().abs());
+            withdrawalBean.setType(WITHDRAWAL);
+            withdrawalBean.setNote(BINANCE_CARD_SPENDING);
+            result.add(withdrawalBean);
+        } else {
+            BinanceBeanV4 sellBean = new BinanceBeanV4();
+            sellBean.setDate(row.getDate());
+            sellBean.setMarketBase(row.getCoin());
+            sellBean.setAmountBase(row.getChange().abs());
+            sellBean.setMarketQuote(USD);
+            sellBean.setType(SELL);
+            sellBean.setNote(BINANCE_CARD_SPENDING);
+            result.add(sellBean);
 
+            BigDecimal withdrawalValue = null;
+            BinanceBeanV4 withdrawalBean = new BinanceBeanV4();
+            withdrawalBean.setDate(row.getDate());
+            withdrawalBean.setMarketBase(USD);
+            withdrawalBean.setMarketQuote(USD);
+            withdrawalBean.setType(WITHDRAWAL);
+            withdrawalBean.setNote(BINANCE_CARD_SPENDING);
+            try {
+                withdrawalValue = Objects.requireNonNull(
+                    new CoinPaprikaRateProvider().getRate(row.getCoin(), USD, row.getDate())).getValue();
+            } catch (Exception ignore) {
+            }
+            withdrawalBean.setNote(BINANCE_CARD_SPENDING);
+            withdrawalBean.setAmountBase(withdrawalValue);
+            result.add(withdrawalBean);
+        }
         return result;
     }
 
