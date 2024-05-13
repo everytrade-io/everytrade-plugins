@@ -584,12 +584,6 @@ public class BinanceSortedGroupV4 {
             withdrawalBean.setMarketQuote(USD);
             withdrawalBean.setType(WITHDRAWAL);
             withdrawalBean.setNote(BINANCE_CARD_SPENDING);
-            try {
-                withdrawalValue = Objects.requireNonNull(
-                    new CoinPaprikaRateProvider().getRate(row.getCoin(), USD, row.getDate())).getValue();
-            } catch (Exception ignore) {
-            }
-            withdrawalBean.setNote(BINANCE_CARD_SPENDING);
             withdrawalBean.setAmountBase(withdrawalValue);
             result.add(withdrawalBean);
         }
