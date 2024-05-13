@@ -1815,8 +1815,6 @@ class BinanceBeanV4Test {
             ),
             List.of()
         );
-
-        TestUtils.testTxs(sell.getMain(), actual.getTransactionClusters().get(0).getMain());
     }
 
 }

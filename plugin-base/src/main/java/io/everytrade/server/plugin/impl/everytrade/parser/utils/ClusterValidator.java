@@ -21,7 +21,7 @@ public class ClusterValidator {
     }
 
     public static void clusterValidator(TransactionCluster cluster) {
-        if (cluster.getMain() != null) {
+        if (cluster.getMain() != null && !BINANCE_CARD_SPENDING.equalsIgnoreCase(cluster.getMain().getNote())) {
             validateTransaction(cluster.getMain());
         }
         List<ImportedTransactionBean> relatedTransactions = cluster.getRelated().stream().toList();
