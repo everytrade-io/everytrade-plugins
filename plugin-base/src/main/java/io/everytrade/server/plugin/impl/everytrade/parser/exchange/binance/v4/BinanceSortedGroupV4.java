@@ -576,16 +576,6 @@ public class BinanceSortedGroupV4 {
             sellBean.setType(SELL);
             sellBean.setNote(BINANCE_CARD_SPENDING);
             result.add(sellBean);
-
-            BigDecimal withdrawalValue = null;
-            BinanceBeanV4 withdrawalBean = new BinanceBeanV4();
-            withdrawalBean.setDate(row.getDate());
-            withdrawalBean.setMarketBase(USD);
-            withdrawalBean.setMarketQuote(USD);
-            withdrawalBean.setType(WITHDRAWAL);
-            withdrawalBean.setNote(BINANCE_CARD_SPENDING);
-            withdrawalBean.setAmountBase(withdrawalValue);
-            result.add(withdrawalBean);
         }
         return result;
     }
