@@ -30,7 +30,8 @@ import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.STAKE;
 import static io.everytrade.server.model.TransactionType.UNSTAKE;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
-import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceBeanV4.BINANCE_CARD_SPENDING;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceBeanV4.BINANCE_CARD_SPENDING_CRYPTO;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceBeanV4.BINANCE_CARD_SPENDING_FIAT;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BINANCE_CONVERT;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BNB_VAULT_REWARDS;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BUY;
@@ -565,7 +566,7 @@ public class BinanceSortedGroupV4 {
             withdrawalBean.setMarketQuote(row.getCoin());
             withdrawalBean.setAmountQuote(row.getChange().abs());
             withdrawalBean.setType(WITHDRAWAL);
-            withdrawalBean.setNote(BINANCE_CARD_SPENDING);
+            withdrawalBean.setNote(BINANCE_CARD_SPENDING_FIAT);
             result.add(withdrawalBean);
         } else {
             BinanceBeanV4 sellBean = new BinanceBeanV4();
@@ -574,7 +575,7 @@ public class BinanceSortedGroupV4 {
             sellBean.setAmountBase(row.getChange().abs());
             sellBean.setMarketQuote(USD);
             sellBean.setType(SELL);
-            sellBean.setNote(BINANCE_CARD_SPENDING);
+            sellBean.setNote(BINANCE_CARD_SPENDING_CRYPTO);
             result.add(sellBean);
         }
         return result;

@@ -7,8 +7,6 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredE
 import java.math.BigDecimal;
 import java.util.List;
 
-import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceBeanV4.BINANCE_CARD_SPENDING;
-
 public class ClusterValidator {
 
     static final BigDecimal MAX_VOLUME_VALUE = new BigDecimal("99999999999999999999.999");
@@ -21,7 +19,7 @@ public class ClusterValidator {
     }
 
     public static void clusterValidator(TransactionCluster cluster) {
-        if (cluster.getMain() != null && !BINANCE_CARD_SPENDING.equalsIgnoreCase(cluster.getMain().getNote())) {
+        if (cluster.getMain() != null) {
             validateTransaction(cluster.getMain());
         }
         List<ImportedTransactionBean> relatedTransactions = cluster.getRelated().stream().toList();
