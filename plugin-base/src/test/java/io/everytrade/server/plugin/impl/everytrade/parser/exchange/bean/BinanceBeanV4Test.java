@@ -50,7 +50,8 @@ import static io.everytrade.server.model.TransactionType.UNSTAKE;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.REBATE_UID_PART;
-import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceBeanV4.BINANCE_CARD_SPENDING;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceBeanV4.BINANCE_CARD_SPENDING_CRYPTO;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceBeanV4.BINANCE_CARD_SPENDING_FIAT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class BinanceBeanV4Test {
@@ -1770,7 +1771,7 @@ class BinanceBeanV4Test {
                 WITHDRAWAL,
                 new BigDecimal("225.54000000"),
                 null,
-                BINANCE_CARD_SPENDING,
+                BINANCE_CARD_SPENDING_FIAT,
                 null
             ),
             List.of()
@@ -1785,7 +1786,7 @@ class BinanceBeanV4Test {
                 SELL,
                 new BigDecimal("0.00232292000000000"),
                 null,
-                BINANCE_CARD_SPENDING,
+                BINANCE_CARD_SPENDING_CRYPTO,
                 null
             ),
             List.of()
@@ -1809,7 +1810,7 @@ class BinanceBeanV4Test {
                 SELL,
                 new BigDecimal("1.72132981000000000"),
                 null,
-                BINANCE_CARD_SPENDING,
+                BINANCE_CARD_SPENDING_CRYPTO,
                 null,
                 null
             ),
