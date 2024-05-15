@@ -11,6 +11,7 @@ import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataStatusException;
 import org.knowm.xchange.bittrex.dto.account.BittrexDepositHistory;
 import org.knowm.xchange.bittrex.dto.account.BittrexWithdrawalHistory;
+import org.knowm.xchange.coinbase.v2.dto.account.transactions.CoinbaseShowTransactionV2;
 import org.knowm.xchange.coinmate.dto.trade.CoinmateTransactionHistoryEntry;
 import org.knowm.xchange.dto.account.FundingRecord;
 import org.knowm.xchange.dto.trade.UserTrade;
@@ -41,6 +42,13 @@ public class XChangeConnectorParser {
 
     public ParseResult getParseResult(List<UserTrade> userTrades, List<FundingRecord> funding, List<ParsingProblem> parsingProblems) {
         final List<TransactionCluster> transactionClusters = tradesToCluster(userTrades, parsingProblems);
+        transactionClusters.addAll(fundingToCluster(funding, parsingProblems));
+        return new ParseResult(transactionClusters, parsingProblems);
+    }
+
+    public ParseResult getCoinbaseParseResult(List<CoinbaseShowTransactionV2> userTrades, List<FundingRecord> funding,
+                                              List<ParsingProblem> parsingProblems) {
+        final List<TransactionCluster> transactionClusters = coinbaseTransactionCluster(userTrades, parsingProblems);
         transactionClusters.addAll(fundingToCluster(funding, parsingProblems));
         return new ParseResult(transactionClusters, parsingProblems);
     }
@@ -102,6 +110,32 @@ public class XChangeConnectorParser {
                     }
                 } catch (Exception e) {
                     logParsingError(e, problems, f.toString());
+                }
+                return null;
+            })
+            .filter(Objects::nonNull)
+            .collect(toList());
+    }
+
+    protected List<TransactionCluster> coinbaseTransactionCluster(List<CoinbaseShowTransactionV2> tx, List<ParsingProblem> problems) {
+        return tx.stream().map(cb -> {
+                try {
+                    switch (cb.getType().toLowerCase()) {
+                        case "send" -> {
+                            return XChangeApiTransaction.withdrawalCoinbase(cb).toTransactionCluster();
+                        }
+                        case "tx" -> {
+                            return XChangeApiTransaction.rewardCoinbase(cb).toTransactionCluster();
+                        }
+                        case "buy", "sell" -> {
+                            return XChangeApiTransaction.buySellCoinbase(cb).toTransactionCluster();
+                        }
+                        default -> {
+                            return null;
+                        }
+                    }
+                } catch (Exception e) {
+                    logParsingError(e, problems, cb.toString());
                 }
                 return null;
             })

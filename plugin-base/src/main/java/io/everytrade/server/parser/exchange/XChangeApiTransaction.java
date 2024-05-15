@@ -10,6 +10,7 @@ import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.util.CoinMateDataUtil;
 import lombok.Builder;
 import lombok.Value;
+import org.knowm.xchange.coinbase.v2.dto.account.transactions.CoinbaseShowTransactionV2;
 import org.knowm.xchange.coinmate.dto.trade.CoinmateTransactionHistoryEntry;
 import org.knowm.xchange.dto.Order;
 import org.knowm.xchange.dto.account.FundingRecord;
@@ -20,7 +21,11 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
+import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.FEE;
+import static io.everytrade.server.model.TransactionType.REWARD;
+import static io.everytrade.server.model.TransactionType.SELL;
+import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 import static java.util.Collections.emptyList;
@@ -74,6 +79,44 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
             .feeAmount(record.getFee())
             .feeCurrency(currency)
             .address(record.getAddress())
+            .build();
+    }
+    public static XChangeApiTransaction buySellCoinbase(CoinbaseShowTransactionV2 transaction) {
+        var txType = transaction.getType().equals("buy") ? transaction.getBuy() : transaction.getSell();
+        Currency feeCurrency = txType.getFee().getCurrency() != null ? Currency.fromCode(txType.getFee().getCurrency()) : null;
+
+        return XChangeApiTransaction.builder()
+            .id(String.valueOf(transaction.getId()))
+            .timestamp(Instant.parse(transaction.getCreatedAt()))
+            .type(transaction.getType().equals("buy") ? BUY : SELL)
+            .price(txType.getSubtotal().getAmount())
+            .base(Currency.fromCode(transaction.getAmount().getCurrency()))
+            .quote(Currency.fromCode(transaction.getNativeAmount().getCurrency()))
+            .originalAmount(transaction.getAmount().getAmount())
+            .feeAmount(txType.getFee().getAmount())
+            .feeCurrency(feeCurrency)
+            .build();
+    }
+
+    public static XChangeApiTransaction withdrawalCoinbase(CoinbaseShowTransactionV2 transaction) {
+        return XChangeApiTransaction.builder()
+            .id(String.valueOf(transaction.getId()))
+            .timestamp(Instant.parse(transaction.getCreatedAt()))
+            .type(WITHDRAWAL)
+            .base(Currency.fromCode(transaction.getAmount().getCurrency()))
+            .quote(Currency.fromCode(transaction.getAmount().getCurrency()))
+            .originalAmount(transaction.getAmount().getAmount().abs())
+            .build();
+    }
+
+    public static XChangeApiTransaction rewardCoinbase(CoinbaseShowTransactionV2 transaction) {
+        return XChangeApiTransaction.builder()
+            .id(String.valueOf(transaction.getId()))
+            .timestamp(Instant.parse(transaction.getCreatedAt()))
+            .type(REWARD)
+            .base(Currency.fromCode(transaction.getAmount().getCurrency()))
+            .quote(Currency.fromCode(transaction.getAmount().getCurrency()))
+            .originalAmount(transaction.getAmount().getAmount().abs())
             .build();
     }
 
