@@ -121,11 +121,8 @@ public class XChangeConnectorParser {
         return tx.stream().map(cb -> {
                 try {
                     switch (cb.getType().toLowerCase()) {
-                        case "send" -> {
-                            return XChangeApiTransaction.withdrawalCoinbase(cb).toTransactionCluster();
-                        }
-                        case "tx" -> {
-                            return XChangeApiTransaction.rewardCoinbase(cb).toTransactionCluster();
+                        case "send", "tx" -> {
+                            return XChangeApiTransaction.rewardWithdrawalCoinbase(cb).toTransactionCluster();
                         }
                         case "buy", "sell" -> {
                             return XChangeApiTransaction.buySellCoinbase(cb).toTransactionCluster();

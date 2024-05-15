@@ -82,13 +82,18 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
             .build();
     }
     public static XChangeApiTransaction buySellCoinbase(CoinbaseShowTransactionV2 transaction) {
+        TransactionType type = null;
+        switch (transaction.getType()) {
+            case "buy" -> type = BUY;
+            case "sell" -> type = SELL;
+        }
         var txType = transaction.getType().equals("buy") ? transaction.getBuy() : transaction.getSell();
         Currency feeCurrency = txType.getFee().getCurrency() != null ? Currency.fromCode(txType.getFee().getCurrency()) : null;
 
         return XChangeApiTransaction.builder()
             .id(String.valueOf(transaction.getId()))
             .timestamp(Instant.parse(transaction.getCreatedAt()))
-            .type(transaction.getType().equals("buy") ? BUY : SELL)
+            .type(type)
             .price(txType.getSubtotal().getAmount())
             .base(Currency.fromCode(transaction.getAmount().getCurrency()))
             .quote(Currency.fromCode(transaction.getNativeAmount().getCurrency()))
@@ -98,22 +103,17 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
             .build();
     }
 
-    public static XChangeApiTransaction withdrawalCoinbase(CoinbaseShowTransactionV2 transaction) {
-        return XChangeApiTransaction.builder()
-            .id(String.valueOf(transaction.getId()))
-            .timestamp(Instant.parse(transaction.getCreatedAt()))
-            .type(WITHDRAWAL)
-            .base(Currency.fromCode(transaction.getAmount().getCurrency()))
-            .quote(Currency.fromCode(transaction.getAmount().getCurrency()))
-            .originalAmount(transaction.getAmount().getAmount().abs())
-            .build();
-    }
+    public static XChangeApiTransaction rewardWithdrawalCoinbase(CoinbaseShowTransactionV2 transaction) {
+        TransactionType type = null;
+        switch (transaction.getType()) {
+            case "tx" -> type = REWARD;
+            case "send" -> type = WITHDRAWAL;
+        }
 
-    public static XChangeApiTransaction rewardCoinbase(CoinbaseShowTransactionV2 transaction) {
         return XChangeApiTransaction.builder()
             .id(String.valueOf(transaction.getId()))
             .timestamp(Instant.parse(transaction.getCreatedAt()))
-            .type(REWARD)
+            .type(type)
             .base(Currency.fromCode(transaction.getAmount().getCurrency()))
             .quote(Currency.fromCode(transaction.getAmount().getCurrency()))
             .originalAmount(transaction.getAmount().getAmount().abs())
