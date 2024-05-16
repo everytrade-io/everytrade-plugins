@@ -11,6 +11,7 @@ import io.everytrade.server.util.CoinMateDataUtil;
 import lombok.Builder;
 import lombok.Value;
 import org.knowm.xchange.coinbase.v2.dto.account.transactions.CoinbaseShowTransactionV2;
+import org.knowm.xchange.coinbase.v2.dto.account.transactions.CoinbaseTransactionV2Expand;
 import org.knowm.xchange.coinmate.dto.trade.CoinmateTransactionHistoryEntry;
 import org.knowm.xchange.dto.Order;
 import org.knowm.xchange.dto.account.FundingRecord;
@@ -83,11 +84,22 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
     }
     public static XChangeApiTransaction buySellCoinbase(CoinbaseShowTransactionV2 transaction) {
         TransactionType type = null;
+        CoinbaseTransactionV2Expand txType = null;
         switch (transaction.getType()) {
-            case "buy" -> type = BUY;
-            case "sell" -> type = SELL;
+            case "buy" -> {
+                type = BUY;
+                txType = transaction.getBuy();
+            }
+            case "sell" -> {
+                type = SELL;
+                txType = transaction.getSell();
+            }
         }
-        var txType = transaction.getType().equals("buy") ? transaction.getBuy() : transaction.getSell();
+
+        if (txType == null) {
+            throw new DataValidationException("Coinbase transaction type not supported: " + transaction.getType());
+        }
+
         Currency feeCurrency = txType.getFee().getCurrency() != null ? Currency.fromCode(txType.getFee().getCurrency()) : null;
 
         return XChangeApiTransaction.builder()

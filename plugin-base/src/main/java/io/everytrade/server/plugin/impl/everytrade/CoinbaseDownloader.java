@@ -280,6 +280,7 @@ public class CoinbaseDownloader {
         for (Map.Entry<String, WalletState> entry : wallets.entrySet()) {
             final String walletId = entry.getKey();
             final WalletState walletState = wallets.get(walletId);
+
             if (walletRequests < MAX_WALLET_REQUESTS) {
                 String lastTxId = entry.getValue().lastBuyId;
 
@@ -297,7 +298,7 @@ public class CoinbaseDownloader {
                         break;
                     }
                     userTrades.addAll(transactions);
-                    lastTxId = transactions.get(transactions.size()-1).getId();
+                    lastTxId = transactions.get(transactions.size() - 1).getId();
                 }
 
                 if (sentRequests == MAX_REQUEST_COUNT) {
