@@ -29,8 +29,10 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static io.everytrade.server.model.TransactionType.DEPOSIT;
+import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.FEE;
-import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
+import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static lombok.AccessLevel.PRIVATE;
 
 @EqualsAndHashCode(callSuper = true)
@@ -180,7 +182,7 @@ public class KrakenBeanV2 extends ExchangeBean implements Cloneable{
             related.add(feeTxs);
         }
 
-        if (List.of(TransactionType.DEPOSIT, TransactionType.WITHDRAWAL).contains(this.txsType)) {
+        if (List.of(DEPOSIT, WITHDRAWAL, EARNING).contains(this.txsType)) {
             TransactionCluster cluster = new TransactionCluster(
                 ImportedTransactionBean.createDepositWithdrawal(
                     txid,

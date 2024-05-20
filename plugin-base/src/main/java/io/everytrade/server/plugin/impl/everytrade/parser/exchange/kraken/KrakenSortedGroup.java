@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static io.everytrade.server.model.TransactionType.BUY;
+import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.STAKE;
@@ -30,6 +31,7 @@ public class KrakenSortedGroup {
     List<KrakenBeanV2> rowsTrades = new ArrayList<>();
     List<KrakenBeanV2> rowsStaking = new ArrayList<>();
     List<KrakenBeanV2> rowsTransfer = new ArrayList<>();
+    List<KrakenBeanV2> rowsEarning = new ArrayList<>();
 
     // buy/sell
     KrakenBeanV2 rowBase;
@@ -71,6 +73,8 @@ public class KrakenSortedGroup {
             }
         } else if (rowsDeposit.size() == 1 && rowsSize == 1) {
             return DEPOSIT;
+        } else if (rowsEarning.size() > 0) {
+            return EARNING;
         } else if (rowsWithdrawal.size() == 1 && rowsSize == 1) {
             return WITHDRAWAL;
         } else if (rowsStaking.size() == 1 && rowsSize == 1) {
@@ -114,6 +118,14 @@ public class KrakenSortedGroup {
             var row = rowsWithdrawal.get(0);
             if (row.getAmount().compareTo(ZERO) > 0) {
                 throw new DataValidationException("Incorrect withdrawal amount value;");
+            }
+        }
+    }
+
+    public void validateEarnings(TransactionType type) {
+        if (type.equals(EARNING)) {
+            if (rowsEarning.size() < 1) {
+                throw new DataValidationException("Wrong earning data;");
             }
         }
     }
@@ -173,6 +185,10 @@ public class KrakenSortedGroup {
             validateDepositWithdrawal(type);
             createDepositWithdrawalTxs(type);
         }
+        if (type.equals(EARNING)) {
+            validateEarnings(type);
+            createEarningTxs(type);
+        }
         if(type.isStaking()) {
             validateStakings(type);
             createStaking(type);
@@ -194,6 +210,24 @@ public class KrakenSortedGroup {
             mapDepositWithdrawalTxs(rowsWithdrawal.get(0), type);
         }
     }
+    private void createEarningTxs(TransactionType type) {
+        if (!rowsEarning.isEmpty()) {
+            for (KrakenBeanV2 row : rowsEarning) {
+                markUnsupportedRows(row);
+                if (!row.isUnsupportedRow()) {
+                    mapEarningTxs(row, type);
+                }
+            }
+        }
+    }
+
+    private void markUnsupportedRows(KrakenBeanV2 row) {
+        if (row.getAmount().compareTo(ZERO) < 0) {
+            rowsEarning.stream()
+                .filter(r -> r.getAmount().abs().equals(row.getAmount().abs()) && r.getTime().equals(row.getTime()))
+                .forEach(r -> r.setUnsupportedRow(true));
+        }
+    }
 
     private void createStaking(TransactionType type) {
         if (!rowsStaking.isEmpty()) {
@@ -205,6 +239,24 @@ public class KrakenSortedGroup {
     }
 
     private void mapDepositWithdrawalTxs(KrakenBeanV2 row, TransactionType type) {
+        KrakenBeanV2 createdTransaction = new KrakenBeanV2();
+        createdTransaction.setTxsType(type);
+        createdTransaction.setRefid(row.getRefid());
+        createdTransaction.setRowId(row.getRowId());
+        createdTransaction.setAsset(row.getAsset());
+        createdTransaction.setAmount(row.getAmount());
+        createdTransaction.setFeeAmount(row.getFee());
+        createdTransaction.setFeeCurrency(row.getAsset());
+        createdTransaction.setRowNumber(row.getTime().getEpochSecond());
+        createdTransaction.setTxid(row.getTxid());
+        createdTransaction.usedIds.add(row.getRowId());
+        createdTransaction.setTime(row.getTime());
+        createdTransaction.setRowValues();
+
+        createdTransactions.add(createdTransaction);
+    }
+
+    private void mapEarningTxs(KrakenBeanV2 row, TransactionType type) {
         KrakenBeanV2 createdTransaction = new KrakenBeanV2();
         createdTransaction.setTxsType(type);
         createdTransaction.setRefid(row.getRefid());
@@ -297,6 +349,8 @@ public class KrakenSortedGroup {
             rowsStaking.add(row);
         } else if (row.getType().equals(KrakenConstants.TYPE_TRANSFER.code)) {
             rowsTransfer.add(row);
+        }else if (row.getType().equals(KrakenConstants.TYPE_EARN.code)) {
+            rowsEarning.add(row);
         } else {
             throw new DataIgnoredException("Row " + row.getRowId() + " cannot be added due to wrong operation;");
         }
