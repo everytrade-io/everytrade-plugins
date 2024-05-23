@@ -23,10 +23,12 @@ import java.time.Instant;
 import java.util.List;
 
 import static io.everytrade.server.model.TransactionType.BUY;
+import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.REWARD;
 import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
+import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.ROUNDING_MODE;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 import static java.util.Collections.emptyList;
@@ -82,6 +84,27 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
             .address(record.getAddress())
             .build();
     }
+
+    public static XChangeApiTransaction tradeCoinbase(List<CoinbaseShowTransactionV2> transaction) {
+        var base = transaction.stream()
+            .filter(t -> t.getAmount().getAmount().compareTo(BigDecimal.ZERO) > 0)
+            .findFirst()
+            .orElseThrow();
+        var quote = transaction.stream()
+            .filter(t -> t.getAmount().getAmount().compareTo(BigDecimal.ZERO) < 0)
+            .findFirst()
+            .orElseThrow();
+
+        return XChangeApiTransaction.builder()
+            .id(String.valueOf(base.getId()))
+            .timestamp(Instant.parse(base.getCreatedAt()))
+            .type(BUY)
+            .base(Currency.fromCode(base.getAmount().getCurrency()))
+            .quote(Currency.fromCode(quote.getAmount().getCurrency()))
+            .price(quote.getAmount().getAmount().abs().divide(base.getAmount().getAmount().abs(), 8, ROUNDING_MODE))
+            .originalAmount(base.getAmount().getAmount())
+            .build();
+    }
     public static XChangeApiTransaction buySellCoinbase(CoinbaseShowTransactionV2 transaction) {
         TransactionType type = null;
         CoinbaseTransactionV2Expand txType = null;
@@ -120,6 +143,7 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
         switch (transaction.getType()) {
             case "tx" -> type = REWARD;
             case "send" -> type = WITHDRAWAL;
+            case "earn_payout" -> type = EARNING;
         }
 
         return XChangeApiTransaction.builder()
