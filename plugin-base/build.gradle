@@ -63,7 +63,7 @@ dependencies {
      * only for temporary use till pull request confirmation https://github.com/knowm/XChange/pull/4448
      */
     //    pluginCompile "org.knowm.xchange:xchange-kraken:$xchangeVersion"
-    pluginCompile "com.github.martinkyov.Xchange:xchange-kraken:4180fdf746103c892a11197aa5e375319deea350"
+    pluginCompile "com.github.martinkyov.Xchange:xchange-kraken:483283051b6bfcd83486f019c670b6270a3edba0"
 
 
     /*
@@ -75,7 +75,7 @@ dependencies {
 //    pluginCompile "com.github.martinkyov.Xchange:xchange-coinbase:136289732f459f489caa0cd4860f6dcd3b76712f"
 //    pluginCompile "com.github.martinkyov.Xchange:xchange-coinbase:e55e846c55711644eec463b40d2a484e2092fbec"
 //    pluginCompile "com.github.martinkyov.Xchange:xchange-coinbase:874ff9e8e4f86964368d5bff8969b35f9e2dc557"
-    pluginCompile "com.github.Slithercze.Xchange:xchange-coinbase:47e0f5c45da31864ab741ffe2b9b328d50928950"
+    pluginCompile "com.github.Slithercze.Xchange:xchange-coinbase:926bec046b8d52fe9ab6c027c5064abbc7da882d"
 
     /*
      * only for temporary use till pull request confirmation https://github.com/knowm/XChange/pull/4412

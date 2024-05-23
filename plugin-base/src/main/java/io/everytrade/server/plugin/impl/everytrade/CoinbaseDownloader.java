@@ -97,16 +97,16 @@ public class CoinbaseDownloader {
         Map<String, WalletState> walletStates = walletStates(lastDownloadWalletState);
         List<FundingRecord> funding = new ArrayList<>();
         List<CoinbaseShowTransactionV2> trades = new ArrayList<>();
-        List<CoinbaseShowTransactionV2> advancedTrading = new ArrayList<>();
+        List<UserTrade> advancedTrading = new ArrayList<>();
         List<ParsingProblem> parsingProblems = new ArrayList<>();
 
 //      Advance Trades are not supported by the current version of the plugin - needs its own connector
-//        try {
-//            LOG.info("Advanced trading download start");
-//            advancedTrading = downloadAdvancedTrade(parsingProblems);
-//        } catch (Exception e) {
-//            LOG.error("Advanced trading download error " + e.getMessage());
-//        }
+        try {
+            LOG.info("Advanced trading download start");
+            advancedTrading = downloadAdvancedTrade(parsingProblems);
+        } catch (Exception e) {
+            LOG.error("Advanced trading download error " + e.getMessage());
+        }
 
         try {
             LOG.info("Trades download start");
@@ -121,10 +121,9 @@ public class CoinbaseDownloader {
         } catch (Exception e) {
             LOG.error("Funding download error " + e.getMessage());
         }
-        trades.addAll(advancedTrading);
 
         DownloadResult build = DownloadResult.builder()
-            .parseResult(new XChangeConnectorParser().getCoinbaseParseResult(trades, funding, parsingProblems))
+            .parseResult(new XChangeConnectorParser().getCoinbaseParseResult(advancedTrading, trades,funding, parsingProblems))
             .downloadStateData(getLastTransactionId(walletStates))
             .build();
         return build;
@@ -240,14 +239,17 @@ public class CoinbaseDownloader {
                     String[] currencies = fill.getProductId().split("-");
                     var base = new Currency(currencies[0]);
                     var quote = new Currency(currencies[1]);
-                    var pair = new CurrencyPair(base, quote);
+                    CurrencyPair pair = new CurrencyPair(base, quote);
                     Date date = createDateFromText(fill.getTradeTime());
                     Order.OrderType type = fill.getSide().equalsIgnoreCase("BUY") ? Order.OrderType.BID : Order.OrderType.ASK;
-                    BigDecimal baseAmount = fill.getSizeInQuote().equals("true") ? AmountUtil.evaluateBaseAmount(fill.getSize(),
-                        fill.getPrice()) : fill.getSize();
-                    var trade = new UserTrade(type, baseAmount, pair,
+                    BigDecimal baseAmount = fill.getSizeInQuote().equals("true")
+                        ? AmountUtil.evaluateBaseAmount(fill.getSize(), fill.getPrice()) : fill.getSize();
+
+                    UserTrade trade = new UserTrade(
+                        type, baseAmount, pair,
                         fill.getPrice(), date, fill.getTradeId(),
                         fill.getOrderId(), fill.getCommission(), pair.getCounter(), fill.getUserId());
+
                     trades.add(trade);
                 } else {
                     throw new DataValidationException(String.format("Unsupported size in quote value: %s", fill.getSizeInQuote()));

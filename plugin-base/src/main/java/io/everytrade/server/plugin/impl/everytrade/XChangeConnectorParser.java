@@ -46,9 +46,11 @@ public class XChangeConnectorParser {
         return new ParseResult(transactionClusters, parsingProblems);
     }
 
-    public ParseResult getCoinbaseParseResult(List<CoinbaseShowTransactionV2> userTrades, List<FundingRecord> funding,
+    public ParseResult getCoinbaseParseResult(List<UserTrade> advancedTrading, List<CoinbaseShowTransactionV2> userTrades,
+                                              List<FundingRecord> funding,
                                               List<ParsingProblem> parsingProblems) {
         final List<TransactionCluster> transactionClusters = coinbaseTransactionCluster(userTrades, parsingProblems);
+        transactionClusters.addAll(tradesToCluster(advancedTrading, parsingProblems));
         transactionClusters.addAll(fundingToCluster(funding, parsingProblems));
         return new ParseResult(transactionClusters, parsingProblems);
     }
