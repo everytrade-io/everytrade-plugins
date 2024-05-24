@@ -88,7 +88,7 @@ public class CoinbaseBeanV1 extends ExchangeBean {
         } else if (ADVANCE_TRADE_BUY.equalsIgnoreCase(value)) {
             transactionType = BUY;
         } else if (TRANSACTION_TYPE_RECEIVE.equalsIgnoreCase(value)) {
-            transactionType = DEPOSIT;
+            transactionType = REWARD;
         } else if (List.of(TRANSACTION_TYPE_REWARDS_INCOME).contains(value)) {
             transactionType = REWARD;
         } else if (List.of(STAKING_INCOME).contains(value)) {
@@ -201,7 +201,7 @@ public class CoinbaseBeanV1 extends ExchangeBean {
                 transactionType.name().equalsIgnoreCase(type) ? null : type,
                 null
             );
-        } else if (List.of(TRANSACTION_TYPE_LEARNING_REWARD,STAKING_INCOME).contains(type)) {
+        } else if (List.of(TRANSACTION_TYPE_LEARNING_REWARD,STAKING_INCOME, TRANSACTION_TYPE_RECEIVE).contains(type)) {
             main = new ImportedTransactionBean(
                 null,
                 timeStamp,

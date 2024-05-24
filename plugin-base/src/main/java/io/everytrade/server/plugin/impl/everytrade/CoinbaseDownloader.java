@@ -13,7 +13,6 @@ import org.knowm.xchange.coinbase.v2.service.CoinbaseAccountService;
 import org.knowm.xchange.coinbase.v2.service.CoinbaseAccountServiceRaw;
 import org.knowm.xchange.coinbase.v2.service.CoinbaseTradeHistoryParams;
 import org.knowm.xchange.coinbase.v2.service.CoinbaseTradeService;
-import org.knowm.xchange.coinbase.v2.service.TransactionType;
 import org.knowm.xchange.coinbase.v3.dto.transactions.CoinbaseAdvancedTradeFills;
 import org.knowm.xchange.coinbase.v3.dto.transactions.CoinbaseAdvancedTradeOrderFillsResponse;
 import org.knowm.xchange.currency.Currency;
@@ -97,17 +96,17 @@ public class CoinbaseDownloader {
         getLastDownloadStates(lastDownloadState);
         Map<String, WalletState> walletStates = walletStates(lastDownloadWalletState);
         List<FundingRecord> funding = new ArrayList<>();
-        List<UserTrade> trades = new ArrayList<>();
+        List<CoinbaseShowTransactionV2> trades = new ArrayList<>();
         List<UserTrade> advancedTrading = new ArrayList<>();
         List<ParsingProblem> parsingProblems = new ArrayList<>();
 
 //      Advance Trades are not supported by the current version of the plugin - needs its own connector
-//        try {
-//            LOG.info("Advanced trading download start");
-//            advancedTrading = downloadAdvancedTrade(parsingProblems);
-//        } catch (Exception e) {
-//            LOG.error("Advanced trading download error " + e.getMessage());
-//        }
+        try {
+            LOG.info("Advanced trading download start");
+            advancedTrading = downloadAdvancedTrade(parsingProblems);
+        } catch (Exception e) {
+            LOG.error("Advanced trading download error " + e.getMessage());
+        }
 
         try {
             LOG.info("Trades download start");
@@ -122,10 +121,9 @@ public class CoinbaseDownloader {
         } catch (Exception e) {
             LOG.error("Funding download error " + e.getMessage());
         }
-        trades.addAll(advancedTrading);
 
         DownloadResult build = DownloadResult.builder()
-            .parseResult(new XChangeConnectorParser().getParseResult(trades, funding, parsingProblems))
+            .parseResult(new XChangeConnectorParser().getCoinbaseParseResult(advancedTrading, trades,funding, parsingProblems))
             .downloadStateData(getLastTransactionId(walletStates))
             .build();
         return build;
@@ -241,14 +239,17 @@ public class CoinbaseDownloader {
                     String[] currencies = fill.getProductId().split("-");
                     var base = new Currency(currencies[0]);
                     var quote = new Currency(currencies[1]);
-                    var pair = new CurrencyPair(base, quote);
+                    CurrencyPair pair = new CurrencyPair(base, quote);
                     Date date = createDateFromText(fill.getTradeTime());
                     Order.OrderType type = fill.getSide().equalsIgnoreCase("BUY") ? Order.OrderType.BID : Order.OrderType.ASK;
-                    BigDecimal baseAmount = fill.getSizeInQuote().equals("true") ? AmountUtil.evaluateBaseAmount(fill.getSize(),
-                        fill.getPrice()) : fill.getSize();
-                    var trade = new UserTrade(type, baseAmount, pair,
+                    BigDecimal baseAmount = fill.getSizeInQuote().equals("true")
+                        ? AmountUtil.evaluateBaseAmount(fill.getSize(), fill.getPrice()) : fill.getSize();
+
+                    UserTrade trade = new UserTrade(
+                        type, baseAmount, pair,
                         fill.getPrice(), date, fill.getTradeId(),
                         fill.getOrderId(), fill.getCommission(), pair.getCounter(), fill.getUserId());
+
                     trades.add(trade);
                 } else {
                     throw new DataValidationException(String.format("Unsupported size in quote value: %s", fill.getSizeInQuote()));
@@ -265,12 +266,12 @@ public class CoinbaseDownloader {
     }
 
 
-    private List<UserTrade> downloadTrades(Map<String, WalletState> walletStates) throws ParseException {
+    private List<CoinbaseShowTransactionV2> downloadTrades(Map<String, WalletState> walletStates) throws ParseException {
         var sortedWalletStates = sortWalletsByTxsUpdates(walletStates);
         var accountService = (CoinbaseAccountServiceRaw) exchange.getAccountService();
         var wallets = sortedWalletStates.stream().
             collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (u, v) -> u, LinkedHashMap::new));
-        final List<UserTrade> userTrades = new ArrayList<>();
+        final List<CoinbaseShowTransactionV2> userTrades = new ArrayList<>();
         int sentRequests = 0;
         int walletRequests = 0;
 
@@ -281,95 +282,38 @@ public class CoinbaseDownloader {
         for (Map.Entry<String, WalletState> entry : wallets.entrySet()) {
             final String walletId = entry.getKey();
             final WalletState walletState = wallets.get(walletId);
+
             if (walletRequests < MAX_WALLET_REQUESTS) {
-                String lastBuyId = entry.getValue().lastBuyId;
-                String lastSellId = entry.getValue().lastSellId;
+                String lastTxId = entry.getValue().lastBuyId;
 
                 while (sentRequests < MAX_REQUEST_COUNT) {
                     ++sentRequests;
-                    params.setStartId(lastBuyId);
-                    final List<CoinbaseShowTransactionV2> rowBuys;
+                    params.setStartId(lastTxId);
+                    List<CoinbaseShowTransactionV2> transactions;
                     try {
-                        rowBuys = accountService.getExpandTransactions(walletId,params,TransactionType.BUY);
+                        transactions = accountService.getExpandTransactions(walletId,params);
                     } catch (IOException e) {
                         throw new IllegalStateException("Download buys history failed.", e);
                     }
 
-                    if (rowBuys.isEmpty()) {
+                    if (transactions.isEmpty()) {
                         break;
                     }
-                    userTrades.addAll(convertRowBuy(rowBuys));
-                    lastBuyId = rowBuys.get(rowBuys.size()-1).getId();
+                    userTrades.addAll(transactions);
+                    lastTxId = transactions.get(transactions.size() - 1).getId();
                 }
 
-                while (sentRequests < MAX_REQUEST_COUNT) {
-                    ++sentRequests;
-                    params.setStartId(lastSellId);
-                    final List<CoinbaseShowTransactionV2> rowSells;
-                    try {
-                        rowSells = accountService.getExpandTransactions(walletId,params,TransactionType.SELL);
-                    } catch (IOException e) {
-                        throw new IllegalStateException("Download sells history failed.", e);
-                    }
-
-                    if (rowSells.isEmpty()) {
-                        break;
-                    }
-
-                    userTrades.addAll(convertRowSell(rowSells));
-                    lastSellId = rowSells.get(rowSells.size()-1).getId();
-
-                }
                 if (sentRequests == MAX_REQUEST_COUNT) {
                     LOG.info("Max request count {} has been achieved.", MAX_REQUEST_COUNT);
                 }
 
-                walletState.lastBuyId = lastBuyId;
-                walletState.lastSellId = lastSellId;
+                walletState.lastBuyId = lastTxId;
 
                 walletRequests++;
                 walletState.lastTxWalletUpdate = String.valueOf(new Date().getTime());
             }
         }
         return userTrades;
-    }
-
-    private List<UserTrade> convertRowBuy(List<CoinbaseShowTransactionV2> rowTxs) throws ParseException {
-        List<UserTrade> result = new ArrayList<>();
-        for (CoinbaseShowTransactionV2 rowTx : rowTxs) {
-            UserTrade trade = UserTrade.builder()
-                .originalAmount(rowTx.getAmount().getAmount())
-                .price(rowTx.getBuy().getUnitPrice().getAmount())
-                .timestamp(createDateFromTextTradeFormat(rowTx.getCreatedAt()))
-                .currencyPair(new CurrencyPair(rowTx.getAmount().getCurrency(),rowTx.getBuy().getSubtotal().getCurrency()))
-                .orderId(rowTx.getBuy().getId())
-                .id(rowTx.getId())
-                .type(Order.OrderType.BID)
-                .feeCurrency(Currency.getInstance(rowTx.getBuy().getFee().getCurrency()))
-                .feeAmount(rowTx.getBuy().getFee().getAmount())
-                .build();
-            result.add(trade);
-        }
-        return result;
-    }
-
-    private List<UserTrade> convertRowSell(List<CoinbaseShowTransactionV2> rowTxs) throws ParseException {
-        List<UserTrade> result = new ArrayList<>();
-        for (CoinbaseShowTransactionV2 rowTx : rowTxs) {
-            UserTrade trade = UserTrade.builder()
-                .originalAmount(rowTx.getAmount().getAmount())
-                .price(rowTx.getSell().getUnitPrice().getAmount())
-                .timestamp(createDateFromTextTradeFormat(rowTx.getCreatedAt()))
-                .currencyPair(new CurrencyPair(rowTx.getAmount().getCurrency(),rowTx.getSell().getSubtotal().getCurrency()))
-                .orderId(rowTx.getSell().getId())
-                .id(rowTx.getId())
-                .type(Order.OrderType.ASK)
-                .feeCurrency(Currency.getInstance(rowTx.getSell().getFee().getCurrency()))
-                .feeAmount(rowTx.getSell().getFee().getAmount())
-                .build();
-            result.add(trade);
-        }
-        return result;
     }
 
     public List<FundingRecord> downloadFunding(Map<String, WalletState> walletStates) {
