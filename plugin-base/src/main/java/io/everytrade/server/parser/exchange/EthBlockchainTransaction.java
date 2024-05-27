@@ -73,7 +73,7 @@ public class EthBlockchainTransaction {
             );
         }
         if (txDto.getIsError() != 0) {
-            throw new DataValidationException(String.format("Transaction with error:%d.", txDto.getIsError()));
+            throw new DataIgnoredException(String.format("Transaction with error:%d.", txDto.getIsError()));
         }
 
         var currencyDecimalDigits = ETH_DECIMAL_DIGIT;
