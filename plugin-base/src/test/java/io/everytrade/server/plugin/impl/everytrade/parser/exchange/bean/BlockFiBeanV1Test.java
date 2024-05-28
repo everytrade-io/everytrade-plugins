@@ -155,12 +155,4 @@ public class BlockFiBeanV1Test {
         TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
         TestUtils.testTxs(expected2.getMain(), actual.get(1).getMain());
     }
-
-    @Test
-    void testCSV() {
-        File file = new File("/Users/slithercze/Desktop", "BlockFI trade_report_all all transactions.csv");
-        String header = HEADER.substring(0, HEADER.indexOf('\n'));
-        var parser = new EverytradeCsvMultiParser().parse(file, header);
-        var varTwo = parser;
-    }
 }
