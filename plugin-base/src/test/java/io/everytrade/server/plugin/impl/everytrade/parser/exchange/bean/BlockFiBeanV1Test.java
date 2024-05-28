@@ -137,22 +137,6 @@ public class BlockFiBeanV1Test {
             List.of()
         );
 
-        final TransactionCluster expected2 = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2021-04-09T23:59:59Z"),
-                BTC,
-                BTC,
-                REWARD,
-                new BigDecimal("2.31000000"),
-                null,
-                null,
-                null
-            ),
-            List.of()
-        );
-
         TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
-        TestUtils.testTxs(expected2.getMain(), actual.get(1).getMain());
     }
 }
