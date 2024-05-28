@@ -1823,7 +1823,8 @@ class BinanceBeanV4Test {
         final String row0 = """
             "364829079","2022-09-12 09:27:41","Spot","Convert Fiat to Crypto OCBS","CZK","-490.50000000",""
             "364829079","2022-09-12 09:27:41","Spot","Deposit Fiat OCBS","CZK","490.50000000",""
-            "364829079","2022-09-12 09:27:41","Spot","Convert Fiat to Crypto OCBS","BTC","0.00089454","\"""";
+            "364829079","2022-09-12 09:27:41","Spot","Convert Fiat to Crypto OCBS","BTC","0.00089454","\"
+            """;
 
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT_QUOTED + row0);
 
@@ -1865,8 +1866,9 @@ class BinanceBeanV4Test {
     void testIgnoringTransferBetweeinMainAndFundingWallet() {
         String row0 = """
             "364829079","2023-01-16 18:52:33","Funding","Transfer Between Main and Funding Wallet","BTC","0.01175857",""
-            "364829079","2023-01-16 18:52:33","Spot","Transfer Between Main and Funding Wallet","BTC","-0.01175857","\"""";
-        final var actual = ParserTestUtils.getParseResult(HEADER_CORRECT + row0);
+            "364829079","2023-01-16 18:52:33","Spot","Transfer Between Main and Funding Wallet","BTC","-0.01175857","\""""
+            ;
+        ParseResult actual = ParserTestUtils.getParseResult(HEADER_CORRECT + row0);
 
         var expectedProblem = new ParsingProblem(null,
             null, ParsingProblemType.PARSED_ROW_IGNORED);
