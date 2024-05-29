@@ -15,6 +15,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.AnycoinExchan
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BinanceExchangeSpecificParserV4;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BitfinexExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BitflyerMultiRowParser;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BlockFiExchangeSpecificParserV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.CoinBaseProExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.CoinbankExchangeSpecificParserV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.CoinbaseExchangeSpecificParser;
@@ -43,6 +44,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.okx.OkxBeanV2
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OpenNodeV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OpenNodeV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OpenNodeV3;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.blockFi.BlockFiBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.coibasePro.v2.CoinbaseProBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinmateBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinmateBeanV2;
@@ -96,6 +98,7 @@ import static io.everytrade.server.model.SupportedExchange.BITFLYER;
 import static io.everytrade.server.model.SupportedExchange.BITMEX;
 import static io.everytrade.server.model.SupportedExchange.BITSTAMP;
 import static io.everytrade.server.model.SupportedExchange.BITTREX;
+import static io.everytrade.server.model.SupportedExchange.BLOCKFI;
 import static io.everytrade.server.model.SupportedExchange.COINBANK;
 import static io.everytrade.server.model.SupportedExchange.COINBASE;
 import static io.everytrade.server.model.SupportedExchange.COINBASE_PRO;
@@ -307,6 +310,16 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 ))
                 .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(BittrexBeanV1.class, delimiter))
                 .supportedExchange(BITTREX)
+                .build());
+
+            /* BLOCKFI */
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader.of("Cryptocurrency", "Amount", "Transaction Type", "Confirmed At")
+                        .withSeparator(delimiter)
+                ))
+                .parserFactory(() -> new BlockFiExchangeSpecificParserV1(BlockFiBeanV1.class, delimiter))
+                .supportedExchange(BLOCKFI)
                 .build());
 
             /* COINBANK */

@@ -40,6 +40,7 @@ import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binanc
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_CARD_CASHBACK;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_CASHBACK_VOUCHER;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_COMMISSION_REBATE;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_CONVERT_FIAT_TO_CRYPTO_OCBS;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_DEPOSIT;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_DISTRIBUTION;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_ETH2_0_STAKING;
@@ -493,6 +494,8 @@ public class BinanceSortedGroupV4 {
         createdTransactions.add(txs);
     }
 
+
+
     private void createRebateTxs() {
         for (BinanceBeanV4 bean : rowRebate) {
             var txs = new BinanceBeanV4();
@@ -545,13 +548,25 @@ public class BinanceSortedGroupV4 {
         return row;
     }
 
-    public static BinanceBeanV4 createStakingsTxs(BinanceBeanV4 row) {
+    public static List<BinanceBeanV4> createStakingsTxs(BinanceBeanV4 row) {
+        List<BinanceBeanV4> result = new ArrayList<>();
         row.setRowNumber(row.getDate().getEpochSecond());
         String[] strings = {"Row id " + row.usedIds.toString() + " " + row.getOriginalOperation()};
         row.setRowValues(strings);
         row.setAmountBase(row.getChange().abs());
         row.setMarketBase(row.getCoin());
-        return row;
+        result.add(row);
+        if (row.getOperationType().equals(OPERATION_TYPE_STAKING_REWARDS)) {
+            try {
+                BinanceBeanV4 clone = (BinanceBeanV4) row.clone();
+                clone.setType(STAKE);
+                clone.setDate(row.getDate().plusSeconds(1));
+                result.add(clone);
+            } catch (CloneNotSupportedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return result;
     }
 
     public static List<BinanceBeanV4> createBinanceCardSpendingTxs(BinanceBeanV4 row) {
@@ -906,7 +921,8 @@ public class BinanceSortedGroupV4 {
                 row.getOriginalOperation().equals(OPERATION_TYPE_TRANSACTION_BUY.code) ||
                 row.getOriginalOperation().equals(OPERATION_TYPE_TRANSACTION_SPEND.code) ||
                 row.getOriginalOperation().equals(OPERATION_TYPE_TRANSACTION_REVENUE.code) ||
-                row.getOriginalOperation().equals(OPERATION_TYPE_TRANSACTION_SOLD.code)
+                row.getOriginalOperation().equals(OPERATION_TYPE_TRANSACTION_SOLD.code) ||
+                row.getOriginalOperation().equals(OPERATION_TYPE_CONVERT_FIAT_TO_CRYPTO_OCBS.code)
         ) {
             if (rowsBuySellRelated.containsKey(row.getCoin())) {
                 rowsBuySellRelated.get(row.getCoin()).add(row);
