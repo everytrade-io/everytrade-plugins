@@ -44,6 +44,8 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.okx.OkxBeanV2
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OpenNodeV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OpenNodeV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OpenNodeV3;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.PoloniexBuySellBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.PoloniexDepositWithdrawBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.blockFi.BlockFiBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.coibasePro.v2.CoinbaseProBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinmateBeanV1;
@@ -606,6 +608,30 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                         .withSeparator(delimiter)
                 ))
                 .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(PoloniexBeanV2.class, delimiter))
+                .supportedExchange(POLONIEX)
+                .build());
+
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader
+                        .of("create_time","trade_id","market","buyer_wallet","side","price","amount","fee","fee_currency",
+                            "fee_total")
+                        .withSeparator(delimiter)
+                ))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(PoloniexBuySellBeanV1.class, delimiter))
+                .supportedExchange(POLONIEX)
+                .build());
+
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader
+                        .of("f_created_at","currency","f_amount","f_address","f_status")
+                        .withSeparator(delimiter),
+                    CsvHeader
+                        .of("f_date","currency","f_amount","f_feededucted","f_status")
+                        .withSeparator(delimiter)
+                ))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(PoloniexDepositWithdrawBeanV1.class, delimiter))
                 .supportedExchange(POLONIEX)
                 .build());
 
