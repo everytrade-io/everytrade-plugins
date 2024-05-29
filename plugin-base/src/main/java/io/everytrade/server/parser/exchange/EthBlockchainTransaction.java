@@ -73,7 +73,7 @@ public class EthBlockchainTransaction {
             );
         }
         if (txDto.getIsError() != 0) {
-            throw new DataValidationException(String.format("Transaction with error:%d.", txDto.getIsError()));
+            throw new DataIgnoredException(String.format("Transaction with error:%d.", txDto.getIsError()));
         }
 
         var currencyDecimalDigits = ETH_DECIMAL_DIGIT;
@@ -115,7 +115,7 @@ public class EthBlockchainTransaction {
         if (equalsToZero(feeAmount) || !withFee) {
             related = emptyList();
         } else {
-            related = List.of(new FeeRebateImportedTransactionBean(id + FEE_UID_PART, timestamp, base, base, FEE, feeAmount, base));
+            related = List.of(new FeeRebateImportedTransactionBean(id + FEE_UID_PART, timestamp, ETH, ETH, FEE, feeAmount, ETH));
         }
         return new TransactionCluster(createMainTx(), related);
     }
@@ -124,7 +124,7 @@ public class EthBlockchainTransaction {
         if (type.isBuyOrSell()) {
             return new ImportedTransactionBean(id, timestamp, base, quote, type, baseAmount, unitPrice);
         } else if (type.isDepositOrWithdrawal()) {
-            return ImportedTransactionBean.createDepositWithdrawal(id, timestamp, base, quote, type, baseAmount, relatedAddress);
+            return ImportedTransactionBean.createDepositWithdrawal(id, timestamp, base, base, type, baseAmount, relatedAddress);
         } else {
             throw new IllegalArgumentException("Unsupported tx type " + type);
         }
