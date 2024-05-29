@@ -1119,13 +1119,29 @@ class BinanceBeanV4Test {
                         STAKING_REWARD,
                         new BigDecimal("0.00044214"),
                         null,
-                        "STAKING REWARDS",
+                        null,
                         null,
                         null
                 ),
                 List.of()
         );
+        final TransactionCluster expected1 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-01-01T00:48:08Z"),
+                DOT,
+                DOT,
+                STAKE,
+                new BigDecimal("0.00044214"),
+                null,
+                null,
+                null,
+                null
+            ),
+            List.of()
+        );
         TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
+        TestUtils.testTxs(expected1.getMain(), actual.get(1).getMain());
     }
 
     @Test

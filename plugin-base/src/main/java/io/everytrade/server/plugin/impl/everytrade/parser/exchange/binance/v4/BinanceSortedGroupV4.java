@@ -493,6 +493,8 @@ public class BinanceSortedGroupV4 {
         createdTransactions.add(txs);
     }
 
+
+
     private void createRebateTxs() {
         for (BinanceBeanV4 bean : rowRebate) {
             var txs = new BinanceBeanV4();
@@ -545,13 +547,25 @@ public class BinanceSortedGroupV4 {
         return row;
     }
 
-    public static BinanceBeanV4 createStakingsTxs(BinanceBeanV4 row) {
+    public static List<BinanceBeanV4> createStakingsTxs(BinanceBeanV4 row) {
+        List<BinanceBeanV4> result = new ArrayList<>();
         row.setRowNumber(row.getDate().getEpochSecond());
         String[] strings = {"Row id " + row.usedIds.toString() + " " + row.getOriginalOperation()};
         row.setRowValues(strings);
         row.setAmountBase(row.getChange().abs());
         row.setMarketBase(row.getCoin());
-        return row;
+        result.add(row);
+        if (row.getOperationType().equals(OPERATION_TYPE_STAKING_REWARDS)) {
+            try {
+                BinanceBeanV4 clone = (BinanceBeanV4) row.clone();
+                clone.setType(STAKE);
+                clone.setDate(row.getDate().plusSeconds(1));
+                result.add(clone);
+            } catch (CloneNotSupportedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return result;
     }
 
     public static List<BinanceBeanV4> createBinanceCardSpendingTxs(BinanceBeanV4 row) {
