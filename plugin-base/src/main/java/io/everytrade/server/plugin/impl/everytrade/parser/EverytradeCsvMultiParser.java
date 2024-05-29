@@ -25,6 +25,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.IMultiExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.KrakenDoubleQuotesUnivocitySpecificParserV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.KrakenExchangeSpecificParser;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.OkxExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.anycoin.AnycoinBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.AquanowBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BinanceBeanV1;
@@ -39,6 +40,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexB
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseProBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.GeneralBytesBeanV3;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.okx.OkxBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OpenNodeV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OpenNodeV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OpenNodeV3;
@@ -568,6 +570,18 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                         .withSeparator(delimiter)
                 ))
                 .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(OkxBeanV1.class, delimiter, LINE_SEPARATOR))
+                .supportedExchange(OKX)
+                .build());
+
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader
+                        .of("id","Order id","Time","Trade Type","Symbol","Action","Amount","Trading Unit","Filled Price",
+                            "Filled Price Unit","PnL","Fee", "Fee Unit","Position Change","Position Balance","Position Unit",
+                            "Balance Change","Balance", "Balance Unit")
+                        .withSeparator(delimiter)
+                ))
+                .parserFactory(() -> new OkxExchangeSpecificParser(OkxBeanV2.class, delimiter))
                 .supportedExchange(OKX)
                 .build());
 
