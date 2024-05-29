@@ -9,7 +9,6 @@ import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.coinbank.CoinbankBeanV1;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -174,7 +173,7 @@ public class OkxBeanV2 extends ExchangeBean implements Cloneable{
                         fee.getFeeCurrency(),
                         fee.getFeeCurrency(),
                         FEE,
-                        fee.getFee(),
+                        fee.getFeeAmount(),
                         fee.getFeeCurrency()
                     );
                     related.add(feeTxs);
