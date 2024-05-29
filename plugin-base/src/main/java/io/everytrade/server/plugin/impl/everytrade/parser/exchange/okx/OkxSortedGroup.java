@@ -31,7 +31,7 @@ public class OkxSortedGroup {
 
                     if (fee != null) {
                         fee.setTransactionType(FEE);
-                        fee.setFeeAmount(fee.getFee());
+                        fee.setFeeAmount(fee.getFee().abs());
                         fee.setFeeCurrency(fee.getFeeUnit());
                         result.getFeeTransactions().add(fee);
                     }
