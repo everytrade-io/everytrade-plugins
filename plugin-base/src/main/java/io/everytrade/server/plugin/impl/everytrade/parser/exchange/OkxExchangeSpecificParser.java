@@ -47,7 +47,8 @@ public class OkxExchangeSpecificParser extends DefaultUnivocityExchangeSpecificP
         });
     }
 
-    private List<OkxBeanV2> prepareBeansForTransactions(List<OkxBeanV2> rowsWithMultipleRowTransactionType, List<OkxBeanV2> rowsWithOneRowTransactionType) {
+    private List<OkxBeanV2> prepareBeansForTransactions(List<OkxBeanV2> rowsWithMultipleRowTransactionType,
+                                                        List<OkxBeanV2> rowsWithOneRowTransactionType) {
         List<OkxBeanV2> result;
         List<OkxBeanV2> oneRowTxs = prepareBeansForTransactionsFromOneRowTypes(rowsWithOneRowTransactionType);
         List<OkxBeanV2> multiRowsTxs = prepareBeansForTransactionsFromMultiRows(rowsWithMultipleRowTransactionType);
