@@ -1834,4 +1834,61 @@ class BinanceBeanV4Test {
         );
     }
 
+    @Test
+    void testDepositConvertFiatOCBS() {
+        final String row0 = """
+            "364829079","2022-09-12 09:27:41","Spot","Convert Fiat to Crypto OCBS","CZK","-490.50000000",""
+            "364829079","2022-09-12 09:27:41","Spot","Deposit Fiat OCBS","CZK","490.50000000",""
+            "364829079","2022-09-12 09:27:41","Spot","Convert Fiat to Crypto OCBS","BTC","0.00089454","\"
+            """;
+
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT_QUOTED + row0);
+
+        final TransactionCluster expected0 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-09-12T09:27:41Z"),
+                CZK,
+                CZK,
+                DEPOSIT,
+                new BigDecimal("490.50000000"),
+                null,
+                null,
+                null
+            ),
+            List.of()
+        );
+
+        final TransactionCluster expected1 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-09-12T09:27:41Z"),
+                BTC,
+                CZK,
+                BUY,
+                new BigDecimal("0.00089454000000000"),
+                new BigDecimal("548326.51418606211013482"),
+                null,
+                null
+            ),
+            List.of()
+        );
+
+        TestUtils.testTxs(expected0.getMain(), actual.get(1).getMain());
+        TestUtils.testTxs(expected1.getMain(), actual.get(0).getMain());
+    }
+
+    @Test
+    void testIgnoringTransferBetweeinMainAndFundingWallet() {
+        String row0 = """
+            "364829079","2023-01-16 18:52:33","Funding","Transfer Between Main and Funding Wallet","BTC","0.01175857",""
+            "364829079","2023-01-16 18:52:33","Spot","Transfer Between Main and Funding Wallet","BTC","-0.01175857","\""""
+            ;
+        ParseResult actual = ParserTestUtils.getParseResult(HEADER_CORRECT + row0);
+
+        var expectedProblem = new ParsingProblem(null,
+            null, ParsingProblemType.PARSED_ROW_IGNORED);
+
+        assertEquals(expectedProblem.getParsingProblemType(), actual.getParsingProblems().get(0).getParsingProblemType());
+    }
 }

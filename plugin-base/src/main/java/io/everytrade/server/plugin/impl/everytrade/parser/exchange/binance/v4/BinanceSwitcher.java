@@ -26,7 +26,9 @@ import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binanc
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_CARD_CASHBACK;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_CASHBACK_VOUCHER;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_COMMISSION_REBATE;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_CONVERT_FIAT_TO_CRYPTO_OCBS;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_DEPOSIT;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_DEPOSIT_FIAT_OCBS;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_DISTRIBUTION;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_ETH2_0_STAKING;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_ETH2_0_STAKING_REWARDS;
@@ -69,7 +71,7 @@ public class BinanceSwitcher {
         }
         if (List.of(OPERATION_TYPE_DEPOSIT.code, OPERATION_TYPE_FIAT_DEPOSIT.code, OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_REDEMPTION.code,
             OPERATION_TYPE_SAVING_DISTRIBUTION.code, OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_SUBSCRIPTION.code,
-            OPERATION_TYPE_SIMPLE_EARN_LOCKED_REDEMPTION.code).contains(operationType)) {
+            OPERATION_TYPE_SIMPLE_EARN_LOCKED_REDEMPTION.code, OPERATION_TYPE_DEPOSIT_FIAT_OCBS.code).contains(operationType)) {
             return DEPOSIT;
         }
         if (List.of(OPERATION_TYPE_WITHDRAWAL.code, OPERATION_TYPE_FIAT_WITHDRAWAL.code, OPERATION_TYPE_FIAT_WITHDRAW.code,
@@ -84,7 +86,8 @@ public class BinanceSwitcher {
             || OPERATION_TYPE_SMALL_ASSETS_EXCHANGE_BNB.code.equals(operationType)
             || OPERATION_TYPE_TRANSACTION_BUY.code.equals(operationType)
             || OPERATION_TYPE_BUY_CRYPTO.code.equals(operationType)
-            || OPERATION_TYPE_TRANSACTION_REVENUE.code.equals(operationType)) {
+            || OPERATION_TYPE_TRANSACTION_REVENUE.code.equals(operationType)
+            || OPERATION_TYPE_CONVERT_FIAT_TO_CRYPTO_OCBS.code.equals(operationType)) {
             return BUY;
         }
         if (OPERATION_TYPE_AIRDROP_ASSETS.code.equals(operationType)) {
