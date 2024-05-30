@@ -150,12 +150,4 @@ public class PoloniexBeanTest {
 
         ParserTestUtils.checkEqual(expected, actual.getTransactionClusters().get(0));
     }
-
-    @Test
-    void testCSV() {
-        File file = new File("/Users/slithercze/Desktop", "202405 poloniex podpora Spot history.csv");
-        String header = HEADER_BUY_SELL.substring(0, HEADER_BUY_SELL.indexOf("\n"));
-        var parser = new EverytradeCsvMultiParser().parse(file, header);
-        var varTwo = parser;
-    }
 }
