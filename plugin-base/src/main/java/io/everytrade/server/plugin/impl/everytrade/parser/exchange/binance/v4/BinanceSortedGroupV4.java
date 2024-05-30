@@ -24,6 +24,7 @@ import static io.everytrade.server.model.Currency.USDT;
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.EARNING;
+import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.REBATE;
 import static io.everytrade.server.model.TransactionType.REWARD;
 import static io.everytrade.server.model.TransactionType.SELL;
@@ -242,7 +243,7 @@ public class BinanceSortedGroupV4 {
         for(BinanceBeanV4 row : group) {
             if (row.getOperationType().equals(OPERATION_TYPE_FEE) || row.getOperationType().equals(OPERATION_TYPE_TRANSACTION_FEE)) {
                 row.setInTransaction(true);
-                row.setType(TransactionType.FEE);
+                row.setType(FEE);
                 row.setFee(row.getChange().abs());
                 row.setFeeCurrency(row.getCoin());
                 row.feeTransactions.add(row);
@@ -413,7 +414,7 @@ public class BinanceSortedGroupV4 {
             for (BinanceBeanV4 fee : rowFees) {
                 fee.setInTransaction(true);
                 var bean = new BinanceBeanV4();
-                bean.setType(TransactionType.FEE);
+                bean.setType(FEE);
                 bean.setFee(fee.getChange().abs());
                 bean.setFeeCurrency(fee.getCoin());
                 bean.setDate(fee.getDate());
@@ -536,6 +537,16 @@ public class BinanceSortedGroupV4 {
         row.setAmountBase(row.getChange().abs());
         row.setMarketBase(row.getCoin());
         row.setType(EARNING);
+        return row;
+    }
+
+    public static BinanceBeanV4 createFeeTxs(BinanceBeanV4 row) {
+        row.setRowNumber(row.getDate().getEpochSecond());
+        row.usedIds.add(row.getRowId());
+        row.setMarketBase(row.getCoin());
+        row.setFeeCurrency(row.getCoin());
+        row.setFee(row.getChange().abs());
+        row.setType(FEE);
         return row;
     }
 

@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 import static io.everytrade.server.model.TransactionType.AIRDROP;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.EARNING;
+import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.REBATE;
 import static io.everytrade.server.model.TransactionType.REWARD;
 import static io.everytrade.server.model.TransactionType.STAKE;
@@ -187,6 +188,9 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
                     result.addAll(createdTx);
                 } else if (EARNING.equals(row.getType())) {
                     row = BinanceSortedGroupV4.createEarningsTxs(row);
+                    result.add(row);
+                } else if (FEE.equals(row.getType())){
+                    row = BinanceSortedGroupV4.createFeeTxs(row);
                     result.add(row);
                 } else if (AIRDROP.equals(row.getType())) {
                     row = BinanceSortedGroupV4.createAirdropTxs(row);

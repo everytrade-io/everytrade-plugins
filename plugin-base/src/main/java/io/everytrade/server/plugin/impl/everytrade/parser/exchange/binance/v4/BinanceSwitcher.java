@@ -19,6 +19,7 @@ import static io.everytrade.server.model.TransactionType.UNSTAKE;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_AIRDROP_ASSETS;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BINANCE_CONVERT;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BNB_FEE_DEDUCTION;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BNB_VAULT_REWARDS;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BUY;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BUY_CRYPTO;
@@ -79,7 +80,8 @@ public class BinanceSwitcher {
             .contains(operationType)) {
             return WITHDRAWAL;
         }
-        if (OPERATION_TYPE_FEE.code.equals(operationType) || OPERATION_TYPE_TRANSACTION_FEE.code.equals(operationType)) {
+        if (OPERATION_TYPE_FEE.code.equals(operationType) || OPERATION_TYPE_TRANSACTION_FEE.code.equals(operationType)
+            || OPERATION_TYPE_BNB_FEE_DEDUCTION.code.equals(operationType)) {
             return FEE;
         }
         if (OPERATION_TYPE_TRANSACTION_RELATED.code.equals(operationType) || OPERATION_TYPE_LARGE_OTC_TRADING.code.equals(operationType)

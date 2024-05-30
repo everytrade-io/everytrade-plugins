@@ -1891,4 +1891,26 @@ class BinanceBeanV4Test {
 
         assertEquals(expectedProblem.getParsingProblemType(), actual.getParsingProblems().get(0).getParsingProblemType());
     }
+
+    @Test
+    void testBNB_Fee_Deduction() {
+        final String row0 = "25335873,2021-05-22 21:32:24,Spot,BNB Fee Deduction,BNB,-0.00190587,\n";
+
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row0);
+
+        final TransactionCluster expected0 = new TransactionCluster(
+            new FeeRebateImportedTransactionBean(
+                FEE_UID_PART,
+                Instant.parse("2021-05-22T21:32:24Z"),
+                BNB,
+                BNB,
+                FEE,
+                new BigDecimal("0.00190587"),
+                BNB,
+                null
+            ),
+            List.of()
+        );
+        TestUtils.testTxs(expected0.getMain(), actual.get(0).getMain());
+    }
 }
