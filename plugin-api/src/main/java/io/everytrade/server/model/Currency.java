@@ -863,7 +863,14 @@ public enum Currency {
     FLOKI(false, Instant.parse("2021-09-09T00:00:00Z"), "Floki Inu"),
     BOME(false, Instant.parse("2024-03-14T00:00:00Z"), "BOOK OF MEME"),
     JTO(false, Instant.parse("2023-11-06T00:00:00Z"), "Jito"),
-    VRA(false, Instant.parse("2019-03-04T00:00:00Z"), "Verasity");
+    VRA(false, Instant.parse("2019-03-04T00:00:00Z"), "Verasity"),
+    QCK(false, Instant.parse("2024-04-04T00:00:00Z"), "Quicksilver"),
+    NVT(false, Instant.parse("2021-09-16T00:00:00Z"), "NerveNetwork"),
+    GUSD(false, Instant.parse("2018-10-04T00:00:00Z"), "Gemini Dollar"),
+    FCT(false, Instant.parse("2021-08-19T00:00:00Z"), "Firmachain"),
+    START(false, Instant.parse("2022-02-02T00:00:00Z"), "BSCstarter"),
+    STR(false, Instant.parse("2022-07-28T00:00:00Z"), "Stater"),
+    PINK(false, Instant.parse("2021-09-09T00:00:00Z"), "Dot Finance");
 
 
     String code;
