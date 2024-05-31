@@ -54,6 +54,7 @@ public class KrakenCurrencyUtil {
         CURRENCY_LONG_CODES.put("XETC", Currency.ETC);
         CURRENCY_LONG_CODES.put("XXLTC", Currency.LTC);
         CURRENCY_SHORT_CODES.put("XDG", Currency.DOGE);
+        CURRENCY_LONG_CODES.put("EUR.HOLD", Currency.EUR);
 
         for (Currency value : Currency.values()) {
             if (value.equals(Currency.BTC)) {

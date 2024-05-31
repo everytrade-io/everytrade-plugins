@@ -352,12 +352,24 @@ public class KrakenConnector implements IConnector {
                         spend = receiveSpendPair.get(1);
                         receive = receiveSpendPair.get(0);
                     }
-                    var krakenTrade = new KrakenTrade(receive.getRefId(),
-                        currencySwitcher(spend.getAsset()).concat("/").concat(currencySwitcher((receive.getAsset()))),
-                        spend.getUnixTime(), KrakenType.SELL, KrakenOrderType.LIMIT,
-                        spend.getTransactionAmount().abs().divide(receive.getTransactionAmount(),
-                            RoundingMode.HALF_UP), receive.getTransactionAmount(), receive.getFee(), spend.getTransactionAmount().abs(),
-                        null, null, null, null, null, null, null, null, null, null, null);
+                    KrakenType transactionType;
+                    if (io.everytrade.server.model.Currency.fromCode(currencySwitcher(receive.getAsset())).isFiat()) {
+                        transactionType = KrakenType.SELL;
+                    } else {
+                        transactionType = KrakenType.BUY;
+                    }
+                    var krakenTrade = new KrakenTrade(
+                        receive.getRefId(),
+                        currencySwitcher(receive.getAsset()).concat("/").concat(currencySwitcher((spend.getAsset()))),
+                        spend.getUnixTime(),
+                        transactionType,
+                        KrakenOrderType.LIMIT,
+                        spend.getTransactionAmount().abs().divide(receive.getTransactionAmount(), RoundingMode.HALF_UP),
+                        null,
+                        receive.getFee(),
+                        receive.getTransactionAmount(),
+                        null, null, null, null, null, null,
+                        null, null, null, null, null);
                     krakenTrades.add(krakenTrade);
                 } catch (Exception e) {
                     parsingProblems.add(new ParsingProblem(receiveSpendPair.toString(), e.getMessage(), ROW_PARSING_FAILED));

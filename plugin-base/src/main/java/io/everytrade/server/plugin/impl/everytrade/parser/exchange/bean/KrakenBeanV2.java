@@ -3,6 +3,7 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 import com.univocity.parsers.annotations.Convert;
 import com.univocity.parsers.annotations.Headers;
 import com.univocity.parsers.annotations.Parsed;
+import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
@@ -134,8 +135,7 @@ public class KrakenBeanV2 extends ExchangeBean implements Cloneable{
             this.asset = KrakenCurrencyUtil.findCurrencyByCode(asset);
             this.assetCode = KrakenAssetCodeType.findAssetCodeByAsset(asset);
         } catch (IllegalStateException e) {
-            setMessage(e.getMessage());
-            this.setUnsupportedRow(true);
+            throw new DataValidationException("Unsupported asset: " + asset);
         }
     }
 
