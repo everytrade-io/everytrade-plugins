@@ -1893,7 +1893,7 @@ class BinanceBeanV4Test {
     }
 
     @Test
-    void testBNB_Fee_Deduction() {
+    void testBnbFeeDeducation() {
         final String row0 = "25335873,2021-05-22 21:32:24,Spot,BNB Fee Deduction,BNB,-0.00190587,\n";
 
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row0);
