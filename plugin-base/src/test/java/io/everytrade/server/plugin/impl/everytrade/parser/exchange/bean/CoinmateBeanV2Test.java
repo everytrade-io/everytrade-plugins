@@ -56,7 +56,7 @@ class CoinmateBeanV2Test {
                 Currency.BTC,
                 Currency.EUR,
                 TransactionType.SELL,
-                new BigDecimal("0.04766800"),
+                new BigDecimal("0.047668"),
                 new BigDecimal("9011.62834249")
             ),
             List.of(
@@ -66,7 +66,7 @@ class CoinmateBeanV2Test {
                     Currency.EUR,
                     Currency.EUR,
                     TransactionType.FEE,
-                    new BigDecimal("0.85913259"),
+                    new BigDecimal("0.85913259000000000"),
                     Currency.EUR
                 )
             )
@@ -86,7 +86,7 @@ class CoinmateBeanV2Test {
                 Currency.BTC,
                 Currency.EUR,
                 TransactionType.SELL,
-                new BigDecimal("0.04766800"),
+                new BigDecimal("0.047668"),
                 new BigDecimal("9011.62834249")
             ),
             List.of(
@@ -96,7 +96,7 @@ class CoinmateBeanV2Test {
                     Currency.EUR,
                     Currency.EUR,
                     TransactionType.FEE,
-                    new BigDecimal("0.85913259"),
+                    new BigDecimal("0.85913259000000000"),
                     Currency.EUR
                 )
             )
@@ -116,7 +116,7 @@ class CoinmateBeanV2Test {
                 Currency.BTC,
                 Currency.EUR,
                 TransactionType.SELL,
-                new BigDecimal("0.04766800"),
+                new BigDecimal("0.047668"),
                 new BigDecimal("9011.62834249")
             ),
             List.of(
@@ -126,7 +126,7 @@ class CoinmateBeanV2Test {
                     Currency.EUR,
                     Currency.EUR,
                     TransactionType.FEE,
-                    new BigDecimal("0.85913259"),
+                    new BigDecimal("0.85913259000000000"),
                     Currency.EUR
                 )
             )

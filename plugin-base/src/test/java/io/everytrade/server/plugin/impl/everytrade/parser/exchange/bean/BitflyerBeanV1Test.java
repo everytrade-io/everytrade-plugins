@@ -52,8 +52,8 @@ class BitflyerBeanV1Test {
                 Currency.LTC,
                 Currency.USD,
                 TransactionType.BUY,
-                new BigDecimal("0.9"),
-                new BigDecimal("46.43")
+                new BigDecimal("0.90000000000000000"),
+                new BigDecimal("46.43000000000000000")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -62,7 +62,7 @@ class BitflyerBeanV1Test {
                     Currency.USD,
                     Currency.USD,
                     TransactionType.FEE,
-                    new BigDecimal("0.4"),
+                    new BigDecimal("0.40000000000000000"),
                     Currency.USD
                 )
             )
@@ -81,8 +81,8 @@ class BitflyerBeanV1Test {
                 Currency.LTC,
                 Currency.USD,
                 TransactionType.SELL,
-                new BigDecimal("1"),
-                new BigDecimal("44.16")
+                new BigDecimal("1.00000000000000000"),
+                new BigDecimal("44.16000000000000000")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -91,7 +91,7 @@ class BitflyerBeanV1Test {
                     Currency.USD,
                     Currency.USD,
                     TransactionType.FEE,
-                    new BigDecimal("0.2"),
+                    new BigDecimal("0.20000000000000000"),
                     Currency.USD
                 )
             )

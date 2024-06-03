@@ -168,8 +168,13 @@ public class KrakenSortedGroup {
         if (type.isBuyOrSell()) {
             // set base and quote row
             if (rowsTrades.stream().anyMatch(r -> r.getType().equals(KrakenConstants.TYPE_RECEIVE.code))){
-                rowBase = rowsTrades.stream().filter(r -> r.getType().equals(KrakenConstants.TYPE_RECEIVE.code)).findFirst().orElse(null);
-                rowQuote = rowsTrades.stream().filter(r -> r.getType().equals(KrakenConstants.TYPE_SPEND.code)).findFirst().orElse(null);
+                if (type.equals(SELL)){
+                    rowBase = rowsTrades.stream().filter(r -> !r.getAsset().isFiat()).findFirst().orElse(null);
+                    rowQuote = rowsTrades.stream().filter(r -> r.getAsset().isFiat()).findFirst().orElse(null);
+                } else {
+                    rowBase = rowsTrades.stream().filter(r -> r.getAmount().compareTo(ZERO) > 0).findFirst().orElse(null);
+                    rowQuote = rowsTrades.stream().filter(r -> r.getAmount().compareTo(ZERO) < 0).findFirst().orElse(null);
+                }
             } else if (!rowsTrades.get(0).getAsset().isFiat() && rowsTrades.get(1).getAsset().isFiat()) {
                 rowBase = rowsTrades.get(0);
                 rowQuote = rowsTrades.get(1);
@@ -225,7 +230,10 @@ public class KrakenSortedGroup {
         if (row.getAmount().compareTo(ZERO) < 0) {
             rowsEarning.stream()
                 .filter(r -> r.getAmount().abs().equals(row.getAmount().abs()) && r.getTime().equals(row.getTime()))
-                .forEach(r -> r.setUnsupportedRow(true));
+                .forEach(r -> {
+                    r.setUnsupportedRow(true);
+                    createdTransactions.add(r);
+                });
         }
     }
 

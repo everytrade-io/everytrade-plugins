@@ -76,7 +76,7 @@ class GeneralBytesBeanV3Test {
                     BTC,
                     BTC,
                     TransactionType.FEE,
-                    new BigDecimal("0.0000425000"),
+                    new BigDecimal("0.00004250000000000"),
                     BTC,
                     "ROPVC8"
                 )

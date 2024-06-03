@@ -70,8 +70,8 @@ public class ParserTestUtils {
         assertEquals(expected.getQuote(), actual.getQuote());
         assertEquals(expected.getAction(), actual.getAction());
 
-        bigDecimalEquals(expected.getVolume(), actual.getVolume());
-        bigDecimalEquals(expected.getUnitPrice(), actual.getUnitPrice());
+        assertEquals(expected.getVolume(), actual.getVolume());
+        assertEquals(expected.getUnitPrice(), actual.getUnitPrice());
 
         assertEquals(expected.getNote(), actual.getNote());
         assertEquals(expected.getLabels(), actual.getLabels());
@@ -87,7 +87,7 @@ public class ParserTestUtils {
         assertEquals(expected.getBase(), actual.getBase());
         assertEquals(expected.getQuote(), actual.getQuote());
         assertEquals(expected.getAction(), actual.getAction());
-        assertEquals(0, expected.getVolume().compareTo(actual.getVolume()));
+        assertEquals(expected.getVolume(),actual.getVolume());
         assertEquals(expected.getFeeRebateCurrency(), actual.getFeeRebateCurrency());
         assertEquals(expected.getNote(), actual.getNote());
         assertEquals(expected.getLabels(), actual.getLabels());
