@@ -7,13 +7,10 @@ import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParseResult;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
-import io.everytrade.server.plugin.impl.everytrade.parser.EverytradeCsvMultiParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
-import io.everytrade.server.test.TestUtils;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -27,9 +24,9 @@ import static io.everytrade.server.model.Currency.USDC;
 import static io.everytrade.server.model.Currency.XLM;
 import static io.everytrade.server.model.Currency.XTZ;
 import static io.everytrade.server.model.TransactionType.BUY;
-import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.FEE;
+import static io.everytrade.server.model.TransactionType.REWARD;
 import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
@@ -211,7 +208,7 @@ class CoinbaseBeanV1Test {
                 Instant.parse("2021-02-01T09:28:38Z"),
                 asset,
                 asset,
-                DEPOSIT,
+                REWARD,
                 quantityTransacted,
                 null,
                 "Receive",
@@ -355,7 +352,7 @@ class CoinbaseBeanV1Test {
                 Instant.parse("2020-05-15T14:05:30Z"),
                 BTC,
                 BTC,
-                DEPOSIT,
+                REWARD,
                 new BigDecimal("0.00104400000000000"),
                 null,
                 "Receive",
@@ -480,6 +477,50 @@ class CoinbaseBeanV1Test {
                 new BigDecimal("8.54640490000000000"),
                 USD
             ))
+        );
+
+        ParserTestUtils.checkEqual(expected, actual.getTransactionClusters().get(0));
+    }
+
+    @Test
+    void testReceiveToWithdrawal() {
+        var row = "2022-01-07 22:41:54 UTC,Receive,BTC,0.00013634,EUR,895782.60,122.13,122.13,0,Received 0.00013634 BTC from Coinbase\n";
+        final ParseResult actual = ParserTestUtils.getParseResult(HEADER_CORRECT_SPOT_SPREAD + row);
+
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-01-07T22:41:54Z"),
+                BTC,
+                BTC,
+                REWARD,
+                new BigDecimal("0.00013634000000000"),
+                null,
+                "Receive",
+                null
+            ), List.of()
+        );
+
+        ParserTestUtils.checkEqual(expected, actual.getTransactionClusters().get(0));
+    }
+
+    @Test
+    void testSendToWithdrawal() {
+        var row = "2022-01-07 22:59:53 UTC,Send,BTC,0.0108036,EUR,893306.61,9650.93,9650.93,0,Sent 0.0108036 BTC to \n";
+        final ParseResult actual = ParserTestUtils.getParseResult(HEADER_CORRECT_SPOT_SPREAD + row);
+
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-01-07T22:59:53Z"),
+                BTC,
+                BTC,
+                WITHDRAWAL,
+                new BigDecimal("0.01080360000000000"),
+                null,
+                "Send",
+                null
+            ), List.of()
         );
 
         ParserTestUtils.checkEqual(expected, actual.getTransactionClusters().get(0));

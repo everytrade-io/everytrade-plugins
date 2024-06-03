@@ -192,8 +192,8 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
                     row = BinanceSortedGroupV4.createAirdropTxs(row);
                     result.add(row);
                 } else if (STAKING_REWARD.equals(row.getType()) || UNSTAKE.equals(row.getType()) || STAKE.equals(row.getType())) {
-                    row = BinanceSortedGroupV4.createStakingsTxs(row);
-                    result.add(row);
+                    List<BinanceBeanV4> createdTx = BinanceSortedGroupV4.createStakingsTxs(row);
+                    result.addAll(createdTx);
                     if (row.getOperationType().equals(OPERATION_TYPE_ETH2_0_STAKING_REWARDS)) {
                         var rowStake = cloneRewardToStake(row);
                         result.add(rowStake);

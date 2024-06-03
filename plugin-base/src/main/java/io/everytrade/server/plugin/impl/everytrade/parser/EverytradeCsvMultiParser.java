@@ -15,6 +15,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.AnycoinExchan
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BinanceExchangeSpecificParserV4;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BitfinexExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BitflyerMultiRowParser;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BlockFiExchangeSpecificParserV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.CoinBaseProExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.CoinbankExchangeSpecificParserV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.CoinbaseExchangeSpecificParser;
@@ -24,6 +25,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.IMultiExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.KrakenDoubleQuotesUnivocitySpecificParserV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.KrakenExchangeSpecificParser;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.OkxExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.anycoin.AnycoinBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.AquanowBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BinanceBeanV1;
@@ -38,9 +40,13 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexB
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseProBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.GeneralBytesBeanV3;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.okx.OkxBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OpenNodeV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OpenNodeV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OpenNodeV3;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.PoloniexBuySellBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.PoloniexDepositWithdrawBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.blockFi.BlockFiBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.coibasePro.v2.CoinbaseProBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinmateBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinmateBeanV2;
@@ -94,6 +100,7 @@ import static io.everytrade.server.model.SupportedExchange.BITFLYER;
 import static io.everytrade.server.model.SupportedExchange.BITMEX;
 import static io.everytrade.server.model.SupportedExchange.BITSTAMP;
 import static io.everytrade.server.model.SupportedExchange.BITTREX;
+import static io.everytrade.server.model.SupportedExchange.BLOCKFI;
 import static io.everytrade.server.model.SupportedExchange.COINBANK;
 import static io.everytrade.server.model.SupportedExchange.COINBASE;
 import static io.everytrade.server.model.SupportedExchange.COINBASE_PRO;
@@ -305,6 +312,16 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 ))
                 .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(BittrexBeanV1.class, delimiter))
                 .supportedExchange(BITTREX)
+                .build());
+
+            /* BLOCKFI */
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader.of("Cryptocurrency", "Amount", "Transaction Type", "Confirmed At")
+                        .withSeparator(delimiter)
+                ))
+                .parserFactory(() -> new BlockFiExchangeSpecificParserV1(BlockFiBeanV1.class, delimiter))
+                .supportedExchange(BLOCKFI)
                 .build());
 
             /* COINBANK */
@@ -558,6 +575,18 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 .supportedExchange(OKX)
                 .build());
 
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader
+                        .of("id","Order id","Time","Trade Type","Symbol","Action","Amount","Trading Unit","Filled Price",
+                            "Filled Price Unit","PnL","Fee", "Fee Unit","Position Change","Position Balance","Position Unit",
+                            "Balance Change","Balance", "Balance Unit")
+                        .withSeparator(delimiter)
+                ))
+                .parserFactory(() -> new OkxExchangeSpecificParser(OkxBeanV2.class, delimiter))
+                .supportedExchange(OKX)
+                .build());
+
             /* PAXFUL */
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
                 .headers(List.of(
@@ -579,6 +608,30 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                         .withSeparator(delimiter)
                 ))
                 .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(PoloniexBeanV2.class, delimiter))
+                .supportedExchange(POLONIEX)
+                .build());
+
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader
+                        .of("create_time","trade_id","market","buyer_wallet","side","price","amount","fee","fee_currency",
+                            "fee_total")
+                        .withSeparator(delimiter)
+                ))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(PoloniexBuySellBeanV1.class, delimiter))
+                .supportedExchange(POLONIEX)
+                .build());
+
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader
+                        .of("f_created_at","currency","f_amount","f_address","f_status")
+                        .withSeparator(delimiter),
+                    CsvHeader
+                        .of("f_date","currency","f_amount","f_feededucted","f_status")
+                        .withSeparator(delimiter)
+                ))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(PoloniexDepositWithdrawBeanV1.class, delimiter))
                 .supportedExchange(POLONIEX)
                 .build());
 

@@ -15,6 +15,7 @@ import java.util.List;
 import static io.everytrade.server.model.Currency.ADA;
 import static io.everytrade.server.model.Currency.EUR;
 import static io.everytrade.server.model.Currency.LUNA2;
+import static io.everytrade.server.model.Currency.SHIB;
 import static io.everytrade.server.model.Currency.SOL;
 import static io.everytrade.server.model.Currency.USD;
 import static io.everytrade.server.model.Currency.USDT;
@@ -72,7 +73,7 @@ class KrakenBeanV2Test {
 
 
     @Test
-    void testSpendReceived()  {
+    void testSpendReceivedSell()  {
         final String row0 = "\"LYVTSS-NIZAI-AC2KVR\",\"TSAJOY3-ZHDY2-J2EQDN\",\"2022-10-12 10:00:57\",\"spend\",\"\",\"currency\"," +
             "\"USDT\",-1000.00000000,0.00000000,0.00000000\n";
         final String row1 = "\"LTAHVF-RGBFO-IYNCGG\",\"TSAJOY3-ZHDY2-J2EQDN\",\"2022-10-12 10:00:57\",\"receive\",\"\",\"currency\"," +
@@ -82,13 +83,47 @@ class KrakenBeanV2Test {
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row0.concat(row1));
         final TransactionCluster expected = new TransactionCluster(
             new ImportedTransactionBean(
-                "LYVTSS-NIZAI-AC2KVR LTAHVF-RGBFO-IYNCGG",
+                "LTAHVF-RGBFO-IYNCGG LYVTSS-NIZAI-AC2KVR",
                 Instant.parse("2022-10-12T10:00:57Z"),
-                USDT,
                 EUR,
+                USDT,
                 SELL,
-                new BigDecimal("1000.0000000000"),
-                new BigDecimal("1.0300000000")
+                new BigDecimal("1030.00000000000000000"),
+                new BigDecimal("0.97087378640776699")
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    "LTAHVF-RGBFO-IYNCGG LYVTSS-NIZAI-AC2KVR-fee" ,
+                    Instant.parse("2022-10-12T10:00:57Z"),
+                    EUR,
+                    EUR,
+                    FEE,
+                    new BigDecimal("15.2200"),
+                    EUR
+                )
+            )
+        );
+        TestUtils.testTxs(expected.getMain(), actual.getMain());
+    }
+
+    @Test
+    void testSpendReceivedBuyFiat()  {
+        final String row0 = "\"LYVTSS-NIZAI-AC2KVR\",\"TSAJOY3-ZHDY2-J2EQDN\",\"2022-10-12 10:00:57\",\"spend\",\"\",\"currency\"," +
+            "\"ZEUR\",-1000.00000000,0.00000000,0.00000000\n";
+        final String row1 = "\"LTAHVF-RGBFO-IYNCGG\",\"TSAJOY3-ZHDY2-J2EQDN\",\"2022-10-12 10:00:57\",\"receive\",\"\",\"currency\"," +
+            "\"SHIB\",1030.0000,15.2200,1023.4139\n";
+
+
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row0.concat(row1));
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                "LTAHVF-RGBFO-IYNCGG LYVTSS-NIZAI-AC2KVR",
+                Instant.parse("2022-10-12T10:00:57Z"),
+                SHIB,
+                EUR,
+                BUY,
+                new BigDecimal("1030.00000000000000000"),
+                new BigDecimal("0.97087378640776699")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -102,7 +137,41 @@ class KrakenBeanV2Test {
                 )
             )
         );
-        ParserTestUtils.checkEqual(expected, actual);
+        TestUtils.testTxs(expected.getMain(), actual.getMain());
+    }
+
+    @Test
+    void testSpendReceivedBuyKrypto()  {
+        final String row0 = "\"LYVTSS-NIZAI-AC2KVR\",\"TSAJOY3-ZHDY2-J2EQDN\",\"2022-10-12 10:00:57\",\"spend\",\"\",\"currency\"," +
+            "\"USDT\",-1000.00000000,0.00000000,0.00000000\n";
+        final String row1 = "\"LTAHVF-RGBFO-IYNCGG\",\"TSAJOY3-ZHDY2-J2EQDN\",\"2022-10-12 10:00:57\",\"receive\",\"\",\"currency\"," +
+            "\"SHIB\",1030.0000,15.2200,1023.4139\n";
+
+
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row0.concat(row1));
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                "LTAHVF-RGBFO-IYNCGG LYVTSS-NIZAI-AC2KVR",
+                Instant.parse("2022-10-12T10:00:57Z"),
+                SHIB,
+                USDT,
+                BUY,
+                new BigDecimal("1030.00000000000000000"),
+                new BigDecimal("0.97087378640776699")
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    "LYVTSS-NIZAI-AC2KVR LTAHVF-RGBFO-IYNCGG-fee" ,
+                    Instant.parse("2022-10-12T10:00:57Z"),
+                    EUR,
+                    EUR,
+                    FEE,
+                    new BigDecimal("15.2200"),
+                    EUR
+                )
+            )
+        );
+        TestUtils.testTxs(expected.getMain(), actual.getMain());
     }
 
     @Test

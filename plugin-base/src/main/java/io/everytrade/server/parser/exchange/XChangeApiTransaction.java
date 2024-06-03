@@ -10,6 +10,8 @@ import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.util.CoinMateDataUtil;
 import lombok.Builder;
 import lombok.Value;
+import org.knowm.xchange.coinbase.v2.dto.account.transactions.CoinbaseShowTransactionV2;
+import org.knowm.xchange.coinbase.v2.dto.account.transactions.CoinbaseTransactionV2Expand;
 import org.knowm.xchange.coinmate.dto.trade.CoinmateTransactionHistoryEntry;
 import org.knowm.xchange.dto.Order;
 import org.knowm.xchange.dto.account.FundingRecord;
@@ -20,7 +22,13 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
+import static io.everytrade.server.model.TransactionType.BUY;
+import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.FEE;
+import static io.everytrade.server.model.TransactionType.REWARD;
+import static io.everytrade.server.model.TransactionType.SELL;
+import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
+import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.ROUNDING_MODE;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 import static java.util.Collections.emptyList;
@@ -74,6 +82,77 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
             .feeAmount(record.getFee())
             .feeCurrency(currency)
             .address(record.getAddress())
+            .build();
+    }
+
+    public static XChangeApiTransaction tradeCoinbase(List<CoinbaseShowTransactionV2> transaction) {
+        var base = transaction.stream()
+            .filter(t -> t.getAmount().getAmount().compareTo(BigDecimal.ZERO) > 0)
+            .findFirst()
+            .orElseThrow();
+        var quote = transaction.stream()
+            .filter(t -> t.getAmount().getAmount().compareTo(BigDecimal.ZERO) < 0)
+            .findFirst()
+            .orElseThrow();
+
+        return XChangeApiTransaction.builder()
+            .id(String.valueOf(base.getId()))
+            .timestamp(Instant.parse(base.getCreatedAt()))
+            .type(BUY)
+            .base(Currency.fromCode(base.getAmount().getCurrency()))
+            .quote(Currency.fromCode(quote.getAmount().getCurrency()))
+            .price(quote.getAmount().getAmount().abs().divide(base.getAmount().getAmount().abs(), 8, ROUNDING_MODE))
+            .originalAmount(base.getAmount().getAmount())
+            .build();
+    }
+    public static XChangeApiTransaction buySellCoinbase(CoinbaseShowTransactionV2 transaction) {
+        TransactionType type = null;
+        CoinbaseTransactionV2Expand txType = null;
+        switch (transaction.getType()) {
+            case "buy" -> {
+                type = BUY;
+                txType = transaction.getBuy();
+            }
+            case "sell" -> {
+                type = SELL;
+                txType = transaction.getSell();
+            }
+        }
+
+        if (txType == null) {
+            throw new DataValidationException("Coinbase transaction type not supported: " + transaction.getType());
+        }
+
+        Currency feeCurrency = txType.getFee().getCurrency() != null ? Currency.fromCode(txType.getFee().getCurrency()) : null;
+
+        return XChangeApiTransaction.builder()
+            .id(String.valueOf(transaction.getId()))
+            .timestamp(Instant.parse(transaction.getCreatedAt()))
+            .type(type)
+            .price(txType.getSubtotal().getAmount())
+            .base(Currency.fromCode(transaction.getAmount().getCurrency()))
+            .quote(Currency.fromCode(transaction.getNativeAmount().getCurrency()))
+            .originalAmount(transaction.getAmount().getAmount())
+            .feeAmount(txType.getFee().getAmount())
+            .feeCurrency(feeCurrency)
+            .build();
+    }
+
+    public static XChangeApiTransaction rewardWithdrawalCoinbase(CoinbaseShowTransactionV2 transaction) {
+        TransactionType type = null;
+        switch (transaction.getType()) {
+            case "tx" -> type = REWARD;
+            case "send" -> type = WITHDRAWAL;
+            case "earn_payout" -> type = EARNING;
+        }
+
+        return XChangeApiTransaction.builder()
+            .id(String.valueOf(transaction.getId()))
+            .timestamp(Instant.parse(transaction.getCreatedAt()))
+            .type(type)
+            .base(Currency.fromCode(transaction.getAmount().getCurrency()))
+            .quote(Currency.fromCode(transaction.getAmount().getCurrency()))
+            .originalAmount(transaction.getAmount().getAmount().abs())
             .build();
     }
 
