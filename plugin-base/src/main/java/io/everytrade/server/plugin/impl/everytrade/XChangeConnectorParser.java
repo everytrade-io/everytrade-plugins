@@ -11,6 +11,7 @@ import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataStatusException;
 import org.knowm.xchange.bittrex.dto.account.BittrexDepositHistory;
 import org.knowm.xchange.bittrex.dto.account.BittrexWithdrawalHistory;
+import org.knowm.xchange.coinbase.v2.dto.account.transactions.CoinbaseShowTransactionV2;
 import org.knowm.xchange.coinmate.dto.trade.CoinmateTransactionHistoryEntry;
 import org.knowm.xchange.dto.account.FundingRecord;
 import org.knowm.xchange.dto.trade.UserTrade;
@@ -19,11 +20,13 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import static io.everytrade.server.model.SupportedExchange.KRAKEN;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
+import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 
 public class XChangeConnectorParser {
@@ -41,6 +44,15 @@ public class XChangeConnectorParser {
 
     public ParseResult getParseResult(List<UserTrade> userTrades, List<FundingRecord> funding, List<ParsingProblem> parsingProblems) {
         final List<TransactionCluster> transactionClusters = tradesToCluster(userTrades, parsingProblems);
+        transactionClusters.addAll(fundingToCluster(funding, parsingProblems));
+        return new ParseResult(transactionClusters, parsingProblems);
+    }
+
+    public ParseResult getCoinbaseParseResult(List<UserTrade> advancedTrading, List<CoinbaseShowTransactionV2> userTrades,
+                                              List<FundingRecord> funding,
+                                              List<ParsingProblem> parsingProblems) {
+        final List<TransactionCluster> transactionClusters = coinbaseTransactionCluster(userTrades, parsingProblems);
+        transactionClusters.addAll(tradesToCluster(advancedTrading, parsingProblems));
         transactionClusters.addAll(fundingToCluster(funding, parsingProblems));
         return new ParseResult(transactionClusters, parsingProblems);
     }
@@ -107,6 +119,40 @@ public class XChangeConnectorParser {
             })
             .filter(Objects::nonNull)
             .collect(toList());
+    }
+
+    protected List<TransactionCluster> coinbaseTransactionCluster(List<CoinbaseShowTransactionV2> tx, List<ParsingProblem> problems) {
+        List<TransactionCluster> result = new ArrayList<>();
+        tx.forEach(cb -> {
+                try {
+                    switch (cb.getType().toLowerCase()) {
+                        case "send", "tx", "earn_payout" -> {
+                            result.add(XChangeApiTransaction.rewardWithdrawalCoinbase(cb).toTransactionCluster());
+                        }
+                        case "buy", "sell" -> {
+                            result.add(XChangeApiTransaction.buySellCoinbase(cb).toTransactionCluster());
+                        }
+                        default -> {
+                            //ignore
+                        }
+                    }
+                } catch (Exception e) {
+                    logParsingError(e, problems, cb.toString());
+                }
+            });
+
+        Map<String, List<CoinbaseShowTransactionV2>> tradeTx = tx.stream()
+            .filter(t -> t.getType().equalsIgnoreCase("trade"))
+            .collect(groupingBy(x -> x.getTrade().getId()));
+
+        tradeTx.forEach((k, v) -> {
+                try {
+                    result.add(XChangeApiTransaction.tradeCoinbase(v).toTransactionCluster());
+                } catch (Exception e) {
+                    logParsingError(e, problems, v.toString());
+                }
+            });
+        return result;
     }
 
     protected List<TransactionCluster> bittrexDepositsToCluster(List<BittrexDepositHistory> deposits, List<ParsingProblem> problems) {

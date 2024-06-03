@@ -20,6 +20,7 @@ import static io.everytrade.server.model.Currency.SOL;
 import static io.everytrade.server.model.Currency.USD;
 import static io.everytrade.server.model.Currency.USDT;
 import static io.everytrade.server.model.TransactionType.BUY;
+import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.STAKE;
@@ -29,6 +30,9 @@ import static io.everytrade.server.model.TransactionType.UNSTAKE;
 class KrakenBeanV2Test {
     private static final String HEADER_CORRECT
         = "txid,refid,time,type,subtype,aclass,asset,amount,fee,balance\n";
+
+    private static final String HEADER_CORRECT_WALLET
+        = "txid,refid,time,type,subtype,aclass,asset,wallet,amount,fee,balance\n";
 
 
 
@@ -548,5 +552,41 @@ class KrakenBeanV2Test {
             List.of()
         );
         TestUtils.testTxs(expected0.getMain(), actual.get(0).getMain());
+    }
+
+    @Test
+    void testEarning() {
+        final String row0 = """
+            "L7PGI7-XMN6H-SAD36S","Unknown","2024-03-05 13:51:57","earn","","currency","SOL03.S","spot / main",-137.0251478900,0,\
+            0.0000000000
+            "LXCM3R-LMABO-JQWKYU","Unknown","2024-03-05 13:51:57","earn","","currency","SOL","earn / bonded",137.0251478900,0,\
+            137.0251478900
+            "LSTF54-237YA-7AXZAF","Unknown","2024-03-09 21:24:46","earn","","currency","SOL","earn / bonded",0.1260782174,0.0327803365,\
+            137.1184457709""";
+        var actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT_WALLET + row0);
+
+        final TransactionCluster expected0 = new TransactionCluster(
+            new ImportedTransactionBean(
+                "LSTF54-237YA-7AXZAF",
+                Instant.parse("2024-03-09T21:24:46Z"),
+                SOL,
+                SOL,
+                EARNING,
+                new BigDecimal("0.1260782174"),
+                null
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    "LSTF54-237YA-7AXZAF-fee" ,
+                    Instant.parse("2024-03-09T21:24:46Z"),
+                    SOL,
+                    SOL,
+                    FEE,
+                    new BigDecimal("0.0327803365"),
+                    SOL
+                )
+            )
+        );
+        ParserTestUtils.checkEqual(expected0, actual.get(0));
     }
 }

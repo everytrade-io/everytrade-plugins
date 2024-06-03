@@ -50,6 +50,8 @@ import static io.everytrade.server.model.TransactionType.UNSTAKE;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.REBATE_UID_PART;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceBeanV4.BINANCE_CARD_SPENDING_CRYPTO;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceBeanV4.BINANCE_CARD_SPENDING_FIAT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class BinanceBeanV4Test {
@@ -495,7 +497,7 @@ class BinanceBeanV4Test {
             BUY,
             new BigDecimal("5361.53976000000000000"),
             new BigDecimal("0.01331203407880724"),
-            "TRANSACTION REVENUE",
+            null,
             null,
             null
         ),
@@ -1001,7 +1003,7 @@ class BinanceBeanV4Test {
                         BUY,
                         new BigDecimal("4324216.00000000000000000"),
                         new BigDecimal("0.00000744000000000"),
-                        "TRANSACTION BUY",
+                        null,
                         null,
                         null
                 ),
@@ -1039,7 +1041,7 @@ class BinanceBeanV4Test {
                 BUY,
                 new BigDecimal("85.18238417000000000"),
                 new BigDecimal("0.00003027621291807"),
-                "TRANSACTION REVENUE",
+                null,
                 null,
                 null
             ),
@@ -1117,13 +1119,29 @@ class BinanceBeanV4Test {
                         STAKING_REWARD,
                         new BigDecimal("0.00044214"),
                         null,
-                        "STAKING REWARDS",
+                        null,
                         null,
                         null
                 ),
                 List.of()
         );
+        final TransactionCluster expected1 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-01-01T00:48:08Z"),
+                DOT,
+                DOT,
+                STAKE,
+                new BigDecimal("0.00044214"),
+                null,
+                null,
+                null,
+                null
+            ),
+            List.of()
+        );
         TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
+        TestUtils.testTxs(expected1.getMain(), actual.get(1).getMain());
     }
 
     @Test
@@ -1145,7 +1163,7 @@ class BinanceBeanV4Test {
                         BUY,
                         new BigDecimal("0.18300000000000000"),
                         new BigDecimal("0.00650000000000000"),
-                        "TRANSACTION BUY",
+                        null,
                         null
                 ),
                 List.of(
@@ -1681,7 +1699,7 @@ class BinanceBeanV4Test {
                 BUY,
                 new BigDecimal("138.07056000000000000"),
                 new BigDecimal("0.01331203407880724"),
-                "TRANSACTION REVENUE",
+               null,
                 null
             ),
             List.of(
@@ -1706,7 +1724,7 @@ class BinanceBeanV4Test {
                 BUY,
                 new BigDecimal("5361.53976000000000000"),
                 new BigDecimal("0.01331203407880724"),
-                "TRANSACTION REVENUE",
+                null,
                 null
             ),
             List.of(
@@ -1753,7 +1771,7 @@ class BinanceBeanV4Test {
 
         TestUtils.testTxs(expected0.getMain(), actual.get(0).getMain());
     }
-  
+
   @Test
   void testBinanceCardSpending() {
         final String row0 = "38065325,2022-02-23 17:52:04,CARD,Binance Card Spending,EUR,-225.54000000,\"\"\n";
@@ -1769,7 +1787,7 @@ class BinanceBeanV4Test {
                 WITHDRAWAL,
                 new BigDecimal("225.54000000"),
                 null,
-                "Binance Card Spending",
+                BINANCE_CARD_SPENDING_FIAT,
                 null
             ),
             List.of()
@@ -1784,13 +1802,93 @@ class BinanceBeanV4Test {
                 SELL,
                 new BigDecimal("0.00232292000000000"),
                 null,
-                "Binance Card Spending",
+                BINANCE_CARD_SPENDING_CRYPTO,
                 null
             ),
             List.of()
         );
-      
+
         TestUtils.testTxs(fiat.getMain(), actual.getTransactionClusters().get(0).getMain());
         TestUtils.testTxs(crypto.getMain(), actual.getTransactionClusters().get(1).getMain());
+    }
+
+    @Test
+    void testBinanceCardSpending2() {
+        String row0 = "38065325,2022-03-25 19:31:09,CARD,Binance Card Spending,USDT,-1.72132981,\"\"\n";
+        final var actual = ParserTestUtils.getParseResult(HEADER_CORRECT + row0);
+
+        final TransactionCluster sell = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-03-25T19:31:09Z"),
+                USDT,
+                USD,
+                SELL,
+                new BigDecimal("1.72132981000000000"),
+                null,
+                BINANCE_CARD_SPENDING_CRYPTO,
+                null,
+                null
+            ),
+            List.of()
+        );
+    }
+
+    @Test
+    void testDepositConvertFiatOCBS() {
+        final String row0 = """
+            "364829079","2022-09-12 09:27:41","Spot","Convert Fiat to Crypto OCBS","CZK","-490.50000000",""
+            "364829079","2022-09-12 09:27:41","Spot","Deposit Fiat OCBS","CZK","490.50000000",""
+            "364829079","2022-09-12 09:27:41","Spot","Convert Fiat to Crypto OCBS","BTC","0.00089454","\"
+            """;
+
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT_QUOTED + row0);
+
+        final TransactionCluster expected0 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-09-12T09:27:41Z"),
+                CZK,
+                CZK,
+                DEPOSIT,
+                new BigDecimal("490.50000000"),
+                null,
+                null,
+                null
+            ),
+            List.of()
+        );
+
+        final TransactionCluster expected1 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-09-12T09:27:41Z"),
+                BTC,
+                CZK,
+                BUY,
+                new BigDecimal("0.00089454000000000"),
+                new BigDecimal("548326.51418606211013482"),
+                null,
+                null
+            ),
+            List.of()
+        );
+
+        TestUtils.testTxs(expected0.getMain(), actual.get(1).getMain());
+        TestUtils.testTxs(expected1.getMain(), actual.get(0).getMain());
+    }
+
+    @Test
+    void testIgnoringTransferBetweeinMainAndFundingWallet() {
+        String row0 = """
+            "364829079","2023-01-16 18:52:33","Funding","Transfer Between Main and Funding Wallet","BTC","0.01175857",""
+            "364829079","2023-01-16 18:52:33","Spot","Transfer Between Main and Funding Wallet","BTC","-0.01175857","\""""
+            ;
+        ParseResult actual = ParserTestUtils.getParseResult(HEADER_CORRECT + row0);
+
+        var expectedProblem = new ParsingProblem(null,
+            null, ParsingProblemType.PARSED_ROW_IGNORED);
+
+        assertEquals(expectedProblem.getParsingProblemType(), actual.getParsingProblems().get(0).getParsingProblemType());
     }
 }

@@ -5,10 +5,8 @@ import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import static lombok.AccessLevel.PRIVATE;
@@ -65,8 +63,8 @@ public final class CurrencyPair implements Comparable<CurrencyPair> {
         return base.getEndDate().isBefore(quote.getEndDate()) ? base.getEndDate() : quote.getEndDate();
     }
 
-    public static List<CurrencyPair> getTradeablePairs() {
-        return new ArrayList<>(CURRENCY_PAIRS);
+    public static Set<CurrencyPair> getTradeablePairs() {
+        return CURRENCY_PAIRS;
     }
 
     @Override

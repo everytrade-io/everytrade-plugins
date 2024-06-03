@@ -6,6 +6,7 @@ import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.binanceExceptions.BinanceValidateException;
+import io.everytrade.server.plugin.impl.everytrade.rateprovider.CoinPaprikaRateProvider;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -14,6 +15,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static io.everytrade.server.model.Currency.BNB;
@@ -28,6 +30,8 @@ import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.STAKE;
 import static io.everytrade.server.model.TransactionType.UNSTAKE;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceBeanV4.BINANCE_CARD_SPENDING_CRYPTO;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceBeanV4.BINANCE_CARD_SPENDING_FIAT;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BINANCE_CONVERT;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BNB_VAULT_REWARDS;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BUY;
@@ -36,6 +40,7 @@ import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binanc
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_CARD_CASHBACK;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_CASHBACK_VOUCHER;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_COMMISSION_REBATE;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_CONVERT_FIAT_TO_CRYPTO_OCBS;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_DEPOSIT;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_DISTRIBUTION;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_ETH2_0_STAKING;
@@ -489,6 +494,8 @@ public class BinanceSortedGroupV4 {
         createdTransactions.add(txs);
     }
 
+
+
     private void createRebateTxs() {
         for (BinanceBeanV4 bean : rowRebate) {
             var txs = new BinanceBeanV4();
@@ -541,40 +548,51 @@ public class BinanceSortedGroupV4 {
         return row;
     }
 
-    public static BinanceBeanV4 createStakingsTxs(BinanceBeanV4 row) {
+    public static List<BinanceBeanV4> createStakingsTxs(BinanceBeanV4 row) {
+        List<BinanceBeanV4> result = new ArrayList<>();
         row.setRowNumber(row.getDate().getEpochSecond());
         String[] strings = {"Row id " + row.usedIds.toString() + " " + row.getOriginalOperation()};
         row.setRowValues(strings);
         row.setAmountBase(row.getChange().abs());
         row.setMarketBase(row.getCoin());
-        return row;
+        result.add(row);
+        if (row.getOperationType().equals(OPERATION_TYPE_STAKING_REWARDS)) {
+            try {
+                BinanceBeanV4 clone = (BinanceBeanV4) row.clone();
+                clone.setType(STAKE);
+                clone.setDate(row.getDate().plusSeconds(1));
+                result.add(clone);
+            } catch (CloneNotSupportedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return result;
     }
 
     public static List<BinanceBeanV4> createBinanceCardSpendingTxs(BinanceBeanV4 row) {
 
         List<BinanceBeanV4> result = new ArrayList<>();
 
-            if (row.getCoin().isFiat()){
-                BinanceBeanV4 withdrawalBean = new BinanceBeanV4();
-                withdrawalBean.setDate(row.getDate());
-                withdrawalBean.setMarketBase(row.getCoin());
-                withdrawalBean.setAmountBase(row.getChange().abs());
-                withdrawalBean.setMarketQuote(row.getCoin());
-                withdrawalBean.setAmountQuote(row.getChange().abs());
-                withdrawalBean.setType(WITHDRAWAL);
-                withdrawalBean.setNote("Binance Card Spending");
-                result.add(withdrawalBean);
-            } else {
-                BinanceBeanV4 sellBean = new BinanceBeanV4();
-                sellBean.setDate(row.getDate());
-                sellBean.setMarketBase(row.getCoin());
-                sellBean.setAmountBase(row.getChange().abs());
-                sellBean.setMarketQuote(USD);
-                sellBean.setType(SELL);
-                sellBean.setNote("Binance Card Spending");
-                result.add(sellBean);
-            }
-
+        if (row.getCoin().isFiat()) {
+            BinanceBeanV4 withdrawalBean = new BinanceBeanV4();
+            withdrawalBean.setDate(row.getDate());
+            withdrawalBean.setMarketBase(row.getCoin());
+            withdrawalBean.setAmountBase(row.getChange().abs());
+            withdrawalBean.setMarketQuote(row.getCoin());
+            withdrawalBean.setAmountQuote(row.getChange().abs());
+            withdrawalBean.setType(WITHDRAWAL);
+            withdrawalBean.setNote(BINANCE_CARD_SPENDING_FIAT);
+            result.add(withdrawalBean);
+        } else {
+            BinanceBeanV4 sellBean = new BinanceBeanV4();
+            sellBean.setDate(row.getDate());
+            sellBean.setMarketBase(row.getCoin());
+            sellBean.setAmountBase(row.getChange().abs());
+            sellBean.setMarketQuote(USD);
+            sellBean.setType(SELL);
+            sellBean.setNote(BINANCE_CARD_SPENDING_CRYPTO);
+            result.add(sellBean);
+        }
         return result;
     }
 
@@ -903,7 +921,8 @@ public class BinanceSortedGroupV4 {
                 row.getOriginalOperation().equals(OPERATION_TYPE_TRANSACTION_BUY.code) ||
                 row.getOriginalOperation().equals(OPERATION_TYPE_TRANSACTION_SPEND.code) ||
                 row.getOriginalOperation().equals(OPERATION_TYPE_TRANSACTION_REVENUE.code) ||
-                row.getOriginalOperation().equals(OPERATION_TYPE_TRANSACTION_SOLD.code)
+                row.getOriginalOperation().equals(OPERATION_TYPE_TRANSACTION_SOLD.code) ||
+                row.getOriginalOperation().equals(OPERATION_TYPE_CONVERT_FIAT_TO_CRYPTO_OCBS.code)
         ) {
             if (rowsBuySellRelated.containsKey(row.getCoin())) {
                 rowsBuySellRelated.get(row.getCoin()).add(row);
