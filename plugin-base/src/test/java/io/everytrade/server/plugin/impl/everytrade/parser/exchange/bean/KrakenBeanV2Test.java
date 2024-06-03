@@ -593,8 +593,8 @@ class KrakenBeanV2Test {
 
     @Test
     void testEurHold() {
-        final String row0 = "\"LIPGAG-WSS3H-O2S3BV\",\"QYTKFNX-3HNDGH-Y4DYOG\",\"2023-05-05 14:28:48\",\"deposit\",\"\"," +
-            "\"currency\",\"EUR.HOLD\",\"spot / main\",30.0000,1.3800,28.6200\n";
+        final String row0 = "\"LIPGAG-WSS3H-O2S3BV\",\"QYTKFNX-3HNDGH-Y4DYOG\",\"2023-05-05 14:28:48\",\"deposit\",\"\",\"currency\"," +
+            "\"EUR.HOLD\",\"spot / main\",30.0000,1.3800,28.6200\n";
         var actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT_WALLET + row0);
 
         final TransactionCluster expected0 = new TransactionCluster(

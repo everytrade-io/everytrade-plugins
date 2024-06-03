@@ -135,7 +135,8 @@ public class KrakenBeanV2 extends ExchangeBean implements Cloneable{
             this.asset = KrakenCurrencyUtil.findCurrencyByCode(asset);
             this.assetCode = KrakenAssetCodeType.findAssetCodeByAsset(asset);
         } catch (IllegalStateException e) {
-            throw new DataValidationException("Unsupported asset: " + asset);
+            setMessage(e.getMessage());
+            this.setUnsupportedRow(true);
         }
     }
 
