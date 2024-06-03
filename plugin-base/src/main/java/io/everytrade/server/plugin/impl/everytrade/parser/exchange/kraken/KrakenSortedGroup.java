@@ -167,7 +167,15 @@ public class KrakenSortedGroup {
     public void createTransactions(TransactionType type) {
         if (type.isBuyOrSell()) {
             // set base and quote row
-            if (!rowsTrades.get(0).getAsset().isFiat() && rowsTrades.get(1).getAsset().isFiat()) {
+            if (rowsTrades.stream().anyMatch(r -> r.getType().equals(KrakenConstants.TYPE_RECEIVE.code))){
+                if (type.equals(SELL)){
+                    rowBase = rowsTrades.stream().filter(r -> !r.getAsset().isFiat()).findFirst().orElse(null);
+                    rowQuote = rowsTrades.stream().filter(r -> r.getAsset().isFiat()).findFirst().orElse(null);
+                } else {
+                    rowBase = rowsTrades.stream().filter(r -> r.getAmount().compareTo(ZERO) > 0).findFirst().orElse(null);
+                    rowQuote = rowsTrades.stream().filter(r -> r.getAmount().compareTo(ZERO) < 0).findFirst().orElse(null);
+                }
+            } else if (!rowsTrades.get(0).getAsset().isFiat() && rowsTrades.get(1).getAsset().isFiat()) {
                 rowBase = rowsTrades.get(0);
                 rowQuote = rowsTrades.get(1);
             } else {

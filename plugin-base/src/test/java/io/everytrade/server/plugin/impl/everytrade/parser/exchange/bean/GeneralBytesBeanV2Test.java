@@ -78,7 +78,7 @@ class GeneralBytesBeanV2Test {
                     LTC,
                     LTC,
                     FEE,
-                    new BigDecimal("0.0053"),
+                    new BigDecimal("0.00530000000000000"),
                     LTC,
                     "R"
                 )
