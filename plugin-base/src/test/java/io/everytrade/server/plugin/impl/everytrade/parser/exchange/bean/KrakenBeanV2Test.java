@@ -74,36 +74,37 @@ class KrakenBeanV2Test {
 
     @Test
     void testSpendReceivedSell()  {
-        final String row0 = "\"LYVTSS-NIZAI-AC2KVR\",\"TSAJOY3-ZHDY2-J2EQDN\",\"2022-10-12 10:00:57\",\"spend\",\"\",\"currency\"," +
-            "\"USDT\",-1000.00000000,0.00000000,0.00000000\n";
-        final String row1 = "\"LTAHVF-RGBFO-IYNCGG\",\"TSAJOY3-ZHDY2-J2EQDN\",\"2022-10-12 10:00:57\",\"receive\",\"\",\"currency\"," +
-            "\"ZEUR\",1030.0000,15.2200,1023.4139\n";
+        final String row0 = """
+            "LUDYHN-5HEPE-6D4JL7","TSV6VHB-GLENO-YXRNYB","2022-09-13 18:28:22","spend","","currency","USDT",\
+            -730.00000000,0.00000000,0.00000000
+            "LQCWGW-MOV62-RL4VCV","TSV6VHB-GLENO-YXRNYB","2022-09-13 18:28:22","receive","","currency","ZEUR",\
+            730.8000,10.8000,728.7239""";
 
 
-        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row0.concat(row1));
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row0);
         final TransactionCluster expected = new TransactionCluster(
             new ImportedTransactionBean(
-                "LTAHVF-RGBFO-IYNCGG LYVTSS-NIZAI-AC2KVR",
-                Instant.parse("2022-10-12T10:00:57Z"),
-                EUR,
+                "LUDYHN-5HEPE-6D4JL7 LQCWGW-MOV62-RL4VCV",
+                Instant.parse("2022-09-13T18:28:22Z"),
                 USDT,
+                EUR,
                 SELL,
-                new BigDecimal("1030.00000000000000000"),
-                new BigDecimal("0.97087378640776699")
+                new BigDecimal("730.00000000000000000"),
+                new BigDecimal("1.00109589041095890")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
-                    "LTAHVF-RGBFO-IYNCGG LYVTSS-NIZAI-AC2KVR-fee" ,
-                    Instant.parse("2022-10-12T10:00:57Z"),
+                    "LUDYHN-5HEPE-6D4JL7 LQCWGW-MOV62-RL4VCV-fee" ,
+                    Instant.parse("2022-09-13T18:28:22Z"),
                     EUR,
                     EUR,
                     FEE,
-                    new BigDecimal("15.2200"),
+                    new BigDecimal("10.8000"),
                     EUR
                 )
             )
         );
-        TestUtils.testTxs(expected.getMain(), actual.getMain());
+        ParserTestUtils.checkEqual(expected, actual);
     }
 
     @Test

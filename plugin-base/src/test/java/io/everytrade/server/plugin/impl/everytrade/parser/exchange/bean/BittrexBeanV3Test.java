@@ -90,8 +90,8 @@ class BittrexBeanV3Test {
                 Currency.LTC,
                 Currency.USD,
                 BUY,
-                new BigDecimal("0.49750262"),
-                new BigDecimal("57.14699999")
+                new BigDecimal("0.49750262000000000"),
+                new BigDecimal("57.14699999000000000")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -100,7 +100,7 @@ class BittrexBeanV3Test {
                     Currency.USD,
                     Currency.USD,
                     FEE,
-                    new BigDecimal("0.05686182"),
+                    new BigDecimal("0.05686182000000000"),
                     Currency.USD
                 )
             )
@@ -132,7 +132,7 @@ class BittrexBeanV3Test {
                     USDT,
                     USDT,
                     FEE,
-                    new BigDecimal("0.0937271600"),
+                    new BigDecimal("0.09372716000000000"),
                     USDT
                 )
             )

@@ -146,7 +146,7 @@ class CoinbaseBeanV1Test {
                 GRT,
                 GRT,
                 EARNING,
-                new BigDecimal("16.68056713"),
+                new BigDecimal("16.68056713000000000"),
                 null,
                 "Learning Reward",
                 null
@@ -166,7 +166,7 @@ class CoinbaseBeanV1Test {
                 XTZ,
                 XTZ,
                 STAKING_REWARD,
-                new BigDecimal("0.0000040000"),
+                new BigDecimal("0.00000400000000000"),
                 null,
                 "Staking Income",
                 null
@@ -184,7 +184,7 @@ class CoinbaseBeanV1Test {
         final TransactionCluster actual0 = ParserTestUtils.getTransactionCluster(HEADER_CORRECT_SPOT + row0);
         final TransactionCluster actual1 = ParserTestUtils.getTransactionCluster(HEADER_CORRECT_SPOT + row1);
 
-        BigDecimal quantityTransacted = new BigDecimal("40.002654");
+        BigDecimal quantityTransacted = new BigDecimal("40.00265400000000000");
         Currency asset = Currency.fromCode("XRP");
         String note = "rDsbeomae4FXwgQTJp9Rs64Qg9vDiTCdBv";
 
@@ -247,7 +247,7 @@ class CoinbaseBeanV1Test {
                     USD,
                     USD,
                     FEE,
-                    new BigDecimal("111.73"),
+                    new BigDecimal("111.73000000000000000"),
                     USD
                 )));
         ParserTestUtils.checkEqual(expected, actual);
@@ -277,7 +277,7 @@ class CoinbaseBeanV1Test {
                     CZK,
                     CZK,
                     FEE,
-                    new BigDecimal("197.46"),
+                    new BigDecimal("197.46000000000000000"),
                     CZK
                 )
             )
@@ -307,7 +307,7 @@ class CoinbaseBeanV1Test {
                     EUR,
                     EUR,
                     FEE,
-                    new BigDecimal("3.58"),
+                    new BigDecimal("3.58000000000000000"),
                     EUR
                 )
             )
@@ -379,7 +379,7 @@ class CoinbaseBeanV1Test {
                     CZK,
                     CZK,
                     TransactionType.FEE,
-                    new BigDecimal("106.44"),
+                    new BigDecimal("106.44000000000000000"),
                     CZK
                 )
             )
@@ -392,7 +392,7 @@ class CoinbaseBeanV1Test {
                 BTC,
                 BTC,
                 WITHDRAWAL,
-                new BigDecimal("0.01208795"),
+                new BigDecimal("0.01208795000000000"),
                 "1PCzuXqY6MkYqNvbrKareZPJQPX8XExzb7",
                 "Send",
                 null
@@ -442,7 +442,7 @@ class CoinbaseBeanV1Test {
                 CZK,
                 CZK,
                 FEE,
-                new BigDecimal("72.99"),
+                new BigDecimal("72.99000000000000000"),
                 CZK
             )
         )
