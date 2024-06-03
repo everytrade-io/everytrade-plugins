@@ -51,8 +51,8 @@ class BinanceBeanV2Test {
                 BTC,
                 USDT,
                 BUY,
-                new BigDecimal("0.041600"),
-                new BigDecimal("6236.39")
+                new BigDecimal("0.04160000000000000"),
+                new BigDecimal("6236.39000000000000000")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -61,7 +61,7 @@ class BinanceBeanV2Test {
                     BNB,
                     BNB,
                     FEE,
-                    new BigDecimal("0.01612653"),
+                    new BigDecimal("0.01612653000000000"),
                     BNB
                 )
             )

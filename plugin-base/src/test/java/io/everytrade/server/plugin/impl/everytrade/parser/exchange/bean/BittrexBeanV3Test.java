@@ -60,8 +60,8 @@ class BittrexBeanV3Test {
                 Currency.LTC,
                 Currency.USD,
                 TransactionType.SELL,
-                new BigDecimal("0.5"),
-                new BigDecimal("57.0894076")
+                new BigDecimal("0.50000000000000000"),
+                new BigDecimal("57.08940760000000000")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -70,7 +70,7 @@ class BittrexBeanV3Test {
                     Currency.USD,
                     Currency.USD,
                     FEE,
-                    new BigDecimal("0.0570894"),
+                    new BigDecimal("0.05708940000000000"),
                     Currency.USD
                 )
             )

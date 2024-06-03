@@ -106,7 +106,7 @@ class CoinbaseBeanV1Test {
                     EUR,
                     EUR,
                     FEE,
-                    new BigDecimal("4.40"),
+                    new BigDecimal("4.40000000000000000"),
                     EUR
                 )
             )

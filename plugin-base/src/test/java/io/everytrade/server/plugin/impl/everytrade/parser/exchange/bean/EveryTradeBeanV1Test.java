@@ -51,7 +51,7 @@ class EveryTradeBeanV1Test {
                 Currency.CZK,
                 TransactionType.BUY,
                 new BigDecimal("0.066506"),
-                new BigDecimal("210507.322647581")
+                new BigDecimal("210507.322647581000")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
