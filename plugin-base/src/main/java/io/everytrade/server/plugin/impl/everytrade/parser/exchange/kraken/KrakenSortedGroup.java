@@ -222,7 +222,10 @@ public class KrakenSortedGroup {
         if (row.getAmount().compareTo(ZERO) < 0) {
             rowsEarning.stream()
                 .filter(r -> r.getAmount().abs().equals(row.getAmount().abs()) && r.getTime().equals(row.getTime()))
-                .forEach(r -> r.setUnsupportedRow(true));
+                .forEach(r -> {
+                    r.setUnsupportedRow(true);
+                    createdTransactions.add(r);
+                });
         }
     }
 
