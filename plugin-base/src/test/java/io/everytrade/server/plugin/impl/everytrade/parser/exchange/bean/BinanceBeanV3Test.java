@@ -127,8 +127,8 @@ class BinanceBeanV3Test {
                 BTC,
                 BUSD,
                 BUY,
-                new BigDecimal("0.0009100000"),
-                new BigDecimal("37850.0000000000")
+                new BigDecimal("0.00091000000000000"),
+                new BigDecimal("37850.00000000000000000")
             ),
             List.of()
         );
@@ -139,8 +139,8 @@ class BinanceBeanV3Test {
                 BTC,
                 BUSD,
                 SELL,
-                new BigDecimal("0.0009090000"),
-                new BigDecimal("37900.0000000000")
+                new BigDecimal("0.00090900000000000"),
+                new BigDecimal("37900.00000000000000000")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -149,7 +149,7 @@ class BinanceBeanV3Test {
                     BNB,
                     BNB,
                     FEE,
-                    new BigDecimal("1.0000000000"),
+                    new BigDecimal("1.00000000000000000"),
                     BNB
                 )
             )

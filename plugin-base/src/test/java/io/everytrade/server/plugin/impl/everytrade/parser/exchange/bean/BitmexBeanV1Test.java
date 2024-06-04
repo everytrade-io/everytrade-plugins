@@ -55,8 +55,8 @@ class BitmexBeanV1Test {
                 Currency.BTC,
                 Currency.USD,
                 TransactionType.SELL,
-                new BigDecimal("170"),
-                new BigDecimal("8470.5")
+                new BigDecimal("170.00000000000000000"),
+                new BigDecimal("8470.50000000000000000")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -65,7 +65,7 @@ class BitmexBeanV1Test {
                     Currency.USD,
                     Currency.USD,
                     TransactionType.FEE,
-                    new BigDecimal("0.00001505"),
+                    new BigDecimal("0.00001505000000000"),
                     Currency.USD
                 )
             )

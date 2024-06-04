@@ -131,6 +131,9 @@ public class BinanceBeanV4 extends ExchangeBean implements Cloneable {
             this.type = BinanceSwitcher.operationTypeSwitcher(value);
         } catch (Exception ignore) {
         }
+        if (operationType == null) {
+            throw new DataValidationException("Failed operation type " + originalOperation);
+        }
     }
 
     @Parsed(field = "Coin")

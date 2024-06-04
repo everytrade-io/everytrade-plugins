@@ -1,6 +1,5 @@
 package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
-import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
@@ -49,8 +48,8 @@ class BinanceBeanV1Test {
                 LTC,
                 BTC,
                 BUY,
-                new BigDecimal("1.61"),
-                new BigDecimal("0.0073930000")
+                new BigDecimal("1.61000000000000000"),
+                new BigDecimal("0.00739300000000000")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -59,7 +58,7 @@ class BinanceBeanV1Test {
                     LTC,
                     LTC,
                     FEE,
-                    new BigDecimal("0.00161"),
+                    new BigDecimal("0.00161000000000000"),
                     LTC
                 )
             )
@@ -79,8 +78,8 @@ class BinanceBeanV1Test {
                 _1INCH,
                 USDT,
                 BUY,
-                new BigDecimal("99.4000000000"),
-                new BigDecimal("1.5080000000")
+                new BigDecimal("99.40000000000000000"),
+                new BigDecimal("1.50800000000000000")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -89,7 +88,7 @@ class BinanceBeanV1Test {
                     _1INCH,
                     _1INCH,
                     FEE,
-                    new BigDecimal("0.0994"),
+                    new BigDecimal("0.09940000000000000"),
                     _1INCH
                 )
             )
@@ -108,8 +107,8 @@ class BinanceBeanV1Test {
                 LTC,
                 BTC,
                 BUY,
-                new BigDecimal("1.61"),
-                new BigDecimal("0.0073930000")
+                new BigDecimal("1.61000000000000000"),
+                new BigDecimal("0.00739300000000000")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -118,7 +117,7 @@ class BinanceBeanV1Test {
                     BTC,
                     BTC,
                     FEE,
-                    new BigDecimal("0.00161"),
+                    new BigDecimal("0.00161000000000000"),
                     BTC
                 )
             )
@@ -137,8 +136,8 @@ class BinanceBeanV1Test {
                 LTC,
                 BTC,
                 TransactionType.SELL,
-                new BigDecimal("1.72"),
-                new BigDecimal("0.0074970000")
+                new BigDecimal("1.72000000000000000"),
+                new BigDecimal("0.00749700000000000")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -147,7 +146,7 @@ class BinanceBeanV1Test {
                     BTC,
                     BTC,
                     FEE,
-                    new BigDecimal("0.00001289"),
+                    new BigDecimal("0.00001289000000000"),
                     BTC
                 )
             )
@@ -166,8 +165,8 @@ class BinanceBeanV1Test {
                 LTC,
                 BTC,
                 TransactionType.SELL,
-                new BigDecimal("1.72"),
-                new BigDecimal("0.0074970000")
+                new BigDecimal("1.72000000000000000"),
+                new BigDecimal("0.00749700000000000")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -176,7 +175,7 @@ class BinanceBeanV1Test {
                     LTC,
                     LTC,
                     FEE,
-                    new BigDecimal("0.00001289"),
+                    new BigDecimal("0.00001289000000000"),
                     LTC
                 )
             )

@@ -73,7 +73,7 @@ class EveryTradeBeanV3_2Test {
                 CZK,
                 BUY,
                 new BigDecimal("0.13"),
-                new BigDecimal("500000.00000000"),
+                new BigDecimal("500000.00000000000000000"),
                 "nnnnnn",
                 null,
                 "Label1"
@@ -95,7 +95,7 @@ class EveryTradeBeanV3_2Test {
                 CZK,
                 BUY,
                 new BigDecimal("0.13"),
-                new BigDecimal("500000.00000000"),
+                new BigDecimal("500000.00000000000000000"),
                 "nnnnnn",
                 null,
                 "Label1"
@@ -130,7 +130,7 @@ class EveryTradeBeanV3_2Test {
                 EUR,
                 SELL,
                 new BigDecimal("0.06"),
-                new BigDecimal("20000.00000000"),
+                new BigDecimal("20000.00000000000000000"),
                 "nnnnnn",
                 null,
                 "Label1"
@@ -165,7 +165,7 @@ class EveryTradeBeanV3_2Test {
                 EUR,
                 SELL,
                 new BigDecimal("0.06"),
-                new BigDecimal("20000.00000000"),
+                new BigDecimal("20000.00000000000000000"),
                 "nnnnnn",
                 null,
                 "Label1"
