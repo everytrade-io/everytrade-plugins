@@ -58,7 +58,10 @@ public class KrakenSortedGroup {
         var rowsSize = rts + rds + rws + rss + rtrs;
 
         // buy or sell
-        if (rowsTrades.size() == 2 && rowsSize == 2) {
+        if (rowsTrades.size() > 0 && rowsSize > 0) {
+            if (rowsTrades.size() != 2) {
+                throw new DataValidationException("Wrong number of trades;");
+            }
             var stTradeRow = rowsTrades.get(0);
             var ndTradeRow = rowsTrades.get(1);
             // Buy
