@@ -146,25 +146,23 @@ public class KrakenSortedGroup {
     }
 
     private void createFee() {
+        var bean = new KrakenBeanV2();
+
         if (rowBase.getFee().compareTo(ZERO) == 0 && rowQuote.getFee().compareTo(ZERO) != 0) {
-            var bean = new KrakenBeanV2();
             bean.setFeeCurrency(rowQuote.getAsset());
             bean.setFeeAmount(rowQuote.getFee());
-            rowFee = bean;
-        }
-        if (rowQuote.getFee().compareTo(ZERO) == 0 && rowBase.getFee().compareTo(ZERO) != 0) {
-            var bean = new KrakenBeanV2();
+        } else if (rowQuote.getFee().compareTo(ZERO) == 0 && rowBase.getFee().compareTo(ZERO) != 0) {
             bean.setFeeCurrency(rowBase.getAsset());
             bean.setFeeAmount(rowBase.getFee());
-            rowFee = bean;
+        } else if (rowQuote.getFee().compareTo(ZERO) == 0 && rowBase.getFee().compareTo(ZERO) == 0) {
+            bean.setFeeCurrency(rowBase.getAsset());
+            bean.setFeeAmount(rowBase.getFee());
+        } else if (rowQuote.getFee().compareTo(ZERO) > 0 && rowBase.getFee().compareTo(ZERO) > 0) {
+            bean.setFeeCurrency(rowQuote.getAsset());
+            bean.setFeeAmount(rowQuote.getFee());
         }
 
-        if (rowQuote.getFee().compareTo(ZERO) == 0 && rowBase.getFee().compareTo(ZERO) == 0) {
-            var bean = new KrakenBeanV2();
-            bean.setFeeCurrency(rowBase.getAsset());
-            bean.setFeeAmount(rowBase.getFee());
-            rowFee = bean;
-        }
+        rowFee = bean;
     }
 
     public void createTransactions(TransactionType type) {
