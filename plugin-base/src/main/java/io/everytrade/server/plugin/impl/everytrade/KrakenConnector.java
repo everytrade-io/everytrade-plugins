@@ -280,7 +280,7 @@ public class KrakenConnector implements IConnector {
         var fee2 = ledger2.getFee();
         var feeTime = convertTimeFromUnix(leger1.getUnixTime());
 
-        if ((fee1.compareTo(ZERO) > 1 && fee2.compareTo(ZERO) > 1) || (fee1.compareTo(ZERO) < 0 && fee2.compareTo(ZERO) < 0)) {
+        if (fee1.compareTo(ZERO) < 0 && fee2.compareTo(ZERO) < 0) {
             parsingProblems.add(new ParsingProblem(pair.toString(), EXCEPTION_FEE_AMOUNT + feeTime, ROW_PARSING_FAILED));
         }
     }
@@ -513,9 +513,11 @@ public class KrakenConnector implements IConnector {
     private KrakenLedger findFee(KrakenLedger base, KrakenLedger quote) {
         KrakenLedger fee = null;
         try {
-            if(base.getFee().compareTo(ZERO) >= 0 && quote.getFee().compareTo(ZERO) == 0) {
+            if (base.getFee().compareTo(ZERO) >= 0 && quote.getFee().compareTo(ZERO) == 0) {
                 fee = base;
             } else if (quote.getFee().compareTo(ZERO) >= 0 && base.getFee().compareTo(ZERO) == 0) {
+                fee = quote;
+            } else if (quote.getFee().compareTo(ZERO) > 0 && base.getFee().compareTo(ZERO) > 0) {
                 fee = quote;
             } else {
                 parsingProblems.add(new ParsingProblem("Cannot find fee", base.toString(), PARSED_ROW_IGNORED));

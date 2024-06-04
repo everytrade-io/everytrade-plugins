@@ -13,10 +13,12 @@ import java.time.Instant;
 import java.util.List;
 
 import static io.everytrade.server.model.Currency.ADA;
+import static io.everytrade.server.model.Currency.BTC;
 import static io.everytrade.server.model.Currency.EUR;
 import static io.everytrade.server.model.Currency.LUNA2;
 import static io.everytrade.server.model.Currency.SHIB;
 import static io.everytrade.server.model.Currency.SOL;
+import static io.everytrade.server.model.Currency.TRX;
 import static io.everytrade.server.model.Currency.USD;
 import static io.everytrade.server.model.Currency.USDT;
 import static io.everytrade.server.model.TransactionType.BUY;
@@ -191,7 +193,7 @@ class KrakenBeanV2Test {
             new ImportedTransactionBean(
                 "LZZKYL-RLHTD-AEOKX4 L364WP-6OTPI-SKMRKU",
                 Instant.parse("2022-03-15T09:39:46Z"),
-                Currency.BTC,
+                BTC,
                 EUR,
                 BUY,
                 new BigDecimal("0.11388674000000000"),
@@ -616,6 +618,40 @@ class KrakenBeanV2Test {
                     FEE,
                     new BigDecimal("1.3800"),
                     EUR
+                )
+            )
+        );
+        ParserTestUtils.checkEqual(expected0, actual.get(0));
+    }
+
+    @Test
+    void testTwoPositiveFees() {
+        final String row0 = """
+            "L6RT6B-NMAMH-RZKC6V","TDYUZC-7AFJO-P6SIT5","2023-04-07 11:06:17","trade","","currency","BTC","spot / main",-0.0291885287,\
+            0.0000661381,0.0000026114
+            "LLVZBZ-5A7QS-YQRUKY","TDYUZC-7AFJO-P6SIT5","2023-04-07 11:06:17","trade","","currency","TRX","spot / main",12355.00000000,\
+            4.12804775,12350.87195280""";
+        var actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT_WALLET + row0);
+
+        final TransactionCluster expected0 = new TransactionCluster(
+            new ImportedTransactionBean(
+                "LLVZBZ-5A7QS-YQRUKY L6RT6B-NMAMH-RZKC6V",
+                Instant.parse("2023-04-07T11:06:17Z"),
+                TRX,
+                BTC,
+                BUY,
+                new BigDecimal("12355.00000000000000000"),
+                new BigDecimal("0.00000236248714690")
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    "LLVZBZ-5A7QS-YQRUKY L6RT6B-NMAMH-RZKC6V-fee" ,
+                    Instant.parse("2023-04-07T11:06:17Z"),
+                    BTC,
+                    BTC,
+                    FEE,
+                    new BigDecimal("0.0000661381"),
+                    BTC
                 )
             )
         );
