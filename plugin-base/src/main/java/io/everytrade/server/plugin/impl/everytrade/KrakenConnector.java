@@ -336,48 +336,18 @@ public class KrakenConnector implements IConnector {
                 }
             );
             var resultsKeys = pairsReceiveSend.keySet();
-            List<KrakenTrade> krakenTrades = new ArrayList<>();
-            Map<String, KrakenTrade> sells = new HashMap<>();
+            List<UserTrade> result = new ArrayList<>();
 
             for (String key : resultsKeys) {
                 var receiveSpendPair = pairsReceiveSend.get(key);
                 try {
                     validateReceiveSendPair(receiveSpendPair);
-                    KrakenLedger spend;
-                    KrakenLedger receive;
-                    if (receiveSpendPair.get(0).getLedgerType().toString().equalsIgnoreCase(LedgerType.SPEND.toString())) {
-                        spend = receiveSpendPair.get(0);
-                        receive = receiveSpendPair.get(1);
-                    } else {
-                        spend = receiveSpendPair.get(1);
-                        receive = receiveSpendPair.get(0);
-                    }
-                    KrakenType transactionType;
-                    if (io.everytrade.server.model.Currency.fromCode(currencySwitcher(receive.getAsset())).isFiat()) {
-                        transactionType = KrakenType.SELL;
-                    } else {
-                        transactionType = KrakenType.BUY;
-                    }
-                    var krakenTrade = new KrakenTrade(
-                        receive.getRefId(),
-                        currencySwitcher(receive.getAsset()).concat("/").concat(currencySwitcher((spend.getAsset()))),
-                        spend.getUnixTime(),
-                        transactionType,
-                        KrakenOrderType.LIMIT,
-                        spend.getTransactionAmount().abs().divide(receive.getTransactionAmount(), RoundingMode.HALF_UP),
-                        null,
-                        receive.getFee(),
-                        receive.getTransactionAmount(),
-                        null, null, null, null, null, null,
-                        null, null, null, null, null);
-                    krakenTrades.add(krakenTrade);
+                    result.add(convertSpendReceivePairToTrade(receiveSpendPair));
                 } catch (Exception e) {
                     parsingProblems.add(new ParsingProblem(receiveSpendPair.toString(), e.getMessage(), ROW_PARSING_FAILED));
                 }
-
             }
-            krakenTrades.forEach(t -> sells.put(t.getOrderTxId(), t));
-            return KrakenAdapters.adaptTradesHistory(sells).getUserTrades();
+            return result;
         } catch (IOException e) {
             throw new IllegalStateException("Download receive spend history failed.", e);
         } catch (InterruptedException e) {
@@ -534,6 +504,42 @@ public class KrakenConnector implements IConnector {
         var quote = pairs.get(1);
 
         TransactionType type = getTransactionType(base, quote);
+        KrakenLedger fee = findFee(base, quote);
+
+        return UserTrade.builder()
+            .id(base.getRefId())
+            .timestamp(convertUnixToDate(base.getUnixTime()))
+            .originalAmount(base.getTransactionAmount().abs())
+            .currencyPair(new CurrencyPair(translateKrakenCurrency(base.getAsset()), translateKrakenCurrency(quote.getAsset())))
+            .type(type.equals(BUY) ? Order.OrderType.BID : Order.OrderType.ASK)
+            .price(quote.getTransactionAmount().divide(base.getTransactionAmount(), DECIMAL_DIGITS, HALF_UP).abs())
+            .feeCurrency(translateKrakenCurrency(fee.getAsset()))
+            .feeAmount(fee.getFee().abs())
+            .build();
+    }
+
+    private UserTrade convertSpendReceivePairToTrade(List<KrakenLedger> ledgerPairs) {
+        KrakenLedger spend;
+        KrakenLedger receive;
+        if (ledgerPairs.get(0).getLedgerType().toString().equalsIgnoreCase(LedgerType.SPEND.toString())) {
+            spend = ledgerPairs.get(0);
+            receive = ledgerPairs.get(1);
+        } else {
+            spend = ledgerPairs.get(1);
+            receive = ledgerPairs.get(0);
+        }
+        TransactionType type;
+        KrakenLedger base;
+        KrakenLedger quote;
+        if (io.everytrade.server.model.Currency.fromCode(currencySwitcher(receive.getAsset())).isFiat()) {
+            quote = receive;
+            base = spend;
+            type = TransactionType.SELL;
+        } else {
+            base = receive;
+            quote = spend;
+            type = TransactionType.BUY;
+        }
         KrakenLedger fee = findFee(base, quote);
 
         return UserTrade.builder()
