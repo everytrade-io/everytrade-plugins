@@ -11,6 +11,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import io.everytrade.server.plugin.impl.everytrade.parser.utils.CoinbaseProCurrencySwitch;
+import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -21,7 +22,6 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 
 import static io.everytrade.server.model.TransactionType.BUY;
-import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.REWARD;
@@ -40,6 +40,7 @@ import static io.everytrade.server.util.CoinBaseDataUtil.TRANSACTION_TYPE_REWARD
 import static io.everytrade.server.util.CoinBaseDataUtil.TRANSACTION_TYPE_SEND;
 import static java.util.Collections.emptyList;
 
+@ToString
 public class CoinbaseBeanV1 extends ExchangeBean {
     private Instant timeStamp;
     private TransactionType transactionType;
