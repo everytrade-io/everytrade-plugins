@@ -89,11 +89,11 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
         var base = transaction.stream()
             .filter(t -> t.getAmount().getAmount().compareTo(BigDecimal.ZERO) > 0)
             .findFirst()
-            .orElseThrow();
+            .orElseThrow(() -> new DataValidationException("Trade transaction missing pair base"));
         var quote = transaction.stream()
             .filter(t -> t.getAmount().getAmount().compareTo(BigDecimal.ZERO) < 0)
             .findFirst()
-            .orElseThrow();
+            .orElseThrow(() -> new DataValidationException("Trade transaction missing pair quote"));
 
         return XChangeApiTransaction.builder()
             .id(String.valueOf(base.getId()))
@@ -107,33 +107,36 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
     }
     public static XChangeApiTransaction buySellCoinbase(CoinbaseShowTransactionV2 transaction) {
         TransactionType type = null;
-        CoinbaseTransactionV2Expand txType = null;
+        CoinbaseTransactionV2Expand buySellTx = null;
         switch (transaction.getType()) {
             case "buy" -> {
                 type = BUY;
-                txType = transaction.getBuy();
+                buySellTx = transaction.getBuy();
             }
             case "sell" -> {
                 type = SELL;
-                txType = transaction.getSell();
+                buySellTx = transaction.getSell();
             }
         }
 
-        if (txType == null) {
+        if (buySellTx == null) {
             throw new DataValidationException("Coinbase transaction type not supported: " + transaction.getType());
         }
 
-        Currency feeCurrency = txType.getFee().getCurrency() != null ? Currency.fromCode(txType.getFee().getCurrency()) : null;
+        Currency feeCurrency = null;
+        if (buySellTx.getFee() != null){
+            feeCurrency = buySellTx.getFee().getCurrency() != null ? Currency.fromCode(buySellTx.getFee().getCurrency()) : null;
+        }
 
         return XChangeApiTransaction.builder()
             .id(String.valueOf(transaction.getId()))
             .timestamp(Instant.parse(transaction.getCreatedAt()))
             .type(type)
-            .price(txType.getSubtotal().getAmount())
+            .price(buySellTx.getSubtotal().getAmount())
             .base(Currency.fromCode(transaction.getAmount().getCurrency()))
             .quote(Currency.fromCode(transaction.getNativeAmount().getCurrency()))
             .originalAmount(transaction.getAmount().getAmount())
-            .feeAmount(txType.getFee().getAmount())
+            .feeAmount(feeCurrency != null ? buySellTx.getFee().getAmount() : BigDecimal.ZERO)
             .feeCurrency(feeCurrency)
             .build();
     }
@@ -141,7 +144,7 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
     public static XChangeApiTransaction rewardWithdrawalCoinbase(CoinbaseShowTransactionV2 transaction) {
         TransactionType type = null;
         switch (transaction.getType()) {
-            case "tx" -> type = REWARD;
+            case "tx", "interest" -> type = REWARD;
             case "send" -> type = WITHDRAWAL;
             case "earn_payout" -> type = EARNING;
         }

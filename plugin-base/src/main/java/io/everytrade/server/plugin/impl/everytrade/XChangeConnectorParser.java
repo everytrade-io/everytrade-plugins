@@ -126,7 +126,7 @@ public class XChangeConnectorParser {
         tx.forEach(cb -> {
                 try {
                     switch (cb.getType().toLowerCase()) {
-                        case "send", "tx", "earn_payout" -> {
+                        case "send", "tx", "earn_payout", "interest" -> {
                             result.add(XChangeApiTransaction.rewardWithdrawalCoinbase(cb).toTransactionCluster());
                         }
                         case "buy", "sell" -> {
