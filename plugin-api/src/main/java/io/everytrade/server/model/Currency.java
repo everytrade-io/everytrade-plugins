@@ -88,7 +88,7 @@ public enum Currency {
     LSK(false, Instant.parse("2016-02-01T00:00:00Z"), "Lisk"),
     OMG(false, Instant.parse("2017-06-23T00:00:00Z"), "OMG Network"), // token
     BAND(false, Instant.parse("2019-09-01T00:00:00Z"), "Band Protocol"), // token; can't find exact date
-    MATIC(false, Instant.parse("2019-04-01T00:00:00Z"), "Matic Network"), // token; can't find exact date
+    MATIC(false, Instant.parse("2019-04-01T00:00:00Z"), "Polygon"), // token; can't find exact date
     DNT(false, Instant.parse("2017-08-01T00:00:00Z"), "district0x"), // token; can't find exact date
     SC(false, Instant.parse("2015-03-17T00:00:00Z"), "Siacoin"),
     KMD(false, Instant.parse("2016-09-14T00:00:00Z"), "Komodo"),
@@ -870,7 +870,11 @@ public enum Currency {
     FCT(false, Instant.parse("2021-08-19T00:00:00Z"), "Firmachain"),
     START(false, Instant.parse("2022-02-02T00:00:00Z"), "BSCstarter"),
     STR(false, Instant.parse("2022-07-28T00:00:00Z"), "Stater"),
-    PINK(false, Instant.parse("2021-09-09T00:00:00Z"), "Dot Finance");
+    PINK(false, Instant.parse("2021-09-09T00:00:00Z"), "Dot Finance"),
+    AZY(false, Instant.parse("2022-08-11T00:00:00Z"), "Amazy"),
+    EDG(false, Instant.parse("2023-03-15T00:00:00Z"), "Edgeware"),
+    FSN(false, Instant.parse("2018-03-07T00:00:00Z"), "Fusion"),
+    POLYX(false, Instant.parse("2022-08-25T00:00:00Z"), "Polymesh");
 
 
     String code;
