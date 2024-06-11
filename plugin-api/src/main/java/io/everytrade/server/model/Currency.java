@@ -874,7 +874,11 @@ public enum Currency {
     AZY(false, Instant.parse("2022-08-11T00:00:00Z"), "Amazy"),
     EDG(false, Instant.parse("2023-03-15T00:00:00Z"), "Edgeware"),
     FSN(false, Instant.parse("2018-03-07T00:00:00Z"), "Fusion"),
-    POLYX(false, Instant.parse("2022-08-25T00:00:00Z"), "Polymesh");
+    POLYX(false, Instant.parse("2022-08-25T00:00:00Z"), "Polymesh"),
+    XDB(false, Instant.parse("2019-09-12T00:00:00Z"), "DigitalBits"),
+    NYM(false, Instant.parse("2023-03-15T00:00:00Z"), "Nym"),
+    _RON("RON", false, Instant.parse("2022-02-23T00:00:00Z"), "Ronin"),
+    ;
 
 
     String code;
