@@ -75,7 +75,7 @@ dependencies {
 //    pluginCompile "com.github.martinkyov.Xchange:xchange-coinbase:136289732f459f489caa0cd4860f6dcd3b76712f"
 //    pluginCompile "com.github.martinkyov.Xchange:xchange-coinbase:e55e846c55711644eec463b40d2a484e2092fbec"
 //    pluginCompile "com.github.martinkyov.Xchange:xchange-coinbase:874ff9e8e4f86964368d5bff8969b35f9e2dc557"
-    pluginCompile "com.github.Slithercze.Xchange:xchange-coinbase:4d445a2cef5b08bdd44cb4074035711993722b1b"
+    pluginCompile "com.github.Slithercze.Xchange:xchange-coinbase:3ded337bb7e3e78c3d256fc3993cd3a6f059f45e"
 
     /*
      * only for temporary use till pull request confirmation https://github.com/knowm/XChange/pull/4412
