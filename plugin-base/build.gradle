@@ -29,7 +29,7 @@ dependencies {
 
     compileOnly project(':plugin-api')
     compileOnly 'org.slf4j:slf4j-api:1.7.30'
-    pluginCompile "com.univocity:univocity-parsers:2.8.4"
+    pluginCompile "com.univocity:univocity-parsers:2.9.1"
 
     /*
      * ETD: 424

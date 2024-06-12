@@ -6,6 +6,7 @@ import com.univocity.parsers.csv.CsvParserSettings;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.ParsingProblemType;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
+import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParserErrorCurrencyException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -116,8 +117,13 @@ public class DefaultUnivocityExchangeSpecificParser implements IExchangeSpecific
         var parserSettings = new CsvParserSettings();
         parserSettings.setHeaderExtractionEnabled(true);
         parserSettings.setProcessorErrorHandler((error, inputRow, context) -> {
-            ParsingProblemType parsingProblemType = error instanceof DataIgnoredException ? PARSED_ROW_IGNORED : ROW_PARSING_FAILED;
-            parsingProblems.add(new ParsingProblem(Arrays.toString(inputRow), error.getMessage(), parsingProblemType));
+            if (error instanceof ParserErrorCurrencyException) {
+                parsingProblems.add(new ParsingProblem(Arrays.toString(inputRow), String.format("Unsupported currency pair %s",
+                    error.getValue()), PARSED_ROW_IGNORED));
+            } else {
+                ParsingProblemType parsingProblemType = error instanceof DataIgnoredException ? PARSED_ROW_IGNORED : ROW_PARSING_FAILED;
+                parsingProblems.add(new ParsingProblem(Arrays.toString(inputRow), error.getMessage(), parsingProblemType));
+            }
         });
         parserSettings.getFormat().setDelimiter(delimiter);
         //default setting is autodetect

@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-@Headers(sequence = {"Instrument", "Trade ID", "Side", "Quantity", "Price", "Fee", "Rebate"}, extract = true)
 public class HitBtcBeanV1 extends ExchangeBean {
     private Instant date;
     private Currency instrumentBase;
