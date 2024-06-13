@@ -274,7 +274,8 @@ public class CoinmateBeanV1 extends ExchangeBean {
         }
         if (c.startsWith("$")) {
             c = c.substring(1);
-        } try {
+        }
+        try {
             return Currency.fromCode(c);
         } catch (IllegalArgumentException e) {
             throw new ParserErrorCurrencyException("Unknown currency pair: " + c);

@@ -36,10 +36,8 @@ class BittrexBeanV1Test {
     @Test
     void testCorrectParsingRawTransaction()  {
         final String row = "9-01,EUR-ETH,LIMIT_BUY,0.03280507,0.03380240,0.00000277," +
-            "0.00110889,2/14/19 15:01,2/14/132 15:01\n";
-        final String row1 = "9-01,EUR-EASTH,LIMWT_BUY,0.03280507,0.03380240,0.00000277," +
             "0.00110889,2/14/19 15:01,2/14/19 15:01\n";
-        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row.concat(row1));
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
             new ImportedTransactionBean(
                 "9-01",
