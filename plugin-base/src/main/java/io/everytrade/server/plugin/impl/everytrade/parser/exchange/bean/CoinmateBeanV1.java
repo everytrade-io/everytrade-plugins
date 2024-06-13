@@ -10,6 +10,7 @@ import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
+import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParserErrorCurrencyException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
@@ -274,6 +275,10 @@ public class CoinmateBeanV1 extends ExchangeBean {
         if (c.startsWith("$")) {
             c = c.substring(1);
         }
-        return Currency.fromCode(c);
+        try {
+            return Currency.fromCode(c);
+        } catch (IllegalArgumentException e) {
+            throw new ParserErrorCurrencyException("Unknown currency pair: " + c);
+        }
     }
 }

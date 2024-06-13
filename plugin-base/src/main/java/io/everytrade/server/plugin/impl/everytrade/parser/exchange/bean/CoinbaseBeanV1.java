@@ -9,6 +9,7 @@ import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
+import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParserErrorCurrencyException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import io.everytrade.server.plugin.impl.everytrade.parser.utils.CoinbaseProCurrencySwitch;
 import lombok.ToString;
@@ -105,7 +106,7 @@ public class CoinbaseBeanV1 extends ExchangeBean {
             Currency asset = CoinbaseProCurrencySwitch.getCurrency(value);
             this.asset = asset;
         } catch (IllegalArgumentException e) {
-            throw new DataIgnoredException("Unsupported type of asset " + value + ". ");
+            throw new ParserErrorCurrencyException("Unknown currency pair: " + value);
         }
     }
 

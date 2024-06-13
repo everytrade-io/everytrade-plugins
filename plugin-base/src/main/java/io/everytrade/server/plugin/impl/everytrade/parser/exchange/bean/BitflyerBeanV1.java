@@ -10,6 +10,7 @@ import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
+import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParserErrorCurrencyException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
@@ -48,7 +49,11 @@ public class BitflyerBeanV1 extends ExchangeBean {
 
     @Parsed(field = "Currency 1")
     public void setCurrency1(String value) {
-        this.currency1 = Currency.fromCode(value);
+        try {
+            this.currency1 = Currency.fromCode(value);
+        } catch (IllegalArgumentException e) {
+            throw new ParserErrorCurrencyException("Unknown currency pair: " + value);
+        }
     }
 
     @Parsed(field = "Amount (Currency 1)", defaultNullRead = "0")
@@ -93,7 +98,6 @@ public class BitflyerBeanV1 extends ExchangeBean {
                 )
             );
         }
-
 
         return new TransactionCluster(
             new ImportedTransactionBean(

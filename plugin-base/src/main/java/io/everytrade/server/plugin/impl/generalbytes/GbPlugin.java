@@ -8,6 +8,7 @@ import io.everytrade.server.plugin.api.parser.ICsvParser;
 import io.everytrade.server.plugin.api.parser.ParserDescriptor;
 import io.everytrade.server.plugin.api.rateprovider.IRateProvider;
 import io.everytrade.server.plugin.api.rateprovider.RateProviderDescriptor;
+import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParserErrorCurrencyException;
 import org.pf4j.Extension;
 
 import java.util.Collections;
@@ -74,7 +75,11 @@ public class GbPlugin implements IPlugin {
         } else if ("LBTC".equalsIgnoreCase(currency)) { //BTC Lightning
             return Currency.BTC;
         } else {
-            return Currency.fromCode(currency);
+            try {
+                return Currency.fromCode(currency);
+            } catch (IllegalArgumentException e) {
+                throw new ParserErrorCurrencyException("Unknown currency pair: " + currency);
+            }
         }
     }
 }
