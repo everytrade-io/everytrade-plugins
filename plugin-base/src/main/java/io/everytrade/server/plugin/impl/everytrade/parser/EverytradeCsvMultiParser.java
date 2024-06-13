@@ -506,17 +506,6 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
                 .headers(List.of(
                     CsvHeader.of(
-                        "^Date \\(.*\\)$", "Instrument", "Trade ID", "Order ID", "Side", "Quantity", "Price", "Volume", "Fee", "Rebate",
-                        "Total"
-                    ).withSeparator(DELIMITER_COMMA)
-                ))
-                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(HitBtcBeanV1.class))
-                .supportedExchange(HITBTC)
-                .build());
-
-            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
-                .headers(List.of(
-                    CsvHeader.of(
                         "^Date \\(.*\\)$", "Instrument", "Trade ID", "Order ID", "Side",
                         "Quantity", "Price", "Volume", "Fee", "Rebate", "Total"
                     ).withSeparator(delimiter)

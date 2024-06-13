@@ -9,7 +9,6 @@ import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
-import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParserErrorCurrencyException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
@@ -18,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+@Headers(sequence = {"Instrument", "Trade ID", "Side", "Quantity", "Price", "Fee", "Rebate"}, extract = true)
 public class HitBtcBeanV1 extends ExchangeBean {
     private Instant date;
     private Currency instrumentBase;
@@ -39,12 +39,8 @@ public class HitBtcBeanV1 extends ExchangeBean {
     @Parsed(field = "Instrument")
     public void setInstrument(String instrument) {
         String[] instrumentParts = instrument.split("/");
-        try {
-            instrumentBase = Currency.fromCode(instrumentParts[0]);
-            instrumentQuote = Currency.fromCode(instrumentParts[1]);
-        } catch (IllegalArgumentException e) {
-            throw new ParserErrorCurrencyException("Unknown currency pair: " + instrument);
-        }
+        instrumentBase = Currency.fromCode(instrumentParts[0]);
+        instrumentQuote = Currency.fromCode(instrumentParts[1]);
     }
 
     @Parsed(field = "Trade ID")

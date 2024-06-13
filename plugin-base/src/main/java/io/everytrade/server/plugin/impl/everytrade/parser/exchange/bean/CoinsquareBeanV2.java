@@ -8,7 +8,6 @@ import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
-import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParserErrorCurrencyException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
@@ -43,11 +42,7 @@ public class CoinsquareBeanV2 extends ExchangeBean {
 
     @Parsed(field = "to_currency")
     public void setToCurrency(String value) {
-        try {
-            toCurrenncy = Currency.fromCode(value);
-        } catch (IllegalArgumentException e) {
-            throw new ParserErrorCurrencyException("Unknown currency pair: " + value);
-        }
+        toCurrenncy = Currency.fromCode(value);
     }
 
     @Parsed(field = "to_amount")

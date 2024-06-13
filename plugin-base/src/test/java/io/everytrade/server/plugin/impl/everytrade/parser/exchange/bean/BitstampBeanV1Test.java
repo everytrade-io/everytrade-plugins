@@ -76,7 +76,7 @@ class BitstampBeanV1Test {
             "3564.35 USD,0.00990595 USD,Buy\n";
         ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
         final String error = parsingProblem.getMessage();
-        assertTrue(error.contains("Unsupported currency pair 0.00111167 XXX"));
+        assertTrue(error.contains("Unable to set value '0.00111167 XXX'"));
     }
 
     @Test

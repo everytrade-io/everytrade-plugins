@@ -11,7 +11,6 @@ import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
-import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParserErrorCurrencyException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
@@ -54,11 +53,7 @@ public class BitstampBeanV1 extends ExchangeBean {
     public void setAmount(String amount) {
         String[] amountParts = amount.split(" ");
         String mBase = amountParts[1];
-        try {
-            amountCurrency = Currency.fromCode(mBase);
-        } catch (IllegalArgumentException e) {
-            throw new ParserErrorCurrencyException("Unknown currency pair: " + mBase);
-        }
+        amountCurrency = Currency.fromCode(mBase);
         if (amountParts[0].isEmpty()) {
             throw new DataValidationException("BaseQuantity can not be null or empty.");
         }
@@ -76,11 +71,7 @@ public class BitstampBeanV1 extends ExchangeBean {
         } else {
             String[] valueParts = value.split(" ");
             this.value = new BigDecimal(valueParts[0]);
-            try {
-                valueCurrency = Currency.fromCode(valueParts[1]);
-            } catch (IllegalArgumentException e) {
-                throw new ParserErrorCurrencyException("Unknown currency pair: " + value);
-            }
+            valueCurrency = Currency.fromCode(valueParts[1]);
         }
     }
 

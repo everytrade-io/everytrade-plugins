@@ -11,7 +11,6 @@ import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
-import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParserErrorCurrencyException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
@@ -43,12 +42,8 @@ public class BittrexBeanV1 extends ExchangeBean {
         String[] exchangeParts = exchange.split("-");
         String mQuote = exchangeParts[0];
         String mBase = exchangeParts[1];
-        try {
-            exchangeQuote = Currency.fromCode(mQuote);
-            exchangeBase = Currency.fromCode(mBase);
-        } catch (IllegalArgumentException e) {
-            throw new ParserErrorCurrencyException("Unknown currency pair: " + exchange);
-        }
+        exchangeQuote = Currency.fromCode(mQuote);
+        exchangeBase = Currency.fromCode(mBase);
     }
 
     @Parsed(field = "Type")
