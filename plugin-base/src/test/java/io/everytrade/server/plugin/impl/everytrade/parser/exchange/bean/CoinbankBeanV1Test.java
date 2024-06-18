@@ -194,10 +194,7 @@ public class CoinbankBeanV1Test {
 
         var expectedProblem = new ParsingProblem(row0, "Withdrawal transaction with status PROCESSED_BY_OPERATOR is ignored",
             ParsingProblemType.PARSED_ROW_IGNORED);
-        var expectedProblem1 = new ParsingProblem(row1, "Unable to set value 'NEVIM' of type 'java.lang.String' to method " +
-            "'setSymbol' of class io.everytrade.server.plugin.impl.everytrade.parser.exchange.coinbank.CoinbankBeanV1\n" +
-            "Internal state when error was thrown: line=3, column=0, record=2, charIndex=262, headers=[Měna, Symbol, Datum, Operace," +
-            " Částka, Stav, Adresa, Účet, Tag, Stav, ID Stavu], value=NEVIM",
+        var expectedProblem1 = new ParsingProblem(row1, "Unable to set value 'NEVIM' to method 'setSymbol'",
             ParsingProblemType.PARSED_ROW_IGNORED);
         var expectedProblem2 = new ParsingProblem(row2, "Cannot define transaction operationType is null",
             ParsingProblemType.PARSED_ROW_IGNORED);

@@ -1591,11 +1591,8 @@ class BinanceBeanV4Test {
         );
 
         var expectedProblem = new ParsingProblem("[38065325, 2021-05-18 18:19:50, SPOT, Fiat Withdraw, EUR, 8000.00000000, null]",
-                "Expected negative value\nInternal state when error was thrown: Unable to set value '8000.00000000' of type" +
-                        " 'java.lang.String' to method 'setChange' of class io.everytrade.server.plugin.impl.everytrade.parser.exchange." +
-                        "binance.v4.BinanceBeanV4\nline=3, column=0, record=2, charIndex=189, " +
-                        "headers=[User_ID, UTC_Time, Account, Operation," +
-                        " Coin, Change, Remark], value=8000.00000000", ParsingProblemType.PARSED_ROW_IGNORED);
+            "Expected negative value, error was thrown: Unable to set value '8000.00000000' to method 'setChange'",
+            ParsingProblemType.PARSED_ROW_IGNORED);
 
         TestUtils.testTxs(expected.getMain(), actual.getTransactionClusters().get(0).getMain());
         assertEquals(expectedProblem.getMessage(), actual.getParsingProblems().get(0).getMessage());
@@ -1625,11 +1622,8 @@ class BinanceBeanV4Test {
                 List.of()
         );
         var expectedProblem = new ParsingProblem("[39388188, 2022-10-24 18:10:22, SPOT, C2C Transfer, USDT, 1500.00000000, null]",
-                "Expected negative value\nInternal state when error was thrown: Unable to set value '1500.00000000' of type" +
-                        " 'java.lang.String' to method 'setChange' of class io.everytrade.server.plugin.impl.everytrade.parser.exchange." +
-                        "binance.v4.BinanceBeanV4\nline=3, column=0, record=2, " +
-                        "charIndex=189, headers=[User_ID, UTC_Time, Account, Operation" +
-                        ", Coin, Change, Remark], value=1500.00000000", ParsingProblemType.PARSED_ROW_IGNORED);
+                "Expected negative value, error was thrown: Unable to set value '1500.00000000' to method 'setChange'",
+            ParsingProblemType.PARSED_ROW_IGNORED);
 
         TestUtils.testTxs(expected.getMain(), actual.getTransactionClusters().get(0).getMain());
         assertEquals(expectedProblem.getMessage(), actual.getParsingProblems().get(0).getMessage());

@@ -117,7 +117,8 @@ public class DefaultUnivocityExchangeSpecificParser implements IExchangeSpecific
         parserSettings.setHeaderExtractionEnabled(true);
         parserSettings.setProcessorErrorHandler((error, inputRow, context) -> {
             ParsingProblemType parsingProblemType = error instanceof DataIgnoredException ? PARSED_ROW_IGNORED : ROW_PARSING_FAILED;
-            parsingProblems.add(new ParsingProblem(Arrays.toString(inputRow), error.getMessage(), parsingProblemType));
+            String errorMessage = transformErrorMessage(error.getMessage());
+            parsingProblems.add(new ParsingProblem(Arrays.toString(inputRow), errorMessage, parsingProblemType));
         });
         parserSettings.getFormat().setDelimiter(delimiter);
         //default setting is autodetect
@@ -127,6 +128,18 @@ public class DefaultUnivocityExchangeSpecificParser implements IExchangeSpecific
         parserSettings.getFormat().setComment('\0'); // No symbol for comments
 
         return parserSettings;
+    }
+
+    public static String transformErrorMessage(String errorMessage) {
+        String regex1 = "(?s)Error converting value '([^']*)' using conversion.*";
+        String regex2 = "(?s)Unable to set value '([^']*)' of type '[^']*' to method '([^']*)'.*";
+
+        if (errorMessage.contains("Error converting value")) {
+            return errorMessage.replaceAll(regex1, "Error converting value '$1'");
+        } else {
+            return errorMessage.replaceAll(regex2, "Unable to set value '$1' to method '$2'")
+                .replace("\nInternal state when ", ", ");
+        }
     }
 
     protected String[] correctRow(String[] rows){
