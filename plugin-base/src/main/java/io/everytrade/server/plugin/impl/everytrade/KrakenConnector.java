@@ -97,7 +97,7 @@ public class KrakenConnector implements IConnector {
     public static final String EXCEPTION_CURRENCY = "Invalid currencies: ";
     public static final String EXCEPTION_AMOUNT = "Invalid transactionAmounts: ";
     public static final String EXCEPTION_FEE_AMOUNT = "Invalid volume of fees in: ";
-    public static final String EXCEPTION_WITHDRAWAL_PAIR_VALUES = "Invalid withdrawal pair values: ";
+    private static final String UNREALISED_TRANSACTION = "Unrealised transaction: ";
     public static final long DEFAULT_BLOCK_SIZE = 50;
 
     private List<ParsingProblem> parsingProblems = new ArrayList<>();
@@ -636,7 +636,7 @@ public class KrakenConnector implements IConnector {
         List<KrakenLedger> removeLedgers = new ArrayList<>();
         ledgers.stream().forEach(ledger -> {
                 if (ledgersGroupedByRefId.get(ledger.getRefId()).size() != 1) {
-                    parsingProblems.add(new ParsingProblem(ledger.toString(), EXCEPTION_WITHDRAWAL_PAIR_VALUES, PARSED_ROW_IGNORED));
+                    parsingProblems.add(new ParsingProblem(ledger.toString(), UNREALISED_TRANSACTION, PARSED_ROW_IGNORED));
                     removeLedgers.add(ledger);
                 }
             }
