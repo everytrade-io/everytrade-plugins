@@ -30,6 +30,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.anycoin.Anyco
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.AquanowBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BinanceBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BinanceBeanV5;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BitcoinRdBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BitflyerBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BitflyerBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BitmexBeanV1;
@@ -95,6 +96,7 @@ import java.util.Map;
 import static io.everytrade.server.model.SupportedExchange.ANYCOIN;
 import static io.everytrade.server.model.SupportedExchange.AQUANOW;
 import static io.everytrade.server.model.SupportedExchange.BINANCE;
+import static io.everytrade.server.model.SupportedExchange.BITCOINRD;
 import static io.everytrade.server.model.SupportedExchange.BITFINEX;
 import static io.everytrade.server.model.SupportedExchange.BITFLYER;
 import static io.everytrade.server.model.SupportedExchange.BITMEX;
@@ -227,6 +229,18 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 .parserFactory(() -> new BinanceExchangeSpecificParserV3(delimiter))
                 .supportedExchange(BINANCE)
                 .build());
+
+            /* BITCOINRD */
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader
+                        .of("side", "size", "price", "timestamp", "symbol", "order_id", "fee", "fee_coin","quick")
+                        .withSeparator(delimiter)
+                ))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(BitcoinRdBeanV1.class, delimiter))
+                .supportedExchange(BITCOINRD)
+                .build());
+
 
             /* BITFINEX */
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()

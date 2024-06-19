@@ -44,7 +44,8 @@ public enum SupportedExchange {
     AQUANOW("Aquanow", "aquanow"),
     SIMPLE_COIN("SimpleCoin", "simplecoin"),
     OPEN_NODE("OpenNode", "opennode"),
-    KUCOIN("KuCoin", "kucoin");
+    KUCOIN("KuCoin", "kucoin"),
+    BITCOINRD("BitcoinRD", "bitcoinrd");
 
 
     String displayName;
