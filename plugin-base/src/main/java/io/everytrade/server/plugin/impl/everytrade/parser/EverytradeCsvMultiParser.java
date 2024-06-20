@@ -41,6 +41,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexB
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseProBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.GeneralBytesBeanV3;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.everytrade.EveryTradeBeanV3_3;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.okx.OkxBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OpenNodeV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OpenNodeV2;
@@ -132,7 +133,7 @@ public class EverytradeCsvMultiParser implements ICsvParser {
     private static final String DELIMITER_COMMA = ",";
     private static final String DELIMITER_SEMICOLON = ";";
     private static final String LINE_SEPARATOR = "\n";
-    private static final List<String> DELIMITERS = List.of(DELIMITER_COMMA, DELIMITER_SEMICOLON);
+    private static final List<String> DELIMITERS = List.of(DELIMITER_COMMA,DELIMITER_SEMICOLON);
 
     private static final List<ExchangeParseDetail> EXCHANGE_PARSE_DETAILS = new ArrayList<>();
     private static EnumSet allCurrencies = EnumSet.allOf(Currency.class);
@@ -744,6 +745,15 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                         "ADDRESS_FROM","ADDRESS_TO","NOTE","LABELS"
                     ).withSeparator(delimiter)))
                 .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(EveryTradeBeanV3_2.class, delimiter)) //
+                .supportedExchange(EVERYTRADE)
+                .build());
+
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader.of(
+                        "Datum","Kontejner","Typ","Adresa","Množství","Kumulativní bilance","Poznámka","GT - WHALEBOOKS","Odpovědi RoX"
+                    ).withSeparator(delimiter)))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(EveryTradeBeanV3_3.class, delimiter)) //
                 .supportedExchange(EVERYTRADE)
                 .build());
 
