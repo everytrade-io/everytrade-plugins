@@ -67,7 +67,8 @@ public class CoinbaseProConnector implements IConnector {
         "Coinbase Pro Connector",
         "",
         SUPPORTED_EXCHANGE.getInternalId(),
-        List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET, PARAMETER_PASS_PHRASE, PARAMETER_CURRENCY_PAIRS)
+        List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET, PARAMETER_PASS_PHRASE, PARAMETER_CURRENCY_PAIRS),
+        true
     );
 
     private final String apiKey;
