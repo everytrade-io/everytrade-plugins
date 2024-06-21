@@ -31,6 +31,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.AquanowB
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BinanceBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BinanceBeanV5;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BitcoinRdBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BitcoinRdDepWdrlBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BitflyerBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BitflyerBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BitmexBeanV1;
@@ -49,7 +50,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OpenNode
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OpenNodeV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OpenNodeV3;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.PoloniexBuySellBeanV1;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.PoloniexDepositWithdrawBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.PoloniexDepWdrlBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.blockFi.BlockFiBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.coibasePro.v2.CoinbaseProBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinmateBeanV1;
@@ -84,7 +85,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.KuCoin
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.KuCoinBuySellV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.KuCoinBuySellV3;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.KuCoinDepositV1;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.KuCoinDepositWithdrawalV2;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.KuCoinDepWdrlBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.KuCoinWithdrawalV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.utils.ClusterValidator;
 import org.slf4j.Logger;
@@ -241,6 +242,18 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                         .withSeparator(delimiter)
                 ))
                 .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(BitcoinRdBeanV1.class, delimiter))
+                .supportedExchange(BITCOINRD)
+                .build());
+
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader
+                        .of("currency","address","amount","transaction_id","user_id","type","network","fee_coin","fee","status",
+                            "dismissed","rejected","processing","waiting","description","created_at","updated_at","network_id")
+                        .withSeparator(delimiter)
+
+                ))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(BitcoinRdDepWdrlBeanV1.class, delimiter))
                 .supportedExchange(BITCOINRD)
                 .build());
 
@@ -669,7 +682,7 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                         .of("f_date","currency","f_amount","f_feededucted","f_status")
                         .withSeparator(delimiter)
                 ))
-                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(PoloniexDepositWithdrawBeanV1.class, delimiter))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(PoloniexDepWdrlBeanV1.class, delimiter))
                 .supportedExchange(POLONIEX)
                 .build());
 
@@ -898,7 +911,7 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 .headers(List.of(CsvHeader.of(
                     "UID","Account Type","Time(UTC+02:00)","Remarks","Status","Fee","Amount","Coin","Transfer Network"
                 ).withSeparator(delimiter)))
-                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(KuCoinDepositWithdrawalV2.class, delimiter))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(KuCoinDepWdrlBeanV2.class, delimiter))
                 .supportedExchange(KUCOIN)
                 .build());
 
