@@ -41,6 +41,8 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexB
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseProBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.GeneralBytesBeanV3;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.HuobiBuySellBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.HuobiDepWdrlBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.everytrade.EveryTradeBeanV3_3;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.okx.OkxBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OpenNodeV1;
@@ -535,6 +537,27 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                     CsvHeader.of("Time", "Type", "Pair", "Side", "Price", "Amount", "Total", "Fee").withSeparator(delimiter)
                 ))
                 .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(HuobiBeanV1.class, delimiter))
+                .supportedExchange(HUOBI)
+                .build());
+
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader.of("uid","symbol","deal_type","order_type","account_type","price","volume","amount","fee_amount",
+                        "fee_currency","fee_point_currency","fee_point_volume","deal_time")
+                        .withSeparator(delimiter)
+                ))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(HuobiBuySellBeanV1.class, delimiter))
+                .supportedExchange(HUOBI)
+                .build());
+
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader.of("uid","currency","tx_hash","from_address","to_address","amount","deposit_time"
+                        ).withSeparator(delimiter),
+                    CsvHeader.of("uid","currency","tx_hash","to_address","amount","fee","withdraw_time"
+                        ).withSeparator(delimiter)
+                ))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(HuobiDepWdrlBeanV1.class, delimiter))
                 .supportedExchange(HUOBI)
                 .build());
 
