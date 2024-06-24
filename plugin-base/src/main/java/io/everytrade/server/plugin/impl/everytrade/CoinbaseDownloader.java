@@ -53,8 +53,6 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 public class CoinbaseDownloader {
     //https://developers.coinbase.com/api/v2#rate-limiting 10.000 / API-KEY / hour ---> 2500 / 15 min
-    private static final int MAX_REQUEST_COUNT = 1250;
-    private static final int MAX_WALLET_REQUESTS = 50;
     private static final String DASH_SYMBOL = "-";
     private static final String COLON_SYMBOL = ":";
     private static final String PIPE_SYMBOL = "|";
@@ -181,13 +179,12 @@ public class CoinbaseDownloader {
 
     private List<UserTrade> downloadAdvancedTrade(List<ParsingProblem> parsingProblems) {
         var tradeService = exchange.getTradeService();
-        int sentRequests = 0;
         Instant now = Instant.now();
         if (completedLastAdvanceTradeEndDatetime == 0) {
             completedLastAdvanceTradeEndDatetime = now.toEpochMilli();
         }
         List<CoinbaseAdvancedTradeFills> advancedTrades = new ArrayList<>();
-        while (sentRequests < MAX_REQUEST_COUNT) {
+        while (true) {
             var params = setParamsBeforeStart(tradeService, now);
 
             List<CoinbaseAdvancedTradeFills> advancedTradesBlock;
@@ -235,7 +232,6 @@ public class CoinbaseDownloader {
             } else {
                 throw new IllegalStateException("Unknown state of downloaded data. ");
             }
-            sentRequests++;
         }
         List<UserTrade> userTrades = createUserTradesFromAdvancedTrades(advancedTrades, parsingProblems);
         return userTrades;
@@ -351,7 +347,6 @@ public class CoinbaseDownloader {
             collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (u, v) -> u, LinkedHashMap::new));
 
         final List<FundingRecord> fundingRecords = new ArrayList<>();
-        int sentRequests = 0;
 
         var accountService = exchange.getAccountService();
         CoinbaseTradeHistoryParams params = (CoinbaseTradeHistoryParams) accountService.createFundingHistoryParams();
@@ -362,8 +357,8 @@ public class CoinbaseDownloader {
             final WalletState walletState = wallets.get(walletId);
             String lastDepositId = entry.getValue().lastDepositId;
             String lastWithdrawalId = entry.getValue().lastWithdrawalId;
+
             while (true) {
-                ++sentRequests;
                 params.setStartId(lastDepositId);
                 List<FundingRecord> depositRecords = new ArrayList<>();
                 try {
@@ -383,7 +378,6 @@ public class CoinbaseDownloader {
             }
 
             while (true) {
-                ++sentRequests;
                 params.setStartId(lastWithdrawalId);
                 List<FundingRecord> withdrawalRecords = new ArrayList<>();
                 try {
@@ -400,9 +394,6 @@ public class CoinbaseDownloader {
                 }
                 fundingRecords.addAll(withdrawalRecords);
                 lastWithdrawalId = withdrawalRecords.get(withdrawalRecords.size() - 1).getInternalId();
-            }
-            if (sentRequests == MAX_REQUEST_COUNT) {
-                LOG.info("Max request count {} has been achieved.", MAX_REQUEST_COUNT);
             }
 
             walletState.lastDepositId = lastDepositId;
