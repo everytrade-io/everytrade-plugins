@@ -881,6 +881,8 @@ public enum Currency {
     WIF(false, Instant.parse("2023-12-14T00:00:00Z"), "dogwifhat"),
     XHT(false, Instant.parse("2021-08-05T00:00:00Z"), "HollaEx"),
     ANDY(false, Instant.parse("2024-02-11T00:00:00Z"), "Andy on ETH"),
+    GARA(false, Instant.parse("2023-11-11T00:00:00Z"), "Gara"),
+    EEZY(false, Instant.parse("2023-04-05T00:00:00Z"), "EEZY"),
     ;
 
 
