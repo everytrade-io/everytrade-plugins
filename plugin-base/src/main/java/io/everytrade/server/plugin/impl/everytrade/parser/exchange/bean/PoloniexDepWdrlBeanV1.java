@@ -14,7 +14,7 @@ import java.util.Date;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 
-public class PoloniexDepositWithdrawBeanV1 extends BaseTransactionMapper {
+public class PoloniexDepWdrlBeanV1 extends BaseTransactionMapper {
     public static final String COMPLETED = "COMPLETED";
 
     private Instant f_created_at;
