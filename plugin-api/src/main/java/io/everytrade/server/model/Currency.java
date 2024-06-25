@@ -877,6 +877,12 @@ public enum Currency {
     POLYX(false, Instant.parse("2022-08-25T00:00:00Z"), "Polymesh"),
     XDB(false, Instant.parse("2019-09-12T00:00:00Z"), "DigitalBits"),
     NYM(false, Instant.parse("2023-03-15T00:00:00Z"), "Nym"),
+    MANTA(false, Instant.parse("2024-01-29T00:00:00Z"), "Manta Network"),
+    WIF(false, Instant.parse("2023-12-14T00:00:00Z"), "dogwifhat"),
+    XHT(false, Instant.parse("2021-08-05T00:00:00Z"), "HollaEx"),
+    ANDY(false, Instant.parse("2024-02-11T00:00:00Z"), "Andy on ETH"),
+    GARA(false, Instant.parse("2023-11-11T00:00:00Z"), "Gara"),
+    EEZY(false, Instant.parse("2023-04-05T00:00:00Z"), "EEZY"),
     ;
 
 
