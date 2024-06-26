@@ -74,6 +74,15 @@ public class BitcoinRdBeanV1 extends BaseTransactionMapper {
 
     @Override
     protected TransactionType findTransactionType() {
+        if (baseCurrency.isFiat()) { //BUY FIAT / KRYPTO --> SELL KRYPTO / FIAT
+            Currency tempBase = baseCurrency;
+            BigDecimal tempSize = size;
+            baseCurrency = quoteCurrency;
+            quoteCurrency = tempBase;
+            size = size.multiply(price);
+            price = evalUnitPrice(tempSize, size);
+            return SELL;
+        }
         return switch (side) {
             case "buy" -> BUY;
             case "sell" -> SELL;
