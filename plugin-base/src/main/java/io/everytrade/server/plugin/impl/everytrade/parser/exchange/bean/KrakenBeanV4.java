@@ -179,12 +179,22 @@ public class KrakenBeanV4 extends ExchangeBean {
             return new CurrencyPair(matchedLongCodes.get(0), pairCode.replaceFirst(matchedLongCodes.get(0), ""));
         } else if (matchedShortCodes.size() == 1 && matchedLongCodes.isEmpty()) {
             return new CurrencyPair(matchedShortCodes.get(0), pairCode.replaceFirst(matchedShortCodes.get(0), ""));
-        } else {
-            throw new DataValidationException(String.format(
-                "Unknown currency code in pair code %s.",
-                pairCode
-            ));
+        } else if (matchedLongCodes.isEmpty() || matchedShortCodes.isEmpty()) {
+            for (Currency currency : Currency.values()) {
+                String baseCurrencyCode = currency.name();
+                if (pairCode.startsWith(baseCurrencyCode)) {
+                    String remaining = pairCode.substring(baseCurrencyCode.length());
+                    Currency baseCurrency = Currency.valueOf(baseCurrencyCode);
+                    Currency quoteCurrency = Currency.valueOf(remaining);
+                    return new CurrencyPair(baseCurrency, quoteCurrency);
+
+                }
+            }
         }
+        throw new DataValidationException(String.format(
+            "Unknown currency code in pair code %s.",
+            pairCode
+        ));
     }
 
 }

@@ -7,6 +7,8 @@ import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
+import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.util.CoinMateDataUtil;
 import lombok.Builder;
 import lombok.Value;
@@ -23,6 +25,7 @@ import java.time.Instant;
 import java.util.List;
 
 import static io.everytrade.server.model.TransactionType.BUY;
+import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.REWARD;
@@ -49,6 +52,10 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
     String address;
     @Builder.Default
     boolean logIgnoredFees = true;
+
+    private static BigDecimal evalUnitPrice(BigDecimal quote, BigDecimal baseQuantity) {
+        return quote.abs().divide(baseQuantity.abs(), ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE);
+    }
 
     public static XChangeApiTransaction fromTrade(UserTrade trade) {
         final Instrument instrument = trade.getInstrument();
@@ -112,10 +119,16 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
             case "buy" -> {
                 type = BUY;
                 buySellTx = transaction.getBuy();
+                if (transaction.getAmount().getAmount().signum() < 0) {
+                    throw new DataIgnoredException("Wallet transfer tx is ignored");
+                }
             }
             case "sell" -> {
                 type = SELL;
                 buySellTx = transaction.getSell();
+                if (transaction.getAmount().getAmount().signum() > 0) {
+                    throw new DataIgnoredException("Wallet transfer tx is ignored");
+                }
             }
         }
 
@@ -132,10 +145,10 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
             .id(String.valueOf(transaction.getId()))
             .timestamp(Instant.parse(transaction.getCreatedAt()))
             .type(type)
-            .price(buySellTx.getSubtotal().getAmount())
+            .originalAmount(transaction.getAmount().getAmount().abs())
             .base(Currency.fromCode(transaction.getAmount().getCurrency()))
-            .quote(Currency.fromCode(transaction.getNativeAmount().getCurrency()))
-            .originalAmount(transaction.getAmount().getAmount())
+            .quote(Currency.fromCode(buySellTx.getTotal().getCurrency()))
+            .price(evalUnitPrice(buySellTx.getSubtotal().getAmount(), transaction.getAmount().getAmount()))
             .feeAmount(feeCurrency != null ? buySellTx.getFee().getAmount() : BigDecimal.ZERO)
             .feeCurrency(feeCurrency)
             .build();
@@ -145,7 +158,7 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
         TransactionType type = null;
         switch (transaction.getType()) {
             case "tx", "interest" -> type = REWARD;
-            case "send" -> type = WITHDRAWAL;
+            case "send" -> type = transaction.getAmount().getAmount().signum() > 0 ? DEPOSIT : WITHDRAWAL;
             case "earn_payout" -> type = EARNING;
         }
 
@@ -277,9 +290,9 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
     private static TransactionType fundingTypeToTxType(FundingRecord record) {
         switch (record.getType()) {
             case WITHDRAWAL:
-                return TransactionType.WITHDRAWAL;
+                return WITHDRAWAL;
             case DEPOSIT:
-                return TransactionType.DEPOSIT;
+                return DEPOSIT;
             case OTHER_INFLOW:
                 // TODO this is binance specific - move it elsewhere
                 if (isAirdrop(record)) {

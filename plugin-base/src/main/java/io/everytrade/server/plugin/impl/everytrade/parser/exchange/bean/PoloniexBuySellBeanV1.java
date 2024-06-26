@@ -88,33 +88,25 @@ public class PoloniexBuySellBeanV1 extends BaseTransactionMapper {
 
     @Override
     protected TransactionType findTransactionType() {
-        switch (side.toUpperCase()) {
-            case "SELL" -> {
-                if (market.startsWith(fee_currency)) {
-                    String remaining = market.substring(fee_currency.length());
-                    for (Currency currency : Currency.values()) {
-                        if (String.valueOf(currency).equals(remaining)) {
-                            baseCurrency = Currency.valueOf(remaining);
-                            quoteCurrency = Currency.valueOf(fee_currency);
-                        }
+        if (market.endsWith(fee_currency)) {
+            String remaining = market.substring(0, market.length() - fee_currency.length());
+            for (Currency currency : Currency.values()) {
+                if (String.valueOf(currency).equals(remaining)) {
+                    try {
+                        baseCurrency = Currency.valueOf(fee_currency);
+                        quoteCurrency = Currency.valueOf(remaining);
+                    } catch (IllegalArgumentException e) {
+                        throw new DataValidationException(String.format("Unsupported currency pair %s. ", market));
                     }
+                    break;
                 }
-                return SELL;
             }
-            case "BUY" -> {
-                if (market.endsWith(fee_currency)) {
-                    String remaining = market.substring(0, market.length() - fee_currency.length());
-                    for (Currency currency : Currency.values()) {
-                        if (String.valueOf(currency).equals(remaining)) {
-                            baseCurrency = Currency.valueOf(fee_currency);
-                            quoteCurrency = Currency.valueOf(remaining);
-                        }
-                    }
-                }
-                return BUY;
-            }
-            default -> throw new DataValidationException(String.format("Unsupported transaction type %s. ", side));
         }
+       return switch (side.toUpperCase()) {
+            case "SELL" -> SELL;
+            case "BUY" -> BUY;
+            default -> throw new DataValidationException(String.format("Unsupported transaction type %s. ", side));
+        };
     }
 
     @Override

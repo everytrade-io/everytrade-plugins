@@ -15,7 +15,7 @@ import java.util.Date;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 
-public class KuCoinDepositWithdrawalV2 extends BaseTransactionMapper {
+public class KuCoinDepWdrlBeanV2 extends BaseTransactionMapper {
     String orderId;
     Instant timeOfUpdate;
     String remarks;

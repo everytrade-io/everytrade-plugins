@@ -53,9 +53,6 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 public class CoinbaseDownloader {
     //https://developers.coinbase.com/api/v2#rate-limiting 10.000 / API-KEY / hour ---> 2500 / 15 min
-    private static final int MAX_REQUEST_COUNT = 1250;
-    private static final int MAX_REQUEST_COUNT_DEPOSIT_WITHDRAWALS = 1250;
-    private static final int MAX_WALLET_REQUESTS = 50;
     private static final String DASH_SYMBOL = "-";
     private static final String COLON_SYMBOL = ":";
     private static final String PIPE_SYMBOL = "|";
@@ -182,13 +179,12 @@ public class CoinbaseDownloader {
 
     private List<UserTrade> downloadAdvancedTrade(List<ParsingProblem> parsingProblems) {
         var tradeService = exchange.getTradeService();
-        int sentRequests = 0;
         Instant now = Instant.now();
         if (completedLastAdvanceTradeEndDatetime == 0) {
             completedLastAdvanceTradeEndDatetime = now.toEpochMilli();
         }
         List<CoinbaseAdvancedTradeFills> advancedTrades = new ArrayList<>();
-        while (sentRequests < MAX_REQUEST_COUNT) {
+        while (true) {
             var params = setParamsBeforeStart(tradeService, now);
 
             List<CoinbaseAdvancedTradeFills> advancedTradesBlock;
@@ -236,7 +232,6 @@ public class CoinbaseDownloader {
             } else {
                 throw new IllegalStateException("Unknown state of downloaded data. ");
             }
-            sentRequests++;
         }
         List<UserTrade> userTrades = createUserTradesFromAdvancedTrades(advancedTrades, parsingProblems);
         return userTrades;
@@ -352,8 +347,6 @@ public class CoinbaseDownloader {
             collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (u, v) -> u, LinkedHashMap::new));
 
         final List<FundingRecord> fundingRecords = new ArrayList<>();
-        int sentRequests = 0;
-        int walletRequests = 0;
 
         var accountService = exchange.getAccountService();
         CoinbaseTradeHistoryParams params = (CoinbaseTradeHistoryParams) accountService.createFundingHistoryParams();
@@ -362,64 +355,53 @@ public class CoinbaseDownloader {
         for (Map.Entry<String, WalletState> entry : wallets.entrySet()) {
             final String walletId = entry.getKey();
             final WalletState walletState = wallets.get(walletId);
-            if (walletRequests < MAX_WALLET_REQUESTS) {
-                String lastDepositId = entry.getValue().lastDepositId;
-                String lastWithdrawalId = entry.getValue().lastWithdrawalId;
-                while (sentRequests < MAX_REQUEST_COUNT_DEPOSIT_WITHDRAWALS) {
-                    ++sentRequests;
-                    params.setStartId(lastDepositId);
-                    List<FundingRecord> depositRecords = new ArrayList<>();
-                    try {
-                        if (accountService instanceof CoinbaseAccountServiceCDP cdpKeys) {
-                            depositRecords = cdpKeys.getDepositHistory(params, walletId);
-                        } else if (accountService instanceof CoinbaseAccountService legacyKeys) {
-                            depositRecords = legacyKeys.getDepositHistory(params, walletId);
-                        }
-                    } catch (IOException e) {
-                        throw new IllegalStateException("Download deposit history failed.", e);
-                    }
+            String lastDepositId = entry.getValue().lastDepositId;
+            String lastWithdrawalId = entry.getValue().lastWithdrawalId;
 
-                    if (depositRecords.isEmpty()) {
-                        break;
+            while (true) {
+                params.setStartId(lastDepositId);
+                List<FundingRecord> depositRecords = new ArrayList<>();
+                try {
+                    if (accountService instanceof CoinbaseAccountServiceCDP cdpKeys) {
+                        depositRecords = cdpKeys.getDepositHistory(params, walletId);
+                    } else if (accountService instanceof CoinbaseAccountService legacyKeys) {
+                        depositRecords = legacyKeys.getDepositHistory(params, walletId);
                     }
-
-                    fundingRecords.addAll(depositRecords);
-                    lastDepositId = depositRecords.get(depositRecords.size() - 1).getInternalId();
+                } catch (IOException e) {
+                    throw new IllegalStateException("Download deposit history failed.", e);
                 }
-
-                while (sentRequests < MAX_REQUEST_COUNT_DEPOSIT_WITHDRAWALS) {
-                    ++sentRequests;
-                    params.setStartId(lastWithdrawalId);
-                    List<FundingRecord> withdrawalRecords = new ArrayList<>();
-                    try {
-                        if (accountService instanceof CoinbaseAccountServiceCDP cdpKeys) {
-                            withdrawalRecords = cdpKeys.getWithdrawalHistory(params, walletId);
-                        } else if (accountService instanceof CoinbaseAccountService legacyKeys) {
-                            withdrawalRecords = legacyKeys.getWithdrawalHistory(params, walletId);
-                        }
-                    } catch (IOException e) {
-                        throw new IllegalStateException("Download sells history failed.", e);
-                    }
-
-                    if (withdrawalRecords.isEmpty()) {
-                        break;
-                    }
-
-                    fundingRecords.addAll(withdrawalRecords);
-                    lastWithdrawalId = withdrawalRecords.get(withdrawalRecords.size() - 1).getInternalId();
-
+                if (depositRecords.isEmpty()) {
+                    break;
                 }
-                if (sentRequests == MAX_REQUEST_COUNT) {
-                    LOG.info("Max request count {} has been achieved.", MAX_REQUEST_COUNT);
-                }
-
-                walletState.lastDepositId = lastDepositId;
-                walletState.lastWithdrawalId = lastWithdrawalId;
-
-                walletRequests++;
-                walletState.lastFundingWalletUpdate = String.valueOf(new Date().getTime());
+                fundingRecords.addAll(depositRecords);
+                lastDepositId = depositRecords.get(depositRecords.size() - 1).getInternalId();
             }
+
+            while (true) {
+                params.setStartId(lastWithdrawalId);
+                List<FundingRecord> withdrawalRecords = new ArrayList<>();
+                try {
+                    if (accountService instanceof CoinbaseAccountServiceCDP cdpKeys) {
+                        withdrawalRecords = cdpKeys.getWithdrawalHistory(params, walletId);
+                    } else if (accountService instanceof CoinbaseAccountService legacyKeys) {
+                        withdrawalRecords = legacyKeys.getWithdrawalHistory(params, walletId);
+                    }
+                } catch (IOException e) {
+                    throw new IllegalStateException("Download sells history failed.", e);
+                }
+                if (withdrawalRecords.isEmpty()) {
+                    break;
+                }
+                fundingRecords.addAll(withdrawalRecords);
+                lastWithdrawalId = withdrawalRecords.get(withdrawalRecords.size() - 1).getInternalId();
+            }
+
+            walletState.lastDepositId = lastDepositId;
+            walletState.lastWithdrawalId = lastWithdrawalId;
+
+            walletState.lastFundingWalletUpdate = String.valueOf(new Date().getTime());
         }
+
         return fundingRecords;
     }
 
