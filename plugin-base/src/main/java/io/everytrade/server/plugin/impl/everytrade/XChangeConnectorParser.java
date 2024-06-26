@@ -139,11 +139,10 @@ public class XChangeConnectorParser {
                     }
                 } catch (DataIgnoredException e) {
                     //ignore
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     logParsingError(e, problems, cb.toString());
                 }
-            });
+        });
 
         Map<String, List<CoinbaseShowTransactionV2>> tradeTx = tx.stream()
             .filter(t -> t.getType().equalsIgnoreCase("trade"))
