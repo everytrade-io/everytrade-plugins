@@ -22,7 +22,7 @@ import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 
-public class PoloniexBeanTest {
+public class PoloniexBeanV3Test {
     private static final String HEADER_BUY_SELL = "create_time,trade_id,market,buyer_wallet,side,price,amount,fee,fee_currency,fee_total\n";
     private static final String HEADER_DEPOSIT = "f_created_at,currency,f_amount,f_address,f_status\n";
     private static final String HEADER_WITHDRAWAL = "f_date,currency,f_amount,f_feededucted,f_status\n";
@@ -64,7 +64,7 @@ public class PoloniexBeanTest {
     @Test
     void testSell() {
         final String row0 = "2017-09-02 22:02:46,224008205,USDTLTC,exchange,Sell,73.536038189999999000,0.100000000000000010,0.0015," +
-            "USDT,0.00015000000000000004\n";
+            "LTC,0.00015000000000000004\n";
         var actual = ParserTestUtils.getParseResult(HEADER_BUY_SELL + row0);
 
         final TransactionCluster expected = new TransactionCluster(
@@ -83,11 +83,11 @@ public class PoloniexBeanTest {
                 new FeeRebateImportedTransactionBean(
                     null,
                     Instant.parse("2017-09-02T22:02:46Z"),
-                    USDT,
-                    USDT,
+                    LTC,
+                    LTC,
                     FEE,
                     new BigDecimal("0.00015000000000000"),
-                    USDT
+                    LTC
                 )
             )
         );
