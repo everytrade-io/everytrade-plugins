@@ -8,6 +8,7 @@ import io.everytrade.server.plugin.api.parser.ParseResult;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.ParsingProblemType;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataStatusException;
 import org.knowm.xchange.bittrex.dto.account.BittrexDepositHistory;
 import org.knowm.xchange.bittrex.dto.account.BittrexWithdrawalHistory;
@@ -136,7 +137,10 @@ public class XChangeConnectorParser {
                             //ignore
                         }
                     }
-                } catch (Exception e) {
+                } catch (DataIgnoredException e) {
+                    //ignore
+                }
+                catch (Exception e) {
                     logParsingError(e, problems, cb.toString());
                 }
             });
