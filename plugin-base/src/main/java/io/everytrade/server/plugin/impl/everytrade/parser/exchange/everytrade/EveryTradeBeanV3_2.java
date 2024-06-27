@@ -74,25 +74,61 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
         FORMATTER_MAP.put(
             Pattern.compile("\\d{2}\\.\\d{2}\\.\\d{4} \\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
         FORMATTER_MAP.put(
+            Pattern.compile("\\d\\.\\d\\.\\d{4} \\d{2}:\\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("d.M.yyyy HH:mm:ss"));
+        FORMATTER_MAP.put(
+            Pattern.compile("\\d\\.\\d\\.\\d{4} \\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("d.M.yyyy HH:mm"));
+        FORMATTER_MAP.put(
+            Pattern.compile("\\d\\.\\d\\.\\d{4}"), DateTimeFormatter.ofPattern("d.M.yyyy"));
+        FORMATTER_MAP.put(
             Pattern.compile("\\d{2}/\\d{2}/\\d{4} \\d{2}:\\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
         FORMATTER_MAP.put(
             Pattern.compile("\\d{2}/\\d{2}/\\d{4} \\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+        FORMATTER_MAP.put(
+            Pattern.compile("\\d/\\d/\\d{4} \\d{2}:\\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("d/M/yyyy HH:mm:ss"));
+        FORMATTER_MAP.put(
+            Pattern.compile("\\d/\\d/\\d{4} \\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("d/M/yyyy HH:mm"));
+        FORMATTER_MAP.put(
+            Pattern.compile("\\d/\\d/\\d{4}"), DateTimeFormatter.ofPattern("d/M/yyyy"));
         FORMATTER_MAP.put(
             Pattern.compile("\\d{2}-\\d{2}-\\d{4} \\d{2}:\\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
         FORMATTER_MAP.put(
             Pattern.compile("\\d{2}-\\d{2}-\\d{4} \\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"));
         FORMATTER_MAP.put(
+            Pattern.compile("\\d-\\d-\\d{4} \\d{2}:\\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("d-M-yyyy HH:mm:ss"));
+        FORMATTER_MAP.put(
+            Pattern.compile("\\d-\\d-\\d{4} \\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("d-M-yyyy HH:mm"));
+        FORMATTER_MAP.put(
+            Pattern.compile("\\d-\\d-\\d{4}"), DateTimeFormatter.ofPattern("d-M-yyyy"));
+        FORMATTER_MAP.put(
             Pattern.compile("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         FORMATTER_MAP.put(
             Pattern.compile("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        FORMATTER_MAP.put(
+            Pattern.compile("\\d{4}-\\d-\\d \\d{2}:\\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("yyyy-M-d HH:mm:ss"));
+        FORMATTER_MAP.put(
+            Pattern.compile("\\d{4}-\\d-\\d \\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("yyyy-M-d HH:mm"));
+        FORMATTER_MAP.put(
+            Pattern.compile("\\d{4}-\\d-\\d"), DateTimeFormatter.ofPattern("yyyy-M-d"));
         FORMATTER_MAP.put(
             Pattern.compile("\\d{4}/\\d{2}/\\d{2} \\d{2}:\\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
         FORMATTER_MAP.put(
             Pattern.compile("\\d{4}/\\d{2}/\\d{2} \\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm"));
         FORMATTER_MAP.put(
+            Pattern.compile("\\d{4}/\\d/\\d \\d{2}:\\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("yyyy/M/d HH:mm:ss"));
+        FORMATTER_MAP.put(
+            Pattern.compile("\\d{4}/\\d/\\d \\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("yyyy/M/d HH:mm"));
+        FORMATTER_MAP.put(
+            Pattern.compile("\\d{4}/\\d/\\d"), DateTimeFormatter.ofPattern("yyyy/M/d"));
+        FORMATTER_MAP.put(
             Pattern.compile("\\d{4}\\.\\d{2}\\.\\d{2} \\d{2}:\\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss"));
         FORMATTER_MAP.put(
             Pattern.compile("\\d{4}\\.\\d{2}\\.\\d{2} \\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm"));
+        FORMATTER_MAP.put(
+            Pattern.compile("\\d{4}\\.\\d\\.\\d \\d{2}:\\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("yyyy.M.d HH:mm:ss"));
+        FORMATTER_MAP.put(
+            Pattern.compile("\\d{4}\\.\\d\\.\\d \\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("yyyy.M.d HH:mm"));
+        FORMATTER_MAP.put(
+            Pattern.compile("\\d{4}\\.\\d\\.\\d"), DateTimeFormatter.ofPattern("yyyy.M.d"));
 
         // Date only formats
         FORMATTER_MAP.put(Pattern.compile("\\d{2}\\.\\d{2}\\.\\d{4}"), DateTimeFormatter.ofPattern("dd.MM.yyyy"));
