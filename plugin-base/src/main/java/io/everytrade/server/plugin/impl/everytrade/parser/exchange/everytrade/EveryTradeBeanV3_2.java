@@ -1,6 +1,5 @@
 package io.everytrade.server.plugin.impl.everytrade.parser.exchange.everytrade;
 
-import com.univocity.parsers.annotations.Format;
 import com.univocity.parsers.annotations.Headers;
 import com.univocity.parsers.annotations.Parsed;
 import com.univocity.parsers.common.DataValidationException;
@@ -12,13 +11,21 @@ import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.EverytradeCSVParserValidator;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
+import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 import static io.everytrade.server.model.TransactionType.AIRDROP;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
@@ -35,6 +42,7 @@ import static lombok.AccessLevel.PRIVATE;
     "ADDRESS_FROM", "ADDRESS_TO", "NOTE", "LABELS"
 }, extract = true)
 @FieldDefaults(level = PRIVATE)
+@ToString
 public class EveryTradeBeanV3_2 extends ExchangeBean {
 
     String uid;
@@ -55,31 +63,60 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
     ImportedTransactionBean main;
     List<ImportedTransactionBean> related;
 
+    private static final Map<Pattern, DateTimeFormatter> formatterMap = new HashMap<>();
+
+    static {
+        // Date and time formats
+        formatterMap.put(Pattern.compile("\\d{2}\\.\\d{2}\\.\\d{4} \\d{2}:\\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss"));
+        formatterMap.put(Pattern.compile("\\d{2}\\.\\d{2}\\.\\d{4} \\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
+        formatterMap.put(Pattern.compile("\\d{2}/\\d{2}/\\d{4} \\d{2}:\\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
+        formatterMap.put(Pattern.compile("\\d{2}/\\d{2}/\\d{4} \\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+        formatterMap.put(Pattern.compile("\\d{2}-\\d{2}-\\d{4} \\d{2}:\\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
+        formatterMap.put(Pattern.compile("\\d{2}-\\d{2}-\\d{4} \\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"));
+        formatterMap.put(Pattern.compile("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        formatterMap.put(Pattern.compile("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        formatterMap.put(Pattern.compile("\\d{4}/\\d{2}/\\d{2} \\d{2}:\\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
+        formatterMap.put(Pattern.compile("\\d{4}/\\d{2}/\\d{2} \\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm"));
+        formatterMap.put(Pattern.compile("\\d{4}\\.\\d{2}\\.\\d{2} \\d{2}:\\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss"));
+        formatterMap.put(Pattern.compile("\\d{4}\\.\\d{2}\\.\\d{2} \\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm"));
+
+        // Date only formats
+        formatterMap.put(Pattern.compile("\\d{2}\\.\\d{2}\\.\\d{4}"), DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+        formatterMap.put(Pattern.compile("\\d{2}/\\d{2}/\\d{4}"), DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        formatterMap.put(Pattern.compile("\\d{2}-\\d{2}-\\d{4}"), DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+        formatterMap.put(Pattern.compile("\\d{4}-\\d{2}-\\d{2}"), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        formatterMap.put(Pattern.compile("\\d{4}/\\d{2}/\\d{2}"), DateTimeFormatter.ofPattern("yyyy/MM/dd"));
+        formatterMap.put(Pattern.compile("\\d{4}\\.\\d{2}\\.\\d{2}"), DateTimeFormatter.ofPattern("yyyy.MM.dd"));
+    }
+
     @Parsed(field = "UID")
     public void setUid(String value) {
         uid = value;
     }
 
     @Parsed(field = "DATE")
-    @Format(formats = { //the longest format should be always first
-        "dd.MM.yyyy HH:mm:ss",
-        "dd.MM.yy HH:mm:ss",
-        "dd.MM.yy HH:mm",
-        "dd.MM.yy",
-        "dd/MM/yyyy HH:mm:ss",
-        "dd/MM/yyyy",
-        "dd-MM-yyyy HH:mm:ss",
-        "dd-MM-yyyy",
-        "yyyy-MM-dd HH:mm:ss",
-        "yyyy-MM-dd",
-        "yyyy/MM/dd HH:mm:ss",
-        "yyyy/MM/dd",
-        "yyyy.MM.dd HH:mm:ss",
-        "yyyy.MM.dd"
-    },
-        options = {"locale=US", "timezone=UTC"})
-    public void setDate(Date value) {
-        date = value.toInstant();
+    public void setDate(String value) {
+        for (Map.Entry<Pattern, DateTimeFormatter> entry : formatterMap.entrySet()) {
+            if (entry.getKey().matcher(value).matches()) {
+                DateTimeFormatter formatter = entry.getValue();
+                try {
+                    // Try parsing as LocalDateTime
+                    LocalDateTime localDateTime = LocalDateTime.parse(value, formatter);
+                    date = localDateTime.toInstant(ZoneOffset.UTC);
+                    return;
+                } catch (DateTimeParseException e) {
+                    // If parsing as LocalDateTime fails, try parsing as LocalDate
+                    try {
+                        LocalDate localDate = LocalDate.parse(value, formatter);
+                        date = localDate.atStartOfDay().toInstant(ZoneOffset.UTC);
+                        return;
+                    } catch (DateTimeParseException ex) {
+                        // Continue to next pattern
+                    }
+                }
+            }
+        }
+        throw new IllegalArgumentException("Invalid date format: " + value);
     }
 
     @Parsed(field = "SYMBOL")
@@ -258,7 +295,7 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
         if (action.equals(FEE) && fee.compareTo(ZERO) == 0 && quantity != null && quantity.compareTo(ZERO) != 0) {
             fee = quantity;
         }
-        FeeRebateImportedTransactionBean feeRebateImportedTransactionBean = new FeeRebateImportedTransactionBean(
+        return new FeeRebateImportedTransactionBean(
             unrelated ? uid : uid + FEE_UID_PART,
             date,
             feeCurrency != null ? feeCurrency : symbolBase,
@@ -270,7 +307,6 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
             null,
             labels
         );
-        return feeRebateImportedTransactionBean;
     }
 
     private FeeRebateImportedTransactionBean createRebateTransactionBean(boolean unrelated) {
@@ -297,7 +333,7 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
             action,
             quantity,
             null,
-            (note != null && note.length() > 0) ? note : null,
+            (note != null && !note.isEmpty()) ? note : null,
             null,
             labels
         );
