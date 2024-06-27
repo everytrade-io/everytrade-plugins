@@ -63,30 +63,44 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
     ImportedTransactionBean main;
     List<ImportedTransactionBean> related;
 
-    private static final Map<Pattern, DateTimeFormatter> formatterMap = new HashMap<>();
+    private static final Map<Pattern, DateTimeFormatter> FORMATTER_MAP = new HashMap<>();
 
     static {
         // Date and time formats
-        formatterMap.put(Pattern.compile("\\d{2}\\.\\d{2}\\.\\d{4} \\d{2}:\\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss"));
-        formatterMap.put(Pattern.compile("\\d{2}\\.\\d{2}\\.\\d{4} \\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
-        formatterMap.put(Pattern.compile("\\d{2}/\\d{2}/\\d{4} \\d{2}:\\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
-        formatterMap.put(Pattern.compile("\\d{2}/\\d{2}/\\d{4} \\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
-        formatterMap.put(Pattern.compile("\\d{2}-\\d{2}-\\d{4} \\d{2}:\\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
-        formatterMap.put(Pattern.compile("\\d{2}-\\d{2}-\\d{4} \\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"));
-        formatterMap.put(Pattern.compile("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        formatterMap.put(Pattern.compile("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
-        formatterMap.put(Pattern.compile("\\d{4}/\\d{2}/\\d{2} \\d{2}:\\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
-        formatterMap.put(Pattern.compile("\\d{4}/\\d{2}/\\d{2} \\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm"));
-        formatterMap.put(Pattern.compile("\\d{4}\\.\\d{2}\\.\\d{2} \\d{2}:\\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss"));
-        formatterMap.put(Pattern.compile("\\d{4}\\.\\d{2}\\.\\d{2} \\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm"));
+        FORMATTER_MAP.put(
+            Pattern.compile("\\d{2}\\.\\d{2}\\.\\d{4} \\d{2}:\\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss"));
+        FORMATTER_MAP.put(
+            Pattern.compile("\\d{2}\\.\\d\\.\\d{4} \\d{2}:\\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("dd.M.yyyy HH:mm:ss"));
+        FORMATTER_MAP.put(
+            Pattern.compile("\\d{2}\\.\\d{2}\\.\\d{4} \\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
+        FORMATTER_MAP.put(
+            Pattern.compile("\\d{2}/\\d{2}/\\d{4} \\d{2}:\\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
+        FORMATTER_MAP.put(
+            Pattern.compile("\\d{2}/\\d{2}/\\d{4} \\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+        FORMATTER_MAP.put(
+            Pattern.compile("\\d{2}-\\d{2}-\\d{4} \\d{2}:\\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
+        FORMATTER_MAP.put(
+            Pattern.compile("\\d{2}-\\d{2}-\\d{4} \\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"));
+        FORMATTER_MAP.put(
+            Pattern.compile("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        FORMATTER_MAP.put(
+            Pattern.compile("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        FORMATTER_MAP.put(
+            Pattern.compile("\\d{4}/\\d{2}/\\d{2} \\d{2}:\\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
+        FORMATTER_MAP.put(
+            Pattern.compile("\\d{4}/\\d{2}/\\d{2} \\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm"));
+        FORMATTER_MAP.put(
+            Pattern.compile("\\d{4}\\.\\d{2}\\.\\d{2} \\d{2}:\\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss"));
+        FORMATTER_MAP.put(
+            Pattern.compile("\\d{4}\\.\\d{2}\\.\\d{2} \\d{2}:\\d{2}"), DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm"));
 
         // Date only formats
-        formatterMap.put(Pattern.compile("\\d{2}\\.\\d{2}\\.\\d{4}"), DateTimeFormatter.ofPattern("dd.MM.yyyy"));
-        formatterMap.put(Pattern.compile("\\d{2}/\\d{2}/\\d{4}"), DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-        formatterMap.put(Pattern.compile("\\d{2}-\\d{2}-\\d{4}"), DateTimeFormatter.ofPattern("dd-MM-yyyy"));
-        formatterMap.put(Pattern.compile("\\d{4}-\\d{2}-\\d{2}"), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        formatterMap.put(Pattern.compile("\\d{4}/\\d{2}/\\d{2}"), DateTimeFormatter.ofPattern("yyyy/MM/dd"));
-        formatterMap.put(Pattern.compile("\\d{4}\\.\\d{2}\\.\\d{2}"), DateTimeFormatter.ofPattern("yyyy.MM.dd"));
+        FORMATTER_MAP.put(Pattern.compile("\\d{2}\\.\\d{2}\\.\\d{4}"), DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+        FORMATTER_MAP.put(Pattern.compile("\\d{2}/\\d{2}/\\d{4}"), DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        FORMATTER_MAP.put(Pattern.compile("\\d{2}-\\d{2}-\\d{4}"), DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+        FORMATTER_MAP.put(Pattern.compile("\\d{4}-\\d{2}-\\d{2}"), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        FORMATTER_MAP.put(Pattern.compile("\\d{4}/\\d{2}/\\d{2}"), DateTimeFormatter.ofPattern("yyyy/MM/dd"));
+        FORMATTER_MAP.put(Pattern.compile("\\d{4}\\.\\d{2}\\.\\d{2}"), DateTimeFormatter.ofPattern("yyyy.MM.dd"));
     }
 
     @Parsed(field = "UID")
@@ -96,16 +110,14 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
 
     @Parsed(field = "DATE")
     public void setDate(String value) {
-        for (Map.Entry<Pattern, DateTimeFormatter> entry : formatterMap.entrySet()) {
+        for (Map.Entry<Pattern, DateTimeFormatter> entry : FORMATTER_MAP.entrySet()) {
             if (entry.getKey().matcher(value).matches()) {
                 DateTimeFormatter formatter = entry.getValue();
                 try {
-                    // Try parsing as LocalDateTime
                     LocalDateTime localDateTime = LocalDateTime.parse(value, formatter);
                     date = localDateTime.toInstant(ZoneOffset.UTC);
                     return;
                 } catch (DateTimeParseException e) {
-                    // If parsing as LocalDateTime fails, try parsing as LocalDate
                     try {
                         LocalDate localDate = LocalDate.parse(value, formatter);
                         date = localDate.atStartOfDay().toInstant(ZoneOffset.UTC);
