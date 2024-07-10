@@ -23,6 +23,7 @@ import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binanc
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BNB_VAULT_REWARDS;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BUY;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BUY_CRYPTO;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BUY_CRYPTO_WITH_FIAT;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_C2C_TRANSFER;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_CARD_CASHBACK;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_CASHBACK_VOUCHER;
@@ -72,7 +73,8 @@ public class BinanceSwitcher {
         }
         if (List.of(OPERATION_TYPE_DEPOSIT.code, OPERATION_TYPE_FIAT_DEPOSIT.code, OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_REDEMPTION.code,
             OPERATION_TYPE_SAVING_DISTRIBUTION.code, OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_SUBSCRIPTION.code,
-            OPERATION_TYPE_SIMPLE_EARN_LOCKED_REDEMPTION.code, OPERATION_TYPE_DEPOSIT_FIAT_OCBS.code).contains(operationType)) {
+            OPERATION_TYPE_SIMPLE_EARN_LOCKED_REDEMPTION.code, OPERATION_TYPE_DEPOSIT_FIAT_OCBS.code,
+            OPERATION_TYPE_BUY_CRYPTO_WITH_FIAT.code).contains(operationType)) {
             return DEPOSIT;
         }
         if (List.of(OPERATION_TYPE_WITHDRAWAL.code, OPERATION_TYPE_FIAT_WITHDRAWAL.code, OPERATION_TYPE_FIAT_WITHDRAW.code,
@@ -103,11 +105,11 @@ public class BinanceSwitcher {
             || OPERATION_TYPE_CASHBACK_VOUCHER.code.equals(operationType)) {
             return REBATE;
         }
-        if (OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_INTEREST.code.equals(operationType)
-            || OPERATION_TYPE_SIMPLE_EARN_LOCKED_REWARDS.code.equals(operationType)) {
+        if (OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_INTEREST.code.equals(operationType)) {
             return EARNING;
         }
-        if (OPERATION_TYPE_STAKING_REWARDS.code.equals(operationType) || OPERATION_TYPE_ETH2_0_STAKING_REWARDS.code.equals(operationType)) {
+        if (OPERATION_TYPE_STAKING_REWARDS.code.equals(operationType) || OPERATION_TYPE_ETH2_0_STAKING_REWARDS.code.equals(operationType)
+            || OPERATION_TYPE_SIMPLE_EARN_LOCKED_REWARDS.code.equals(operationType)) {
             return STAKING_REWARD;
         }
         if (OPERATION_TYPE_STAKING_REDEMPTION.code.equals(operationType)) {

@@ -961,8 +961,7 @@ public class BinanceSortedGroupV4 {
                 newList.add(row);
                 rowsRebate.put(row.getCoin(), newList);
             }
-        } else if (row.getOriginalOperation().equals(OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_INTEREST.code)
-            || row.getOriginalOperation().equals(OPERATION_TYPE_SIMPLE_EARN_LOCKED_REWARDS.code)) {
+        } else if (row.getOriginalOperation().equals(OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_INTEREST.code)) {
             if (rowsEarnings.containsKey(row.getCoin())) {
                 rowsEarnings.get(row.getCoin()).add(row);
             } else {
