@@ -1105,7 +1105,7 @@ class BinanceBeanV4Test {
     }
 
     @Test
-    void testCryptoBuy2seconds() {
+    void testCryptoBuy2() {
         final String row0 = """
             "443796154","2023-03-15 12:30:56","Spot","Buy Crypto","CZK","9810.00000000","N01332481043188123648031554"
             "443796154","2023-03-15 12:30:57","Spot","Buy Crypto","CZK","-9810.00000000","N01332481043188123648031554"
