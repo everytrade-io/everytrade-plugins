@@ -26,6 +26,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.IMultiExchang
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.KrakenDoubleQuotesUnivocitySpecificParserV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.KrakenExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.OkxExchangeSpecificParser;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.SimpleCoinExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.anycoin.AnycoinBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.AquanowBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BinanceBeanV1;
@@ -44,6 +45,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.Coinbase
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.GeneralBytesBeanV3;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.HuobiBuySellBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.HuobiDepWdrlBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.simpleCoin.SimpleCoinBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.everytrade.EveryTradeBeanV3_3;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.okx.OkxBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OpenNodeV1;
@@ -719,6 +721,18 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                         .withSeparator(delimiter)
                 ))
                 .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(SimpleCoinBeanV1.class, delimiter))
+                .supportedExchange(SIMPLE_COIN)
+                .build());
+
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader
+                        .of("Date Created","Order Id","Client Email","Currency From","Currency To","Amount From","Amount To","Amount From" +
+                            " in EUR","Final Status","Date Done","From Tx Date","From Bank Account Number","From Tx Address","From Tx " +
+                            "Hash","From Tx Block Id","To Tx Date","To Tx Bank Account","To Tx Address","To Tx Hash","To Tx Block Id")
+                        .withSeparator(delimiter)
+                ))
+                .parserFactory(() -> new SimpleCoinExchangeSpecificParser(SimpleCoinBeanV2.class, delimiter))
                 .supportedExchange(SIMPLE_COIN)
                 .build());
 
