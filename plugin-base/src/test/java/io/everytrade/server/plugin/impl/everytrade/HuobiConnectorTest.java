@@ -6,7 +6,9 @@ import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.test.mock.HuobiExchangeMock;
 import org.junit.jupiter.api.Test;
 import org.knowm.xchange.dto.account.FundingRecord;
+import org.knowm.xchange.dto.marketdata.Trades;
 import org.knowm.xchange.dto.trade.UserTrade;
+import org.knowm.xchange.dto.trade.UserTrades;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -47,7 +49,8 @@ class HuobiConnectorTest {
         records.add(fundingRecord(DEPOSIT, TEN, BTC, ONE, ADDRESS));
         records.add(fundingRecord(WITHDRAWAL, TEN, BTC, ONE, ADDRESS));
 
-        var connector = new HuobiConnector(new HuobiExchangeMock(trades, records), "BTC/USD");
+        var connector = new HuobiConnector(new HuobiExchangeMock(
+            new UserTrades(trades, Trades.TradeSortType.SortByTimestamp), records), "BTC/USD");
         var result = connector.getTransactions(null);
 
         assertNotNull(result.getDownloadStateData());

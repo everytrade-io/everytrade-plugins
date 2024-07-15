@@ -7,6 +7,7 @@ import org.knowm.xchange.ExchangeSpecification;
 import org.knowm.xchange.dto.account.FundingRecord;
 import org.knowm.xchange.dto.meta.ExchangeMetaData;
 import org.knowm.xchange.dto.trade.UserTrade;
+import org.knowm.xchange.dto.trade.UserTrades;
 import org.knowm.xchange.exceptions.ExchangeException;
 import org.knowm.xchange.instrument.Instrument;
 import org.knowm.xchange.service.account.AccountService;
@@ -25,6 +26,7 @@ import static lombok.AccessLevel.PROTECTED;
 public abstract class KnowmExchangeMock implements Exchange {
 
     List<UserTrade> trades;
+    UserTrades trade;
     List<FundingRecord> fundingRecords;
     List<FundingRecord> staking = new ArrayList<>();
 
@@ -34,6 +36,13 @@ public abstract class KnowmExchangeMock implements Exchange {
     @SneakyThrows
     public KnowmExchangeMock(List<UserTrade> trades, List<FundingRecord> fundingRecords) {
         this.trades = trades;
+        this.fundingRecords = fundingRecords;
+        initMocks();
+    }
+
+    @SneakyThrows
+    public KnowmExchangeMock(UserTrades trade, List<FundingRecord> fundingRecords) {
+        this.trade = trade;
         this.fundingRecords = fundingRecords;
         initMocks();
     }
