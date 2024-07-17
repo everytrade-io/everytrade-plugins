@@ -16,7 +16,7 @@ import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 
-public class SimplecoinBeanV2Test {
+public class SimpleCoinBeanV2Test {
 
     private static final String HEADER = "Date Created,Order Id,Client Email,Currency From,Currency To,Amount From,Amount To," +
         "Amount From in EUR,Final Status,Date Done,From Tx Date,From Bank Account Number,From Tx Address,From Tx Hash,From Tx Block Id," +
