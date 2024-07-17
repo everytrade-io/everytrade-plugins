@@ -26,7 +26,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.IMultiExchang
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.KrakenDoubleQuotesUnivocitySpecificParserV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.KrakenExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.OkxExchangeSpecificParser;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.SimpleCoinExchangeSpecificParser;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.SimplecoinExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.anycoin.AnycoinBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.AquanowBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BinanceBeanV1;
@@ -45,7 +45,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.Coinbase
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.GeneralBytesBeanV3;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.HuobiBuySellBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.HuobiDepWdrlBeanV1;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.simpleCoin.SimpleCoinBeanV2;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.simpleCoin.SimplecoinBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.everytrade.EveryTradeBeanV3_3;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.okx.OkxBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.OpenNodeV1;
@@ -61,7 +61,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.Coinsqua
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinsquareBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.DVChainBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.KrakenBeanV2;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.SimpleCoinBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.SimplecoinBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.coinbank.CoinbankBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.everytrade.EveryTradeBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.everytrade.EveryTradeBeanV2;
@@ -127,7 +127,7 @@ import static io.everytrade.server.model.SupportedExchange.OPEN_NODE;
 import static io.everytrade.server.model.SupportedExchange.PAXFUL;
 import static io.everytrade.server.model.SupportedExchange.POLONIEX;
 import static io.everytrade.server.model.SupportedExchange.SHAKEPAY;
-import static io.everytrade.server.model.SupportedExchange.SIMPLE_COIN;
+import static io.everytrade.server.model.SupportedExchange.SIMPLECOIN;
 import static io.everytrade.server.plugin.api.parser.ParsingProblemType.PARSED_ROW_IGNORED;
 import static io.everytrade.server.plugin.api.parser.ParsingProblemType.ROW_PARSING_FAILED;
 import static java.util.Map.entry;
@@ -720,8 +720,8 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                             "To Amount", "Status", "Status direction", "Final status")
                         .withSeparator(delimiter)
                 ))
-                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(SimpleCoinBeanV1.class, delimiter))
-                .supportedExchange(SIMPLE_COIN)
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(SimplecoinBeanV1.class, delimiter))
+                .supportedExchange(SIMPLECOIN)
                 .build());
 
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
@@ -732,8 +732,8 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                             "Hash","From Tx Block Id","To Tx Date","To Tx Bank Account","To Tx Address","To Tx Hash","To Tx Block Id")
                         .withSeparator(delimiter)
                 ))
-                .parserFactory(() -> new SimpleCoinExchangeSpecificParser(SimpleCoinBeanV2.class, delimiter))
-                .supportedExchange(SIMPLE_COIN)
+                .parserFactory(() -> new SimplecoinExchangeSpecificParser(SimplecoinBeanV2.class, delimiter))
+                .supportedExchange(SIMPLECOIN)
                 .build());
 
             /* OpenNode */
