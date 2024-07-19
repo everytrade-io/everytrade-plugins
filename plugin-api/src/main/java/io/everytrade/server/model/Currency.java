@@ -883,7 +883,13 @@ public enum Currency {
     ANDY(false, Instant.parse("2024-02-11T00:00:00Z"), "Andy on ETH"),
     GARA(false, Instant.parse("2023-11-11T00:00:00Z"), "Gara"),
     EEZY(false, Instant.parse("2023-04-05T00:00:00Z"), "EEZY"),
-    ;
+    DYM(false, Instant.parse("2024-02-02T00:00:00Z"), "Dymension"),
+    ALT(false, Instant.parse("2024-01-24T00:00:00Z"), "AltLayer"),
+    LEO(false, Instant.parse("2019-05-16T00:00:00Z"), "LEO Token"),
+    TON(false, Instant.parse("2021-09-16T00:00:00Z"), "Toncoin"),
+    BTCB(false, Instant.parse("2021-05-27T00:00:00Z"), "Binance Bitcoin"),
+    OKB(false, Instant.parse("2019-01-16T00:00:00Z"), "OKB"),
+    FDUSD(false, Instant.parse("2023-08-15T00:00:00Z"), "First Digital USD");
 
 
     String code;
