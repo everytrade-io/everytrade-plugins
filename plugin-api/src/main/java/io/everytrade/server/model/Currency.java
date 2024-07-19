@@ -874,7 +874,14 @@ public enum Currency {
     AZY(false, Instant.parse("2022-08-11T00:00:00Z"), "Amazy"),
     EDG(false, Instant.parse("2023-03-15T00:00:00Z"), "Edgeware"),
     FSN(false, Instant.parse("2018-03-07T00:00:00Z"), "Fusion"),
-    POLYX(false, Instant.parse("2022-08-25T00:00:00Z"), "Polymesh");
+    POLYX(false, Instant.parse("2022-08-25T00:00:00Z"), "Polymesh"),
+    DYM(false, Instant.parse("2024-02-02T00:00:00Z"), "Dymension"),
+    ALT(false, Instant.parse("2024-01-24T00:00:00Z"), "AltLayer"),
+    LEO(false, Instant.parse("2019-05-16T00:00:00Z"), "LEO Token"),
+    TON(false, Instant.parse("2021-09-16T00:00:00Z"), "Toncoin"),
+    BTCB(false, Instant.parse("2021-05-27T00:00:00Z"), "Binance Bitcoin"),
+    OKB(false, Instant.parse("2019-01-16T00:00:00Z"), "OKB"),
+    FDUSD(false, Instant.parse("2023-08-15T00:00:00Z"), "First Digital USD");
 
 
     String code;
