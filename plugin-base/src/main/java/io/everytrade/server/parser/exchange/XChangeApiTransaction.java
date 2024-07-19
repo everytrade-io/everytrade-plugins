@@ -84,7 +84,7 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
             .timestamp(record.getDate().toInstant())
             .type(fundingTypeToTxType(record))
             .base(currency)
-            .quote(null)
+            .quote(currency)
             .originalAmount(record.getAmount())
             .feeAmount(record.getFee())
             .feeCurrency(currency)

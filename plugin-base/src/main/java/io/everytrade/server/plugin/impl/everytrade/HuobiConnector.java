@@ -56,31 +56,51 @@ public class HuobiConnector implements IConnector {
             false
         );
 
+    private static final ConnectorParameterDescriptor PARAMETER_PAIRS_CHECKBOX =
+        new ConnectorParameterDescriptor(
+            "pairsCheckbox",
+            ConnectorParameterType.BOOLEAN,
+            UiKey.CONNECTION_CURRENCY_PAIRS_DESC,
+            "",
+            false
+        );
+
     public static final ConnectorDescriptor DESCRIPTOR = new ConnectorDescriptor(
         ID,
         "Huobi Connector",
         "api_connection.connector_note.huobi",
         SupportedExchange.HUOBI.getInternalId(),
-        List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET, PARAMETER_CURRENCY_PAIRS)
+        List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET, PARAMETER_CURRENCY_PAIRS, PARAMETER_PAIRS_CHECKBOX)
     );
 
     Exchange exchange;
     String currencyPairs;
+    boolean pairsCheckbox;
+
+    public HuobiConnector(Exchange exchange, String currencyPairs) {
+        this(exchange, currencyPairs, false);
+    }
 
     public HuobiConnector(Map<String, String> parameters) {
         this(
             parameters.get(PARAMETER_API_KEY.getId()),
             parameters.get(PARAMETER_API_SECRET.getId()),
-            parameters.get(PARAMETER_CURRENCY_PAIRS.getId())
+            parameters.get(PARAMETER_CURRENCY_PAIRS.getId()),
+            Boolean.parseBoolean(parameters.get(PARAMETER_PAIRS_CHECKBOX.getId()))
         );
     }
 
-    public HuobiConnector(@NonNull String apiKey, @NonNull String apiSecret, @NonNull String currencyPairs) {
+    public HuobiConnector(@NonNull String apiKey, @NonNull String apiSecret, String currencyPairs, boolean pairsCheckbox) {
         final ExchangeSpecification exSpec = new HuobiExchange().getDefaultExchangeSpecification();
         exSpec.setApiKey(apiKey);
         exSpec.setSecretKey(apiSecret);
         this.exchange = ExchangeFactory.INSTANCE.createExchange(exSpec);
         this.currencyPairs = currencyPairs;
+        this.pairsCheckbox = pairsCheckbox;
+    }
+
+    public HuobiConnector(@NonNull String apiKey, @NonNull String apiSecret, @NonNull String currencyPairs) {
+        this(apiKey, apiSecret, currencyPairs, false);
     }
 
     @Override
