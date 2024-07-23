@@ -1,4 +1,4 @@
-package io.everytrade.server.plugin.impl.everytrade.parser.exchange.simpleCoin;
+package io.everytrade.server.plugin.impl.everytrade.parser.exchange.simplecoin;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -9,10 +9,10 @@ import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 
-public class SimpleCoinSortedGroup {
+public class SimplecoinSortedGroup {
 
-    public static List<SimpleCoinBeanV2> createBuyTx(SimpleCoinBeanV2 row) {
-        List<SimpleCoinBeanV2> result = new ArrayList<>();
+    public static List<SimplecoinBeanV2> createBuyTx(SimplecoinBeanV2 row) {
+        List<SimplecoinBeanV2> result = new ArrayList<>();
         row.setTransactionType(BUY);
         row.setBaseAmount(row.getAmountTo().abs());
         row.setQuoteAmount(row.getAmountFrom().abs());
@@ -22,8 +22,8 @@ public class SimpleCoinSortedGroup {
         return createWithdrawDepositBean(row, result);
     }
 
-    public static List<SimpleCoinBeanV2> createSellTx(SimpleCoinBeanV2 row) {
-        List<SimpleCoinBeanV2> result = new ArrayList<>();
+    public static List<SimplecoinBeanV2> createSellTx(SimplecoinBeanV2 row) {
+        List<SimplecoinBeanV2> result = new ArrayList<>();
         row.setTransactionType(SELL);
         row.setBaseAmount(row.getAmountFrom().abs());
         row.setQuoteAmount(row.getAmountTo().abs());
@@ -33,9 +33,9 @@ public class SimpleCoinSortedGroup {
         return createWithdrawDepositBean(row, result);
     }
 
-    private static List<SimpleCoinBeanV2> createWithdrawDepositBean(SimpleCoinBeanV2 row, List<SimpleCoinBeanV2> result) {
+    private static List<SimplecoinBeanV2> createWithdrawDepositBean(SimplecoinBeanV2 row, List<SimplecoinBeanV2> result) {
         try {
-            SimpleCoinBeanV2 deposit = (SimpleCoinBeanV2) row.clone();
+            SimplecoinBeanV2 deposit = (SimplecoinBeanV2) row.clone();
             deposit.setTransactionType(DEPOSIT);
             deposit.setDateDone(row.getFromTxDate() == null
                 ? Date.from(row.getDateDone().minusSeconds(1))
@@ -44,7 +44,7 @@ public class SimpleCoinSortedGroup {
             deposit.setBaseCurrency(row.getCurrencyFrom());
             deposit.setQuoteCurrency(row.getCurrencyFrom());
 
-            SimpleCoinBeanV2 withdraw = (SimpleCoinBeanV2) row.clone();
+            SimplecoinBeanV2 withdraw = (SimplecoinBeanV2) row.clone();
             withdraw.setTransactionType(WITHDRAWAL);
             withdraw.setDateDone(row.getToTxDate() == null
                 ? Date.from(row.getDateDone().plusSeconds(1))
