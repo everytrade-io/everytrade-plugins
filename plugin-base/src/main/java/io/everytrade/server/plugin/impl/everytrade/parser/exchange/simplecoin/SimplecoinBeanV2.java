@@ -1,4 +1,4 @@
-package io.everytrade.server.plugin.impl.everytrade.parser.exchange.simpleCoin;
+package io.everytrade.server.plugin.impl.everytrade.parser.exchange.simplecoin;
 
 import com.univocity.parsers.annotations.Format;
 import com.univocity.parsers.annotations.Parsed;
