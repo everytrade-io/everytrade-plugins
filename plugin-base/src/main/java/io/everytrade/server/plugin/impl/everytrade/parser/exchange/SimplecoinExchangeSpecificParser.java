@@ -3,7 +3,6 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.simplecoin.SimplecoinBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.simplecoin.SimplecoinSortedGroup;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -11,7 +10,7 @@ import java.util.Map;
 public class SimplecoinExchangeSpecificParser extends DefaultUnivocityExchangeSpecificParser implements IExchangeSpecificParser,
     IMultiExchangeSpecificParser<SimplecoinBeanV2> {
 
-    List<SimplecoinBeanV2> filteredRows = new ArrayList<>();
+    List<SimplecoinBeanV2> filteredRows = new LinkedList<>();
     List<SimplecoinBeanV2> unSupportedRows = new LinkedList<>();
 
     public SimplecoinExchangeSpecificParser(Class<? extends ExchangeBean> exchangeBean, String delimiter) {
