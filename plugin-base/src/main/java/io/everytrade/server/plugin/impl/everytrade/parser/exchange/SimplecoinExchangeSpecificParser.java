@@ -11,7 +11,7 @@ public class SimplecoinExchangeSpecificParser extends DefaultUnivocityExchangeSp
     IMultiExchangeSpecificParser<SimplecoinBeanV2> {
 
     List<SimplecoinBeanV2> filteredRows = new LinkedList<>();
-    List<SimplecoinBeanV2> unSup portedRows = new LinkedList<>();
+    List<SimplecoinBeanV2> unSupportedRows = new LinkedList<>();
 
     public SimplecoinExchangeSpecificParser(Class<? extends ExchangeBean> exchangeBean, String delimiter) {
         super(exchangeBean, delimiter);
