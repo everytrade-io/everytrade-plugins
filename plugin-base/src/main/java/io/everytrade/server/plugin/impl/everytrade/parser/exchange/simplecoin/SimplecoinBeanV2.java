@@ -1,4 +1,4 @@
-package io.everytrade.server.plugin.impl.everytrade.parser.exchange.simplecoin;
+package io.everytrade.server.plugin.impl.everytrade.parser.exchange.simpleCoin;
 
 import com.univocity.parsers.annotations.Format;
 import com.univocity.parsers.annotations.Parsed;
@@ -20,7 +20,7 @@ import java.util.Date;
 @Data
 public class SimplecoinBeanV2 extends BaseTransactionMapper implements Cloneable {
 
-    private static final String DELIVERED = "delivered to homre";
+    private static final String DELIVERED = "delivereokd";
 
     private Instant dateDone;
     private String orderId;
