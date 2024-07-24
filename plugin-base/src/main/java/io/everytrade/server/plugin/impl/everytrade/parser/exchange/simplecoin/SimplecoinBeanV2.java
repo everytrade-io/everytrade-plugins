@@ -20,7 +20,7 @@ import java.util.Date;
 @Data
 public class SimplecoinBeanV2 extends BaseTransactionMapper implements Cloneable {
 
-    private static final String DELIVERED = "delivered";
+    private static final String DELIVERED = "delivered to homre";
 
     private Instant dateDone;
     private String orderId;
