@@ -38,8 +38,8 @@ class EveryTradeBeanV3_2Test {
     private static final String HEADER_CORRECT =
         "UID;DATE;SYMBOL;ACTION;QUANTITY;UNIT_PRICE;VOLUME_QUOTE;FEE;FEE_CURRENCY;REBATE;REBATE_CURRENCY;ADDRESS_FROM;ADDRESS_TO;NOTE;" +
             "LABELS\n";
-    private static final String HEADER_DATE_UPDATED = "UID,DATE,SYMBOL,ACTION,QUANTITY,UNIT_PRICE,VOLUME_QUOTE,FEE,FEE_CURRENCY,REBATE," +
-    "REBATE_CURRENCY,ADDRESS_FROM,ADDRESS_TO,NOTE,LABELS\n";
+    private static final String HEADER_COMMA_SEPARATED = "UID,DATE,SYMBOL,ACTION,QUANTITY,UNIT_PRICE,VOLUME_QUOTE,FEE,FEE_CURRENCY," +
+        "REBATE,REBATE_CURRENCY,ADDRESS_FROM,ADDRESS_TO,NOTE,LABELS\n";
 
     @Test
     void testCorrectHeader() {
@@ -766,7 +766,7 @@ class EveryTradeBeanV3_2Test {
     void testNewDateFormat() {
         var row = "1,31.12.2023,Axl,STAKE REWARD,12167.60559,,,0.0014,Axl,,,axelar1jv65s3grqf6v6jl3dp4t6c9t9rk99cd8r3j5z7," +
             "axelar1cwhkdnf59gp58637xfvwp57xlr9g26rhgp8p7d,,\n";
-        var actual = ParserTestUtils.getTransactionCluster(HEADER_DATE_UPDATED + row);
+        var actual = ParserTestUtils.getTransactionCluster(HEADER_COMMA_SEPARATED + row);
         var expected = new TransactionCluster(
             ImportedTransactionBean.createDepositWithdrawal(
                 "1",

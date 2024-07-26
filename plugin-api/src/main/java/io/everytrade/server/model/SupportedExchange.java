@@ -42,7 +42,7 @@ public enum SupportedExchange {
     BLOCKCHAINLTC("Blockchain LTC", "blockchainltc"),
     DVCHAIN("DV Chain", "dvchain"),
     AQUANOW("Aquanow", "aquanow"),
-    SIMPLE_COIN("SimpleCoin", "simplecoin"),
+    SIMPLECOIN("Simplecoin", "simplecoin"),
     OPEN_NODE("OpenNode", "opennode"),
     KUCOIN("KuCoin", "kucoin"),
     BITCOINRD("BitcoinRD", "bitcoinrd");

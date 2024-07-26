@@ -21,7 +21,7 @@ import java.util.Date;
         , "To currency", "To Amount", "Status", "Status direction", "Final status"},
     extract = true
 )
-public class SimpleCoinBeanV1 extends ExchangeBean {
+public class SimplecoinBeanV1 extends ExchangeBean {
     private String orderId;
     private Instant createdAt;
     private Currency fromCurrency;
