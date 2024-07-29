@@ -41,7 +41,7 @@ public class HuobiDownloader {
         List<String> pairs = new ArrayList<>();
         if (currencyPairs != null) {
            pairs = Arrays.stream(currencyPairs.split(","))
-                .map(x -> x.replace("/", "").toLowerCase())
+                .map(x -> x.replace("/", "").toLowerCase().trim())
                 .toList();
         }
         HuobiAssetPair[] symbolPairs = HuobiUtils.getHuobiSymbolPairs();
