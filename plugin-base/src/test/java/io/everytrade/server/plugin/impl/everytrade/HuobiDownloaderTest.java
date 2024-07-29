@@ -54,7 +54,7 @@ class HuobiDownloaderTest {
         final List<UserTrade> downloaded = huobiDownloader.downloadTrades("LTC/USD", state);
         downloaded.sort(HuobiTestUtils::compareDesc);
         assertTrue(HuobiTestUtils.checkAll(expected, downloaded));
-        final String expectedTx = "LTC/USD=2024-07-13:::|ltcusd=2024-01-18:::";
+        final String expectedTx = "LTC/USD="+LocalDate.now(ZoneOffset.UTC).minusDays(2)+":::|ltcusd="+state.get("ltcusd");
         final String actual = HuobiDownloadState.serializeState(state);
         assertEquals(expectedTx, actual);
     }
@@ -70,7 +70,7 @@ class HuobiDownloaderTest {
         final List<UserTrade> downloaded = huobiDownloader.downloadTrades("LTC/USD", state);
         downloaded.sort(HuobiTestUtils::compareDesc);
         assertTrue(HuobiTestUtils.checkAll(expected, downloaded));
-        final String expectedTx = "LTC/USD=2024-07-12:::|ltcusd=2024-01-18:::";
+        final String expectedTx = "LTC/USD="+LocalDate.now(ZoneOffset.UTC).minusDays(3)+":::|ltcusd="+state.get("ltcusd");
         final String actual = HuobiDownloadState.serializeState(state);
         assertEquals(expectedTx, actual);
     }
@@ -87,7 +87,7 @@ class HuobiDownloaderTest {
         final List<UserTrade> downloaded = huobiDownloader.downloadTrades("LTC/USD", state);
         downloaded.sort(HuobiTestUtils::compareDesc);
         assertTrue(HuobiTestUtils.checkAll(expected, downloaded));
-        final String expectedTx = "LTC/USD=2024-07-15:1::|ltcusd=2024-01-18::2:3";
+        final String expectedTx = "LTC/USD="+LocalDate.now(ZoneOffset.UTC)+":1::|ltcusd=" + state.get("ltcusd");
         final String actual = HuobiDownloadState.serializeState(state);
         assertEquals(expectedTx, actual);
     }
@@ -104,7 +104,7 @@ class HuobiDownloaderTest {
         final List<UserTrade> downloaded = huobiDownloader.downloadTrades("LTC/USD", state);
         downloaded.sort(HuobiTestUtils::compareDesc);
         assertTrue(HuobiTestUtils.checkAll(expected, downloaded));
-        final String expectedTx = "LTC/USD=2024-07-15::2:3|ltcusd=2024-01-20:::";
+        final String expectedTx = "LTC/USD="+LocalDate.now(ZoneOffset.UTC)+"::2:3|ltcusd=" + state.get("ltcusd");
         final String actual = HuobiDownloadState.serializeState(state);
         assertEquals(expectedTx, actual);
     }
@@ -133,7 +133,8 @@ class HuobiDownloaderTest {
         final List<UserTrade> downloaded = huobiDownloader.downloadTrades("LTC/USD, LTC/BTC", state);
         downloaded.sort(HuobiTestUtils::compareDesc);
         assertTrue(HuobiTestUtils.checkAll(expected, downloaded));
-        final String expectedTx = "LTC/USD=2024-07-13:3::| ltcbtc=2024-01-18:::|ltcusd=2024-01-18::0:3|LTC/BTC=2024-07-13:0::";
+        final String expectedTx = "LTC/USD="+LocalDate.now(ZoneOffset.UTC).minusDays(2)+":3::|" +
+            "ltcusd="+state.get("ltcusd")+"|LTC/BTC="+LocalDate.now(ZoneOffset.UTC).minusDays(2)+":0::|ltcbtc="+state.get("ltcbtc");
         final String actual = HuobiDownloadState.serializeState(state);
         assertEquals(expectedTx, actual);
     }
