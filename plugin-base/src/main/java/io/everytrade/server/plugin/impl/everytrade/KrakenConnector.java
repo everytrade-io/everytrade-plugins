@@ -31,17 +31,22 @@ import org.knowm.xchange.kraken.dto.account.DepostitStatus;
 import org.knowm.xchange.kraken.dto.account.KrakenLedger;
 import org.knowm.xchange.kraken.dto.account.LedgerType;
 import org.knowm.xchange.kraken.dto.account.WithdrawStatus;
+import org.knowm.xchange.kraken.dto.trade.KrakenOrderType;
+import org.knowm.xchange.kraken.dto.trade.KrakenTrade;
+import org.knowm.xchange.kraken.dto.trade.KrakenType;
 import org.knowm.xchange.kraken.service.KrakenAccountService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -76,7 +81,7 @@ import static org.knowm.xchange.kraken.dto.account.LedgerType.TRADE;
 @FieldDefaults(makeFinal = true, level = PRIVATE)
 public class KrakenConnector implements IConnector {
     private static final Logger LOG = LoggerFactory.getLogger(KrakenConnector.class);
-    private static final String ID = WhaleBooksPlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "krkApiConnector";
+    private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "krkApiConnector";
     private static final String WRONG_NUMBER_OF_TRANSACTIONS = "wrong number of txs - expected (1x RECEIVE and 1x SEND)";
     private static final String SPEND_POSITIVE_NUMBER = "Spend - transaction amount must be negative";
     private static final String RECEIVE_POSITIVE_NUMBER = "Receive - transaction amount must be positive";

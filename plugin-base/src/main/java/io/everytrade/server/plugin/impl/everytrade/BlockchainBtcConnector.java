@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Objects;
 
 public class BlockchainBtcConnector implements IConnector {
-    private static final String ID = WhaleBooksPlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "blockchainBtcApiConnector";
+    private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "blockchainBtcApiConnector";
 
     private static final ConnectorParameterDescriptor PARAMETER_ADDRESS =
         new ConnectorParameterDescriptor(

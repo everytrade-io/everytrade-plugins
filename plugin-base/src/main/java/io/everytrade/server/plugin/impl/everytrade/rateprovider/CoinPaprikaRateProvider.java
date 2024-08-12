@@ -11,7 +11,7 @@ import io.everytrade.server.plugin.api.rateprovider.IRateProvider;
 import io.everytrade.server.plugin.api.rateprovider.Rate;
 import io.everytrade.server.plugin.api.rateprovider.RateSourceType;
 import io.everytrade.server.plugin.api.rateprovider.RateValidity;
-import io.everytrade.server.plugin.impl.everytrade.WhaleBooksPlugin;
+import io.everytrade.server.plugin.impl.everytrade.EveryTradePlugin;
 import io.everytrade.server.plugin.utils.TimeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +48,7 @@ public final class CoinPaprikaRateProvider implements IRateProvider {
     private static Instant LAST_CALL = Instant.now();
 
     public static final RateValidity MIN_RATE_VALIDITY = RateValidity.QUARTER_HOUR;
-    public static final String ID = WhaleBooksPlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "coinPaprika";
+    public static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "coinPaprika";
 
     static {
         // coin ids can be viewed at https://api.coinpaprika.com/v1/coins

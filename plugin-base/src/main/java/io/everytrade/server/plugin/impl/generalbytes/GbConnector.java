@@ -12,7 +12,7 @@ import io.everytrade.server.plugin.api.parser.ParseResult;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.ParsingProblemType;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
-import io.everytrade.server.plugin.impl.everytrade.WhaleBooksApiDigest;
+import io.everytrade.server.plugin.impl.everytrade.EveryTradeApiDigest;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,7 +95,7 @@ public class GbConnector implements IConnector {
         }
         api = RestProxyFactory.createProxy(IGbApi.class, url, getConfig());
         Objects.requireNonNull(this.apiKey = apiKey);
-        signer = new WhaleBooksApiDigest(Objects.requireNonNull(apiSecret));
+        signer = new EveryTradeApiDigest(Objects.requireNonNull(apiSecret));
     }
 
     public void setApi(IGbApi api) {

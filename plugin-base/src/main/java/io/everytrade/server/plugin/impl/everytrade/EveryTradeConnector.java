@@ -27,11 +27,11 @@ import java.util.Objects;
 import static lombok.AccessLevel.PRIVATE;
 
 @FieldDefaults(makeFinal = true, level = PRIVATE)
-public class WhaleBooksConnector implements IConnector {
+public class EveryTradeConnector implements IConnector {
 
-    private static final Logger LOG = LoggerFactory.getLogger(WhaleBooksConnector.class);
+    private static final Logger LOG = LoggerFactory.getLogger(EveryTradeConnector.class);
     private static final int MAX_FETCH_SIZE = 1_000;
-    private static final String ID = WhaleBooksPlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "etApiConnector";
+    private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "etApiConnector";
 
     private static final ConnectorParameterDescriptor PARAMETER_API_SECRET =
         new ConnectorParameterDescriptor(
@@ -69,7 +69,7 @@ public class WhaleBooksConnector implements IConnector {
     );
 
 
-    public WhaleBooksConnector(Map<String, String> parameters) {
+    public EveryTradeConnector(Map<String, String> parameters) {
         this(
             parameters.get(PARAMETER_URL.getId()),
             parameters.get(PARAMETER_API_KEY.getId()),
@@ -81,10 +81,10 @@ public class WhaleBooksConnector implements IConnector {
     String apiKey;
     ParamsDigest signer;
 
-    public WhaleBooksConnector(@NonNull String url, @NonNull String apiKey, @NonNull String apiSecret) {
+    public EveryTradeConnector(@NonNull String url, @NonNull String apiKey, @NonNull String apiSecret) {
         this.api = RestProxyFactory.createProxy(IEveryTradeApi.class, url);
         this.apiKey = apiKey;
-        this.signer = new WhaleBooksApiDigest(apiSecret);
+        this.signer = new EveryTradeApiDigest(apiSecret);
     }
 
     @Override

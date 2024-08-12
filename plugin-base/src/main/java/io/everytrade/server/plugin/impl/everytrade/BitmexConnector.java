@@ -13,6 +13,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.apache.commons.lang3.StringUtils;
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.ExchangeFactory;
 import org.knowm.xchange.bitmex.BitmexExchange;
@@ -48,7 +49,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 public class BitmexConnector implements IConnector {
     private static final Logger LOG = LoggerFactory.getLogger(BitmexConnector.class);
 
-    private static final String ID = WhaleBooksPlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "bitmexApiConnector";
+    private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "bitmexApiConnector";
     //https://www.bitmex.com/app/restAPI#Limits - max 60 requests per minute
     //30 --> 50% of user budget for one API connector instance
     private static final int MAX_REQUESTS = 30;

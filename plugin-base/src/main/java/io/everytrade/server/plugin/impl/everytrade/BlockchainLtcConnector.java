@@ -20,7 +20,7 @@ import static lombok.AccessLevel.PRIVATE;
 @AllArgsConstructor
 @FieldDefaults(makeFinal = true, level = PRIVATE)
 public class BlockchainLtcConnector implements IConnector {
-    private static final String ID = WhaleBooksPlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "blockchainLtcApiConnector";
+    private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "blockchainLtcApiConnector";
 
     private static final ConnectorParameterDescriptor PARAMETER_ADDRESS =
         new ConnectorParameterDescriptor(

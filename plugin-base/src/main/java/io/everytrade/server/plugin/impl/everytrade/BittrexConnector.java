@@ -37,7 +37,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 @AllArgsConstructor
 @FieldDefaults(level = PRIVATE, makeFinal = true)
 public class BittrexConnector implements IConnector {
-    private static final String ID = WhaleBooksPlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "bittrexApiConnector";
+    private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "bittrexApiConnector";
 
     private static final int DEPOSIT_WITHDRAWAL_PAGE_SIZE = 200;
     private static final int TRADE_PAGE_SIZE = 200;

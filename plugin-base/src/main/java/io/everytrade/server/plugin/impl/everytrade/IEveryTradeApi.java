@@ -17,7 +17,7 @@ public interface IEveryTradeApi {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("transactions/query")
-    WhaleBooksApiDto getTransactions(
+    EveryTradeApiDto getTransactions(
         @HeaderParam("API-Key") String apiKey,
         @HeaderParam("API-Sign") ParamsDigest signer,
         @FormParam("fromTransaction") String fromTransaction,

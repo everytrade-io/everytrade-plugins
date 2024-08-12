@@ -42,7 +42,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 @FieldDefaults(makeFinal = true, level = PRIVATE)
 public class BitfinexConnector implements IConnector {
 
-    private static final String ID = WhaleBooksPlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "bitfinexApiConnector";
+    private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "bitfinexApiConnector";
     //https://docs.bitfinex.com/reference#rest-public-trades - 30 request / 1 minute, than 60 s no resp.
     private static final int MAX_REQUEST_COUNT = 5;
     private static final int TX_PER_REQUEST = 1000;

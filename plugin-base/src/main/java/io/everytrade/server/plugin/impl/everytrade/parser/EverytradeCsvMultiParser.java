@@ -8,7 +8,7 @@ import io.everytrade.server.plugin.api.parser.ParserDescriptor;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.csv.CsvHeader;
-import io.everytrade.server.plugin.impl.everytrade.WhaleBooksPlugin;
+import io.everytrade.server.plugin.impl.everytrade.EveryTradePlugin;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.UnknownHeaderException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.AnycoinExchangeSpecificParserV1;
@@ -134,7 +134,7 @@ import static java.util.Map.entry;
 import static java.util.stream.Collectors.toMap;
 
 public class EverytradeCsvMultiParser implements ICsvParser {
-    private static final String ID = WhaleBooksPlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "everytradeParser";
+    private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "everytradeParser";
     private static final String DELIMITER_COMMA = ",";
     private static final String DELIMITER_SEMICOLON = ";";
     private static final String LINE_SEPARATOR = "\n";

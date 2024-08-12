@@ -17,12 +17,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Extension
-public class WhaleBooksPlugin implements IPlugin {
+public class EveryTradePlugin implements IPlugin {
     public static final String ID = "everytrade";
 
     private static final Map<String, ConnectorDescriptor> CONNECTORS_BY_ID =
         Set.of(
-            WhaleBooksConnector.DESCRIPTOR,
+            EveryTradeConnector.DESCRIPTOR,
             KrakenConnector.DESCRIPTOR,
             BitstampConnector.DESCRIPTOR,
             CoinmateConnector.DESCRIPTOR,
@@ -65,8 +65,8 @@ public class WhaleBooksPlugin implements IPlugin {
 
     @Override
     public IConnector createConnectorInstance(String connectorId, Map<String, String> parameters) {
-        if (connectorId.equals(WhaleBooksConnector.DESCRIPTOR.getId())) {
-            return new WhaleBooksConnector(parameters);
+        if (connectorId.equals(EveryTradeConnector.DESCRIPTOR.getId())) {
+            return new EveryTradeConnector(parameters);
         }
         if (connectorId.equals(KrakenConnector.DESCRIPTOR.getId())) {
             return new KrakenConnector(parameters);

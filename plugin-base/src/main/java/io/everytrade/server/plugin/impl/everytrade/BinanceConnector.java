@@ -28,7 +28,7 @@ import static lombok.AccessLevel.PRIVATE;
 public class BinanceConnector implements IConnector {
 
     private static final Object LOCK = new Object();
-    private static final String ID = WhaleBooksPlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "binanceApiConnector";
+    private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "binanceApiConnector";
     private static final int MAX_DOWNLOADED_TXS = 7000;
 
     private static final ConnectorParameterDescriptor PARAMETER_API_SECRET =

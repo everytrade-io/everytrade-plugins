@@ -35,7 +35,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 @FieldDefaults(level = PRIVATE, makeFinal = true)
 public class BitstampConnector implements IConnector {
 
-    private static final String ID = WhaleBooksPlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "bitstampApiConnector";
+    private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "bitstampApiConnector";
     //8000 req per 10 min - https://www.bitstamp.net/api/
     private static final int MAX_REQUEST_COUNT = 100;
     private static final int TXS_PER_REQUEST = 1000;
