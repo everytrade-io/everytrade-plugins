@@ -3,6 +3,7 @@ package io.everytrade.server;
 public class UiKey {
 
     public static final String CONNECTION_CURRENCY_PAIRS_DESC = "api_connection.currency_pairs";
+    public static final String CONNECTION_CURRENCY_PAIRS_SETTINGS = "api_connection.pair_settings";
     public static final String CONNECTION_USER_NAME = "api_connection.user_name";
     public static final String CONNECTION_WALLET_ADDR = "api_connection.wallet_address";
     public static final String CONNECTION_WALLET_ADDR_XPUB_KEY = "api_connection.wallet_address_xpub";
