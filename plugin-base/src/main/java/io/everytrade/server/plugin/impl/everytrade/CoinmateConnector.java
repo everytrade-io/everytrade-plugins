@@ -37,7 +37,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 @FieldDefaults(makeFinal = true, level = PRIVATE)
 public class CoinmateConnector implements IConnector {
 
-    private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "coinmateApiConnector";
+    private static final String ID = WhaleBooksPlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "coinmateApiConnector";
     private static final String SORT_DESC = "DESC";
     private static final long DELAY = 24 * 60 * 60 * 1000L;
     // MAX 100 request per minute per user, https://coinmate.docs.apiary.io/#reference/request-limits
