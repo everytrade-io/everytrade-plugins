@@ -18,7 +18,7 @@ import java.util.Map;
 @AllArgsConstructor
 public class BlockchainEthConnector implements IConnector {
     private static final Object LOCK = new Object();
-    private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "blockchainEthApiConnector";
+    private static final String ID = WhaleBooksPlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "blockchainEthApiConnector";
 
     private static final ConnectorParameterDescriptor PARAMETER_ADDRESS =
         new ConnectorParameterDescriptor(
