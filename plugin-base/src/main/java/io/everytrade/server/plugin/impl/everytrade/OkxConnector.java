@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.Objects;
 
 public class OkxConnector implements IConnector {
-    private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "okexApiConnector";
+    private static final String ID = WhaleBooksPlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "okexApiConnector";
 
     private static final ConnectorParameterDescriptor PARAMETER_API_SECRET =
         new ConnectorParameterDescriptor(

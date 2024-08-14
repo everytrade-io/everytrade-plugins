@@ -13,7 +13,7 @@ import static lombok.AccessLevel.PRIVATE;
 @Data
 @NoArgsConstructor
 @FieldDefaults(level = PRIVATE)
-public class EveryTradeApiDto {
+public class WhaleBooksApiDto {
     String[] header; //TODO: remove header?
     List<EveryTradeApiTransactionBean> transactions = new ArrayList<>();
 }
