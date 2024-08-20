@@ -68,7 +68,7 @@ public class HuobiConnector implements IConnector {
     public static final ConnectorDescriptor DESCRIPTOR = new ConnectorDescriptor(
         ID,
         "Huobi Connector",
-        "api_connection.connector_note.huobi",
+        "",
         SupportedExchange.HUOBI.getInternalId(),
         List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET, PARAMETER_PAIR_SETTINGS, PARAMETER_CURRENCY_PAIRS)
     );
