@@ -8,10 +8,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Objects;
 
-public class EveryTradeApiDigest extends BaseParamsDigest {
+public class WhaleBooksApiDigest extends BaseParamsDigest {
     private static final byte[] SPACE = " ".getBytes(StandardCharsets.UTF_8);
 
-    public EveryTradeApiDigest(String base64Key) {
+    public WhaleBooksApiDigest(String base64Key) {
         super(decodeBase64(Objects.requireNonNull(base64Key)), HMAC_SHA_512);
     }
 

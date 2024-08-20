@@ -27,7 +27,7 @@ import static lombok.AccessLevel.PRIVATE;
 @FieldDefaults(makeFinal = true, level = PRIVATE)
 public class HuobiConnector implements IConnector {
 
-    private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "huobiApiConnector";
+    private static final String ID = WhaleBooksPlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "huobiApiConnector";
 
     private static final ConnectorParameterDescriptor PARAMETER_API_SECRET =
         new ConnectorParameterDescriptor(
