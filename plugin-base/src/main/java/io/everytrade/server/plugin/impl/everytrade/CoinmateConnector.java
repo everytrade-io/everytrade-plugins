@@ -118,7 +118,7 @@ public class CoinmateConnector implements IConnector {
         setTxFromTimestamp(state);
         List<CoinmateTransactionHistoryEntry> allData = new ArrayList<>();
 
-        long now = (Instant.now().toEpochMilli() / 1000) * 1000;
+        long now = Instant.now().toEpochMilli();
         long txFrom = state.getTxFrom();
         long txTo = state.getTxTo() == 0L ? now : state.getTxTo();
         int offset = state.getOffset();
