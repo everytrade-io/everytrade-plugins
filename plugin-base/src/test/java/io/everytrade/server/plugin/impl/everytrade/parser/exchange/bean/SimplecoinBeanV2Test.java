@@ -24,7 +24,7 @@ public class SimplecoinBeanV2Test {
 
 
     @Test
-    void testBuy() {
+    void testBuyDepositWithdrawal() {
         final String row = "2024-04-19 21:03:34,190897,fakemail@email.com,CZK,BTC,10000.00000000,0.00626310,394.13,delivered," +
             "2024-04-23 12:31:09,,1980538010/3030,,,,2024-04-23 10:17:56,,bc1qk6zgk73295rfyw55qs3dw2r796xmv0dqzxh9m8," +
             "4eb28bceaaef3c76a1fc96ddc7822f43756bb2805e78dbb3cd101edf1ac029b5,840497\n";
@@ -49,7 +49,7 @@ public class SimplecoinBeanV2Test {
         final TransactionCluster expected1 = new TransactionCluster(
             new ImportedTransactionBean(
                 null,
-                Instant.parse("2024-04-23T10:17:56Z"),
+                Instant.parse("2024-04-23T12:31:10Z"),
                 BTC,
                 BTC,
                 WITHDRAWAL,
@@ -81,7 +81,7 @@ public class SimplecoinBeanV2Test {
     }
 
     @Test
-    void testSell() {
+    void testSellDepositWithdrawal() {
         final String row = "2021-12-22 21:08:46,136485,fakemail@email.com,ETH,CZK,0.11990000,10475.50000000,423.66,delivered,2021-12-22 " +
             "21:38:02,2021-12-22 20:17:25,,0x1A9D82eED6666bAc205FdF296349e1C1Ffc49B0D," +
             "0xa58ef61ad9437d10afb675ad2c0e3a948b51f03a4403f8f49fecd679cd60c92c,13857092,,1980538010/3030,,,\n";
@@ -91,7 +91,7 @@ public class SimplecoinBeanV2Test {
         final TransactionCluster expected = new TransactionCluster(
             new ImportedTransactionBean(
                 null,
-                Instant.parse("2021-12-22T20:17:25Z"),
+                Instant.parse("2021-12-22T21:38:01Z"),
                 ETH,
                 ETH,
                 DEPOSIT,
