@@ -27,7 +27,7 @@ import static lombok.AccessLevel.PRIVATE;
 @FieldDefaults(makeFinal = true, level = PRIVATE)
 public class HuobiConnector implements IConnector {
 
-    private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "huobiApiConnector";
+    private static final String ID = WhaleBooksPlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "huobiApiConnector";
 
     private static final ConnectorParameterDescriptor PARAMETER_API_SECRET =
         new ConnectorParameterDescriptor(
@@ -56,26 +56,26 @@ public class HuobiConnector implements IConnector {
             false
         );
 
-    private static final ConnectorParameterDescriptor PARAMETER_PAIRS_CHECKBOX =
+    private static final ConnectorParameterDescriptor PARAMETER_PAIR_SETTINGS =
         new ConnectorParameterDescriptor(
-            "pairsCheckbox",
+            "pairSettings",
             ConnectorParameterType.BOOLEAN,
-            UiKey.CONNECTION_CURRENCY_PAIRS_DESC,
+            UiKey.CONNECTION_CURRENCY_PAIRS_SETTINGS,
             "",
-            false
+            true
         );
 
     public static final ConnectorDescriptor DESCRIPTOR = new ConnectorDescriptor(
         ID,
         "Huobi Connector",
-        "api_connection.connector_note.huobi",
+        "",
         SupportedExchange.HUOBI.getInternalId(),
-        List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET, PARAMETER_CURRENCY_PAIRS, PARAMETER_PAIRS_CHECKBOX)
+        List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET, PARAMETER_PAIR_SETTINGS, PARAMETER_CURRENCY_PAIRS)
     );
 
     Exchange exchange;
     String currencyPairs;
-    boolean pairsCheckbox;
+    boolean pairSettings;
 
     public HuobiConnector(Exchange exchange, String currencyPairs) {
         this(exchange, currencyPairs, false);
@@ -86,17 +86,17 @@ public class HuobiConnector implements IConnector {
             parameters.get(PARAMETER_API_KEY.getId()),
             parameters.get(PARAMETER_API_SECRET.getId()),
             parameters.get(PARAMETER_CURRENCY_PAIRS.getId()),
-            Boolean.parseBoolean(parameters.get(PARAMETER_PAIRS_CHECKBOX.getId()))
+            Boolean.parseBoolean(parameters.get(PARAMETER_PAIR_SETTINGS.getId()))
         );
     }
 
-    public HuobiConnector(@NonNull String apiKey, @NonNull String apiSecret, String currencyPairs, boolean pairsCheckbox) {
+    public HuobiConnector(@NonNull String apiKey, @NonNull String apiSecret, String currencyPairs, boolean pairSettings) {
         final ExchangeSpecification exSpec = new HuobiExchange().getDefaultExchangeSpecification();
         exSpec.setApiKey(apiKey);
         exSpec.setSecretKey(apiSecret);
         this.exchange = ExchangeFactory.INSTANCE.createExchange(exSpec);
         this.currencyPairs = currencyPairs;
-        this.pairsCheckbox = pairsCheckbox;
+        this.pairSettings = pairSettings;
     }
 
     public HuobiConnector(@NonNull String apiKey, @NonNull String apiSecret, @NonNull String currencyPairs) {

@@ -889,7 +889,17 @@ public enum Currency {
     TON(false, Instant.parse("2021-09-16T00:00:00Z"), "Toncoin"),
     BTCB(false, Instant.parse("2021-05-27T00:00:00Z"), "Binance Bitcoin"),
     OKB(false, Instant.parse("2019-01-16T00:00:00Z"), "OKB"),
-    FDUSD(false, Instant.parse("2023-08-15T00:00:00Z"), "First Digital USD");
+    FDUSD(false, Instant.parse("2023-08-15T00:00:00Z"), "First Digital USD"),
+    PNDC(false, Instant.parse("2023-08-05T00:00:00Z"), "pndc-pond-coin"),
+    PIKA(false, Instant.parse("2023-05-18T00:00:00Z"), "pika-pikachueth"),
+    RAIL(false, Instant.parse("2021-09-09T00:00:00Z"), "rail-railgun"),
+    LOLA(false, Instant.parse("2024-02-29T00:00:00Z"), "lola-lola"),
+    FLEX(false, Instant.parse("2024-05-10T00:00:00Z"), "flex-flex"),
+    GROK(false, Instant.parse("2023-11-13T00:00:00Z"), "grok-grok-eth"),
+    TADPOLE(false, Instant.parse("2023-06-06T00:00:00Z"), "tadpole-tadpole"),
+    DREAM(false, Instant.parse("2024-06-14T00:00:00Z"), "dream-dream-cat"),
+    FAO(false, Instant.parse("2021-08-12T00:00:00Z"), "fao-farmer-and-one-farmer-and-one-token"),
+    VITALEK(false, Instant.parse("2024-03-12T00:00:00Z"), "vitalek-vitalek-buteren");
 
 
     String code;
