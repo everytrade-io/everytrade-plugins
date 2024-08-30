@@ -37,18 +37,14 @@ public class SimplecoinSortedGroup {
         try {
             SimplecoinBeanV2 deposit = (SimplecoinBeanV2) row.clone();
             deposit.setTransactionType(DEPOSIT);
-            deposit.setDateDone(row.getFromTxDate() == null
-                ? Date.from(row.getDateDone().minusSeconds(1))
-                : Date.from(row.getFromTxDate()));
+            deposit.setDateDone(Date.from(row.getDateDone().minusSeconds(1)));
             deposit.setBaseAmount(row.getAmountFrom().abs());
             deposit.setBaseCurrency(row.getCurrencyFrom());
             deposit.setQuoteCurrency(row.getCurrencyFrom());
 
             SimplecoinBeanV2 withdraw = (SimplecoinBeanV2) row.clone();
             withdraw.setTransactionType(WITHDRAWAL);
-            withdraw.setDateDone(row.getToTxDate() == null
-                ? Date.from(row.getDateDone().plusSeconds(1))
-                : Date.from(row.getToTxDate()));
+            withdraw.setDateDone(Date.from(row.getDateDone().plusSeconds(1)));
             withdraw.setBaseAmount(row.getAmountTo().abs());
             withdraw.setBaseCurrency(row.getCurrencyTo());
             withdraw.setQuoteCurrency(row.getCurrencyTo());
