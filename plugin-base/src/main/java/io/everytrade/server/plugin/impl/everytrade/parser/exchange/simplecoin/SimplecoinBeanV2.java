@@ -29,8 +29,6 @@ public class SimplecoinBeanV2 extends BaseTransactionMapper implements Cloneable
     private BigDecimal amountFrom;
     private BigDecimal amountTo;
     private String finalStatus;
-    private Instant fromTxDate;
-    private Instant toTxDate;
     private String fromBankAccountNumber;
     private String fromTxAddress;
 
@@ -78,22 +76,6 @@ public class SimplecoinBeanV2 extends BaseTransactionMapper implements Cloneable
             unsupportedRow = true;
         }
         this.finalStatus = finalStatus;
-    }
-
-    @Parsed(field = "From Tx Date")
-    @Format(formats = {"yyyy-MM-dd HH:mm:ss"}, options = {"locale=EN", "timezone=UTC"})
-    public void setFromTxDate(Date fromTxDate) {
-        if (fromTxDate != null) {
-            this.fromTxDate = fromTxDate.toInstant();
-        }
-    }
-
-    @Parsed(field = "To Tx Date")
-    @Format(formats = {"yyyy-MM-dd HH:mm:ss"}, options = {"locale=EN", "timezone=UTC"})
-    public void setToTxDate(Date toTxDate) {
-        if (toTxDate != null) {
-            this.toTxDate = toTxDate.toInstant();
-        }
     }
 
     @Parsed(field = "From Bank Account Number")
