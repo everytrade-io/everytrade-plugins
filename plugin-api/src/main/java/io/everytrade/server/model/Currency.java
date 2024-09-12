@@ -899,7 +899,10 @@ public enum Currency {
     TADPOLE(false, Instant.parse("2023-06-06T00:00:00Z"), "tadpole-tadpole"),
     DREAM(false, Instant.parse("2024-06-14T00:00:00Z"), "dream-dream-cat"),
     FAO(false, Instant.parse("2021-08-12T00:00:00Z"), "fao-farmer-and-one-farmer-and-one-token"),
-    VITALEK(false, Instant.parse("2024-03-12T00:00:00Z"), "vitalek-vitalek-buteren");
+    VITALEK(false, Instant.parse("2024-03-12T00:00:00Z"), "vitalek-vitalek-buteren"),
+    DACAT(false, Instant.parse("2024-01-23T00:00:00Z"), "daCat"),
+    ONDO(false, Instant.parse("2024-01-21T00:00:00Z"), "Ondo"),
+    BEBE(false, Instant.parse("2024-02-03T00:00:00Z"), "Baby Bitcoin");
 
 
     String code;
