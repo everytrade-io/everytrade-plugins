@@ -311,10 +311,13 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
             } else if ((currentKey.minusMillis(TRANSACTION_MERGE_TOLERANCE_MS).equals(previousKey)
                 || currentKey.minusMillis(TRANSACTION_MERGE_TOLERANCE_MS).isBefore(previousKey))) {
 
-                if (currentValues.get(0).getCoin().isFiat() && previousValues.get(0).getCoin().isFiat()
-                    && currentValues.get(0).getOperationType().equals(OPERATION_TYPE_BUY_CRYPTO)) {
+                if (currentValues.get(0).getCoin().isFiat()
+                    && previousValues.get(0).getCoin().isFiat()
+                    && currentValues.get(0).getOperationType().equals(OPERATION_TYPE_BUY_CRYPTO))
+                {
                     previousValues = currentValues;
                     previousKey = currentKey;
+                    previousValues.forEach(r -> r.setDate((Instant) null));
                     continue;
                 }
                 List<BinanceBeanV4> all = currentValues;
