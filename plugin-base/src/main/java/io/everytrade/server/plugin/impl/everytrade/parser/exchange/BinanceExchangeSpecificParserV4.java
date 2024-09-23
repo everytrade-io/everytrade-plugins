@@ -313,8 +313,8 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
 
                 if (currentValues.get(0).getCoin().isFiat()
                     && previousValues.get(0).getCoin().isFiat()
-                    && currentValues.get(0).getOperationType().equals(OPERATION_TYPE_BUY_CRYPTO))
-                {
+                    && currentValues.get(0).getOperationType().equals(OPERATION_TYPE_BUY_CRYPTO)
+                ) {
                     previousValues = currentValues;
                     previousKey = currentKey;
                     previousValues.forEach(r -> r.setDate((Instant) null));
