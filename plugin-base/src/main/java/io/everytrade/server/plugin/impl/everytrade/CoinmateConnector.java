@@ -41,9 +41,8 @@ public class CoinmateConnector implements IConnector {
     private static final String SORT_DESC = "DESC";
     private static final long DELAY = 24 * 60 * 60 * 1000L;
     // MAX 100 request per minute per user, https://coinmate.docs.apiary.io/#reference/request-limits
-    private static final int MAX_REQUEST_COUNT = 7;
     // https://coinmate.docs.apiary.io/#reference/transaction-history/get-transaction-history
-    private static final int TX_PER_REQUEST = 800;
+    private static final int TX_PER_REQUEST = 799;
     private static final Logger LOG = LoggerFactory.getLogger(CoinmateConnector.class);
 
     private static final ConnectorParameterDescriptor PARAMETER_API_USERNAME =
@@ -122,8 +121,7 @@ public class CoinmateConnector implements IConnector {
         long txFrom = state.getTxFrom();
         long txTo = state.getTxTo() == 0L ? now : state.getTxTo();
         int offset = state.getOffset();
-        int sentRequests = 0;
-        while (sentRequests < MAX_REQUEST_COUNT) {
+        while (true) {
             final List<CoinmateTransactionHistoryEntry> userTransactionBlock;
             try {
                 userTransactionBlock = rawServices.getCoinmateTransactionHistory(
@@ -150,7 +148,6 @@ public class CoinmateConnector implements IConnector {
                 state.offset = offset;
                 allData.addAll(userTransactionBlock);
             }
-            ++sentRequests;
         }
         return allData;
     }

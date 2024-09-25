@@ -176,7 +176,7 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
         CoinMateDataUtil.adaptTransactionStatus(transaction.getStatus());
         var currency = Currency.fromCode(transaction.getAmountCurrency());
         String priceCurrency = transaction.getPriceCurrency();
-        Currency quote = priceCurrency != null ? Currency.fromCode(priceCurrency) : null;
+        Currency quote = priceCurrency != null ? Currency.fromCode(priceCurrency) : currency;
         String feeCurrency = transaction.getFeeCurrency();
         Currency fee = feeCurrency != null ? Currency.fromCode(feeCurrency) : null;
         return XChangeApiTransaction.builder()

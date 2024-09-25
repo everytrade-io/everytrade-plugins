@@ -146,8 +146,12 @@ public class BinanceSortedGroupV4 {
 
     private List<BinanceBeanV4> sumRows(Map<Currency, List<BinanceBeanV4>> rows) {
         List<BinanceBeanV4> result = new ArrayList<>();
-        if (rows.size() > 0) {
-            var time = rows.values().stream().collect(Collectors.toList()).get(0).get(0).getDate();
+        if (!rows.isEmpty()) {
+            var time = rows.values().stream()
+                .flatMap(List::stream)
+                .map(BinanceBeanV4::getDate)
+                .filter(Objects::nonNull)
+                .findFirst();
             for (Map.Entry<Currency, List<BinanceBeanV4>> entry : rows.entrySet()) {
                 if(!entry.getValue().get(0).getOperationType().isMultiRowType) {
                     entry.getValue().get(0).usedIds.add(entry.getValue().get(0).getRowId());
@@ -166,7 +170,7 @@ public class BinanceSortedGroupV4 {
                         newBean.setRowId(entry.getValue().get(0).getRowId());
                         newBean.setOriginalOperation(entry.getValue().get(0).getOriginalOperation());
                         newBean.usedIds.addAll(ids);
-                        newBean.setDate(time);
+                        newBean.setDate(time.orElse(null));
                         result.add(newBean);
                     }
                 }
