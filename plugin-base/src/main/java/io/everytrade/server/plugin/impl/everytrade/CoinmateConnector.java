@@ -44,6 +44,7 @@ public class CoinmateConnector implements IConnector {
     // https://coinmate.docs.apiary.io/#reference/transaction-history/get-transaction-history
     private static final int TX_PER_REQUEST = 799;
     private static final Logger LOG = LoggerFactory.getLogger(CoinmateConnector.class);
+    private static final int MAX_ITERATIONS = 80;
 
     private static final ConnectorParameterDescriptor PARAMETER_API_USERNAME =
         new ConnectorParameterDescriptor(
@@ -121,7 +122,13 @@ public class CoinmateConnector implements IConnector {
         long txFrom = state.getTxFrom();
         long txTo = state.getTxTo() == 0L ? now : state.getTxTo();
         int offset = state.getOffset();
+
+        int iterationCount = 0;
+
         while (true) {
+            if (iterationCount++ >= MAX_ITERATIONS) {
+                throw new IllegalStateException("Maximum iterations reached. Possible infinite loop detected.");
+            }
             final List<CoinmateTransactionHistoryEntry> userTransactionBlock;
             try {
                 userTransactionBlock = rawServices.getCoinmateTransactionHistory(
