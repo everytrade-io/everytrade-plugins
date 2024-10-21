@@ -1,6 +1,5 @@
 package io.everytrade.server.plugin.impl.everytrade.parser.exchange.everytrade;
 
-import com.univocity.parsers.annotations.Headers;
 import com.univocity.parsers.annotations.Parsed;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
@@ -36,10 +35,6 @@ import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nul
 import static java.math.BigDecimal.ZERO;
 import static lombok.AccessLevel.PRIVATE;
 
-@Headers(sequence = {
-    "UID", "DATE", "SYMBOL", "ACTION", "QUANTITY", "UNIT_PRICE", "VOLUME_QUOTE", "FEE", "FEE_CURRENCY", "REBATE", "REBATE_CURRENCY",
-    "ADDRESS_FROM", "ADDRESS_TO", "NOTE", "LABELS"
-}, extract = true)
 @FieldDefaults(level = PRIVATE)
 @ToString
 public class EveryTradeBeanV3_2 extends ExchangeBean {
@@ -56,6 +51,7 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
     BigDecimal rebate;
     Currency rebateCurrency;
     TransactionType action;
+    String status;
     String note;
     String labels;
 
@@ -142,7 +138,7 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
         }
     }
 
-    @Parsed(field = "ACTION")
+    @Parsed(field = {"ACTION", "TYPE"})
     public void setAction(String value) {
         if (value.equalsIgnoreCase("STAKING REWARD")
             || value.equalsIgnoreCase("STAKE REWARD")) {
@@ -199,6 +195,11 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
     @Parsed(field = "NOTE")
     public void setNote(String value) {
         note = value;
+    }
+
+    @Parsed(field = "STATUS")
+    public void setStatus(String value) {
+        status = value;
     }
 
     @Parsed(field = "LABELS")
