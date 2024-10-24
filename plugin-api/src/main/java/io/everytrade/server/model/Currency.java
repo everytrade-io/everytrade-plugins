@@ -902,7 +902,11 @@ public enum Currency {
     VITALEK(false, Instant.parse("2024-03-12T00:00:00Z"), "vitalek-vitalek-buteren"),
     DACAT(false, Instant.parse("2024-01-23T00:00:00Z"), "daCat"),
     ONDO(false, Instant.parse("2024-01-21T00:00:00Z"), "Ondo"),
-    BEBE(false, Instant.parse("2024-02-03T00:00:00Z"), "Baby Bitcoin");
+    BEBE(false, Instant.parse("2024-02-03T00:00:00Z"), "Baby Bitcoin"),
+    TURBO(false, Instant.parse("2023-04-27T00:00:00Z"), "Turbo"),
+    BOB(false, Instant.parse("2023-05-04T00:00:00Z"), "BOB Token"),
+    INSP(false, Instant.parse("2023-08-10T00:00:00Z"), "Inspect"),
+    RENDER(false, Instant.parse("2020-08-06T00:00:00Z"), "Render");
 
 
     String code;
