@@ -906,7 +906,10 @@ public enum Currency {
     TURBO(false, Instant.parse("2023-04-27T00:00:00Z"), "Turbo"),
     BOB(false, Instant.parse("2023-05-04T00:00:00Z"), "BOB Token"),
     INSP(false, Instant.parse("2023-08-10T00:00:00Z"), "Inspect"),
-    RENDER(false, Instant.parse("2020-08-06T00:00:00Z"), "Render");
+    RENDER(false, Instant.parse("2020-08-06T00:00:00Z"), "Render"),
+    AED(true, Instant.parse("2009-01-03T00:00:00Z"), "United Arab Emirates dirham"),
+    TWD(true, Instant.parse("2009-01-03T00:00:00Z"), "New Taiwan dollar"),
+    GEL(true, Instant.parse("2009-01-03T00:00:00Z"), "Georgian lari");
 
 
     String code;
