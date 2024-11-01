@@ -36,9 +36,8 @@ public class BinanceExchangeSpecificParserV3 implements IExchangeSpecificParser 
     }
 
     static {
-        Set<CurrencyPair> tradeablePairs = getTradeablePairs();
         fastCurrencyPair.put("BTCBUSD", new CurrencyPair("BTC", "BUSD"));
-        tradeablePairs.forEach(t -> fastCurrencyPair.put(
+        getTradeablePairs().forEach(t -> fastCurrencyPair.put(
             String.format("%s%s", t.getBase().code(), t.getQuote().code()), t)
         );
     }
