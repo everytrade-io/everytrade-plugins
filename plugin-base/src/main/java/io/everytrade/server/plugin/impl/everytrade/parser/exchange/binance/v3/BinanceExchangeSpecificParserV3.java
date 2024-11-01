@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static io.everytrade.server.model.CurrencyPair.getTradeablePairs;
 import static io.everytrade.server.plugin.api.parser.ParsingProblemType.PARSED_ROW_IGNORED;
@@ -35,7 +36,9 @@ public class BinanceExchangeSpecificParserV3 implements IExchangeSpecificParser 
     }
 
     static {
-        getTradeablePairs().forEach(t -> fastCurrencyPair.put(
+        Set<CurrencyPair> tradeablePairs = getTradeablePairs();
+        fastCurrencyPair.put("BTCBUSD", new CurrencyPair("BTC", "BUSD"));
+        tradeablePairs.forEach(t -> fastCurrencyPair.put(
             String.format("%s%s", t.getBase().code(), t.getQuote().code()), t)
         );
     }
