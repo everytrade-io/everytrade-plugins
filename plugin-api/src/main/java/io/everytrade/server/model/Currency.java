@@ -909,7 +909,9 @@ public enum Currency {
     RENDER(false, Instant.parse("2020-08-06T00:00:00Z"), "Render"),
     AED(true, Instant.parse("2009-01-03T00:00:00Z"), "United Arab Emirates dirham"),
     TWD(true, Instant.parse("2009-01-03T00:00:00Z"), "New Taiwan dollar"),
-    GEL(true, Instant.parse("2009-01-03T00:00:00Z"), "Georgian lari");
+    GEL(true, Instant.parse("2009-01-03T00:00:00Z"), "Georgian lari"),
+    JUP(true, Instant.parse("2024-02-01T00:00:00Z"), "Jupiter exchange token"),
+    POL(true, Instant.parse("2023-10-19T00:00:00Z"), "Polygon Ecosystem Token");
 
 
     String code;
