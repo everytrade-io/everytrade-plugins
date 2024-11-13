@@ -64,7 +64,7 @@ class EveryTradeBeanV3_2Test {
                 EUR,
                 BUY,
                 new BigDecimal("5"),
-                new BigDecimal("0"),
+                null,
                 null,
                 null,
                 null
