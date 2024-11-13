@@ -1,6 +1,5 @@
 package io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v3;
 
-import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.model.TransactionType;
@@ -14,12 +13,11 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.equalsToZero;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
 import static java.util.Collections.emptyList;
+
 
 public class BinanceBeanV3 extends ExchangeBean {
 
@@ -39,19 +37,15 @@ public class BinanceBeanV3 extends ExchangeBean {
         String filled,
         String total,
         String fee,
-        Map<String, CurrencyPair> fastCurrencyPair
+        CurrencyPair currencyPair
     ) {
         this.date = ParserUtils.parse("yyyy-MM-dd HH:mm:ss", date);
-        final CurrencyPair currencyPair = fastCurrencyPair.get(pair);
-        if (currencyPair == null) {
-            throw new DataValidationException(UNSUPPORTED_CURRENCY_PAIR.concat(pair));
-        }
-        pairBase = currencyPair.getBase();
-        pairQuote = currencyPair.getQuote();
+        this.pairBase = currencyPair.getBase();
+        this.pairQuote = currencyPair.getQuote();
         this.type = detectTransactionType(type);
-        this.filled = new BigDecimal(filled.replace("\"\"","").replace(",","").replaceAll("[A-Z,\\s$]", ""));
-        this.total = new BigDecimal(total.replace("\"\"","").replace(",","").replaceAll("[A-Z,\\s$]", ""));
-        final String feeValue = fee.replace("\"\"","").replace(",","").replaceAll("[A-Z,\\s$]", "");
+        this.filled = new BigDecimal(filled.replaceAll("[^\\d.\\-]", ""));
+        this.total = new BigDecimal(total.replaceAll("[^\\d.\\-]", ""));
+        String feeValue = fee.replaceAll("[^\\d.\\-]", "");
         BigDecimal feeAbsValue = new BigDecimal(feeValue).abs(); // abs value of fee
         Currency currencyEnds = findEnds(fee); // end of string with currency code
         if (currencyEnds != null && feeAbsValue.compareTo((BigDecimal.ZERO)) > 0)  {
@@ -107,10 +101,9 @@ public class BinanceBeanV3 extends ExchangeBean {
     }
 
     private Currency findEnds(String value) {
-        List<Currency> matchedCurrencies = Arrays
-            .stream(Currency.values())
+        List<Currency> matchedCurrencies = Arrays.stream(Currency.values())
             .filter(currency -> value.endsWith(currency.code()))
-            .collect(Collectors.toList());
+            .toList();
         if (matchedCurrencies.size() == 1) {
             return matchedCurrencies.get(0);
         }
