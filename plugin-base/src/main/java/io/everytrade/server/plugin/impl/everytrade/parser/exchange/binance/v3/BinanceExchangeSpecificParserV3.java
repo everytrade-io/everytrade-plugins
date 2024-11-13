@@ -117,6 +117,7 @@ public class BinanceExchangeSpecificParserV3 implements IExchangeSpecificParser 
         try {
             Currency baseCurrency = extractCurrencyFromEnd(vals[4]);
             Currency quoteCurrency = extractCurrencyFromEnd(vals[5]);
+            Currency feeCurrency = extractCurrencyFromEnd(vals[6]);
             if (baseCurrency == null || quoteCurrency == null) {
                 throw new DataValidationException("Could not extract base or quote currency from values");
             }
@@ -129,6 +130,7 @@ public class BinanceExchangeSpecificParserV3 implements IExchangeSpecificParser 
                 vals[4], // filled amount with currency
                 vals[5], // total amount with currency
                 vals[6], // fee
+                feeCurrency,
                 currencyPair
             );
         } catch (DataIgnoredException e) {

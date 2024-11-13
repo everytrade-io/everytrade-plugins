@@ -11,7 +11,6 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.List;
 
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.equalsToZero;
@@ -37,6 +36,7 @@ public class BinanceBeanV3 extends ExchangeBean {
         String filled,
         String total,
         String fee,
+        Currency feeCurrency,
         CurrencyPair currencyPair
     ) {
         this.date = ParserUtils.parse("yyyy-MM-dd HH:mm:ss", date);
@@ -47,9 +47,8 @@ public class BinanceBeanV3 extends ExchangeBean {
         this.total = new BigDecimal(total.replaceAll("[^\\d.\\-]", ""));
         String feeValue = fee.replaceAll("[^\\d.\\-]", "");
         BigDecimal feeAbsValue = new BigDecimal(feeValue).abs(); // abs value of fee
-        Currency currencyEnds = findEnds(fee); // end of string with currency code
-        if (currencyEnds != null && feeAbsValue.compareTo((BigDecimal.ZERO)) > 0)  {
-            feeCurrency = currencyEnds;
+        if (feeCurrency != null && feeAbsValue.compareTo((BigDecimal.ZERO)) > 0)  {
+            this.feeCurrency = feeCurrency;
             this.fee = feeAbsValue;
         } else {
             this.fee = BigDecimal.ZERO;
@@ -98,15 +97,5 @@ public class BinanceBeanV3 extends ExchangeBean {
 //            cluster.setIgnoredFee(1, "Fee amount is 0 " + (feeCurrency != null ? feeCurrency.code() : ""));
         }
         return cluster;
-    }
-
-    private Currency findEnds(String value) {
-        List<Currency> matchedCurrencies = Arrays.stream(Currency.values())
-            .filter(currency -> value.endsWith(currency.code()))
-            .toList();
-        if (matchedCurrencies.size() == 1) {
-            return matchedCurrencies.get(0);
-        }
-        return null;
     }
 }
