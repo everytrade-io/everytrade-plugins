@@ -53,6 +53,28 @@ class EveryTradeBeanV3_2Test {
     }
 
     @Test
+    void testNoUnitPrice() {
+        final String row = "1;01.11.2024 00:00:00;BTC/EUR;BUY;5;;;;;;;;;;\n";
+        final var actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                "1",
+                Instant.parse("2024-11-01T00:00:00Z"),
+                BTC,
+                EUR,
+                BUY,
+                new BigDecimal("5"),
+                new BigDecimal("0"),
+                null,
+                null,
+                null
+            ),
+            List.of()
+        );
+        ParserTestUtils.checkEqual(expected, actual.get(0));
+    }
+
+    @Test
     void testWrongHeader() {
         final String headerWrong = "UID;DATE;SYMBOL;ACTION;QUANTY;PRICE;XFEE;FEE_CURRENCY;REBATE;REBATE_CURRENCY;ADDRESS_FROM;" +
             "ADDRESS_TO\n";
