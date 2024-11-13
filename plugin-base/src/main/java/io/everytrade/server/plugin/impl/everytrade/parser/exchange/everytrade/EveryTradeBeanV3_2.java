@@ -157,7 +157,7 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
         quantity = EverytradeCSVParserValidator.parserNumber(value);
     }
 
-    @Parsed(field = {"PRICE", "UNIT_PRICE"}, defaultNullRead = "0")
+    @Parsed(field = {"PRICE", "UNIT_PRICE"})
     public void setPrice(String value) {
         price = EverytradeCSVParserValidator.parserNumber(value);
     }
