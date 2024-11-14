@@ -157,7 +157,7 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
         quantity = EverytradeCSVParserValidator.parserNumber(value);
     }
 
-    @Parsed(field = {"PRICE", "UNIT_PRICE"}, defaultNullRead = "0")
+    @Parsed(field = {"PRICE", "UNIT_PRICE"})
     public void setPrice(String value) {
         price = EverytradeCSVParserValidator.parserNumber(value);
     }
@@ -263,9 +263,6 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
     private TransactionCluster createBuySellTransactionCluster() {
         if (quantity.compareTo(ZERO) == 0) {
             throw new DataValidationException("Quantity can not be zero.");
-        }
-        if (price.compareTo(ZERO) == 0 && volumeQuote.compareTo(ZERO) == 0) {
-            throw new DataValidationException("\"Unit price\" or \"volume quote\" can not be zero ");
         }
 
         var tx = new ImportedTransactionBean(

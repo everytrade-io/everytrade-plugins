@@ -57,10 +57,8 @@ class BinanceBeanV3Test {
             "3813.0000000000ADA\"\n";
         final String row9 = "\"2020-05-29 11:13:27,ADABTC,BUY,1000.0000067200,\"\"3813.0000000000ADA\"\",1000.02562336BTC," +
             "3813.0000000000ADA\"\n";
-        final String row10 = "2020-05-29 11:13:27,ADABTC,BUY,1000.0000067200,3813.0000000000ADA,\"\"1000.02562336BTC\"\"," +
-            "3813.0000000000ADA\n";
-        final String row11 = "2020-05-29 11:13:27,ADABTC,BUY,1000.0000067200,3813.0000000000ADA,1000.02562336BTC," +
-            "\"\"3,813.0000000000ADA\"\"\n";
+        final String row10 = "2020-05-29 11:13:27,ADABTC,BUY,1000.0000067200,3813.0000000000ADA,1000.02562336BTC,3813.0000000000ADA\n";
+        final String row11 = "2020-05-29 11:13:27,ADABTC,BUY,1000.0000067200,3813.0000000000ADA,1000.02562336BTC,3813.0000000000ADA\n";
 
         final TransactionCluster actual0 = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row0);
         final TransactionCluster actual1 = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row1);

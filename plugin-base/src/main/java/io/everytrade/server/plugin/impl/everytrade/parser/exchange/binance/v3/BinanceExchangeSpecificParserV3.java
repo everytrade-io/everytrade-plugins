@@ -1,11 +1,12 @@
 package io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v3;
 
+import com.univocity.parsers.common.DataValidationException;
 import com.univocity.parsers.common.record.Record;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
+import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.CurrencyPair;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
-import io.everytrade.server.plugin.api.parser.ParsingProblemType;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.IExchangeSpecificParser;
@@ -16,30 +17,28 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import static io.everytrade.server.model.CurrencyPair.getTradeablePairs;
 import static io.everytrade.server.plugin.api.parser.ParsingProblemType.PARSED_ROW_IGNORED;
 import static io.everytrade.server.plugin.api.parser.ParsingProblemType.ROW_PARSING_FAILED;
 
 public class BinanceExchangeSpecificParserV3 implements IExchangeSpecificParser {
     private final String delimiter;
     private List<ParsingProblem> parsingProblems = List.of();
-    private static Map<String, CurrencyPair> fastCurrencyPair = new HashMap<>();
+    private static final Set<String> CURRENCY_CODES = new HashSet<>();
 
     public BinanceExchangeSpecificParserV3(String delimiter) {
         this.delimiter = delimiter;
     }
 
     static {
-        fastCurrencyPair.put("BTCBUSD", new CurrencyPair("BTC", "BUSD"));
-        getTradeablePairs().forEach(t -> fastCurrencyPair.put(
-            String.format("%s%s", t.getBase().code(), t.getQuote().code()), t)
-        );
+        for (Currency currency : Currency.values()) {
+            CURRENCY_CODES.add(currency.name());
+        }
     }
 
     @Override
@@ -114,9 +113,26 @@ public class BinanceExchangeSpecificParserV3 implements IExchangeSpecificParser 
     }
 
     private BinanceBeanV3 parseExchangeBean(String[] vals) {
-        var row = String.format("%s,%s,%s,%s,%s,%s,%s", vals[0], vals[1], vals[2], vals[3], vals[4], vals[5], vals[6]);
+        String row = String.join(",", vals);
         try {
-            return new BinanceBeanV3(vals[0], vals[1], vals[2], vals[4], vals[5], vals[6], fastCurrencyPair);
+            Currency baseCurrency = extractCurrencyFromEnd(vals[4]);
+            Currency quoteCurrency = extractCurrencyFromEnd(vals[5]);
+            Currency feeCurrency = extractCurrencyFromEnd(vals[6]);
+            if (baseCurrency == null || quoteCurrency == null) {
+                throw new DataValidationException("Could not extract base or quote currency from values");
+            }
+            CurrencyPair currencyPair = new CurrencyPair(baseCurrency, quoteCurrency);
+
+            return new BinanceBeanV3(
+                vals[0], // date
+                vals[1], // pair
+                vals[2], // type
+                vals[4], // filled amount with currency
+                vals[5], // total amount with currency
+                vals[6], // fee
+                feeCurrency,
+                currencyPair
+            );
         } catch (DataIgnoredException e) {
             parsingProblems.add(
                 new ParsingProblem(row, e.getMessage(), PARSED_ROW_IGNORED)
@@ -127,6 +143,21 @@ public class BinanceExchangeSpecificParserV3 implements IExchangeSpecificParser 
             );
         }
         return null;
+    }
+
+    private Currency extractCurrencyFromEnd(String value) {
+        Pattern pattern = Pattern.compile("([A-Z]+)$");
+        Matcher matcher = pattern.matcher(value);
+        if (matcher.find()) {
+            String currencyCode = matcher.group(1);
+            if (CURRENCY_CODES.contains(currencyCode)) {
+                return Currency.valueOf(currencyCode);
+            } else {
+                throw new DataValidationException("Unsupported currency code: " + currencyCode);
+            }
+        } else {
+            throw new DataValidationException("Currency code not found in value: " + value);
+        }
     }
 }
 
