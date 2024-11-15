@@ -911,8 +911,12 @@ public enum Currency {
     TWD(true, Instant.parse("2009-01-03T00:00:00Z"), "New Taiwan dollar"),
     GEL(true, Instant.parse("2009-01-03T00:00:00Z"), "Georgian lari"),
     JUP(false, Instant.parse("2024-02-01T00:00:00Z"), "Jupiter exchange token"),
-    POL(false, Instant.parse("2023-10-19T00:00:00Z"), "Polygon Ecosystem Token");
-
+    POL(false, Instant.parse("2023-10-19T00:00:00Z"), "Polygon Ecosystem Token"),
+    AEVO(false, Instant.parse("2024-03-14T00:00:00Z"), "Aevo"),
+    ENA(false, Instant.parse("2024-04-03T00:00:00Z"), "Ethena"),
+    IO(false, Instant.parse("2024-06-12T00:00:00Z"), "io.net"),
+    ZK(false, Instant.parse("2024-06-17T00:00:00Z"), "zkSync"),
+    PORTAL(false, Instant.parse("2024-02-29T00:00:00Z"), "Portal");
 
     String code;
     int decimalDigits;
