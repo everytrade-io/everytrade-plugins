@@ -1,8 +1,11 @@
 package io.everytrade.server.plugin.impl.everytrade.parser.exchange.kraken;
 
+import lombok.Getter;
+
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
 public enum KrakenAssetCodeType {
     STAKED(".S"),
     STAKED_BEARING(".B"),
@@ -10,8 +13,7 @@ public enum KrakenAssetCodeType {
     EARNING_REWARDS(".F"),
     STAKING("03.S");
 
-
-    String code;
+    private final String code;
 
     KrakenAssetCodeType(String code) {
         this.code = code;
@@ -43,5 +45,4 @@ public enum KrakenAssetCodeType {
         }
         return res;
     }
-
 }
