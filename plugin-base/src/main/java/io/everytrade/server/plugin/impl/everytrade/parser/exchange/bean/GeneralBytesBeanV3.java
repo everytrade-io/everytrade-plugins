@@ -138,11 +138,11 @@ public class GeneralBytesBeanV3 extends ExchangeBean {
             validateCurrencyPair(cryptoCurrency, cashCurrency);
         }
         if (CURRENCY_SCALE_MAP.containsKey(cryptoCurrency)) {
-            cryptoAmount = cryptoAmount.setScale(CURRENCY_SCALE_MAP.get(cryptoCurrency), RoundingMode.ROUND_DOWN);
+            cryptoAmount = cryptoAmount.setScale(CURRENCY_SCALE_MAP.get(cryptoCurrency), RoundingMode.DOWN);
         }
 
         if (CURRENCY_SCALE_MAP.containsKey(cashCurrency)) {
-            cashAmount = cashAmount.setScale(CURRENCY_SCALE_MAP.get(cashCurrency), RoundingMode.ROUND_DOWN);
+            cashAmount = cashAmount.setScale(CURRENCY_SCALE_MAP.get(cashCurrency), RoundingMode.DOWN);
         }
 
         List<ImportedTransactionBean> related;
