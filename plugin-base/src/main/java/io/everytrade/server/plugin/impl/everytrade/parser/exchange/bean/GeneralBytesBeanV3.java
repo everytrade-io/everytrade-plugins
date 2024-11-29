@@ -18,6 +18,7 @@ import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
@@ -40,6 +41,10 @@ public class GeneralBytesBeanV3 extends ExchangeBean {
     private BigDecimal expense;
     private Currency expenseCurrency;
     private String destinationAddress;
+
+    private static final Map<Currency, Integer> CURRENCY_SCALE_MAP = Map.of(
+        Currency.ADA, 6
+    );
 
     @Parsed(field = "Server Time")
     public void setDate(String value) {
@@ -132,6 +137,14 @@ public class GeneralBytesBeanV3 extends ExchangeBean {
         if (type.isBuyOrSell()) {
             validateCurrencyPair(cryptoCurrency, cashCurrency);
         }
+        if (CURRENCY_SCALE_MAP.containsKey(cryptoCurrency)) {
+            cryptoAmount = cryptoAmount.setScale(CURRENCY_SCALE_MAP.get(cryptoCurrency), RoundingMode.HALF_UP);
+        }
+
+        if (CURRENCY_SCALE_MAP.containsKey(cashCurrency)) {
+            cashAmount = cashAmount.setScale(CURRENCY_SCALE_MAP.get(cashCurrency), RoundingMode.HALF_UP);
+        }
+
         List<ImportedTransactionBean> related;
         final boolean isIncorrectFee =
             !(expenseCurrency == null || expenseCurrency.equals(cryptoCurrency) || expenseCurrency.equals(cashCurrency));
