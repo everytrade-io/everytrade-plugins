@@ -902,8 +902,21 @@ public enum Currency {
     VITALEK(false, Instant.parse("2024-03-12T00:00:00Z"), "vitalek-vitalek-buteren"),
     DACAT(false, Instant.parse("2024-01-23T00:00:00Z"), "daCat"),
     ONDO(false, Instant.parse("2024-01-21T00:00:00Z"), "Ondo"),
-    BEBE(false, Instant.parse("2024-02-03T00:00:00Z"), "Baby Bitcoin");
-
+    BEBE(false, Instant.parse("2024-02-03T00:00:00Z"), "Baby Bitcoin"),
+    TURBO(false, Instant.parse("2023-04-27T00:00:00Z"), "Turbo"),
+    BOB(false, Instant.parse("2023-05-04T00:00:00Z"), "BOB Token"),
+    INSP(false, Instant.parse("2023-08-10T00:00:00Z"), "Inspect"),
+    RENDER(false, Instant.parse("2020-08-06T00:00:00Z"), "Render"),
+    AED(true, Instant.parse("2009-01-03T00:00:00Z"), "United Arab Emirates dirham"),
+    TWD(true, Instant.parse("2009-01-03T00:00:00Z"), "New Taiwan dollar"),
+    GEL(true, Instant.parse("2009-01-03T00:00:00Z"), "Georgian lari"),
+    JUP(false, Instant.parse("2024-02-01T00:00:00Z"), "Jupiter exchange token"),
+    POL(false, Instant.parse("2023-10-19T00:00:00Z"), "Polygon Ecosystem Token"),
+    AEVO(false, Instant.parse("2024-03-14T00:00:00Z"), "Aevo"),
+    ENA(false, Instant.parse("2024-04-03T00:00:00Z"), "Ethena"),
+    IO(false, Instant.parse("2024-06-12T00:00:00Z"), "io.net"),
+    ZK(false, Instant.parse("2024-06-17T00:00:00Z"), "zkSync"),
+    PORTAL(false, Instant.parse("2024-02-29T00:00:00Z"), "Portal");
 
     String code;
     int decimalDigits;

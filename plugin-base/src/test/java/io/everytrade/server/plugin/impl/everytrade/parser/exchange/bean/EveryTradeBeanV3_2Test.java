@@ -30,6 +30,7 @@ import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.STAKE;
 import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
 import static io.everytrade.server.model.TransactionType.UNSTAKE;
+import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.REBATE_UID_PART;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -40,6 +41,7 @@ class EveryTradeBeanV3_2Test {
             "LABELS\n";
     private static final String HEADER_COMMA_SEPARATED = "UID,DATE,SYMBOL,ACTION,QUANTITY,UNIT_PRICE,VOLUME_QUOTE,FEE,FEE_CURRENCY," +
         "REBATE,REBATE_CURRENCY,ADDRESS_FROM,ADDRESS_TO,NOTE,LABELS\n";
+    private static final String HEADER_EXCEL_FORMAT = "DATE;TYPE;SYMBOL;QUANTITY;UNIT_PRICE;TOTAL;SOURCE;STATUS;NOTE;LABELS\n";
 
     @Test
     void testCorrectHeader() {
@@ -48,6 +50,28 @@ class EveryTradeBeanV3_2Test {
         } catch (ParsingProcessException e) {
             fail("Unexpected exception has been thrown.");
         }
+    }
+
+    @Test
+    void testNoUnitPrice() {
+        final String row = "1;01.11.2024 00:00:00;BTC/EUR;BUY;5;;;;;;;;;;\n";
+        final var actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                "1",
+                Instant.parse("2024-11-01T00:00:00Z"),
+                BTC,
+                EUR,
+                BUY,
+                new BigDecimal("5"),
+                null,
+                null,
+                null,
+                null
+            ),
+            List.of()
+        );
+        ParserTestUtils.checkEqual(expected, actual.get(0));
     }
 
     @Test
@@ -77,6 +101,28 @@ class EveryTradeBeanV3_2Test {
                 "nnnnnn",
                 null,
                 "Label1"
+            ),
+            List.of()
+        );
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
+    void testExcelHeaderFormat() {
+        final String row = "07.07.2024 09:28:56;WITHDRAWAL;BTC;0.02654552;;;Blockchain BTC;IN_PROGRESS;;Error:Internal\n";
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_EXCEL_FORMAT + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2024-07-07T09:28:56Z"),
+                BTC,
+                BTC,
+                WITHDRAWAL,
+                new BigDecimal("0.02654552"),
+                null,
+                null,
+                null,
+                "Error:Internal"
             ),
             List.of()
         );
