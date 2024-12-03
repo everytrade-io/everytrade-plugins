@@ -42,7 +42,7 @@ public class CoinmateConnector implements IConnector {
     private static final long DELAY = 24 * 60 * 60 * 1000L;
     // MAX 100 request per minute per user, https://coinmate.docs.apiary.io/#reference/request-limits
     // https://coinmate.docs.apiary.io/#reference/transaction-history/get-transaction-history
-    private static final int TX_PER_REQUEST = 799;
+    private static final int TX_PER_REQUEST = 1000;
     private static final Logger LOG = LoggerFactory.getLogger(CoinmateConnector.class);
     private static final int MAX_ITERATIONS = 80;
 
@@ -118,10 +118,8 @@ public class CoinmateConnector implements IConnector {
         setTxFromTimestamp(state);
         List<CoinmateTransactionHistoryEntry> allData = new ArrayList<>();
 
-        long now = Instant.now().toEpochMilli();
         long txFrom = state.getTxFrom();
-        long txTo = state.getTxTo() == 0L ? now : state.getTxTo();
-        int offset = state.getOffset();
+        long txTo = state.getTxTo() == 0L ? Instant.now().toEpochMilli() : state.getTxTo();
 
         int iterationCount = 0;
 
@@ -129,31 +127,37 @@ public class CoinmateConnector implements IConnector {
             if (iterationCount++ >= MAX_ITERATIONS) {
                 throw new IllegalStateException("Maximum iterations reached. Possible infinite loop detected.");
             }
-            final List<CoinmateTransactionHistoryEntry> userTransactionBlock;
+
+            List<CoinmateTransactionHistoryEntry> userTransactionBlock;
             try {
                 userTransactionBlock = rawServices.getCoinmateTransactionHistory(
-                    offset, TX_PER_REQUEST, SORT_DESC, txFrom, txTo, null).getData();
+                    0, TX_PER_REQUEST, SORT_DESC, txFrom, txTo, null).getData();
             } catch (IOException e) {
                 throw new IllegalStateException("Download user trade history failed.", e);
             }
+
             if (userTransactionBlock.isEmpty()) {
-                state.offset = 0;
                 state.txFrom = txTo;
                 state.txTo = 0L;
                 break;
             }
-            if(userTransactionBlock.size() < TX_PER_REQUEST) {
-                state.offset = 0;
+
+            allData.addAll(userTransactionBlock);
+
+            if (userTransactionBlock.size() < TX_PER_REQUEST) {
                 state.txFrom = txTo;
                 state.txTo = 0L;
-                allData.addAll(userTransactionBlock);
                 break;
-            } else {
-                txTo = now;
-                offset += TX_PER_REQUEST;
-                state.txTo = now;
-                state.offset = offset;
-                allData.addAll(userTransactionBlock);
+            }
+
+            txTo = userTransactionBlock.get(userTransactionBlock.size() - 1).getTimestamp() - 1;
+            state.txTo = txTo;
+
+            try {
+                Thread.sleep(600);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IllegalStateException("Thread was interrupted during sleep.", e);
             }
         }
         return allData;
