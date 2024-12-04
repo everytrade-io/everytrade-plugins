@@ -61,12 +61,11 @@ public class KrakenExchangeSpecificParser extends DefaultUnivocityExchangeSpecif
         Map<Object, List<KrakenBeanV2>> result = new HashMap<>();
         for (Map.Entry<?, List<KrakenBeanV2>> entry : rowGroups.entrySet()) {
             var rowsInGroup = entry.getValue();
-            var isOneOrMoreUnsupportedRows =
-                !rowsInGroup.stream().filter(r -> r.isUnsupportedRow() == true).collect(Collectors.toList()).isEmpty();
+            var isOneOrMoreUnsupportedRows = rowsInGroup.stream().anyMatch(KrakenBeanV2::isUnsupportedRow);
             if (!isOneOrMoreUnsupportedRows) {
                 result.put(entry.getKey(), entry.getValue());
             } else {
-                var ids = rowsInGroup.stream().map(r -> r.getRowId()).collect(Collectors.toList());
+                var ids = rowsInGroup.stream().map(KrakenBeanV2::getRowId).toList();
                 var s = BinanceSortedGroupV4.parseIds(ids);
                 setRowsAsUnsupported(rowsInGroup, "One or more rows in group " + "( rows: " + s + ") is unsupported");
             }
