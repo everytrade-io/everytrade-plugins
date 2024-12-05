@@ -58,6 +58,8 @@ class BlockchainEthDownloaderTest {
             true,
             false,
             false,
+            true,
+            true,
             mockClient(txs, emptyList())
         );
 
@@ -83,6 +85,8 @@ class BlockchainEthDownloaderTest {
             ADDRESS,
             "apiKey",
             FIAT,
+            true,
+            true,
             true,
             true,
             true,
@@ -116,6 +120,8 @@ class BlockchainEthDownloaderTest {
             false,
             false,
             false,
+            true,
+            true,
             mockClient(txs, emptyList())
         );
 
@@ -143,6 +149,8 @@ class BlockchainEthDownloaderTest {
             FIAT,
             false,
             false,
+            true,
+            true,
             true,
             true,
             mockClient(txs, emptyList())
@@ -247,7 +255,7 @@ class BlockchainEthDownloaderTest {
             .gas(new BigDecimal("1000000"))
             .gasUsed(new BigDecimal("1000000"))
             .gasPrice(ONE)
-            .txreceiptStatus("")
+            .txreceipt_status("")
             .input("")
             .contractAddress(null)
             .confirmations(100)

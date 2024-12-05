@@ -46,16 +46,20 @@ public class BlockchainEthDownloader {
     boolean importWithdrawalsAsSells;
     boolean importFeesFromDeposits;
     boolean importFeesFromWithdrawals;
+    boolean importNormalTxs;
+    boolean importErc20Txs;
     EtherScanClient api;
 
     public BlockchainEthDownloader(
-        @NonNull String address,
-        @NonNull String apiKeyToken,
-        @NonNull String fiatCurrency,
-        @NonNull String importDepositsAsBuys,
-        @NonNull String importWithdrawalsAsSells,
-        @NonNull String importFeesFromDeposits,
-        @NonNull String importFeesFromWithdrawals
+            @NonNull String address,
+            @NonNull String apiKeyToken,
+            @NonNull String fiatCurrency,
+            @NonNull String importDepositsAsBuys,
+            @NonNull String importWithdrawalsAsSells,
+            @NonNull String importFeesFromDeposits,
+            @NonNull String importFeesFromWithdrawals,
+            boolean importNormalTxs,
+            boolean importErc20Txs
     ) {
         this.address = address.toLowerCase();
         this.apiKeyToken = apiKeyToken;
@@ -64,21 +68,28 @@ public class BlockchainEthDownloader {
         this.importWithdrawalsAsSells = Boolean.parseBoolean(importWithdrawalsAsSells);
         this.importFeesFromDeposits = Boolean.parseBoolean(importFeesFromDeposits);
         this.importFeesFromWithdrawals = Boolean.parseBoolean(importFeesFromWithdrawals);
+        this.importNormalTxs = importNormalTxs;
+        this.importErc20Txs = importErc20Txs;
         this.api = new EtherScanClient();
     }
 
     public DownloadResult download(String lastDownloadState) {
         var latestBlockWithAllConfirmedTxs = downloadLastBlock() - CONFIRMATIONS;
         var downloadState = DownloadState.parseFrom(lastDownloadState);
+        List<EtherScanTransactionDto> result = new ArrayList<>();
 
-        List<EtherScanTransactionDto> transactionDtos = downloadEthTxs(latestBlockWithAllConfirmedTxs, downloadState);
-        List<EtherScanTransactionDto> result = new ArrayList<>(transactionDtos);
-        Collection<EtherScanErc20TransactionDto> transactionErc20Dtos = downloadErc20Txs(latestBlockWithAllConfirmedTxs, downloadState);
-        result.addAll(transactionErc20Dtos);
+        if (importNormalTxs) {
+            result.addAll(downloadEthTxs(latestBlockWithAllConfirmedTxs, downloadState));
+        }
+
+        if (importErc20Txs) {
+            result.addAll(downloadErc20Txs(latestBlockWithAllConfirmedTxs, downloadState));
+        }
+
         return new DownloadResult(parseTransactions(result), downloadState.serialize());
     }
 
-    private Collection<EtherScanErc20TransactionDto> downloadErc20Txs(long currentBlock, DownloadState state) {
+    private List<EtherScanErc20TransactionDto> downloadErc20Txs(long currentBlock, DownloadState state) {
         try {
             sleepBetweenRequests();
             var etherscanErc20Txs = api

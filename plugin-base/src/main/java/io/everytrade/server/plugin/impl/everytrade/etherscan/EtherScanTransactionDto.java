@@ -30,7 +30,7 @@ public class EtherScanTransactionDto {
     BigDecimal gas;
     BigDecimal gasPrice;
     int isError;
-    String txreceiptStatus;
+    String txreceipt_status;
     String input;
     String contractAddress;
     BigDecimal cumulativeGasUsed;
