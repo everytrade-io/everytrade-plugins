@@ -22,6 +22,7 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 
 import static io.everytrade.server.model.TransactionType.BUY;
+import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.REWARD;
@@ -30,6 +31,8 @@ import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.util.CoinBaseDataUtil.ADVANCE_TRADE_BUY;
 import static io.everytrade.server.util.CoinBaseDataUtil.ADVANCE_TRADE_SELL;
+import static io.everytrade.server.util.CoinBaseDataUtil.PRO_DEPOSIT;
+import static io.everytrade.server.util.CoinBaseDataUtil.PRO_WITHDRAWAL;
 import static io.everytrade.server.util.CoinBaseDataUtil.STAKING_INCOME;
 import static io.everytrade.server.util.CoinBaseDataUtil.TRANSACTION_TYPE_ADVANCED_TRADE;
 import static io.everytrade.server.util.CoinBaseDataUtil.TRANSACTION_TYPE_COINBASE_EARN;
@@ -82,8 +85,10 @@ public class CoinbaseBeanV1 extends ExchangeBean {
         } else if (value.contains(TRANSACTION_TYPE_CONVERT)) {
             converted = true;
             transactionType = BUY;
-        } else if (TRANSACTION_TYPE_SEND.equalsIgnoreCase(value)) {
+        } else if (TRANSACTION_TYPE_SEND.equalsIgnoreCase(value) || PRO_WITHDRAWAL.equalsIgnoreCase(value)) {
             transactionType = WITHDRAWAL;
+        } else if (PRO_DEPOSIT.equalsIgnoreCase(value)) {
+            transactionType = DEPOSIT;
         } else if (ADVANCE_TRADE_SELL.equalsIgnoreCase(value)) {
             transactionType = SELL;
         } else if (ADVANCE_TRADE_BUY.equalsIgnoreCase(value)) {
