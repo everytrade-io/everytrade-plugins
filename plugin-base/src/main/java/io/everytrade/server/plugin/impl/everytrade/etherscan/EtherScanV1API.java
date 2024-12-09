@@ -15,7 +15,7 @@ public interface EtherScanV1API {
     @GET
     EtherScanDto<List<EtherScanTransactionDto>> getNormalTxsByAddress(
         @QueryParam("module") String module,
-        @QueryParam("action") String acion,
+        @QueryParam("action") String action,
         @QueryParam("address") String address,
         @QueryParam("startblock") long startBlock,
         @QueryParam("endblock") long endBlock,

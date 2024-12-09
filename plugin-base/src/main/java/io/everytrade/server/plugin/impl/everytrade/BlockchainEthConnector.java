@@ -74,6 +74,24 @@ public class BlockchainEthConnector implements IConnector {
             true
         );
 
+    private static final ConnectorParameterDescriptor PARAMETER_IMPORT_NORMAL_TXS =
+        new ConnectorParameterDescriptor(
+            "importNormalTxs",
+            ConnectorParameterType.BOOLEAN,
+            "Import normal transactions",
+            "",
+            true
+        );
+
+    private static final ConnectorParameterDescriptor PARAMETER_IMPORT_ERC20_TXS =
+        new ConnectorParameterDescriptor(
+            "importErc20Txs",
+            ConnectorParameterType.BOOLEAN,
+            "Import ERC20 transactions",
+            "",
+            false
+        );
+
     public static final ConnectorDescriptor DESCRIPTOR = new ConnectorDescriptor(
         ID,
         "Blockchain ETH Connector",
@@ -85,7 +103,9 @@ public class BlockchainEthConnector implements IConnector {
             PARAMETER_IMPORT_DEPOSITS_AS_BUYS,
             PARAMETER_IMPORT_WITHDRAWALS_AS_SELLS,
             PARAMETER_IMPORT_FEES_FROM_DEPOSITS,
-            PARAMETER_IMPORT_FEES_FROM_WITHDRAWALS
+            PARAMETER_IMPORT_FEES_FROM_WITHDRAWALS,
+            PARAMETER_IMPORT_NORMAL_TXS,
+            PARAMETER_IMPORT_ERC20_TXS
         )
     );
 
@@ -98,6 +118,8 @@ public class BlockchainEthConnector implements IConnector {
     String importWithdrawalsAsSells;
     String importFeesFromDeposits;
     String importFeesFromWithdrawals;
+    String importNormalTxs;
+    String importErc20Txs;
 
     public BlockchainEthConnector(Map<String, String> parameters) {
         this(
@@ -107,7 +129,9 @@ public class BlockchainEthConnector implements IConnector {
             parameters.get(PARAMETER_IMPORT_DEPOSITS_AS_BUYS.getId()),
             parameters.get(PARAMETER_IMPORT_WITHDRAWALS_AS_SELLS.getId()),
             parameters.get(PARAMETER_IMPORT_FEES_FROM_DEPOSITS.getId()),
-            parameters.get(PARAMETER_IMPORT_FEES_FROM_WITHDRAWALS.getId())
+            parameters.get(PARAMETER_IMPORT_FEES_FROM_WITHDRAWALS.getId()),
+            parameters.get(PARAMETER_IMPORT_NORMAL_TXS.getId()),
+            parameters.get(PARAMETER_IMPORT_ERC20_TXS.getId())
         );
     }
 
@@ -126,7 +150,9 @@ public class BlockchainEthConnector implements IConnector {
                 importDepositsAsBuys,
                 importWithdrawalsAsSells,
                 importFeesFromDeposits,
-                importFeesFromWithdrawals
+                importFeesFromWithdrawals,
+                Boolean.parseBoolean(importNormalTxs),
+                Boolean.parseBoolean(importErc20Txs)
             );
             return blockchainEthDownloader.download(downloadState);
         }
