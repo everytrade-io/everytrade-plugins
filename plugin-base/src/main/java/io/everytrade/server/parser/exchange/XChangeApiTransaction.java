@@ -160,6 +160,8 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
             case "tx", "interest" -> type = REWARD;
             case "send" -> type = transaction.getAmount().getAmount().signum() > 0 ? DEPOSIT : WITHDRAWAL;
             case "earn_payout" -> type = EARNING;
+            case "fiat_withdrawal" -> type = WITHDRAWAL;
+            case "fiat_deposit" -> type = DEPOSIT;
         }
 
         return XChangeApiTransaction.builder()

@@ -118,7 +118,7 @@ public class CoinbaseDownloader {
 
         try {
             LOG.info("Funding download start");
-            funding = downloadFunding(walletStates);
+//            funding = downloadFunding(walletStates); TODO: uncomment when coinbase fix their pagination
         } catch (Exception e) {
             LOG.error("Funding download error " + e.getMessage());
         }
