@@ -154,7 +154,7 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
             .build();
     }
 
-    public static XChangeApiTransaction rewardWithdrawalCoinbase(CoinbaseShowTransactionV2 transaction) {
+    public static XChangeApiTransaction depositWithdrawalCoinbase(CoinbaseShowTransactionV2 transaction) {
         TransactionType type = null;
         switch (transaction.getType()) {
             case "tx", "interest" -> type = REWARD;
