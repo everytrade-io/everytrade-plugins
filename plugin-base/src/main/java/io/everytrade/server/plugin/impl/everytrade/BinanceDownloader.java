@@ -41,7 +41,7 @@ public class BinanceDownloader {
     private static final String STATE_SEPARATOR = "|";
     private static final Duration TRADE_HISTORY_WAIT_DURATION = Duration.ofMillis(250);
     private static final Duration FUNDING_HISTORY_WAIT_DURATION = Duration.ofMillis(100);
-    private static final int LIMIT = 500;
+    private static final int LIMIT = 1000;
 
     //Funding
     private static final int FUNDING_PER_REQUEST = 1000;
