@@ -2,8 +2,10 @@ package io.everytrade.server.plugin.impl.everytrade;
 
 import lombok.experimental.FieldDefaults;
 import org.knowm.xchange.Exchange;
+import org.knowm.xchange.binance.dto.meta.exchangeinfo.BinanceExchangeInfo;
 import org.knowm.xchange.binance.dto.trade.BinanceTradeHistoryParams;
 import org.knowm.xchange.binance.dto.account.BinanceFundingHistoryParams;
+import org.knowm.xchange.binance.service.BinanceAccountService;
 import org.knowm.xchange.binance.service.BinanceTradeService;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.account.FundingRecord;
@@ -39,7 +41,7 @@ public class BinanceDownloader {
     private static final String STATE_SEPARATOR = "|";
     private static final Duration TRADE_HISTORY_WAIT_DURATION = Duration.ofMillis(250);
     private static final Duration FUNDING_HISTORY_WAIT_DURATION = Duration.ofMillis(100);
-    private static final int TXS_PER_REQUEST = 1000;
+    private static final int LIMIT = 500;
 
     //Funding
     private static final int FUNDING_PER_REQUEST = 1000;
@@ -66,41 +68,65 @@ public class BinanceDownloader {
         deserializeState(downloadState);
     }
 
-    public List<UserTrade> downloadTrades(String currencyPairs, int maxCount) {
-        final List<CurrencyPair> pairs = ConnectorUtils.toCurrencyPairs(currencyPairs);
-        var params = (BinanceTradeHistoryParams) exchange.getTradeService().createTradeHistoryParams();
-        params.setLimit(TXS_PER_REQUEST);
+    public List<UserTrade> downloadTrades(String currencyPairs) {
+        BinanceTradeService tradeServices = (BinanceTradeService) exchange.getTradeService();
+        BinanceAccountService accountService = (BinanceAccountService) exchange.getAccountService();
+        BinanceTradeHistoryParams params = (BinanceTradeHistoryParams) exchange.getTradeService().createTradeHistoryParams();
 
-        final List<UserTrade> userTrades = new ArrayList<>();
+        List<CurrencyPair> tradingSymbols = new ArrayList<>();
 
-        for (CurrencyPair pair : pairs) {
-            params.setInstrument(pair);
-            String lastDownloadedTx = currencyPairLastIds.get(pair.toString());
-            // binance api hack - start download from tradeId=0, because we can only page trades from lowest ids to newest
-            params.setStartId(isEmpty(lastDownloadedTx) ? "0" : lastDownloadedTx);
+        if (isEmpty(currencyPairs)) {
+            BinanceExchangeInfo allSymbols;
+            try {
+                allSymbols = accountService.getExchangeInfo();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            Arrays.stream(allSymbols.getSymbols()).filter(x -> x.getStatus().equals("TRADING")).forEach(x -> {
+                tradingSymbols.add(new CurrencyPair(x.getBaseAsset(), x.getQuoteAsset()));
+            });
+        } else {
+            tradingSymbols.addAll(ConnectorUtils.toCurrencyPairs(currencyPairs));
+        }
 
-            while (userTrades.size() + TXS_PER_REQUEST < maxCount) {
+        params.setLimit(LIMIT);
+        List<UserTrade> trades = new ArrayList<>();
+
+        for (CurrencyPair symbol : tradingSymbols) {
+            String lastDownloadedTx = currencyPairLastIds.get(symbol.toString());
+            long lastTradeId = isEmpty(lastDownloadedTx) ? 0L : Long.parseLong(lastDownloadedTx);
+            params.setInstrument(symbol);
+            params.setStartId(String.valueOf(lastTradeId));
+            List<UserTrade> fetchedTrades;
+
+            do {
                 sleepBetweenRequests(TRADE_HISTORY_WAIT_DURATION);
-                final List<UserTrade> userTradesBlock;
+                if (lastTradeId > 0) {
+                    params.setStartId(String.valueOf(lastTradeId + 1));
+                }
+
+                UserTrades userTrades;
                 try {
-                    userTradesBlock = exchange.getTradeService().getTradeHistory(params).getUserTrades();
-                } catch (Exception e) {
-                    throw new IllegalStateException("User trade history download failed. ", e);
+                    userTrades = tradeServices.getTradeHistory(params);
+                } catch (IOException e) {
+                    throw new IllegalStateException("User trade history download failed. " + e.getMessage() , e);
                 }
-                if (lastDownloadedTx != null && !userTradesBlock.isEmpty() && userTradesBlock.get(0).getId().equals(lastDownloadedTx)) {
-                    userTradesBlock.remove(0);
-                }
-                if (userTradesBlock.isEmpty()) {
+                fetchedTrades = userTrades.getUserTrades();
+
+                if (fetchedTrades.isEmpty()) {
                     break;
                 }
-                userTrades.addAll(userTradesBlock);
-                lastDownloadedTx = userTradesBlock.stream().max(comparing(u -> Long.parseLong(u.getId()))).get().getId();
-                params.setStartId(lastDownloadedTx);
-            }
-            currencyPairLastIds.put(pair.toString(), lastDownloadedTx);
+
+                trades.addAll(fetchedTrades);
+
+                String lastFetchedId = fetchedTrades.get(fetchedTrades.size() - 1).getId();
+                lastTradeId = Long.parseLong(lastFetchedId);
+                currencyPairLastIds.put(symbol.toString(), lastFetchedId);
+            } while (fetchedTrades.size() == LIMIT);
         }
-        return userTrades;
+        return trades;
     }
+
 
     private void setNextConvertDates(long startId) {
         this.convertStartTimestamp = startId;
@@ -114,6 +140,8 @@ public class BinanceDownloader {
         }
         setNextConvertDates(lastConvertDownloadedTimestamp.getTime());
         var params = (BinanceTradeHistoryParams) exchange.getTradeService().createTradeHistoryParams();
+        var service = (BinanceTradeService) exchange.getTradeService();
+
         params.setLimit(CONVERT_MAX_TX_LIMIT);
 
         final List<UserTrade> converts = new ArrayList<>();
@@ -124,7 +152,6 @@ public class BinanceDownloader {
             sleepBetweenRequests(TRADE_HISTORY_WAIT_DURATION);
             final List<UserTrade> convertBlock;
             try {
-                var service = (BinanceTradeService) exchange.getTradeService();
                 UserTrades convertHistory = service.getConvertHistory(params);
                 convertBlock = convertHistory.getUserTrades();
             } catch (Exception e) {
@@ -169,6 +196,7 @@ public class BinanceDownloader {
 
     public List<FundingRecord> downloadDepositsAndWithdrawals(int maxCount) {
         var params = (BinanceFundingHistoryParams) exchange.getAccountService().createFundingHistoryParams();
+        var accountService = (BinanceAccountService) exchange.getAccountService();
 
         List<FundingRecord> result = new ArrayList<>();
         int requests = 0;
@@ -184,7 +212,7 @@ public class BinanceDownloader {
 
             final List<FundingRecord> response;
             try {
-                response = exchange.getAccountService().getFundingHistory(params);
+                response = accountService.getFundingHistory(params);
             } catch (IOException e) {
                 throw new IllegalStateException("User funding history download failed. ", e);
             }
