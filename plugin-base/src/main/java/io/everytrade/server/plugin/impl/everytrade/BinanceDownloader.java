@@ -97,8 +97,8 @@ public class BinanceDownloader {
             long lastTradeId = isEmpty(lastDownloadedTx) ? 0L : Long.parseLong(lastDownloadedTx);
             params.setInstrument(symbol);
             params.setStartId(String.valueOf(lastTradeId));
-            List<UserTrade> fetchedTrades;
 
+            List<UserTrade> fetchedTrades;
             do {
                 sleepBetweenRequests(TRADE_HISTORY_WAIT_DURATION);
                 if (lastTradeId > 0) {
