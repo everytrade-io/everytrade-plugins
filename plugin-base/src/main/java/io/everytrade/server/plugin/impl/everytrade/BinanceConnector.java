@@ -58,6 +58,15 @@ public class BinanceConnector implements IConnector {
             false
         );
 
+    private static final ConnectorParameterDescriptor PARAMETER_PAIR_SETTINGS =
+        new ConnectorParameterDescriptor(
+            "pairSettings",
+            ConnectorParameterType.BOOLEAN,
+            UiKey.CONNECTION_CURRENCY_PAIRS_SETTINGS,
+            "",
+            true
+        );
+
     public static final ConnectorDescriptor DESCRIPTOR = new ConnectorDescriptor(
         ID,
         "Binance Connector",
@@ -69,18 +78,22 @@ public class BinanceConnector implements IConnector {
     Exchange exchange;
     XChangeConnectorParser parser;
     String currencyPairs;
+    boolean pairSettings;
 
     public BinanceConnector(Map<String, String> parameters) {
         this(
             parameters.get(PARAMETER_API_KEY.getId()),
             parameters.get(PARAMETER_API_SECRET.getId()),
-            parameters.get(PARAMETER_CURRENCY_PAIRS.getId())
+            parameters.get(PARAMETER_CURRENCY_PAIRS.getId()),
+            Boolean.parseBoolean(parameters.get(PARAMETER_PAIR_SETTINGS.getId()))
+
         );
     }
-    public BinanceConnector(@NonNull String apiKey, @NonNull String apiSecret, @NonNull String currencyPairs) {
+    public BinanceConnector(@NonNull String apiKey, @NonNull String apiSecret, String currencyPairs, boolean pairSettings) {
         this.exchange = ExchangeFactory.INSTANCE.createExchange(createExchangeSpec(apiKey, apiSecret));
         this.parser = new XChangeConnectorParser();
         this.currencyPairs = currencyPairs;
+        this.pairSettings = pairSettings;
     }
 
     @Override
@@ -94,7 +107,7 @@ public class BinanceConnector implements IConnector {
             var binanceDownloader = new BinanceDownloader(exchange, lastTransactionId);
             List<UserTrade> convertedTrades = binanceDownloader.downloadConvertedTrades();
             List<FundingRecord> funding = binanceDownloader.downloadDepositsAndWithdrawals(MAX_DOWNLOADED_TXS);
-            List<UserTrade> userTrades = binanceDownloader.downloadTrades(currencyPairs, MAX_DOWNLOADED_TXS - funding.size());
+            List<UserTrade> userTrades = binanceDownloader.downloadTrades(currencyPairs);
             userTrades.addAll(convertedTrades);
             return DownloadResult.builder()
                 .parseResult(parser.getParseResult(userTrades, funding))

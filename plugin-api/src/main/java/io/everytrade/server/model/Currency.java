@@ -916,7 +916,10 @@ public enum Currency {
     ENA(false, Instant.parse("2024-04-03T00:00:00Z"), "Ethena"),
     IO(false, Instant.parse("2024-06-12T00:00:00Z"), "io.net"),
     ZK(false, Instant.parse("2024-06-17T00:00:00Z"), "zkSync"),
-    PORTAL(false, Instant.parse("2024-02-29T00:00:00Z"), "Portal");
+    PORTAL(false, Instant.parse("2024-02-29T00:00:00Z"), "Portal"),
+    XBT(false, Instant.parse("2022-08-04T00:00:00Z"), "XBIT Coin"),
+    POPCAT(false, Instant.parse("2024-05-02T00:00:00Z"), "Popcat"),
+    DRIFT(false, Instant.parse("2024-05-14T00:00:00Z"), "Drift Token");
 
     String code;
     int decimalDigits;

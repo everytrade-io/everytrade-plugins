@@ -20,7 +20,7 @@ public abstract class ExchangeBean implements IImportableBean {
     public static final String UNSUPPORTED_CURRENCY_PAIR = "Unsupported currency pair ";
     public static final String UNSUPPORTED_TRANSACTION_TYPE = "Unsupported transaction type ";
     public static final String UNSUPPORTED_STATUS_TYPE = "Unsupported status type ";
-    public static final String IGNORED_CHARS_IN_NUMBER = "[,\\s\\$]";
+    public static final String IGNORED_CHARS_IN_NUMBER = "[,\\s\\$€]";
     public static final String FEE_UID_PART = "-fee";
     public static final String REBATE_UID_PART = "-rebate";
     public static final String ILLEGAL_NEGATIVE_VALUES = "Illegal negative value(s) at index(es): ";
