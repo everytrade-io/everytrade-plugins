@@ -1,6 +1,8 @@
 package io.everytrade.server.util;
 
+import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
+import io.everytrade.server.model.CurrencyPair;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -55,24 +57,6 @@ public class KrakenCurrencyUtil {
         CURRENCY_LONG_CODES.put("XXLTC", Currency.LTC);
         CURRENCY_SHORT_CODES.put("XDG", Currency.DOGE);
         CURRENCY_LONG_CODES.put("EUR.HOLD", Currency.EUR);
-
-        for (Currency value : Currency.values()) {
-            if (value.equals(Currency.BTC)) {
-                continue;
-            }
-            if (value.equals(Currency.LTC)) {
-                continue;
-            }
-            if (value.equals(Currency.DOGE)) {
-                continue;
-            }
-            CURRENCY_SHORT_CODES.put(value.code(), value);
-            if (value.isFiat()) {
-                CURRENCY_LONG_CODES.put("Z" + value.code(), value);
-            } else {
-                CURRENCY_LONG_CODES.put("X" + value.code(), value);
-            }
-        }
     }
 
     public static Currency findCurrencyByCode(String code) {
@@ -120,16 +104,20 @@ public class KrakenCurrencyUtil {
         return value;
     }
 
-    public static Currency fromCode(String code) {
-        final Currency currencyLong = CURRENCY_LONG_CODES.get(code);
-        if (currencyLong != null) {
-            return currencyLong;
-        }
-        final Currency currencyShort = CURRENCY_SHORT_CODES.get(code);
-        if (currencyShort != null) {
-            return currencyShort;
-        }
-        return Currency.fromCode(code);
-    }
+    public static CurrencyPair findStandardPair(String pair) {
+        for (int i = 1; i < pair.length(); i++) {
+            String baseCode = pair.substring(0, i);
+            String quoteCode = pair.substring(i);
 
+            try {
+                Currency base = Currency.fromCode(baseCode);
+                Currency quote = Currency.fromCode(quoteCode);
+
+                return new CurrencyPair(base, quote);
+            } catch (IllegalArgumentException e) {
+                // Ignore exception and continue to next iteration
+            }
+        }
+        throw new DataValidationException(String.format("Can not parse pair %s.", pair));
+    }
 }
