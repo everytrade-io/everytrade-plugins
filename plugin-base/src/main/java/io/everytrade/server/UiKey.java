@@ -15,4 +15,9 @@ public class UiKey {
         "api_connection.withdrawal_mining_fee_as_sell";
     public static final String CONNECTION_WALLET_ADDR_LTUB = "api_connection.wallet_address_ltub";
     public static final String CONNECTION_PASSPHRASE = "api_connection.passphrase";
+    public static final String NORMAL_TXS = "api_connection.normal_transactions";
+    public static final String ERC20_TXS = "api_connection.erc20_transactions";
+    public static final String INTERPRETATION_LABEL = "api_connection.interpretation";
+    public static final String FEES_LABEL = "api_connection.fees";
+    public static final String SOURCES_LABEL = "api_connection.sources";
 }
