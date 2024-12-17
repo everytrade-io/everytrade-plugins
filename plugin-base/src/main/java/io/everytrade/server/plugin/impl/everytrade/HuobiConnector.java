@@ -70,7 +70,11 @@ public class HuobiConnector implements IConnector {
         "Huobi Connector",
         "",
         SupportedExchange.HUOBI.getInternalId(),
-        List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET, PARAMETER_PAIR_SETTINGS, PARAMETER_CURRENCY_PAIRS)
+        List.of(
+            PARAMETER_API_KEY,
+            PARAMETER_API_SECRET,
+            PARAMETER_PAIR_SETTINGS,
+            PARAMETER_CURRENCY_PAIRS)
     );
 
     Exchange exchange;

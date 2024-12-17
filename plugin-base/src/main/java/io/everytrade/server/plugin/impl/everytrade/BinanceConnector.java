@@ -72,7 +72,11 @@ public class BinanceConnector implements IConnector {
         "Binance Connector",
         "",
         BINANCE.getInternalId(),
-        List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET, PARAMETER_CURRENCY_PAIRS)
+        List.of(
+            PARAMETER_API_KEY,
+            PARAMETER_API_SECRET,
+            PARAMETER_PAIR_SETTINGS,
+            PARAMETER_CURRENCY_PAIRS)
     );
 
     Exchange exchange;
@@ -86,7 +90,6 @@ public class BinanceConnector implements IConnector {
             parameters.get(PARAMETER_API_SECRET.getId()),
             parameters.get(PARAMETER_CURRENCY_PAIRS.getId()),
             Boolean.parseBoolean(parameters.get(PARAMETER_PAIR_SETTINGS.getId()))
-
         );
     }
     public BinanceConnector(@NonNull String apiKey, @NonNull String apiSecret, String currencyPairs, boolean pairSettings) {
