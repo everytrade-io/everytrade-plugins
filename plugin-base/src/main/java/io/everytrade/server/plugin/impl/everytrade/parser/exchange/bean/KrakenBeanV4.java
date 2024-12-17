@@ -19,6 +19,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 @Headers(sequence = {"txid", "pair", "time", "type", "cost", "fee", "vol"}, extract = true)
 public class KrakenBeanV4 extends ExchangeBean {
@@ -46,48 +47,9 @@ public class KrakenBeanV4 extends ExchangeBean {
             this.pairBase = currPair.getBase();
             this.pairQuote = currPair.getQuote();
         } catch (Exception ignored) {
-            findStandardPair(pair);
-        }
-    }
-
-    private void findStandardPair(String pair) {
-        try {
-            CurrencyPair currPair = findKrakenCurrencyPair(pair.replaceAll("Z", ""));
+            CurrencyPair currPair = KrakenCurrencyUtil.findStandardPair(pair);
             this.pairBase = currPair.getBase();
             this.pairQuote = currPair.getQuote();
-        } catch (Exception ignore) {
-            try {
-                CurrencyPair currPair = findKrakenCurrencyPair(pair.replaceFirst("X", ""));
-                this.pairBase = currPair.getBase();
-                this.pairQuote = currPair.getQuote();
-            } catch (Exception e) {
-                try {
-                    if (pair.length() == 6) {
-                        this.pairBase = KrakenCurrencyUtil.fromCode(pair.substring(0, 3));
-                        String quote = pair.substring(3, 6);
-                        this.pairQuote = KrakenCurrencyUtil.fromCode(quote);
-                    } else if (pair.length() == 7) {
-                        try {
-                            this.pairBase = KrakenCurrencyUtil.fromCode(pair.substring(0, 4));
-                            this.pairQuote = KrakenCurrencyUtil.fromCode(pair.substring(4, 7));
-                        } catch (Exception ign) {
-                            this.pairBase = KrakenCurrencyUtil.fromCode(pair.substring(0, 3));
-                            String quote = pair.substring(3, 7);
-                            this.pairQuote = KrakenCurrencyUtil.fromCode(quote);
-                        }
-                    } else if (pair.length() == 8) {
-                        this.pairBase = KrakenCurrencyUtil.fromCode(pair.substring(0, 4));
-                        String quote = pair.substring(4, 8);
-                        this.pairQuote = KrakenCurrencyUtil.fromCode(quote);
-                    } else if (pair.contains("Z") && pair.contains("X")) {
-                        CurrencyPair currPair = findKrakenCurrencyPair(pair.replaceAll("Z", "").replaceFirst("X", ""));
-                        this.pairBase = currPair.getBase();
-                        this.pairQuote = currPair.getQuote();
-                    }
-                } catch (Exception ex) {
-                    throw new DataValidationException(String.format("Can not parse pair %s.", pair));
-                }
-            }
         }
     }
 
@@ -158,43 +120,38 @@ public class KrakenBeanV4 extends ExchangeBean {
     }
 
     private CurrencyPair findKrakenCurrencyPair(String pairCode) {
-
         Map<String, Currency> currencyShortCodes = KrakenCurrencyUtil.CURRENCY_SHORT_CODES;
         Map<String, Currency> currencyLongCodes = KrakenCurrencyUtil.CURRENCY_LONG_CODES;
 
-        List<String> matchedShortCodes = currencyShortCodes
-            .keySet()
-            .stream()
-            .filter(prefix -> (pairCode.startsWith(prefix) && (currencyShortCodes.containsKey(pairCode.replaceFirst(prefix, "")) ||
-                currencyLongCodes.containsKey(pairCode.replaceFirst(prefix, "")))))
-            .toList();
-        List<String> matchedLongCodes = currencyLongCodes
-            .keySet()
-            .stream()
-            .filter(prefix -> (pairCode.startsWith(prefix) && (currencyShortCodes.containsKey(pairCode.replaceFirst(prefix, "")) ||
-                currencyLongCodes.containsKey(pairCode.replaceFirst(prefix, "")))))
-            .toList();
-
-        if (matchedLongCodes.size() == 1 && matchedShortCodes.isEmpty()) {
-            return new CurrencyPair(matchedLongCodes.get(0), pairCode.replaceFirst(matchedLongCodes.get(0), ""));
-        } else if (matchedShortCodes.size() == 1 && matchedLongCodes.isEmpty()) {
-            return new CurrencyPair(matchedShortCodes.get(0), pairCode.replaceFirst(matchedShortCodes.get(0), ""));
-        } else if (matchedLongCodes.isEmpty() || matchedShortCodes.isEmpty()) {
-            for (Currency currency : Currency.values()) {
-                String baseCurrencyCode = currency.name();
-                if (pairCode.startsWith(baseCurrencyCode)) {
-                    String remaining = pairCode.substring(baseCurrencyCode.length());
-                    Currency baseCurrency = Currency.valueOf(baseCurrencyCode);
-                    Currency quoteCurrency = Currency.valueOf(remaining);
-                    return new CurrencyPair(baseCurrency, quoteCurrency);
-
+        Function<String, Map.Entry<Currency, Integer>> findCurrencyValueAndLength = code -> {
+            for (Map.Entry<String, Currency> entry : currencyShortCodes.entrySet()) {
+                if (code.startsWith(entry.getKey())) {
+                    return Map.entry(entry.getValue(), entry.getKey().length());
+                    }
+            }
+            for (Map.Entry<String, Currency> entry : currencyLongCodes.entrySet()) {
+                if (code.startsWith(entry.getKey())) {
+                    return Map.entry(entry.getValue(), entry.getKey().length());
                 }
             }
-        }
-        throw new DataValidationException(String.format(
-            "Unknown currency code in pair code %s.",
-            pairCode
-        ));
-    }
+            return null;
+        };
 
+        Map.Entry<Currency, Integer> firstCurrencyEntry = findCurrencyValueAndLength.apply(pairCode);
+        if (firstCurrencyEntry == null) {
+            throw new IllegalArgumentException("No matching currency found in pairCode: " + pairCode);
+        }
+        Currency firstCurrency = firstCurrencyEntry.getKey();
+        int firstCurrencyLength = firstCurrencyEntry.getValue();
+
+        String remainingCode = pairCode.substring(firstCurrencyLength);
+
+        Map.Entry<Currency, Integer> secondCurrencyEntry = findCurrencyValueAndLength.apply(remainingCode);
+        if (secondCurrencyEntry == null) {
+            throw new IllegalArgumentException("Only one currency found in pairCode: " + pairCode);
+        }
+        Currency secondCurrency = secondCurrencyEntry.getKey();
+
+        return new CurrencyPair(firstCurrency, secondCurrency);
+    }
 }
