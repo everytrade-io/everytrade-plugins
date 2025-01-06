@@ -68,14 +68,14 @@ public class BinanceDownloader {
         deserializeState(downloadState);
     }
 
-    public List<UserTrade> downloadTrades(String currencyPairs) {
+    public List<UserTrade> downloadTrades(String currencyPairs, boolean isPaidSubscription) {
         BinanceTradeService tradeServices = (BinanceTradeService) exchange.getTradeService();
         BinanceAccountService accountService = (BinanceAccountService) exchange.getAccountService();
         BinanceTradeHistoryParams params = (BinanceTradeHistoryParams) exchange.getTradeService().createTradeHistoryParams();
 
         List<CurrencyPair> tradingSymbols = new ArrayList<>();
 
-        if (isEmpty(currencyPairs)) {
+        if (isEmpty(currencyPairs) && isPaidSubscription) {
             BinanceExchangeInfo allSymbols;
             try {
                 allSymbols = accountService.getExchangeInfo();
@@ -147,7 +147,7 @@ public class BinanceDownloader {
         final List<UserTrade> converts = new ArrayList<>();
         int request = 0;
         while (request < CONVERT_MAX_REQUESTS) {
-             params.setStartTime(new Date(convertStartTimestamp));
+            params.setStartTime(new Date(convertStartTimestamp));
             params.setEndTime(new Date(convertEndTimestamp));
             sleepBetweenRequests(TRADE_HISTORY_WAIT_DURATION);
             final List<UserTrade> convertBlock;

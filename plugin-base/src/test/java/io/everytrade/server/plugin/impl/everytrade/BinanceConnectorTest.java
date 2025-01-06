@@ -52,7 +52,8 @@ class BinanceConnectorTest {
             fundingRecord(WITHDRAWAL, TEN, BTC, ONE, ADDRESS)
         );
 
-        var connector = new BinanceConnector(new BinanceExchangeMock(trades, records), new XChangeConnectorParser(), "BTC/USD", true);
+        var connector = new BinanceConnector(new BinanceExchangeMock(trades, records), new XChangeConnectorParser(), "BTC/USD",
+            true, true);
         var result = connector.getTransactions(null);
 
         assertNotNull(result.getDownloadStateData());
