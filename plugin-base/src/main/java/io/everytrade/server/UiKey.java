@@ -20,4 +20,5 @@ public class UiKey {
     public static final String INTERPRETATION_LABEL = "api_connection.interpretation";
     public static final String FEES_LABEL = "api_connection.fees";
     public static final String SOURCES_LABEL = "api_connection.sources";
+    public static final String IS_PAID_SUBSCRIPTION = "api_connection.isPaidSubscription";
 }
