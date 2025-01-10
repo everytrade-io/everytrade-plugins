@@ -919,7 +919,32 @@ public enum Currency {
     PORTAL(false, Instant.parse("2024-02-29T00:00:00Z"), "Portal"),
     XBT(false, Instant.parse("2022-08-04T00:00:00Z"), "XBIT Coin"),
     POPCAT(false, Instant.parse("2024-05-02T00:00:00Z"), "Popcat"),
-    DRIFT(false, Instant.parse("2024-05-14T00:00:00Z"), "Drift Token");
+    DRIFT(false, Instant.parse("2024-05-14T00:00:00Z"), "Drift Token"),
+    PRIME(false, Instant.parse("2023-11-02T00:00:00Z"), "Echelon Prime"),
+    WAGMIGAMES(false, Instant.parse("2022-12-15T00:00:00Z"), "WAGMI GAMES"),
+    SFUND(false, Instant.parse("2021-07-29T00:00:00Z"), "Seedify.fund"),
+    ASTRO(false, Instant.parse("2022-08-11T00:00:00Z"), "Astroport.fi"),
+    ROOT(false, Instant.parse("2023-11-23T00:00:00Z"), "The Root Network"),
+    DOMI(false, Instant.parse("2022-01-27T00:00:00Z"), "Domi"),
+    DIO(false, Instant.parse("2019-05-02T00:00:00Z"), "Decimated"),
+    WBAI(false, Instant.parse("2024-01-19T00:00:00Z"), "Wrapped Balance AI"),
+    KARRAT(false, Instant.parse("2024-04-24T00:00:00Z"), "Karrat"),
+    ZENT(false, Instant.parse("2024-09-05T00:00:00Z"), "ZENTU"),
+    PLAY(false, Instant.parse("2024-12-12T00:00:00Z"), "PLAY"),
+    BRETT(false, Instant.parse("2024-03-20T00:00:00Z"), "Brett (Base)"),
+    REDO(false, Instant.parse("2024-04-19T00:00:00Z"), "Resistance Dog"),
+    PONKE(false, Instant.parse("2024-02-06T00:00:00Z"), "PONKE"),
+    ROOST(false, Instant.parse("2024-03-28T00:00:00Z"), "Roost"),
+    BOBO(false, Instant.parse("2023-05-18T00:00:00Z"), "BOBO Coin"),
+    BXBT(false, Instant.parse("2023-10-19T00:00:00Z"), "BoxBet"),
+    BAZED(false, Instant.parse("2023-08-03T00:00:00Z"), "Bazed Games"),
+    WOLF(false, Instant.parse("2024-04-26T00:00:00Z"), "Landwolf"),
+    TMANIA(false, Instant.parse("2024-05-31T00:00:00Z"), "T Mania SOL"),
+    WOTF(false, Instant.parse("2024-12-21T00:00:00Z"), "Way of The Future"),
+    NOTCOIN(false, Instant.parse("2024-05-16T00:00:00Z"), "Notcoin"),
+    BOGE(false, Instant.parse("2024-08-23T00:00:00Z"), "Boge v1"),
+    BET(false, Instant.parse("2024-05-14T00:00:00Z"), "Betfin token"),
+    BIT(false, Instant.parse("2021-09-02T00:00:00Z"), "BitDAO");
 
     String code;
     int decimalDigits;
