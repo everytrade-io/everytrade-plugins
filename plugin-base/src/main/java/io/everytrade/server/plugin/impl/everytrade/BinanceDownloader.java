@@ -75,7 +75,7 @@ public class BinanceDownloader {
 
         List<CurrencyPair> tradingSymbols = new ArrayList<>();
 
-        if (pairSettings && isPaidSubscription) {
+        if (!pairSettings && isPaidSubscription) {
             BinanceExchangeInfo allSymbols;
             try {
                 allSymbols = accountService.getExchangeInfo();
