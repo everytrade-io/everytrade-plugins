@@ -128,7 +128,7 @@ public class BinanceConnector implements IConnector {
             var binanceDownloader = new BinanceDownloader(exchange, lastTransactionId);
             List<UserTrade> convertedTrades = binanceDownloader.downloadConvertedTrades();
             List<FundingRecord> funding = binanceDownloader.downloadDepositsAndWithdrawals(MAX_DOWNLOADED_TXS);
-            List<UserTrade> userTrades = binanceDownloader.downloadTrades(currencyPairs, isPaidSubscription);
+            List<UserTrade> userTrades = binanceDownloader.downloadTrades(currencyPairs, pairSettings, isPaidSubscription);
             userTrades.addAll(convertedTrades);
             return DownloadResult.builder()
                 .parseResult(parser.getParseResult(userTrades, funding))

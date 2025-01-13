@@ -68,14 +68,14 @@ public class BinanceDownloader {
         deserializeState(downloadState);
     }
 
-    public List<UserTrade> downloadTrades(String currencyPairs, boolean isPaidSubscription) {
+    public List<UserTrade> downloadTrades(String currencyPairs, boolean pairSettings, boolean isPaidSubscription) {
         BinanceTradeService tradeServices = (BinanceTradeService) exchange.getTradeService();
         BinanceAccountService accountService = (BinanceAccountService) exchange.getAccountService();
         BinanceTradeHistoryParams params = (BinanceTradeHistoryParams) exchange.getTradeService().createTradeHistoryParams();
 
         List<CurrencyPair> tradingSymbols = new ArrayList<>();
 
-        if (isEmpty(currencyPairs) && isPaidSubscription) {
+        if (!pairSettings && isPaidSubscription) {
             BinanceExchangeInfo allSymbols;
             try {
                 allSymbols = accountService.getExchangeInfo();
