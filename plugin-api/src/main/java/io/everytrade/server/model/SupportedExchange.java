@@ -45,7 +45,8 @@ public enum SupportedExchange {
     SIMPLECOIN("Simplecoin", "simplecoin"),
     OPEN_NODE("OpenNode", "opennode"),
     KUCOIN("KuCoin", "kucoin"),
-    BITCOINRD("BitcoinRD", "bitcoinrd");
+    BITCOINRD("BitcoinRD", "bitcoinrd"),
+    KVAPAY("Kvapay", "kvapay");
 
 
     String displayName;
