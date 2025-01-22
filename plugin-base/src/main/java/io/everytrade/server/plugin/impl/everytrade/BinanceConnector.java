@@ -70,7 +70,7 @@ public class BinanceConnector implements IConnector {
     private static final ConnectorParameterDescriptor PARAMETER_IS_PAID_SUBSCRIPTION =
         new ConnectorParameterDescriptor(
             "isPaidSubscription",
-            ConnectorParameterType.BOOLEAN,
+            ConnectorParameterType.HIDDEN,
             UiKey.IS_PAID_SUBSCRIPTION,
             "",
             false
