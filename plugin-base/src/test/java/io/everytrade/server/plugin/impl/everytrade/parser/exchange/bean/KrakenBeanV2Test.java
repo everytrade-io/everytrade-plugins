@@ -13,6 +13,7 @@ import java.time.Instant;
 import java.util.List;
 
 import static io.everytrade.server.model.Currency.ADA;
+import static io.everytrade.server.model.Currency.BSV;
 import static io.everytrade.server.model.Currency.BTC;
 import static io.everytrade.server.model.Currency.EUR;
 import static io.everytrade.server.model.Currency.LUNA2;
@@ -25,6 +26,7 @@ import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.FEE;
+import static io.everytrade.server.model.TransactionType.FORK;
 import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.STAKE;
 import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
@@ -37,7 +39,26 @@ class KrakenBeanV2Test {
     private static final String HEADER_CORRECT_WALLET
         = "txid,refid,time,type,subtype,aclass,asset,wallet,amount,fee,balance\n";
 
+    @Test
+    void testTransferNullSubType() {
+        final String row = "\"LBSRGM-3UKWS-RW3RBY\",\"LAKXOJM-6CXWX-DW6ACQ\",\"2018-11-18 23:31:29\"," +
+            "\"transfer\",\"\",\"currency\",\"BSV\",\"spot / main\",0.3011222300,0,0.3011222300";
+        final TransactionCluster actual1 = ParserTestUtils.getTransactionCluster(HEADER_CORRECT_WALLET + row);
+        final TransactionCluster expected1 = new TransactionCluster(
 
+            new ImportedTransactionBean(
+                "LBSRGM-3UKWS-RW3RBY",
+                Instant.parse("2018-11-18T23:31:29Z"),
+                BSV,
+                BSV,
+                FORK,
+                new BigDecimal("0.3011222300"),
+                null
+            ),
+            List.of()
+        );
+        ParserTestUtils.checkEqual(expected1, actual1);
+    }
 
     @Test
     void testZeurCurrency()  {
