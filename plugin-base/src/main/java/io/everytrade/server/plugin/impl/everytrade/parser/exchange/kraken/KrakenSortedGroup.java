@@ -13,6 +13,7 @@ import java.util.List;
 
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.EARNING;
+import static io.everytrade.server.model.TransactionType.FORK;
 import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.STAKE;
@@ -58,7 +59,7 @@ public class KrakenSortedGroup {
         var rowsSize = rts + rds + rws + rss + rtrs;
 
         // buy or sell
-        if (rowsTrades.size() > 0 && rowsSize > 0) {
+        if (!rowsTrades.isEmpty() && rowsSize > 0) {
             if (rowsTrades.size() != 2) {
                 throw new DataValidationException("Wrong number of trades;");
             }
@@ -76,18 +77,22 @@ public class KrakenSortedGroup {
             }
         } else if (rowsDeposit.size() == 1 && rowsSize == 1) {
             return DEPOSIT;
-        } else if (rowsEarning.size() > 0) {
+        } else if (!rowsEarning.isEmpty()) {
             return EARNING;
         } else if (rowsWithdrawal.size() == 1 && rowsSize == 1) {
             return WITHDRAWAL;
         } else if (rowsStaking.size() == 1 && rowsSize == 1) {
             return STAKING_REWARD;
-        } else if (rowsTransfer.size() == 1 && rowsSize == 1 &&
-            rowsTransfer.get(0).getSubtype().equalsIgnoreCase(KrakenSubType.STAKINGFROMSPOT.name())) {
-            return STAKE;
-        } else if (rowsTransfer.size() == 1 && rowsSize == 1
-            && rowsTransfer.get(0).getSubtype().equalsIgnoreCase(KrakenSubType.SPOTFROMSTAKING.name())) {
-            return UNSTAKE;
+        } else if (rowsTransfer.size() == 1 && rowsSize == 1) {
+            if (rowsTransfer.get(0).getSubtype() == null) {
+                return FORK;
+            }
+            String subtype = rowsTransfer.get(0).getSubtype().toUpperCase();
+            if (KrakenSubType.STAKINGFROMSPOT.name().equals(subtype)) {
+                return STAKE;
+            } else if (KrakenSubType.SPOTFROMSTAKING.name().equals(subtype)) {
+                return UNSTAKE;
+            }
         }
         return UNKNOWN;
     }
@@ -199,6 +204,12 @@ public class KrakenSortedGroup {
             validateStakings(type);
             createStaking(type);
         }
+        if (type.equals(FORK)) {
+            createFork(type);
+        }
+        if (type.equals(UNKNOWN)) {
+            throw new DataValidationException("Unknown transaction type;");
+        }
     }
 
     public static String parseIds(List<Integer> ids) {
@@ -243,7 +254,13 @@ public class KrakenSortedGroup {
             mapDepositAndStakingTxs(rowsStaking.get(0), type);
         }
         if (!rowsTransfer.isEmpty()) {
-            mapTransferStakingTxs(rowsTransfer.get(0), type);
+            mapTransferStakingOrForkTxs(rowsTransfer.get(0), type);
+        }
+    }
+
+    private void createFork(TransactionType type) {
+        if (!rowsTransfer.isEmpty()) {
+            mapTransferStakingOrForkTxs(rowsTransfer.get(0), type);
         }
     }
 
@@ -309,7 +326,7 @@ public class KrakenSortedGroup {
         }
 
     }
-    private void mapTransferStakingTxs(KrakenBeanV2 row, TransactionType type) {
+    private void mapTransferStakingOrForkTxs(KrakenBeanV2 row, TransactionType type) {
         KrakenBeanV2 createdTransaction = new KrakenBeanV2();
         createdTransaction.setTxsType(type);
         createdTransaction.setRefid(row.getRefid());
