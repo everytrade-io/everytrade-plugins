@@ -24,14 +24,6 @@ public class KvaPayBeanV1Test {
         "Fee Symbol;Address;Network;Project;State\n";
 
     @Test
-    void testCSV() {
-        File file = new File("/Users/slithercze/Desktop", "transactions_2025-01-24T12_23_38.294Z.csv");
-        String header = HEADER.substring(0, HEADER.length() - 1);
-        var parser = new EverytradeCsvMultiParser().parse(file, header);
-        var varTwo = parser;
-    }
-
-    @Test
     void testSell() {
         final String row0 = "66b5fbf8bdef3ce1bd60f63f;2024-08-09T11:22:32.622Z;EXCHANGE;5;EUR;5.455299;USDT;1.091059855543675;" +
             "0;EUR;-;-;-;SUCCESS\n";
