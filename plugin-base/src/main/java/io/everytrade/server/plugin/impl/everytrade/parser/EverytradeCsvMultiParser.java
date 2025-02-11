@@ -45,6 +45,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.Coinbase
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.GeneralBytesBeanV3;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.HuobiBuySellBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.HuobiDepWdrlBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.PocketAppBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.simplecoin.SimplecoinBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.everytrade.EveryTradeBeanV3_3;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.okx.OkxBeanV2;
@@ -649,6 +650,18 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                         .withSeparator(delimiter)
                 ))
                 .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(PaxfulBeanV1.class, delimiter))
+                .supportedExchange(PAXFUL)
+                .build());
+
+            /* POCKETAPP */
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader
+                        .of("type","date","reference","price.currency","price.amount","cost.currency","cost.amount",
+                            "fee.currency","fee.amount","value.currency","value.amount")
+                        .withSeparator(delimiter)
+                ))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(PocketAppBeanV1.class, delimiter))
                 .supportedExchange(PAXFUL)
                 .build());
 
