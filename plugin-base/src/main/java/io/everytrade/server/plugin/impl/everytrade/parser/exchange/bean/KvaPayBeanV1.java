@@ -153,7 +153,7 @@ public class KvaPayBeanV1 extends BaseTransactionMapper {
                 quoteCurrency = symbol;
                 yield TransactionType.WITHDRAWAL;
             }
-            default -> throw new DataIgnoredException("Invalid transaction type: " + type + ". Allowed: DEPOSIT, WITHDRAWAL");
+            default -> throw new DataIgnoredException("Invalid transaction type: " + type + ".");
         };
     }
 
