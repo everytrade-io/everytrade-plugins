@@ -45,6 +45,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.Coinbase
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.GeneralBytesBeanV3;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.HuobiBuySellBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.HuobiDepWdrlBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.KvaPayBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.simplecoin.SimplecoinBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.everytrade.EveryTradeBeanV3_3;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.okx.OkxBeanV2;
@@ -121,6 +122,7 @@ import static io.everytrade.server.model.SupportedExchange.HITBTC;
 import static io.everytrade.server.model.SupportedExchange.HUOBI;
 import static io.everytrade.server.model.SupportedExchange.KRAKEN;
 import static io.everytrade.server.model.SupportedExchange.KUCOIN;
+import static io.everytrade.server.model.SupportedExchange.KVAPAY;
 import static io.everytrade.server.model.SupportedExchange.LOCALBITCOINS;
 import static io.everytrade.server.model.SupportedExchange.OKX;
 import static io.everytrade.server.model.SupportedExchange.OPEN_NODE;
@@ -601,6 +603,20 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 ))
                 .parserFactory(() -> new KrakenExchangeSpecificParser(KrakenBeanV2.class, delimiter))
                 .supportedExchange(KRAKEN)
+                .build());
+
+            /* KVAPAY */
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader
+                        .of(
+                            "ID", "Date Created", "Type", "Amount", "Symbol", "Destination amount",
+                            "Destination symbol", "Exchange rate", "Fee", "Fee Symbol", "Address", "Network", "Project", "State"
+                        )
+                        .withSeparator(delimiter)
+                ))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(KvaPayBeanV1.class, delimiter))
+                .supportedExchange(KVAPAY)
                 .build());
 
             /* LOCALBITCOINS */
