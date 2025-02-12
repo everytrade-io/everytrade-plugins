@@ -189,7 +189,7 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
             .base(currency)
             .quote(quote)
             .originalAmount(transaction.getAmount())
-            .feeAmount(transaction.getFee())
+            .feeAmount(transaction.getFee() != null ? transaction.getFee() : null)
             .feeCurrency(fee)
             .build();
 
