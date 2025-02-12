@@ -944,7 +944,12 @@ public enum Currency {
     NOTCOIN(false, Instant.parse("2024-05-16T00:00:00Z"), "Notcoin"),
     BOGE(false, Instant.parse("2024-08-23T00:00:00Z"), "Boge v1"),
     BET(false, Instant.parse("2024-05-14T00:00:00Z"), "Betfin token"),
-    BIT(false, Instant.parse("2021-09-02T00:00:00Z"), "BitDAO");
+    BIT(false, Instant.parse("2021-09-02T00:00:00Z"), "BitDAO"),
+    TRUMP(false, Instant.parse("2025-01-18T00:00:00Z"), "Official TRUMP"),
+    XAI(false, Instant.parse("2024-01-04T00:00:00Z"), "Xai Games"),
+    PIXEL(false, Instant.parse("2024-02-19T00:00:00Z"), "Pixels"),
+    ETHFI(false, Instant.parse("2024-03-18T00:00:00Z"), "Ether.fi"),
+    SAGA(false, Instant.parse("2024-04-09T00:00:00Z"), "Saga");
 
     String code;
     int decimalDigits;
