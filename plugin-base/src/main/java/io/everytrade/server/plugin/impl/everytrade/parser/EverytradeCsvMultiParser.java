@@ -126,6 +126,7 @@ import static io.everytrade.server.model.SupportedExchange.LOCALBITCOINS;
 import static io.everytrade.server.model.SupportedExchange.OKX;
 import static io.everytrade.server.model.SupportedExchange.OPEN_NODE;
 import static io.everytrade.server.model.SupportedExchange.PAXFUL;
+import static io.everytrade.server.model.SupportedExchange.POCKETAPP;
 import static io.everytrade.server.model.SupportedExchange.POLONIEX;
 import static io.everytrade.server.model.SupportedExchange.SHAKEPAY;
 import static io.everytrade.server.model.SupportedExchange.SIMPLECOIN;
@@ -662,7 +663,7 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                         .withSeparator(delimiter)
                 ))
                 .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(PocketAppBeanV1.class, delimiter))
-                .supportedExchange(PAXFUL)
+                .supportedExchange(POCKETAPP)
                 .build());
 
             /* POLONIEX */
