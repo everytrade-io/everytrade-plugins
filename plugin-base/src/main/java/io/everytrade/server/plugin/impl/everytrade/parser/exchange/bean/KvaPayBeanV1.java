@@ -72,7 +72,7 @@ public class KvaPayBeanV1 extends BaseTransactionMapper {
 
     @Parsed(field = "Destination Amount")
     public void setDestinationAmount(String destinationAmount) {
-        this.destinationAmount = "-".equals(destinationAmount) ? null : new BigDecimal(destinationAmount);
+        this.destinationAmount = destinationAmount == null ? null : new BigDecimal(destinationAmount);
     }
 
     @Parsed(field = "Destination Symbol")
@@ -89,7 +89,7 @@ public class KvaPayBeanV1 extends BaseTransactionMapper {
 
     @Parsed(field = "Exchange Rate")
     public void setExchangeRate(String exchangeRate) {
-        this.exchangeRate = "-".equals(exchangeRate) ? null : new BigDecimal(exchangeRate);
+        this.exchangeRate = exchangeRate == null ? null : new BigDecimal(exchangeRate);
     }
 
     @Parsed(field = "Fee")

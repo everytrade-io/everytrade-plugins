@@ -71,7 +71,7 @@ public class KvaPayBeanV1Test {
 
     @Test
     void testDeposit() {
-        final String row0 = "67178aee2e3cfa8c98705708;2024-10-22T11:22:22.790Z;DEPOSIT;1;USDT;-;-;-;0;USDT;" +
+        final String row0 = "67178aee2e3cfa8c98705708;2024-10-22T11:22:22.790Z;DEPOSIT;1;USDT;;-;;0;USDT;" +
             "TVjGoi36rXMVkeop66NQTyt3PEiCTSB4cJ;TRX;-;SUCCESS\n";
         final var actual = ParserTestUtils.getParseResult(HEADER + row0);
 
@@ -95,7 +95,7 @@ public class KvaPayBeanV1Test {
 
     @Test
     void testWithdrawal() {
-        final String row0 = "668d87c7c4de919dd75d7c74;2024-07-09T18:56:07.235Z;WITHDRAW;2;EUR;-;-;-;0;EUR;" +
+        final String row0 = "668d87c7c4de919dd75d7c74;2024-07-09T18:56:07.235Z;WITHDRAW;2;EUR;;-;;0;EUR;" +
             "SK3409000000000631608004;FIO_EUR;-;SUCCESS\n";
         final var actual = ParserTestUtils.getParseResult(HEADER + row0);
 
