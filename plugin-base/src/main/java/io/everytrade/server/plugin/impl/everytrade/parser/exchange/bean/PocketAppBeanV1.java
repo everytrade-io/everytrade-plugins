@@ -103,7 +103,7 @@ public class PocketAppBeanV1 extends BaseTransactionMapper {
                     baseAmount = valueAmount;
                     baseCurrency = valueCurrency;
                     quoteCurrency = costCurrency;
-                    unitPrice = evalUnitPrice(valueAmount, costAmount);
+                    unitPrice = evalUnitPrice(costAmount, valueAmount);
                     yield TransactionType.BUY;
                 }
             }

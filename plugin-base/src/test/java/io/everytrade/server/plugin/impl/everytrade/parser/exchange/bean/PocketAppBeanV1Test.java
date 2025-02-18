@@ -24,8 +24,8 @@ public class PocketAppBeanV1Test {
 
     @Test
     void testBuy() {
-        final String row = "exchange,2024-08-29T10:04:11.000Z,RF96VU5HH4,EUR,53769.99000000,EUR,985.00000000,EUR,15.00000000,BTC,0" +
-            ".01831876,,,\n";
+        final String row = "exchange,2024-08-29T10:04:11.000Z,RF96VU5HH4,EUR,53769.99000000,EUR,985.00000000,EUR,15.00000000,BTC," +
+            "0.01831876,,,\n";
         final TransactionCluster actual1 = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected1 = new TransactionCluster(
 
@@ -36,7 +36,7 @@ public class PocketAppBeanV1Test {
                 EUR,
                 BUY,
                 new BigDecimal("0.01831876"),
-                new BigDecimal("0.00001859772588832")
+                new BigDecimal("53770.01500101535256753")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
