@@ -46,7 +46,8 @@ public enum SupportedExchange {
     OPEN_NODE("OpenNode", "opennode"),
     KUCOIN("KuCoin", "kucoin"),
     BITCOINRD("BitcoinRD", "bitcoinrd"),
-    KVAPAY("Kvapay", "kvapay");
+    KVAPAY("Kvapay", "kvapay"),
+    POCKETAPP("Pocket App", "pocketapp");
 
 
     String displayName;

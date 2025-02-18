@@ -949,7 +949,8 @@ public enum Currency {
     XAI(false, Instant.parse("2024-01-04T00:00:00Z"), "Xai Games"),
     PIXEL(false, Instant.parse("2024-02-19T00:00:00Z"), "Pixels"),
     ETHFI(false, Instant.parse("2024-03-18T00:00:00Z"), "Ether.fi"),
-    SAGA(false, Instant.parse("2024-04-09T00:00:00Z"), "Saga");
+    SAGA(false, Instant.parse("2024-04-09T00:00:00Z"), "Saga"),
+    EIGEN(false, Instant.parse("2024-10-01T00:00:00Z"), "Eigenlayer");
 
     String code;
     int decimalDigits;
