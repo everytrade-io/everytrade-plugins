@@ -38,11 +38,11 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 public class CoinmateConnector implements IConnector {
 
     private static final String ID = WhaleBooksPlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "coinmateApiConnector";
-    private static final String SORT_DESC = "DESC";
+    private static final String SORT_FIELD = "DESC";
     private static final long DELAY = 24 * 60 * 60 * 1000L;
     // MAX 100 request per minute per user, https://coinmate.docs.apiary.io/#reference/request-limits
     // https://coinmate.docs.apiary.io/#reference/transaction-history/get-transaction-history
-    private static final int TX_PER_REQUEST = 1000;
+    private static final int TX_PER_REQUEST = 10;
     private static final Logger LOG = LoggerFactory.getLogger(CoinmateConnector.class);
     private static final int MAX_ITERATIONS = 80;
 
@@ -119,34 +119,35 @@ public class CoinmateConnector implements IConnector {
         List<CoinmateTransactionHistoryEntry> allData = new ArrayList<>();
 
         long txFrom = state.getTxFrom();
-        long txTo = state.getTxTo() == 0L ? Instant.now().toEpochMilli() : state.getTxTo();
+        long txTo = (state.getTxFrom() != 0) ? Instant.now().toEpochMilli() :
+                    (state.getTxTo() == 0L) ? Instant.now().toEpochMilli() : state.getTxTo();
 
         int iterationCount = 0;
 
         while (true) {
             if (iterationCount++ >= MAX_ITERATIONS) {
-                throw new IllegalStateException("Maximum iterations reached. Possible infinite loop detected.");
+                break;
             }
 
             List<CoinmateTransactionHistoryEntry> userTransactionBlock;
             try {
                 userTransactionBlock = rawServices.getCoinmateTransactionHistory(
-                    0, TX_PER_REQUEST, SORT_DESC, txFrom, txTo, null).getData();
+                    0, TX_PER_REQUEST, SORT_FIELD, txFrom, txTo, null
+                ).getData();
             } catch (IOException e) {
                 throw new IllegalStateException("Download user trade history failed.", e);
             }
 
             if (userTransactionBlock.isEmpty()) {
-                state.txFrom = txTo;
-                state.txTo = 0L;
                 break;
             }
 
             allData.addAll(userTransactionBlock);
 
+            state.highestTimestamp = Math.max(state.highestTimestamp, allData.get(0).getTimestamp() + 1);
+
             if (userTransactionBlock.size() < TX_PER_REQUEST) {
-                state.txFrom = txTo;
-                state.txTo = 0L;
+                state.txFrom = state.highestTimestamp;
                 break;
             }
 
@@ -181,7 +182,7 @@ public class CoinmateConnector implements IConnector {
                     params.setStartId(state.lastTradeId);
                     params.setLimit(1);
                     var userTradesBlock = tradeService.getTradeHistory(params).getUserTrades();
-                    lastTradeTimestamp = userTradesBlock.get(0).getTimestamp().getTime() - (1 * 1000L);
+                    lastTradeTimestamp = userTradesBlock.get(0).getTimestamp().getTime() - (1000L);
                 } catch (Exception e) {
                     LOG.error("Cannot download last tx timestamp %s", e.getMessage());
                     throw new CoinmateException(String.format("Cannot download last tx timestamp %s", e.getMessage()));
@@ -207,6 +208,7 @@ public class CoinmateConnector implements IConnector {
         long txFrom;
         long txTo;
         int offset;
+        long highestTimestamp;
 
         public static DownloadState deserialize(String state) {
             if (isEmpty(state)) {
@@ -218,14 +220,19 @@ public class CoinmateConnector implements IConnector {
                 strA.length > 1 ? Long.parseLong(strA[1]) : 0,
                 strA.length > 2 ? Long.parseLong(strA[2]) : 0,
                 strA.length > 3 ? Long.parseLong(strA[3]) : 0,
-                strA.length > 4 ? Integer.parseInt(strA[4]) : 0
+                strA.length > 4 ? Integer.parseInt(strA[4]) : 0,
+                strA.length > 5 ? Long.parseLong(strA[5]) : 0
             );
         }
 
         // new endpoint requires only state txFrom and txTo
         public String serialize() {
-            return lastTradeId + SEPARATOR + fundingsFrom + SEPARATOR + txFrom + SEPARATOR + txTo + SEPARATOR + offset;
+            return lastTradeId + SEPARATOR +
+                fundingsFrom + SEPARATOR +
+                txFrom + SEPARATOR +
+                txTo + SEPARATOR +
+                offset + SEPARATOR +
+                highestTimestamp;
         }
-
     }
 }
