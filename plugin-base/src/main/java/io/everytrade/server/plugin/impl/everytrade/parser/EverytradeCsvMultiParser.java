@@ -91,6 +91,8 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.KuCoin
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.KuCoinDepositV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.KuCoinDepWdrlBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.KuCoinWithdrawalV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.trezorSuite.TrezorSuiteBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.trezorSuite.TrezorSuiteExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.utils.ClusterValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -132,6 +134,7 @@ import static io.everytrade.server.model.SupportedExchange.POCKETAPP;
 import static io.everytrade.server.model.SupportedExchange.POLONIEX;
 import static io.everytrade.server.model.SupportedExchange.SHAKEPAY;
 import static io.everytrade.server.model.SupportedExchange.SIMPLECOIN;
+import static io.everytrade.server.model.SupportedExchange.TREZOR_SUITE;
 import static io.everytrade.server.plugin.api.parser.ParsingProblemType.PARSED_ROW_IGNORED;
 import static io.everytrade.server.plugin.api.parser.ParsingProblemType.ROW_PARSING_FAILED;
 import static java.util.Map.entry;
@@ -764,6 +767,18 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 ))
                 .parserFactory(() -> new SimplecoinExchangeSpecificParser(SimplecoinBeanV2.class, delimiter))
                 .supportedExchange(SIMPLECOIN)
+                .build());
+
+            /* TrezorSuite */
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader
+                        .of("Timestamp", "Date", "Type", "Transaction ID", "Fee", "Fee unit", "Address", "Label", "Amount", "Amount unit"
+                            , "Fiat (EUR)", "Other")
+                        .withSeparator(delimiter)
+                ))
+                .parserFactory(() -> new TrezorSuiteExchangeSpecificParser(TrezorSuiteBeanV1.class, delimiter))
+                .supportedExchange(TREZOR_SUITE)
                 .build());
 
             /* OpenNode */
