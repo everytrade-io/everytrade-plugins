@@ -40,6 +40,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.Bitstamp
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexBeanV3;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.ChangeInvestBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseProBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.GeneralBytesBeanV3;
@@ -111,6 +112,7 @@ import static io.everytrade.server.model.SupportedExchange.BITMEX;
 import static io.everytrade.server.model.SupportedExchange.BITSTAMP;
 import static io.everytrade.server.model.SupportedExchange.BITTREX;
 import static io.everytrade.server.model.SupportedExchange.BLOCKFI;
+import static io.everytrade.server.model.SupportedExchange.CHANGE_INVEST;
 import static io.everytrade.server.model.SupportedExchange.COINBANK;
 import static io.everytrade.server.model.SupportedExchange.COINBASE;
 import static io.everytrade.server.model.SupportedExchange.COINBASE_PRO;
@@ -358,6 +360,17 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 ))
                 .parserFactory(() -> new BlockFiExchangeSpecificParserV1(BlockFiBeanV1.class, delimiter))
                 .supportedExchange(BLOCKFI)
+                .build());
+
+            /* CHANGE_INVEST */
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader.of("created_time", "id", "order_type", "from_currency", "from_amount", "to_currency",
+                            "to_amount", "fee", "execution_price", "completed_time")
+                        .withSeparator(delimiter)
+                ))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(ChangeInvestBeanV1.class, delimiter))
+                .supportedExchange(CHANGE_INVEST)
                 .build());
 
             /* COINBANK */
