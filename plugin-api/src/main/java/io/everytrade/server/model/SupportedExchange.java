@@ -48,7 +48,8 @@ public enum SupportedExchange {
     BITCOINRD("BitcoinRD", "bitcoinrd"),
     KVAPAY("Kvapay", "kvapay"),
     POCKETAPP("Pocket App", "pocketapp"),
-    TREZOR_SUITE("Trezor Suite", "trezorsuite");
+    TREZOR_SUITE("Trezor Suite", "trezorsuite"),
+    CHANGE_INVEST("Change Invest", "changeinvest");
 
 
     String displayName;
