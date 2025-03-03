@@ -3,10 +3,8 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
-import io.everytrade.server.plugin.impl.everytrade.parser.EverytradeCsvMultiParser;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
