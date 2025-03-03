@@ -3,10 +3,8 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
-import io.everytrade.server.plugin.impl.everytrade.parser.EverytradeCsvMultiParser;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -79,6 +77,26 @@ public class ChangeInvestBeanV1Test {
                 CNG,
                 REWARD,
                 new BigDecimal("2"),
+                null
+            ),
+            List.of()
+        );
+        ParserTestUtils.checkEqual(expected1, actual1);
+    }
+
+    @Test
+    void testFee() {
+        final String row = "2025-01-19 10:50:28;15279599;FEE;EURT;20;EURT;20;0;;2025-01-19 10:50:29\n";
+        final TransactionCluster actual1 = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
+        final TransactionCluster expected1 = new TransactionCluster(
+
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2025-01-19T10:50:29Z"),
+                EUR,
+                EUR,
+                FEE,
+                new BigDecimal("20"),
                 null
             ),
             List.of()
