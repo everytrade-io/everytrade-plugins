@@ -87,6 +87,26 @@ public class ChangeInvestBeanV1Test {
     }
 
     @Test
+    void testFee() {
+        final String row = "2025-01-19 10:50:28;15279599;FEE;EURT;20;EURT;20;0;;2025-01-19 10:50:29\n";
+        final TransactionCluster actual1 = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
+        final TransactionCluster expected1 = new TransactionCluster(
+
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2025-01-19T10:50:29Z"),
+                EUR,
+                EUR,
+                FEE,
+                new BigDecimal("20"),
+                null
+            ),
+            List.of()
+        );
+        ParserTestUtils.checkEqual(expected1, actual1);
+    }
+
+    @Test
     void testDeposit() {
         final String fiat_deposit = "2021-10-27 05:24:32;3231151;FIAT_DEPOSIT;EURT;20;EURT;20;0;1;2021-10-27 05:24:33\n";
         final String card_deposit = "2021-10-28 18:47:07;3245437;CARD_DEPOSIT;EURT;780;EURT;780;0;1;2021-10-28 18:49:32\n";
