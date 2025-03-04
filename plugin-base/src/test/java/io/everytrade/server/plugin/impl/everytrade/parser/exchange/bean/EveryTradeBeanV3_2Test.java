@@ -823,7 +823,7 @@ class EveryTradeBeanV3_2Test {
                 AXL,
                 STAKING_REWARD,
                 new BigDecimal("12167.60559"),
-                null,
+                "axelar1jv65s3grqf6v6jl3dp4t6c9t9rk99cd8r3j5z7",
                 null,
                 null
             ),
@@ -837,7 +837,7 @@ class EveryTradeBeanV3_2Test {
                     new BigDecimal("0.0014"),
                     AXL,
                     null,
-                    null,
+                    "axelar1jv65s3grqf6v6jl3dp4t6c9t9rk99cd8r3j5z7",
                     null
                 )
             )

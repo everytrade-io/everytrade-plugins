@@ -55,6 +55,8 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
     String note;
     String labels;
     String address;
+    String addressFrom;
+    String addressTo;
 
     ImportedTransactionBean main;
     List<ImportedTransactionBean> related;
@@ -190,12 +192,12 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
 
     @Parsed(field = "ADDRESS_FROM")
     public void setAddressFrom(String addressFrom) {
-        this.address = addressFrom;
+        this.addressFrom = addressFrom;
     }
 
     @Parsed(field = "ADDRESS_TO")
     public void setAddressTo(String addressTo) {
-        this.address = addressTo;
+        this.addressTo = addressTo;
     }
 
     @Parsed(field = "ADDRESS")
@@ -263,12 +265,16 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
             symbolQuote,
             action,
             quantity,
-            address,
+            address != null ? address : (action == DEPOSIT ? addressFrom : addressTo),
             note,
             labels
         );
 
         return new TransactionCluster(tx, getRelatedTxs());
+    }
+
+    private String getAddress() {
+        return address != null ? address : (addressFrom != null ? addressFrom : addressTo);
     }
 
     private TransactionCluster createBuySellTransactionCluster() {
@@ -285,7 +291,7 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
             quantity,
             (volumeQuote.compareTo(ZERO) > 0) ? evalUnitPrice(volumeQuote, quantity) : price,
             note,
-            address,
+            getAddress(),
             labels
         );
 
@@ -321,7 +327,7 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
             fee,
             feeCurrency != null ? feeCurrency : symbolBase,
             unrelated ? note : null,
-            address,
+            getAddress(),
             labels
         );
     }
@@ -351,7 +357,7 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
             quantity,
             null,
             (note != null && !note.isEmpty()) ? note : null,
-            address,
+            getAddress(),
             labels
         );
         return new TransactionCluster(tx, getRelatedTxs());
