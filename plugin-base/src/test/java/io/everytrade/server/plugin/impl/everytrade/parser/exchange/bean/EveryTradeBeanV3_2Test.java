@@ -41,7 +41,8 @@ class EveryTradeBeanV3_2Test {
             "LABELS\n";
     private static final String HEADER_COMMA_SEPARATED = "UID,DATE,SYMBOL,ACTION,QUANTITY,UNIT_PRICE,VOLUME_QUOTE,FEE,FEE_CURRENCY," +
         "REBATE,REBATE_CURRENCY,ADDRESS_FROM,ADDRESS_TO,NOTE,LABELS\n";
-    private static final String HEADER_EXCEL_FORMAT = "DATE;TYPE;SYMBOL;QUANTITY;UNIT_PRICE;TOTAL;SOURCE;STATUS;NOTE;LABELS\n";
+    private static final String HEADER_EXCEL_FORMAT = "DATE;TYPE;SYMBOL;QUANTITY;QUANTITY_CURRENCY;UNIT_PRICE;UNIT_PRICE_CURRENCY;TOTAL;" +
+        "TOTAL_CURRENCY;FEE;FEE_CURRENCY;SOURCE;ADDRESS;STATUS;NOTE;LABELS;CREATED;UPDATED\n";
 
     @Test
     void testCorrectHeader() {
@@ -109,19 +110,20 @@ class EveryTradeBeanV3_2Test {
 
     @Test
     void testExcelHeaderFormat() {
-        final String row = "07.07.2024 09:28:56;WITHDRAWAL;BTC;0.02654552;;;Blockchain BTC;IN_PROGRESS;;Error:Internal\n";
+        final String row = "04.05.2023 00:00:00;BUY;BTC/CZK;1;BTC;12;CZK;12;CZK;;;;\"testAdr;0x1234\";;;Error:Internal;" +
+            "26.02.2025 13:46:20;04.03.2025 10:53:50\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_EXCEL_FORMAT + row);
         final TransactionCluster expected = new TransactionCluster(
             new ImportedTransactionBean(
                 null,
-                Instant.parse("2024-07-07T09:28:56Z"),
+                Instant.parse("2023-05-04T00:00:00Z"),
                 BTC,
-                BTC,
-                WITHDRAWAL,
-                new BigDecimal("0.02654552"),
+                CZK,
+                BUY,
+                new BigDecimal("1"),
+                new BigDecimal("12.00000000000000000"),
                 null,
-                null,
-                null,
+                "testAdr;0x1234",
                 "Error:Internal"
             ),
             List.of()
@@ -821,7 +823,7 @@ class EveryTradeBeanV3_2Test {
                 AXL,
                 STAKING_REWARD,
                 new BigDecimal("12167.60559"),
-                null,
+                "axelar1jv65s3grqf6v6jl3dp4t6c9t9rk99cd8r3j5z7",
                 null,
                 null
             ),
@@ -835,7 +837,7 @@ class EveryTradeBeanV3_2Test {
                     new BigDecimal("0.0014"),
                     AXL,
                     null,
-                    null,
+                    "axelar1jv65s3grqf6v6jl3dp4t6c9t9rk99cd8r3j5z7",
                     null
                 )
             )
