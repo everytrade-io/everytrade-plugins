@@ -54,6 +54,7 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
     String status;
     String note;
     String labels;
+    String address;
 
     ImportedTransactionBean main;
     List<ImportedTransactionBean> related;
@@ -162,7 +163,7 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
         price = EverytradeCSVParserValidator.parserNumber(value);
     }
 
-    @Parsed(field = "VOLUME_QUOTE", defaultNullRead = "0")
+    @Parsed(field = {"VOLUME_QUOTE", "TOTAL"}, defaultNullRead = "0")
     public void setVolumeQuote(String value) {
         volumeQuote = EverytradeCSVParserValidator.parserNumber(value);
     }
@@ -188,9 +189,19 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
     }
 
     @Parsed(field = "ADDRESS_FROM")
-    String addressFrom;
+    public void setAddressFrom(String addressFrom) {
+        this.address = addressFrom;
+    }
+
     @Parsed(field = "ADDRESS_TO")
-    String addressTo;
+    public void setAddressTo(String addressTo) {
+        this.address = addressTo;
+    }
+
+    @Parsed(field = "ADDRESS")
+    public void setAddress(String address) {
+        this.address = address;
+    }
 
     @Parsed(field = "NOTE")
     public void setNote(String value) {
@@ -252,7 +263,7 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
             symbolQuote,
             action,
             quantity,
-            action.equals(DEPOSIT) ? addressFrom : addressTo,
+            address,
             note,
             labels
         );
@@ -274,7 +285,7 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
             quantity,
             (volumeQuote.compareTo(ZERO) > 0) ? evalUnitPrice(volumeQuote, quantity) : price,
             note,
-            null,
+            address,
             labels
         );
 
@@ -310,7 +321,7 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
             fee,
             feeCurrency != null ? feeCurrency : symbolBase,
             unrelated ? note : null,
-            null,
+            address,
             labels
         );
     }
@@ -325,7 +336,7 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
             rebate,
             rebateCurrency,
             unrelated ? note : null,
-            null,
+            address,
             labels
         );
     }
@@ -340,7 +351,7 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
             quantity,
             null,
             (note != null && !note.isEmpty()) ? note : null,
-            null,
+            address,
             labels
         );
         return new TransactionCluster(tx, getRelatedTxs());
