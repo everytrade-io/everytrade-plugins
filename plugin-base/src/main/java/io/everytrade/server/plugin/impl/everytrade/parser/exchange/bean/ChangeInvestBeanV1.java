@@ -15,6 +15,7 @@ import java.util.Map;
 
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
+import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.REWARD;
 import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
@@ -112,6 +113,7 @@ public class ChangeInvestBeanV1 extends BaseTransactionMapper {
                 fee = fromAmount.subtract(toAmount);
                 yield WITHDRAWAL;
             }
+            case "FEE" -> FEE;
             default -> TransactionType.UNKNOWN;
         };
     }
