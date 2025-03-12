@@ -960,7 +960,7 @@ public enum Currency {
     USDL(false, true, Instant.parse("2024-12-03T00:00:00Z"), "Lift Dollar"),
     USDB(false, true, Instant.parse("2024-04-09T00:00:00Z"), "USDB"),
     USDP(false, true, Instant.parse("2018-10-04T00:00:00Z"), "Pax Dollar"),
-    LISUSD(false, true, Instant.parse("2022-09-08T00:00:00Z"), "lisUSD"),
+    LISTAUSD(false, true, Instant.parse("2022-09-08T00:00:00Z"), "Lista USD"),
     AEUR(false, true, Instant.parse("2023-11-30T00:00:00Z"), "Anchored Coins AEUR"),
     RLUSD(false, true, Instant.parse("2024-12-17T00:00:00Z"), "Ripple USD"),
     EURT(false, true, Instant.parse("2021-09-23T00:00:00Z"), "Tether EURt"),
