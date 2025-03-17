@@ -39,6 +39,7 @@ import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binanc
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_LOCKED_SUBSCRIPTION;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SMALL_ASSETS_EXCHANGE_BNB;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_TRANSACTION_REVENUE;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_TRANSFER_BETWEEN_MAIN_ACC_AND_SUB_ACC;
 import static java.math.BigDecimal.ZERO;
 import static java.util.stream.Collectors.groupingBy;
 
@@ -150,7 +151,7 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
     }
 
     private void filterRowsByType(List<BinanceBeanV4> rows) {
-        rows.stream().forEach(r -> {
+        rows.forEach(r -> {
             if (!r.isUnsupportedRow() && !r.getOperationType().isMultiRowType) {
                 rowsWithOneRowTransactionType.add(r);
             } else {
@@ -172,8 +173,9 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
     private List<BinanceBeanV4> prepareBeansForTransactionsFromOneRowTypes(List<BinanceBeanV4> rows) {
         List<BinanceBeanV4> result = new ArrayList<>();
         for (BinanceBeanV4 row : rows) {
-            if (!row.getOperationType().isMultiRowType) { // test yes
+            if (!row.getOperationType().isMultiRowType) {
                 if (List.of(OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_SUBSCRIPTION.code, OPERATION_TYPE_SAVING_DISTRIBUTION.code,
+                    OPERATION_TYPE_TRANSFER_BETWEEN_MAIN_ACC_AND_SUB_ACC.code,
                     OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_REDEMPTION.code).contains(row.getOriginalOperation())) {
                     row.setNote(row.getOriginalOperation().toUpperCase());
                     if (row.getChange().compareTo(ZERO) < 0) {
@@ -255,8 +257,8 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
         filterRowsByType(rows);
         List<BinanceBeanV4> beans = prepareBeansForTransactions(rowsWithMultipleRowTransactionType, rowsWithOneRowTransactionType);
         result = beans;
-        unSupportedRows.stream().forEach(r -> {
-            r.setRowNumber((long) r.getRowId());
+        unSupportedRows.forEach(r -> {
+            r.setRowNumber(r.getRowId());
         });
         result.addAll(unSupportedRows);
         return beans;
@@ -322,9 +324,7 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
                 }
                 List<BinanceBeanV4> all = currentValues;
                 all.addAll(previousValues);
-                all.forEach(r -> {
-                    r.setMergedWithAnotherGroup(true);
-                });
+                all.forEach(r -> r.setMergedWithAnotherGroup(true));
                 result.put(previousKey, all);
                 currentKey = previousKey;
                 currentValues = all;
@@ -350,7 +350,7 @@ public class BinanceExchangeSpecificParserV4 extends DefaultUnivocityExchangeSpe
             } catch (DataValidationException e) {
                 try {
                     if (rows.get(0).isMergedWithAnotherGroup()) {
-                        rows.stream().forEach(r -> r.setMergedWithAnotherGroup(false));
+                        rows.forEach(r -> r.setMergedWithAnotherGroup(false));
                         Map<?, List<BinanceBeanV4>> groupsBeforeMerge = createGroupsFromRows(rows);
                         List<BinanceBeanV4> anotherResult = createTransactionFromGroupOfRows(groupsBeforeMerge);
                         result.addAll(anotherResult);
