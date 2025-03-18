@@ -6,9 +6,11 @@ import io.everytrade.server.plugin.api.parser.ParseResult;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.ParsingProblemType;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.plugin.impl.everytrade.parser.EverytradeCsvMultiParser;
 import io.everytrade.server.test.TestUtils;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -58,6 +60,53 @@ class BinanceBeanV4Test {
     public static final String HEADER_CORRECT = "\uFEFFUser_ID,UTC_Time,Account,Operation,Coin,Change,Remark\n";
     public static final String HEADER_CORRECT_QUOTED =
         "\"User_ID,\"\"UTC_Time\"\",\"\"Account\"\",\"\"Operation\"\",\"\"Coin\"\",\"\"Change\"\",\"\"Remark\"\"\"\n";
+
+
+    @Test
+    void testTransferBetweenMainAccAndSubAcc() {
+        final String tokenswap = "778970701,\"2024-12-29 10:46:12\",\"Spot\",\"Transfer Between Main Account and Sub-Account\"," +
+            "\"USDT\",\"6000.00000000\",\"\"";
+        var actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + tokenswap);
+
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2024-12-29T10:46:12Z"),
+                USDT,
+                USDT,
+                DEPOSIT,
+                new BigDecimal("6000.00000000"),
+                null,
+                "TRANSFER BETWEEN MAIN ACCOUNT AND SUB-ACCOUNT",
+                null
+            ),
+            List.of()
+        );
+        TestUtils.testTxs(expected.getMain(), actual.getMain());
+    }
+
+    @Test
+    void testTransferBetweenMainAccAndSubAccNegative() {
+        final String tokenswap = "778970701,\"2024-12-29 10:46:12\",\"Spot\",\"Transfer Between Main Account and Sub-Account\"," +
+            "\"USDT\",\"-6000.00000000\",\"\"";
+        var actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + tokenswap);
+
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2024-12-29T10:46:12Z"),
+                USDT,
+                USDT,
+                WITHDRAWAL,
+                new BigDecimal("6000.00000000"),
+                null,
+                "TRANSFER BETWEEN MAIN ACCOUNT AND SUB-ACCOUNT",
+                null
+            ),
+            List.of()
+        );
+        TestUtils.testTxs(expected.getMain(), actual.getMain());
+    }
 
     @Test
     void testBuyRelated() {

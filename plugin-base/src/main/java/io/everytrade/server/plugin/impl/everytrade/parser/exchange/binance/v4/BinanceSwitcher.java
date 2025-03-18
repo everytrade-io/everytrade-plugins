@@ -51,12 +51,14 @@ import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binanc
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_STAKING_PURCHASE;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_STAKING_REDEMPTION;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_STAKING_REWARDS;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_TOKEN_SWAP;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_TRANSACTION_BUY;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_TRANSACTION_FEE;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_TRANSACTION_RELATED;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_TRANSACTION_REVENUE;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_TRANSACTION_SOLD;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_TRANSACTION_SPEND;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_TRANSFER_BETWEEN_MAIN_ACC_AND_SUB_ACC;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_WITHDRAWAL;
 
 public class BinanceSwitcher {
@@ -78,7 +80,7 @@ public class BinanceSwitcher {
             return DEPOSIT;
         }
         if (List.of(OPERATION_TYPE_WITHDRAWAL.code, OPERATION_TYPE_FIAT_WITHDRAWAL.code, OPERATION_TYPE_FIAT_WITHDRAW.code,
-                OPERATION_TYPE_C2C_TRANSFER.code)
+                OPERATION_TYPE_C2C_TRANSFER.code, OPERATION_TYPE_TRANSFER_BETWEEN_MAIN_ACC_AND_SUB_ACC.code)
             .contains(operationType)) {
             return WITHDRAWAL;
         }
@@ -94,7 +96,7 @@ public class BinanceSwitcher {
             || OPERATION_TYPE_CONVERT_FIAT_TO_CRYPTO_OCBS.code.equals(operationType)) {
             return BUY;
         }
-        if (OPERATION_TYPE_AIRDROP_ASSETS.code.equals(operationType)) {
+        if (OPERATION_TYPE_AIRDROP_ASSETS.code.equals(operationType) || OPERATION_TYPE_TOKEN_SWAP.code.equals(operationType)) {
             return AIRDROP;
         }
         if (OPERATION_TYPE_DISTRIBUTION.code.equals(operationType) || OPERATION_TYPE_BNB_VAULT_REWARDS.code.equals(operationType)
