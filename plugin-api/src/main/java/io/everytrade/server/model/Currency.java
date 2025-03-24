@@ -164,7 +164,7 @@ public enum Currency {
     PAXG(false, Instant.parse("2019-09-26T00:00:00Z"), "PAX Gold"),
     CAKE(false, Instant.parse("2021-02-06T00:00:00Z"), "PancakeSwap"),
     BAL(false, Instant.parse("2020-06-24T00:00:00Z"), "Balancer"),
-    BEAM(false, Instant.parse("2019-01-18T00:00:00Z"), "Beam"),
+    BEAM(false, Instant.parse("2023-10-26T00:00:00Z"), "Beam"),
     _1INCH("1INCH", false, Instant.parse("2021-01-14T00:00:00Z"), "1inch"),
     VTC(false, Instant.parse("2014-01-08T00:00:00Z"), "Vertcoin"),
     ERG(false, Instant.parse("2017-07-02T00:00:00Z"), "Ergo"),
@@ -508,7 +508,7 @@ public enum Currency {
     RAY(false, Instant.parse("2021-08-24T00:00:00Z"), "Raydium"),
     RDD(false, Instant.parse("2014-02-02T00:00:00Z"), "ReddCoin"),
     RIF(false, Instant.parse("2019-01-16T00:00:00Z"), "RIF Token"),
-    RNDR(false, Instant.parse("2020-08-06T00:00:00Z"), "Render Token"),
+    RENDER(false, Instant.parse("2020-08-06T00:00:00Z"), "Render"),
     ROOK(false, Instant.parse("2021-03-03T00:00:00Z"), "KeeperDAO"),
     RUB(false, Instant.parse("2022-03-12T00:00:00Z"), "RUBCoin"),
     SANTOS(false, Instant.parse("2022-01-14T00:00:00Z"), "Santos FC Fan Token"),
@@ -906,7 +906,6 @@ public enum Currency {
     TURBO(false, Instant.parse("2023-04-27T00:00:00Z"), "Turbo"),
     BOB(false, Instant.parse("2023-05-04T00:00:00Z"), "BOB Token"),
     INSP(false, Instant.parse("2023-08-10T00:00:00Z"), "Inspect"),
-    RENDER(false, Instant.parse("2020-08-06T00:00:00Z"), "Render"),
     AED(true, Instant.parse("2009-01-03T00:00:00Z"), "United Arab Emirates dirham"),
     TWD(true, Instant.parse("2009-01-03T00:00:00Z"), "New Taiwan dollar"),
     GEL(true, Instant.parse("2009-01-03T00:00:00Z"), "Georgian lari"),
@@ -985,7 +984,9 @@ public enum Currency {
     IDRX(false, true, Instant.parse("2023-07-06T00:00:00Z"), "IDRX"),
     BAC(false, true, Instant.parse("2021-07-29T00:00:00Z"), "Basis Cash"),
     SDAI(false, true, Instant.parse("2023-10-05T00:00:00Z"), "Savings Dai"),
-    AUSD(false, true, Instant.parse("2024-08-16T00:00:00Z"), "AUSD");
+    AUSD(false, true, Instant.parse("2024-08-16T00:00:00Z"), "AUSD"),
+    MONKY(false, Instant.parse("2024-12-13T00:00:00Z"), "Wise Monkey"),
+    GFT(false, Instant.parse("2017-12-11T00:00:00Z"), "Gifto");
 
     String code;
     int decimalDigits;
@@ -999,8 +1000,8 @@ public enum Currency {
         this(null, fiat ? 2 : DECIMAL_DIGITS, fiat, false, introduction, null, description);
     }
 
-    Currency(boolean fiat, boolean simpleCoin, Instant introduction, String description) {
-        this(null, fiat ? 2 : DECIMAL_DIGITS, fiat, simpleCoin, introduction, null, description);
+    Currency(boolean fiat, boolean stableCoin, Instant introduction, String description) {
+        this(null, fiat ? 2 : DECIMAL_DIGITS, fiat, stableCoin, introduction, null, description);
     }
 
     Currency(boolean fiat, Instant introduction, Instant endDate, String description) {
@@ -1011,8 +1012,8 @@ public enum Currency {
         this(code, fiat ? 2 : DECIMAL_DIGITS, fiat, false, introduction, null, description);
     }
 
-    Currency(String code, boolean fiat, boolean simpleCoin, Instant introduction, String description) {
-        this(code, fiat ? 2 : DECIMAL_DIGITS, fiat, simpleCoin, introduction, null, description);
+    Currency(String code, boolean fiat, boolean stableCoin, Instant introduction, String description) {
+        this(code, fiat ? 2 : DECIMAL_DIGITS, fiat, stableCoin, introduction, null, description);
     }
 
     Currency(String code, int decimalDigits, boolean fiat, boolean stableCoin, Instant introduction, Instant endDate, String description) {
