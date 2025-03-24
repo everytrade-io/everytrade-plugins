@@ -872,7 +872,8 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                         ).withSeparator(delimiter),
                     CsvHeader
                         .of("DATE", "TYPE", "SYMBOL", "QUANTITY", "QUANTITY_CURRENCY", "UNIT_PRICE", "UNIT_PRICE_CURRENCY", "TOTAL",
-                            "TOTAL_CURRENCY", "FEE", "FEE_CURRENCY", "SOURCE", "ADDRESS", "STATUS", "NOTE", "LABELS"
+                            "TOTAL_CURRENCY", "FEE", "FEE_CURRENCY", "SOURCE", "ADDRESS", "STATUS", "NOTE", "LABELS", "REFERENCE",
+                            "PARTNER", "CREATED", "UPDATED"
                         ).withSeparator(delimiter)))
                 .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(EveryTradeBeanV3_2.class, delimiter)) //
                 .supportedExchange(EVERYTRADE)
