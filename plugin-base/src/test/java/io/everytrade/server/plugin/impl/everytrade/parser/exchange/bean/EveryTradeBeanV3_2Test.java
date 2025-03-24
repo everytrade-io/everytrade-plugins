@@ -30,7 +30,6 @@ import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.STAKE;
 import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
 import static io.everytrade.server.model.TransactionType.UNSTAKE;
-import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.REBATE_UID_PART;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -42,7 +41,7 @@ class EveryTradeBeanV3_2Test {
     private static final String HEADER_COMMA_SEPARATED = "UID,DATE,SYMBOL,ACTION,QUANTITY,UNIT_PRICE,VOLUME_QUOTE,FEE,FEE_CURRENCY," +
         "REBATE,REBATE_CURRENCY,ADDRESS_FROM,ADDRESS_TO,NOTE,LABELS\n";
     private static final String HEADER_EXCEL_FORMAT = "DATE;TYPE;SYMBOL;QUANTITY;QUANTITY_CURRENCY;UNIT_PRICE;UNIT_PRICE_CURRENCY;TOTAL;" +
-        "TOTAL_CURRENCY;FEE;FEE_CURRENCY;SOURCE;ADDRESS;STATUS;NOTE;LABELS;CREATED;UPDATED\n";
+        "TOTAL_CURRENCY;FEE;FEE_CURRENCY;SOURCE;ADDRESS;STATUS;NOTE;LABELS;REFERENCE;PARTNER;CREATED;UPDATED\n";
 
     @Test
     void testCorrectHeader() {
