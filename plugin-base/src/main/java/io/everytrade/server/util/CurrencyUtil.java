@@ -10,6 +10,8 @@ public class CurrencyUtil {
 
     static {
         CURRENCY_EXCEPTIONS.put("XDG", Currency.DOGE);
+        CURRENCY_EXCEPTIONS.put("RNDR", Currency.RENDER);
+        CURRENCY_EXCEPTIONS.put("BEAMX", Currency.BEAM);
     }
 
     public static Currency fromString(String currencyName) {
