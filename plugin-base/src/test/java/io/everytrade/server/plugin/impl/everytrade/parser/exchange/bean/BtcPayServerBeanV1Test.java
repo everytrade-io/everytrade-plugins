@@ -104,8 +104,8 @@ public class BtcPayServerBeanV1Test {
             new ImportedTransactionBean(
                 null,
                 Instant.parse("2023-05-02T09:14:09Z"),
-                SATS,
-                SATS,
+                BTC,
+                BTC,
                 WITHDRAWAL,
                 new BigDecimal("0.00617250"),
                 null,
