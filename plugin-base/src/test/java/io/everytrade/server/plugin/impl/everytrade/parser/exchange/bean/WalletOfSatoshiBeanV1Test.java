@@ -17,7 +17,7 @@ public class WalletOfSatoshiBeanV1Test {
     private static final String HEADER_CORRECT = "utcDate,type,currency,amount,fees,address,description,pointOfSale\n";
 
     @Test
-    void testDeposit() {
+    void testWithdrawal() {
         final String row = "2024-11-19T19:01:55.157Z,DEBIT,LIGHTNING,0.00053598,0,abc,\"Confirmo inv5dnyxw2kg, Qerko payment 11127908 " +
             "Cafe Sladkovský\",false\n";
         final TransactionCluster actual1 = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
@@ -28,11 +28,11 @@ public class WalletOfSatoshiBeanV1Test {
                 Instant.parse("2024-11-19T19:01:55.157Z"),
                 BTC,
                 BTC,
-                DEPOSIT,
+                WITHDRAWAL,
                 new BigDecimal("0.00053598"),
                 null,
                 "Confirmo inv5dnyxw2kg, Qerko payment 11127908 Cafe Sladkovský",
-                "abc"
+                null
             ),
             List.of()
         );
@@ -40,7 +40,7 @@ public class WalletOfSatoshiBeanV1Test {
     }
 
     @Test
-    void testWithdrawal() {
+    void testDeposit() {
         final String row = "2024-10-26T05:55:34.160Z,CREDIT,LIGHTNING,0.00317936,0,address,-,false\n";
         final TransactionCluster actual1 = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected1 = new TransactionCluster(
@@ -50,11 +50,11 @@ public class WalletOfSatoshiBeanV1Test {
                 Instant.parse("2024-10-26T05:55:34.160Z"),
                 BTC,
                 BTC,
-                WITHDRAWAL,
+                DEPOSIT,
                 new BigDecimal("0.00317936"),
                 null,
                 "-",
-                "address"
+                null
             ),
             List.of()
         );
