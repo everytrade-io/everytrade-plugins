@@ -71,7 +71,7 @@ public class SimplecoinBeanV2Test {
                 new BigDecimal("0.00626310"),
                 new BigDecimal("1596653.41444332678705433"),
                 null,
-                null
+                "1980538010/3030"
             ),
             List.of()
         );
@@ -128,7 +128,7 @@ public class SimplecoinBeanV2Test {
                 new BigDecimal("0.11990000"),
                 new BigDecimal("87368.64053377814845705"),
                 null,
-                null
+                "0x1A9D82eED6666bAc205FdF296349e1C1Ffc49B0D"
             ),
             List.of()
         );
