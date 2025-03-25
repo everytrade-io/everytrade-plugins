@@ -37,7 +37,7 @@ public class KvaPayBeanV1Test {
                 new BigDecimal("5"),
                 new BigDecimal("1.09105980000000000"),
                 null,
-                null
+                "-"
             ),
             List.of()
         );
@@ -61,7 +61,7 @@ public class KvaPayBeanV1Test {
                 new BigDecimal("0.00055"),
                 new BigDecimal("0.00001050821551395"),
                 null,
-                null
+                "-"
             ),
             List.of()
         );
