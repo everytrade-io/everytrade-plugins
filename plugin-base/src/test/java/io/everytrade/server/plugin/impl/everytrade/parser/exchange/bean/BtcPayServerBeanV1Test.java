@@ -116,11 +116,11 @@ public class BtcPayServerBeanV1Test {
                 new FeeRebateImportedTransactionBean(
                     null,
                     Instant.parse("2023-05-02T09:14:09Z"),
-                    SATS,
-                    SATS,
+                    BTC,
+                    BTC,
                     FEE,
                     new BigDecimal("0.00006235000000000"),
-                    SATS
+                    BTC
                 )
             )
         );
