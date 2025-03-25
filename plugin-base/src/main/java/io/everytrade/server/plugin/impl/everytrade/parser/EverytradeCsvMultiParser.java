@@ -72,6 +72,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.Poloniex
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.PoloniexDepWdrlBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.ShakePayBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.SimplecoinBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.WalletOfSatoshiBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v2.BinanceExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v3.BinanceExchangeSpecificParserV3;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceBeanV4;
@@ -137,6 +138,7 @@ import static io.everytrade.server.model.SupportedExchange.POLONIEX;
 import static io.everytrade.server.model.SupportedExchange.SHAKEPAY;
 import static io.everytrade.server.model.SupportedExchange.SIMPLECOIN;
 import static io.everytrade.server.model.SupportedExchange.TREZOR_SUITE;
+import static io.everytrade.server.model.SupportedExchange.WALLET_OF_SATOSHI;
 import static io.everytrade.server.plugin.api.parser.ParsingProblemType.PARSED_ROW_IGNORED;
 import static io.everytrade.server.plugin.api.parser.ParsingProblemType.ROW_PARSING_FAILED;
 import static java.util.Map.entry;
@@ -839,6 +841,17 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 ))
                 .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(OpenNodeV3.class, delimiter))
                 .supportedExchange(OPEN_NODE)
+                .build());
+
+            /* WALLET OF SATOSHI */
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader
+                        .of("utcDate","type","currency","amount","fees","address","description","pointOfSale")
+                        .withSeparator(delimiter)
+                ))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(WalletOfSatoshiBeanV1.class, delimiter))
+                .supportedExchange(WALLET_OF_SATOSHI)
                 .build());
         });
 
