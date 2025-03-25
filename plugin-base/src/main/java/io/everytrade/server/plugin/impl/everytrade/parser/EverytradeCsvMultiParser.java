@@ -40,6 +40,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.Bitstamp
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexBeanV3;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BtcPayServerBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.ChangeInvestBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseProBeanV1;
@@ -115,6 +116,7 @@ import static io.everytrade.server.model.SupportedExchange.BITMEX;
 import static io.everytrade.server.model.SupportedExchange.BITSTAMP;
 import static io.everytrade.server.model.SupportedExchange.BITTREX;
 import static io.everytrade.server.model.SupportedExchange.BLOCKFI;
+import static io.everytrade.server.model.SupportedExchange.BTCPAY_SERVER;
 import static io.everytrade.server.model.SupportedExchange.CHANGE_INVEST;
 import static io.everytrade.server.model.SupportedExchange.COINBANK;
 import static io.everytrade.server.model.SupportedExchange.COINBASE;
@@ -364,6 +366,21 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 ))
                 .parserFactory(() -> new BlockFiExchangeSpecificParserV1(BlockFiBeanV1.class, delimiter))
                 .supportedExchange(BLOCKFI)
+                .build());
+
+            /* BTCPAY SERVER */
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader.of("Date","InvoiceId","OrderId","Category","PaymentMethodId","Confirmed","Address",
+                        "PaymentCurrency","PaymentAmount","PaymentMethodFee","LightningAddress","InvoiceCurrency",
+                        "InvoiceCurrencyAmount","Rate"
+                    ).withSeparator(delimiter),
+                    CsvHeader.of("Date","InvoiceId","OrderId","PaymentType","PaymentId","Confirmed","Address","Crypto",
+                        "CryptoAmount","NetworkFee","LightningAddress","Currency","CurrencyAmount","Rate"
+                    ).withSeparator(delimiter)
+                ))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(BtcPayServerBeanV1.class, delimiter))
+                .supportedExchange(BTCPAY_SERVER)
                 .build());
 
             /* CHANGE_INVEST */

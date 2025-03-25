@@ -107,7 +107,9 @@ public abstract class BaseTransactionMapper extends ExchangeBean {
                 data.getQuote(),
                 data.getTransactionType(),
                 data.getVolume(),
-                data.getUnitPrice()
+                data.getUnitPrice(),
+                data.getNote(),
+                data.getAddress()
             ),
             getRelatedTransactions(data)
         );
