@@ -70,8 +70,8 @@ public class WalletOfSatoshiBeanV1 extends BaseTransactionMapper {
     @Override
     protected TransactionType findTransactionType() {
         return switch (type.toUpperCase()) {
-            case "DEBIT" -> TransactionType.DEPOSIT;
-            case "CREDIT" -> TransactionType.WITHDRAWAL;
+            case "DEBIT" -> TransactionType.WITHDRAWAL;
+            case "CREDIT" -> TransactionType.DEPOSIT;
             default -> TransactionType.UNKNOWN;
         };
     }
@@ -86,7 +86,6 @@ public class WalletOfSatoshiBeanV1 extends BaseTransactionMapper {
             .volume(amount)
             .fee(currency.code())
             .feeAmount(fees)
-            .address(address)
             .note(description)
             .build();
     }
