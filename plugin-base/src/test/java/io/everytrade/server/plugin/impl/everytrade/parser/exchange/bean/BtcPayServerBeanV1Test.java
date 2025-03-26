@@ -11,7 +11,6 @@ import java.util.List;
 
 import static io.everytrade.server.model.Currency.BTC;
 import static io.everytrade.server.model.Currency.CZK;
-import static io.everytrade.server.model.Currency.SATS;
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
@@ -104,8 +103,8 @@ public class BtcPayServerBeanV1Test {
             new ImportedTransactionBean(
                 null,
                 Instant.parse("2023-05-02T09:14:09Z"),
-                SATS,
-                SATS,
+                BTC,
+                BTC,
                 WITHDRAWAL,
                 new BigDecimal("0.00617250"),
                 null,
@@ -116,11 +115,11 @@ public class BtcPayServerBeanV1Test {
                 new FeeRebateImportedTransactionBean(
                     null,
                     Instant.parse("2023-05-02T09:14:09Z"),
-                    SATS,
-                    SATS,
+                    BTC,
+                    BTC,
                     FEE,
                     new BigDecimal("0.00006235000000000"),
-                    SATS
+                    BTC
                 )
             )
         );

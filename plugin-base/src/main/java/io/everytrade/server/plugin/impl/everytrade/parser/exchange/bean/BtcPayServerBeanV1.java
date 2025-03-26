@@ -111,6 +111,7 @@ public class BtcPayServerBeanV1 extends BaseTransactionMapper {
                         .subtract(invoiceCurrencyAmount.divide(new BigDecimal("100000000"), 8, RoundingMode.HALF_UP))
                         .setScale(8, RoundingMode.HALF_UP);
                     paymentAmount = invoiceCurrencyAmount.divide(new BigDecimal("100000000"), 8, RoundingMode.HALF_UP);
+                    invoiceCurrency = Currency.BTC;
                     paymentCurrency = invoiceCurrency;
                     yield TransactionType.WITHDRAWAL;
                 }
