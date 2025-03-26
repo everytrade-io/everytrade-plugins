@@ -11,7 +11,6 @@ import java.util.List;
 
 import static io.everytrade.server.model.Currency.BTC;
 import static io.everytrade.server.model.Currency.CZK;
-import static io.everytrade.server.model.Currency.SATS;
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
