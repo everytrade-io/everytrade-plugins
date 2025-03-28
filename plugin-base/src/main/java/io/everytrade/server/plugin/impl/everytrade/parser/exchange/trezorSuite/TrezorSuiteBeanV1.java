@@ -124,7 +124,7 @@ public class TrezorSuiteBeanV1 extends BaseTransactionMapper {
         this.amountUnit = amountUnit != null ? Currency.fromCode(amountUnit) : null;
     }
 
-    @Parsed(field = "Fiat (EUR)")
+    @Parsed(index = 11)
     public void setFiatEur(String fiatEur) {
         if (fiatEur == null) {
             throw new DataValidationException("Fiat cannot be null");
