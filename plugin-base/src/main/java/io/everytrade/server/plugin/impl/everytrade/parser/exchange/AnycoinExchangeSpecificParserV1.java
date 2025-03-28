@@ -11,6 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.stream.Collectors;
 
@@ -87,7 +88,19 @@ public class AnycoinExchangeSpecificParserV1 extends DefaultUnivocityExchangeSpe
         List<AnycoinBeanV1> multiRowsTxs = prepareBeansForTransactionsFromMultiRows(rowsWithMultipleRowTransactionType);
         result = multiRowsTxs;
         result.addAll(oneRowTxs);
+        convertETH2toETH(result);
         return result;
+    }
+
+    private void convertETH2toETH(List<AnycoinBeanV1> result) {
+        result.forEach(r -> {
+            if (Objects.equals(r.getMarketBase(), ETH2)) {
+                r.setMarketBase(ETH);
+            }
+            if (Objects.equals(r.getMarketQuote(), ETH2)) {
+                r.setMarketQuote(ETH);
+            }
+        });
     }
 
     private List<AnycoinBeanV1> prepareBeansForTransactionsFromMultiRows(List<AnycoinBeanV1> multiRows) {

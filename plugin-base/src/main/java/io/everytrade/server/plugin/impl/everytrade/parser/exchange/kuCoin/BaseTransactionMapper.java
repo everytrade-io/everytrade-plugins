@@ -67,7 +67,9 @@ public abstract class BaseTransactionMapper extends ExchangeBean {
             data.getQuote(),  //quote
             data.getTransactionType(),
             data.getVolume(),
-            data.getBase().isFiat() ? null : data.getAddress()
+            data.getBase().isFiat() ? null : data.getAddress(),
+            data.getNote(),
+            data.getLabel()
         );
         return new TransactionCluster(tx, getRelatedTransactions(data));
     }
@@ -105,7 +107,9 @@ public abstract class BaseTransactionMapper extends ExchangeBean {
                 data.getQuote(),
                 data.getTransactionType(),
                 data.getVolume(),
-                data.getUnitPrice()
+                data.getUnitPrice(),
+                data.getNote(),
+                data.getAddress()
             ),
             getRelatedTransactions(data)
         );

@@ -291,7 +291,7 @@ public class AnycoinBeanV1Test {
                 new ImportedTransactionBean(
                         "",
                         Instant.parse("2024-01-01T09:32:02.361Z"),
-                        ETH2,
+                        ETH,
                         ETH,
                         BUY,
                         new BigDecimal("0.0105416"),
@@ -305,8 +305,8 @@ public class AnycoinBeanV1Test {
                 new ImportedTransactionBean(
                         "",
                         Instant.parse("2024-01-01T09:32:49.003Z"),
-                        ETH2,
-                        ETH2,
+                        ETH,
+                        ETH,
                         STAKE,
                         new BigDecimal("0.0105416"),
                         null,
@@ -331,7 +331,7 @@ public class AnycoinBeanV1Test {
                         "",
                         Instant.parse("2024-03-15T17:27:01.354Z"),
                         ETH,
-                        ETH2,
+                        ETH,
                         BUY,
                         new BigDecimal("0.21907795"),
                         new BigDecimal("1.00000000000000000"),
@@ -344,8 +344,8 @@ public class AnycoinBeanV1Test {
                 new ImportedTransactionBean(
                         "",
                         Instant.parse("2024-03-15T17:26:14.826Z"),
-                        ETH2,
-                        ETH2,
+                        ETH,
+                        ETH,
                         UNSTAKE,
                         new BigDecimal("0.21907795"),
                         null,
@@ -368,8 +368,8 @@ public class AnycoinBeanV1Test {
                 new ImportedTransactionBean(
                         null,
                         Instant.parse("2024-01-04T01:07:53.536Z"),
-                        ETH2,
-                        ETH2,
+                        ETH,
+                        ETH,
                         STAKING_REWARD,
                         new BigDecimal("0.000117"),
                         null,
@@ -383,8 +383,8 @@ public class AnycoinBeanV1Test {
                 new ImportedTransactionBean(
                         null,
                         Instant.parse("2024-01-04T01:07:54.536Z"), // +1 second
-                        ETH2,
-                        ETH2,
+                        ETH,
+                        ETH,
                         STAKE,
                         new BigDecimal("0.000117"),
                         null,
