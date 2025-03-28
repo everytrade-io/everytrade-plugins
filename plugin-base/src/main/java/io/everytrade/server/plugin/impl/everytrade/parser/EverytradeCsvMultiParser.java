@@ -774,7 +774,7 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 .headers(List.of(
                     CsvHeader
                         .of("Timestamp", "Date", "Type", "Transaction ID", "Fee", "Fee unit", "Address", "Label", "Amount", "Amount unit"
-                            , "Fiat (EUR)", "Other")
+                            , "^Fiat \\(.*\\)$", "Other")
                         .withSeparator(delimiter)
                 ))
                 .parserFactory(() -> new TrezorSuiteExchangeSpecificParser(TrezorSuiteBeanV1.class, delimiter))
