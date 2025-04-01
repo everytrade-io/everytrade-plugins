@@ -54,15 +54,17 @@ public class TrezorSuiteSortedGroup {
     }
 
     private static Instant parseDateTime(String date, String time) {
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("d. M. yyyy", Locale.ENGLISH);
+        String normalizedDate = date.replaceAll("(\\d{1,2})\\.(\\d{1,2})\\.(\\d{4})", "$1. $2. $3");
 
-        LocalDate localDate = LocalDate.parse(date, dateFormatter);
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("d. M. yyyy", Locale.ENGLISH);
+        LocalDate localDate = LocalDate.parse(normalizedDate, dateFormatter);
 
         String timeZone = time.substring(time.lastIndexOf("GMT"));
+        String timePart = time.substring(0, time.indexOf("GMT")).trim();
 
         ZonedDateTime zonedDateTime = ZonedDateTime.of(
             localDate,
-            LocalTime.parse(time.substring(0, 8).trim(), DateTimeFormatter.ofPattern("H:mm:ss")),
+            LocalTime.parse(timePart, DateTimeFormatter.ofPattern("H:mm:ss")),
             ZoneId.of(timeZone)
         );
 
