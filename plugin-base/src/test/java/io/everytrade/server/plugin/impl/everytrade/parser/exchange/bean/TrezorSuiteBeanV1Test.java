@@ -19,6 +19,42 @@ public class TrezorSuiteBeanV1Test {
     private static final String HEADER_CORRECT = "Timestamp,Date,Time,Type,Transaction ID,Fee,Fee unit," +
         "Address,Label,Amount,Amount unit,Fiat (EUR),Other\n";
 
+    private static final String HEADER_CORRECT_SEMICOLON = "Timestamp;Date;Time;Type;Transaction ID;Fee;Fee unit;" +
+        "Address;Label;Amount;Amount unit;Fiat (EUR);Other\n";
+
+    @Test
+    void testSemicolonHeader() {
+        final String row = "1738139996;29.01.2025;09:39:56 GMT+1;SENT;addres;0.0000042;BTC;adres;Trezor Company_2/2_INT2400000012;" +
+            "9.58583;BTC;23,675,643.71;\n";
+        final TransactionCluster actual1 = ParserTestUtils.getTransactionCluster(HEADER_CORRECT_SEMICOLON + row);
+        final TransactionCluster expected1 = new TransactionCluster(
+
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2025-01-29T08:39:56Z"),
+                BTC,
+                BTC,
+                WITHDRAWAL,
+                new BigDecimal("9.58583"),
+                null,
+                null,
+                "adres"
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    null,
+                    Instant.parse("2025-01-29T08:39:56Z"),
+                    BTC,
+                    BTC,
+                    FEE,
+                    new BigDecimal("0.00000420000000000"),
+                    BTC
+                )
+            )
+        );
+        ParserTestUtils.checkEqual(expected1, actual1);
+    }
+
     @Test
     void testWithdrawal() {
         final String row = "1694766966,15. 9. 2023,10:36:06 GMT+2,SENT,9471ff6309c3dd3e1d4f29b67fcb5bd5b7bc2f,0.0002629,BTC," +
