@@ -126,10 +126,14 @@ public class BlockchainApiTransactionBean {
 
     private ImportedTransactionBean createTx() {
         var txAmount = originalAmount;
+
         if (type.equals(SELL) || type.equals(WITHDRAWAL)) {
-            txAmount = (feeAmount != null && (feeAmount.compareTo(ZERO) != 0))
-                ? originalAmount.abs().subtract(feeAmount.abs()) : originalAmount;
+            boolean hasFee = feeAmount != null && feeAmount.compareTo(ZERO) != 0;
+            txAmount = hasFee
+                ? originalAmount.abs().subtract(feeAmount.abs())
+                : originalAmount;
         }
+
         if (type == BUY || type == SELL) {
             return new ImportedTransactionBean(
                 id,
