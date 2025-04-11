@@ -170,10 +170,12 @@ public class BlockchainDownloader {
 
                 String operation = transaction.isDirectionSend() ? "WITHDRAWAL" : "DEPOSIT";
 
-                if (txInfo.getOutputInfos().size() > 1
-                    && txInfo.getOutputInfos()
-                    .stream()
-                    .noneMatch(outputInfo -> outputInfo.getAddress().equals(addressInfo.getAddress())) && operation.equals("WITHDRAWAL")) {
+                boolean hasMultipleOutputs = txInfo.getOutputInfos().size() > 1;
+                boolean noneMatchCurrentAddress = txInfo.getOutputInfos().stream()
+                    .noneMatch(outputInfo -> outputInfo.getAddress().equals(addressInfo.getAddress()));
+                boolean isWithdrawal = operation.equals("WITHDRAWAL");
+
+                if (hasMultipleOutputs && noneMatchCurrentAddress && isWithdrawal) {
                     List<Transaction> builtTx = BlockchainTransaction.buildWithdrawalTxFromDifferentWallets(
                         txInfo,
                         addressInfo.getAddress(), transaction.isDirectionSend(),
