@@ -37,7 +37,7 @@ public class TrezorSuiteBeanV1Test {
                 WITHDRAWAL,
                 new BigDecimal("9.58583"),
                 null,
-                null,
+                "Trezor Company_2/2_INT2400000012",
                 "adres"
             ),
             List.of(
@@ -70,7 +70,7 @@ public class TrezorSuiteBeanV1Test {
                 WITHDRAWAL,
                 new BigDecimal("0.00424137"),
                 null,
-                null,
+                "Affiliate ID 2733",
                 "bc1q09asldqlnzkjwvvtz9se3wuv"
             ),
             List.of(
