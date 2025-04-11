@@ -89,6 +89,62 @@ public class TrezorSuiteBeanV1Test {
     }
 
     @Test
+    void testWithdrawalNewDate() {
+        final String row = "1742543624;21/03/2025;08:53:44 GMT+1;SENT;1644471c7ca1303170f29e4a6f5ecf3072f82e9654d78eac9be;0.00000306;BTC;" +
+            "bc1qwkjmy3ktxw7z9kx7jkwngh2gm04cu6;Denisa_250302;0.00051717;BTC;1,002.95;\n";
+        final TransactionCluster actual1 = ParserTestUtils.getTransactionCluster(HEADER_CORRECT_SEMICOLON + row);
+        final TransactionCluster expected1 = new TransactionCluster(
+
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2025-03-21T07:53:44Z"),
+                BTC,
+                BTC,
+                WITHDRAWAL,
+                new BigDecimal("0.00051717"),
+                null,
+                "Denisa_250302",
+                "bc1qwkjmy3ktxw7z9kx7jkwngh2gm04cu6"
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    null,
+                    Instant.parse("2025-03-21T07:53:44Z"),
+                    BTC,
+                    BTC,
+                    FEE,
+                    new BigDecimal("0.00000306000000000"),
+                    BTC
+                )
+            )
+        );
+        ParserTestUtils.checkEqual(expected1, actual1);
+    }
+
+    @Test
+    void testEmptyColumns() {
+        final String row = "1737643982;23. 1. 2025;15:53:02 GMT+1;SENT;8471ce6d7c3449089f6fa95b1a57a309f498e15103482d95232484b397;;;" +
+            "bc1pwdvtsemaxep0hnatfzn8hx7jmqs7nqapgkltxyjere9dy8ul9jmq;label 2;0.03546356;BTC;;\n";
+        final TransactionCluster actual1 = ParserTestUtils.getTransactionCluster(HEADER_CORRECT_SEMICOLON + row);
+        final TransactionCluster expected1 = new TransactionCluster(
+
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2025-01-23T14:53:02Z"),
+                BTC,
+                BTC,
+                WITHDRAWAL,
+                new BigDecimal("0.03546356"),
+                null,
+                "label 2",
+                "bc1pwdvtsemaxep0hnatfzn8hx7jmqs7nqapgkltxyjere9dy8ul9jmq"
+            ),
+            List.of()
+        );
+        ParserTestUtils.checkEqual(expected1, actual1);
+    }
+
+    @Test
     void testDeposit() {
         final String row = "1730877102,6. 11. 2024,8:11:42 GMT+1,RECV,c5da333de4fac7c04c23fd7496908423cbec81dc26b18eaa2,,," +
             "38jRfEf1MtDDKw71iwz,,15,BTC,\"1,019,318.33\",\n";

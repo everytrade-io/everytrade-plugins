@@ -126,10 +126,13 @@ public class TrezorSuiteBeanV1 extends BaseTransactionMapper {
 
     @Parsed(index = 11)
     public void setFiatEur(String fiatEur) {
-        if (fiatEur == null) {
-            throw new DataValidationException("Fiat cannot be null");
+        if (fiatEur != null) {
+            try {
+                this.fiatEur = new BigDecimal(fiatEur.replace(",", ""));
+            } catch (NumberFormatException ignored) {
+                // Ignore invalid number format
+            }
         }
-        this.fiatEur = new BigDecimal(fiatEur.replace(",", ""));
     }
 
     @Parsed(field = "Other")
@@ -153,6 +156,7 @@ public class TrezorSuiteBeanV1 extends BaseTransactionMapper {
             .fee(feeUnit)
             .feeAmount(fee)
             .address(address)
+            .note(label)
             .build();
     }
 }
