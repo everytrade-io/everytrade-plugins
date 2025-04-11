@@ -37,9 +37,7 @@ public class BlockchainTransaction extends Transaction {
             return null;
         }
 
-        long inputRelatedValue = txInfo.getInputInfos().stream()
-            .filter(inputInfo -> inputInfo.getAddress().equals(relativeToAddress))
-            .mapToLong(InputInfo::getValue).sum();
+        long inputRelatedValue = txInfo.getInputInfos().stream().mapToLong(InputInfo::getValue).sum();
         long outputValuesSum = txInfo.getOutputInfos().stream().mapToLong(OutputInfo::getValue).sum();
 
         BigDecimal inputRelatedValueBD = new BigDecimal(inputRelatedValue);
@@ -59,9 +57,14 @@ public class BlockchainTransaction extends Transaction {
             long outputWithFeeLong = outputWithFee.setScale(0, RoundingMode.HALF_UP).longValue();
             long feeForOutputLong = feeForOutput.setScale(0, RoundingMode.HALF_UP).longValue();
 
-            result.add(new Transaction(txInfo, txInfo.getOutputInfos().get(i).getAddress(), directionSend,
-                outputWithFeeLong,
-                feeForOutputLong));
+            result.add(
+                new Transaction(
+                    txInfo,
+                    txInfo.getOutputInfos().get(i).getAddress(),
+                    directionSend,
+                    outputWithFeeLong,
+                    feeForOutputLong)
+            );
         }
 
         return result;
