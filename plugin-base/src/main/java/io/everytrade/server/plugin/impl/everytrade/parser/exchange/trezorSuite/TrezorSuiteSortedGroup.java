@@ -9,6 +9,7 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Locale;
 
@@ -54,17 +55,42 @@ public class TrezorSuiteSortedGroup {
     }
 
     private static Instant parseDateTime(String date, String time) {
-        String normalizedDate = date.replaceAll("(\\d{1,2})\\.(\\d{1,2})\\.(\\d{4})", "$1. $2. $3");
+        String normalizedDate = date.trim();
 
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("d. M. yyyy", Locale.ENGLISH);
-        LocalDate localDate = LocalDate.parse(normalizedDate, dateFormatter);
+        List<DateTimeFormatter> formatters = List.of(
+            DateTimeFormatter.ofPattern("d.M.yyyy", Locale.ENGLISH),
+            DateTimeFormatter.ofPattern("d. M. yyyy", Locale.ENGLISH),
+            DateTimeFormatter.ofPattern("d/M/yyyy", Locale.ENGLISH),
+            DateTimeFormatter.ofPattern("d-M-yyyy", Locale.ENGLISH),
+            DateTimeFormatter.ofPattern("yyyy.M.d", Locale.ENGLISH),
+            DateTimeFormatter.ofPattern("yyyy-M-d", Locale.ENGLISH),
+            DateTimeFormatter.ofPattern("yyyy/M/d", Locale.ENGLISH)
+        );
 
-        String timeZone = time.substring(time.lastIndexOf("GMT"));
+        LocalDate localDate = null;
+
+        for (DateTimeFormatter formatter : formatters) {
+            try {
+                localDate = LocalDate.parse(normalizedDate, formatter);
+                break;
+            } catch (DateTimeParseException e) {
+                // Try next format
+            }
+        }
+
+        if (localDate == null) {
+            throw new IllegalArgumentException("Unsupported date format: " + date);
+        }
+
+        String timeZone = time.substring(time.lastIndexOf("GMT")).trim();
         String timePart = time.substring(0, time.indexOf("GMT")).trim();
+
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("H:mm:ss");
+        LocalTime localTime = LocalTime.parse(timePart, timeFormatter);
 
         ZonedDateTime zonedDateTime = ZonedDateTime.of(
             localDate,
-            LocalTime.parse(timePart, DateTimeFormatter.ofPattern("H:mm:ss")),
+            localTime,
             ZoneId.of(timeZone)
         );
 
