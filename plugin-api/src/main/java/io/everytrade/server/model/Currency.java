@@ -134,7 +134,7 @@ public enum Currency {
     BSV(false, Instant.parse("2018-11-09T00:00:00Z"), "Bitcoin SV"),
     AVA(false, Instant.parse("2018-05-28T00:00:00Z"), "Travala.com"),
     ATOM(false, Instant.parse("2019-03-15T00:00:00Z"), "Cosmos"),
-    EGLD(false, Instant.parse("2020-09-22T00:00:00Z"), "Elrond"),
+    EGLD(false, Instant.parse("2020-09-22T00:00:00Z"), "MultiversX (Elrond)"),
     ALGO(false, Instant.parse("2019-06-19T00:00:00Z"), "Algorand"),
     ANT(false, Instant.parse("2017-05-05T00:00:00Z"), "Aragon"),
     COMP(false, Instant.parse("2020-06-17T00:00:00Z"), "Compound"),
