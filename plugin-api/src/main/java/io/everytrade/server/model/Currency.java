@@ -986,7 +986,10 @@ public enum Currency {
     SDAI(false, true, Instant.parse("2023-10-05T00:00:00Z"), "Savings Dai"),
     AUSD(false, true, Instant.parse("2024-08-16T00:00:00Z"), "AUSD"),
     MONKY(false, Instant.parse("2024-12-13T00:00:00Z"), "Wise Monkey"),
-    GFT(false, Instant.parse("2017-12-11T00:00:00Z"), "Gifto");
+    GFT(false, Instant.parse("2017-12-11T00:00:00Z"), "Gifto"),
+    LOOP(false, Instant.parse("2022-03-24T00:00:00Z"), "LoopNetwork"),
+    PRISMA(false, Instant.parse("2024-03-14T00:00:00Z"), "Prisma Governance Token"),
+    SUKU(false, Instant.parse("2021-09-16T00:00:00Z"), "SUKU");
 
     String code;
     int decimalDigits;
