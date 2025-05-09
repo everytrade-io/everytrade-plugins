@@ -58,7 +58,7 @@ public enum Currency {
     CUP(true, Instant.parse("1993-01-01T00:00:00Z"), "Cuban peso"),
     CRC(true, Instant.parse("1993-01-01T00:00:00Z"), "Costa Rican colón"),
     JMD(true, Instant.parse("1993-01-01T00:00:00Z"), "Jamaican dollar"),
-    USDT(false, Instant.parse("2015-07-01T00:00:00Z"), "Tether"),
+    USDT(false, true, Instant.parse("2015-07-01T00:00:00Z"), "Tether"),
     BTC(false, Instant.parse("2009-01-03T00:00:00Z"), "Bitcoin"),
     ETH(false, Instant.parse("2015-07-30T00:00:00Z"), "Ethereum"),
     BNB(false, Instant.parse("2017-09-01T00:00:00Z"), "Binance coin"),
