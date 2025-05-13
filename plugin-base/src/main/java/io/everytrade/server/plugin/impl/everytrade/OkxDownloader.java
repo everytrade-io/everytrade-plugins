@@ -29,7 +29,7 @@ public class OkxDownloader {
         int sentRequests = 0;
         for (CurrencyPair pair : pairs) {
             final List<OrderInfo> pairOrders = new ArrayList<>();
-            String pairCode = String.format("%s-%s", pair.base, pair.counter);
+            String pairCode = String.format("%s-%s", pair.getBase(), pair.getCounter());
             final String continuousBlockLastTxId = donwloadState.getContinuousBlockLastTxId(pairCode);
             String currentAfterGapFirstTxId = donwloadState.getAfterGapFirstTxId(pairCode);
             boolean isGapClosed = false;
