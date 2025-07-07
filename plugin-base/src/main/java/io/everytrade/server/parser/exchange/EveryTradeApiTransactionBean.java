@@ -45,6 +45,8 @@ public class EveryTradeApiTransactionBean {
     String addressTo;
     String note;
     String labels;
+    String partner;
+    String reference;
 
     public void setTimestamp(Long timestamp) {
         this.timestamp = new Date(timestamp * 1000).toInstant();

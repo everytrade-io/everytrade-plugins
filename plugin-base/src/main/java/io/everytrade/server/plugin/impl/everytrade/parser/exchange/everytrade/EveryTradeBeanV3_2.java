@@ -339,7 +339,7 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
             rebateCurrency != null ? rebateCurrency : symbolBase,
             rebateCurrency != null ? rebateCurrency : symbolQuote,
             REBATE,
-            rebate,
+            quantity != null ? quantity : rebate,
             rebateCurrency,
             unrelated ? note : null,
             address,
