@@ -83,5 +83,6 @@ class EveryTradeApiTest {
         assertEquals(1, dto.getTransactions().size());
         assertEquals("123", dto.getTransactions().get(0).getUid());
         assertEquals(new BigDecimal("15000"), dto.getTransactions().get(0).getVolume());
+        assertEquals("ref123", dto.getTransactions().get(0).getReference());
     }
 }
