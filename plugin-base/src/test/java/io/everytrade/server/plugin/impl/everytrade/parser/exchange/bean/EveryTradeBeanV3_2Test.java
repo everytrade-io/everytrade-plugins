@@ -40,6 +40,8 @@ class EveryTradeBeanV3_2Test {
             "LABELS\n";
     private static final String HEADER_COMMA_SEPARATED = "UID,DATE,SYMBOL,ACTION,QUANTITY,UNIT_PRICE,VOLUME_QUOTE,FEE,FEE_CURRENCY," +
         "REBATE,REBATE_CURRENCY,ADDRESS_FROM,ADDRESS_TO,NOTE,LABELS\n";
+    private static final String HEADER_V3_3 = "UID;DATE;SYMBOL;ACTION;QUANTITY;UNIT_PRICE;VOLUME_QUOTE;FEE;FEE_CURRENCY;" +
+        "ADDRESS_FROM;ADDRESS_TO;NOTE;LABELS;PARTNER;REFERENCE\n";
     private static final String HEADER_EXCEL_FORMAT = "DATE;TYPE;SYMBOL;QUANTITY;QUANTITY_CURRENCY;UNIT_PRICE;UNIT_PRICE_CURRENCY;TOTAL;" +
         "TOTAL_CURRENCY;FEE;FEE_CURRENCY;SOURCE;ADDRESS;STATUS;NOTE;LABELS;REFERENCE;PARTNER;CREATED;UPDATED\n";
 
@@ -64,6 +66,28 @@ class EveryTradeBeanV3_2Test {
                 EUR,
                 BUY,
                 new BigDecimal("5"),
+                null,
+                null,
+                null,
+                null
+            ),
+            List.of()
+        );
+        ParserTestUtils.checkEqual(expected, actual.get(0));
+    }
+
+    @Test
+    void testNewFormatV3() {
+        final String row = "38319660;11.06.2025 00:00:00;BTC;REBATE;31;;;;;;;;;partneer;refee\n";
+        final var actual = ParserTestUtils.getTransactionClusters(HEADER_V3_3 + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                "38319660",
+                Instant.parse("2025-06-11T00:00:00Z"),
+                BTC,
+                BTC,
+                REBATE,
+                new BigDecimal("31"),
                 null,
                 null,
                 null,
@@ -189,20 +213,7 @@ class EveryTradeBeanV3_2Test {
 
     @Test
     void testCorrectParsingRawTransactionSellWithRebate() {
-        final String row = "6;12.1.2022 14:06:00;BTC/EUR;SELL;0,06;20000;1200;;;5.7;EUR;;;nnnnnn;Label1\n";
-        List<ImportedTransactionBean> related = new ArrayList<>();
-        related.add(new FeeRebateImportedTransactionBean(
-            "6" + REBATE_UID_PART,
-            Instant.parse("2022-01-12T14:06:00Z"),
-            EUR,
-            EUR,
-            REBATE,
-            new BigDecimal("5.7"),
-            EUR,
-            null,
-            null,
-            "Label1"
-        ));
+        final String row = "6;12.1.2022 14:06:00;BTC/EUR;SELL;0,06;20000;1200;;;;EUR;;;nnnnnn;Label1\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
             new ImportedTransactionBean(
@@ -217,7 +228,7 @@ class EveryTradeBeanV3_2Test {
                 null,
                 "Label1"
             ),
-            related
+            List.of()
         );
         ParserTestUtils.checkEqual(expected, actual);
     }

@@ -52,7 +52,7 @@ public class FeeRebateImportedTransactionBean extends ImportedTransactionBean {
                                             String address,
                                             String label) {
         super(uid, executed, base, quote, action, feeRebate, null, note, address, label);
-        Objects.requireNonNull(this.feeRebateCurrency = feeRebateCurrency);
+        this.feeRebateCurrency = feeRebateCurrency;
     }
 
 
