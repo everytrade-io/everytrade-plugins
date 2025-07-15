@@ -102,7 +102,9 @@ public class EveryTradeApiTransactionBean {
             volume.divide(quantity, DECIMAL_DIGITS, RoundingMode.HALF_UP),
             note,
             null,
-            labels
+            labels,
+            partner,
+            reference
         );
         return new TransactionCluster(tx, getRelatedTxs());
     }
@@ -131,7 +133,9 @@ public class EveryTradeApiTransactionBean {
             volume == null ? null : volume.divide(quantity, DECIMAL_DIGITS, RoundingMode.HALF_UP),
             note,
             null,
-            labels
+            labels,
+            partner,
+            reference
         );
         return new TransactionCluster(tx, getRelatedTxs());
     }
@@ -159,7 +163,9 @@ public class EveryTradeApiTransactionBean {
             Currency.fromCode(feeCurrency),
             note,
             null,
-            labels
+            labels,
+            partner,
+            reference
         );
     }
 
@@ -174,7 +180,9 @@ public class EveryTradeApiTransactionBean {
             Currency.fromCode(rebateCurrency),
             note,
             null,
-            labels
+            labels,
+            partner,
+            reference
         );
     }
 }
