@@ -57,9 +57,8 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
     String address;
     String addressFrom;
     String addressTo;
-
-    ImportedTransactionBean main;
-    List<ImportedTransactionBean> related;
+    String partner;
+    String reference;
 
     /*
     d: Day of month (1-31), allows single or double digits.
@@ -220,6 +219,16 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
         labels = value;
     }
 
+    @Parsed(field = "PARTNER")
+    public void setPartner(String partner) {
+        this.partner = partner;
+    }
+
+    @Parsed(field = "REFERENCE")
+    public void setReference(String reference) {
+        this.reference = reference;
+    }
+
     @Override
     public TransactionCluster toTransactionCluster() {
         if (symbolBase != null && symbolQuote != null) {
@@ -292,7 +301,9 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
             (volumeQuote.compareTo(ZERO) > 0) ? evalUnitPrice(volumeQuote, quantity) : price,
             note,
             getAddress(),
-            labels
+            labels,
+            partner,
+            reference
         );
 
         TransactionCluster transactionCluster = new TransactionCluster(tx, getRelatedTxs());
@@ -328,7 +339,9 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
             feeCurrency != null ? feeCurrency : symbolBase,
             unrelated ? note : null,
             getAddress(),
-            labels
+            labels,
+            partner,
+            reference
         );
     }
 
@@ -343,7 +356,9 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
             rebateCurrency,
             unrelated ? note : null,
             address,
-            labels
+            labels,
+            partner,
+            reference
         );
     }
 
@@ -358,7 +373,9 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
             null,
             (note != null && !note.isEmpty()) ? note : null,
             getAddress(),
-            labels
+            labels,
+            partner,
+            reference
         );
         return new TransactionCluster(tx, getRelatedTxs());
     }
