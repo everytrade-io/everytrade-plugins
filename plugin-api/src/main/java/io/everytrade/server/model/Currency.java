@@ -990,7 +990,12 @@ public enum Currency {
     LOOP(false, Instant.parse("2022-03-24T00:00:00Z"), "LoopNetwork"),
     PRISMA(false, Instant.parse("2024-03-14T00:00:00Z"), "Prisma Governance Token"),
     SUKU(false, Instant.parse("2021-09-16T00:00:00Z"), "SUKU"),
-    STRK(false, Instant.parse("2024-02-14T00:00:00Z"), "Strike");
+    STRK(false, Instant.parse("2024-02-14T00:00:00Z"), "Starknet"),
+    SNEK(false, Instant.parse("2023-11-08T00:00:00Z"), "SNEK"),
+    WMTX(false, Instant.parse("2022-04-28T00:00:00Z"), "World Mobile Token"),
+    AIG(false, Instant.parse("2024-09-07T00:00:00Z"), "AiG"),
+    APFC(false, Instant.parse("2023-06-15T00:00:00Z"), "APF Coin"),
+    SMH(false, Instant.parse("2023-08-31T00:00:00Z"), "Spacemesh");
 
     String code;
     int decimalDigits;
