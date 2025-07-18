@@ -53,6 +53,12 @@ public class ImportedTransactionBean {
         return new ImportedTransactionBean(id, timestamp, base, quote, type, amount, null, note, address, labels, null, null);
     }
 
+    public static ImportedTransactionBean createDepositWithdrawal(String id, Instant timestamp, Currency base, Currency quote,
+                                                                  TransactionType type, BigDecimal amount, String address,
+                                                                  String note, String labels, String partner, String reference) {
+        return new ImportedTransactionBean(id, timestamp, base, quote, type, amount, null, note, address, labels, partner, reference);
+    }
+
     public ImportedTransactionBean(String uid, Instant executed, Currency base, Currency quote, TransactionType action,
                                    BigDecimal volume, BigDecimal unitPrice, String note, String address, String labels) {
         this(uid, executed, base, quote, action, volume, unitPrice, note, address, labels, null, null);

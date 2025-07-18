@@ -276,7 +276,9 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
             quantity,
             address != null ? address : (action == DEPOSIT ? addressFrom : addressTo),
             note,
-            labels
+            labels,
+            partner,
+            reference
         );
 
         return new TransactionCluster(tx, getRelatedTxs());
