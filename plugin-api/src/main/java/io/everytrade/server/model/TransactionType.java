@@ -17,7 +17,9 @@ public enum TransactionType {
     AIRDROP(11),
     EARNING(12),
     REWARD(13),
-    FORK(14)
+    FORK(14),
+    INCOMING_PAYMENT(15),
+    OUTGOING_PAYMENT(16)
     ;
 
     private final int code;
@@ -69,4 +71,13 @@ public enum TransactionType {
     public boolean isStaking() {
         return this == STAKE || this == UNSTAKE || this == STAKING_REWARD;
     }
+
+    public boolean isPayment() {
+        return this == INCOMING_PAYMENT || this == OUTGOING_PAYMENT;
+    }
+
+    public boolean isDepositOrWithdrawalOrPayment() {
+        return this == DEPOSIT || this == WITHDRAWAL || this == INCOMING_PAYMENT || this == OUTGOING_PAYMENT;
+    }
+
 }
