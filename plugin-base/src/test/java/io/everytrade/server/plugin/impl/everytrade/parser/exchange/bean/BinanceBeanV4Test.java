@@ -2050,19 +2050,46 @@ class BinanceBeanV4Test {
 
     @Test
     void testBuyCryptoWithFiat() {
-        final String row0 = "\"443796154\",\"2023-05-10 23:04:40\",\"Spot\",\"Buy Crypto With Fiat\",\"BUSD\",\"220.42235158\",\"\"\n";
-
+        String row0 = """
+            1065433034,2025-01-27 12:20:23,Spot,Buy Crypto With Fiat,EUR,-9.00000000,Via CashBalance -  Wallet/N01580351892984073216012734
+            1065433034,2025-01-27 12:20:23,Spot,Buy Crypto With Fiat,BTC,0.00009505,Via CashBalance -  Wallet/N01580351892984073216012734
+            """;
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row0);
 
         final TransactionCluster expected0 = new TransactionCluster(
             new ImportedTransactionBean(
                 null,
-                Instant.parse("2023-05-10T23:04:40Z"),
-                BUSD,
-                BUSD,
-                DEPOSIT,
-                new BigDecimal("220.42235158"),
+                Instant.parse("2025-01-27T12:20:23Z"),
+                BTC,
+                EUR,
+                BUY,
+                new BigDecimal("0.00009505000000000"),
+                new BigDecimal("94687.00683850604944766"),
                 null,
+                null
+            ),
+            List.of()
+        );
+        ParserTestUtils.checkEqual(expected0, actual.get(0));
+    }
+
+    @Test
+    void testSellCryptoToFiat() {
+        String row0 = """
+            1065433034,2025-08-28 13:33:37,Spot,Sell Crypto To Fiat,EUR,15.15000000,Via CashBalance -  Wallet/N02657558939781470208082834
+            1065433034,2025-08-28 13:33:38,Spot,Sell Crypto To Fiat,BTC,-0.00015701,Via CashBalance -  Wallet/N02657558939781470208082834
+            """;
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row0);
+
+        final TransactionCluster expected0 = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2025-08-28T13:33:38Z"),
+                BTC,
+                EUR,
+                SELL,
+                new BigDecimal("0.00015701000000000"),
+                new BigDecimal("96490.66938411566142284"),
                 null,
                 null
             ),

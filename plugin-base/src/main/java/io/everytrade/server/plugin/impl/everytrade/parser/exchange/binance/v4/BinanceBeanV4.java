@@ -408,4 +408,12 @@ public class BinanceBeanV4 extends ExchangeBean implements Cloneable {
             return cluster;
         }
     }
+
+    public BinanceBeanV4 shallowCopy() {
+        try {
+            return (BinanceBeanV4) this.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e);
+        }
+    }
 }

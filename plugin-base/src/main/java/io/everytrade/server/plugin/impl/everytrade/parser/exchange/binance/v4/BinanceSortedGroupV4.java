@@ -6,7 +6,6 @@ import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.binanceExceptions.BinanceValidateException;
-import io.everytrade.server.plugin.impl.everytrade.rateprovider.CoinPaprikaRateProvider;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -16,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static io.everytrade.server.model.Currency.BNB;
@@ -37,6 +37,7 @@ import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binanc
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BNB_VAULT_REWARDS;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BUY;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BUY_CRYPTO;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_BUY_CRYPTO_WITH_FIAT;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_C2C_TRANSFER;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_CARD_CASHBACK;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_CASHBACK_VOUCHER;
@@ -52,11 +53,11 @@ import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binanc
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_LARGE_OTC_TRADING;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SAVING_DISTRIBUTION;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SELL;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SELL_CRYPTO_TO_FIAT;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_INTEREST;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_REDEMPTION;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_SUBSCRIPTION;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_LOCKED_REDEMPTION;
-import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SIMPLE_EARN_LOCKED_REWARDS;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_SMALL_ASSETS_EXCHANGE_BNB;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_STAKING_PURCHASE;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.binance.v4.BinanceOperationTypeV4.OPERATION_TYPE_STAKING_REDEMPTION;
@@ -215,7 +216,7 @@ public class BinanceSortedGroupV4 {
     }
 
     private void validateFee() {
-        if (rowFees.size() > 0 && !(rowBuySellRelated.size() > 0 || rowDeposit.size() > 0 || rowWithdrawal.size() > 0)) {
+        if (!rowFees.isEmpty() && !(!rowBuySellRelated.isEmpty() || !rowDeposit.isEmpty() || !rowWithdrawal.isEmpty())) {
             throw new DataValidationException("No txs for fee");
         }
     }
@@ -237,6 +238,7 @@ public class BinanceSortedGroupV4 {
         for (BinanceBeanV4 row : rows) {
             if (!row.getCoin().isFiat()) {
                 result = true;
+                break;
             }
         }
         return result;
@@ -808,173 +810,158 @@ public class BinanceSortedGroupV4 {
         return txsBuySell;
     }
 
-    private void addRow(BinanceBeanV4 row, int groupSize)  {
-        if (row.getOriginalOperation().equals(OPERATION_TYPE_FEE.code)
-            || row.getOriginalOperation().equals(OPERATION_TYPE_TRANSACTION_FEE.code)) {
-            if (rowsFees.containsKey(row.getCoin())) {
-                rowsFees.get(row.getCoin()).add(row);
-            } else {
-                List<BinanceBeanV4> newList = new ArrayList<>();
-                newList.add(row);
-                rowsFees.put(row.getCoin(), newList);
-            }
-        } else if (List.of(OPERATION_TYPE_DEPOSIT.code, OPERATION_TYPE_FIAT_DEPOSIT.code).contains(row.getOriginalOperation())) {
-            if (rowsDeposit.containsKey(row.getCoin())) {
-                rowsDeposit.get(row.getCoin()).add(row);
-            } else {
-                List<BinanceBeanV4> newList = new ArrayList<>();
-                newList.add(row);
-                rowsDeposit.put(row.getCoin(), newList);
-            }
-        } else if (OPERATION_TYPE_SIMPLE_EARN_LOCKED_REDEMPTION.equals(row.getOperationType())) {
+    private static final Set<String> FEE_OPS = Set.of(
+        OPERATION_TYPE_FEE.code,
+        OPERATION_TYPE_TRANSACTION_FEE.code
+    );
+
+    private static final Set<String> DEPOSIT_OPS = Set.of(
+        OPERATION_TYPE_DEPOSIT.code,
+        OPERATION_TYPE_FIAT_DEPOSIT.code
+    );
+
+    private static final Set<String> WITHDRAW_OPS = Set.of(
+        OPERATION_TYPE_WITHDRAWAL.code,
+        OPERATION_TYPE_FIAT_WITHDRAWAL.code,
+        OPERATION_TYPE_FIAT_WITHDRAW.code,
+        OPERATION_TYPE_C2C_TRANSFER.code
+    );
+
+    private static final Set<String> FLEX_EARN_SIMPLE_OPS = Set.of(
+        OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_SUBSCRIPTION.code,
+        OPERATION_TYPE_SAVING_DISTRIBUTION.code,
+        OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_REDEMPTION.code
+    );
+
+    private static final Set<String> BUYSELL_RELATED_OPS = Set.of(
+        OPERATION_TYPE_BUY.code,
+        OPERATION_TYPE_SELL.code,
+        OPERATION_TYPE_TRANSACTION_RELATED.code,
+        OPERATION_TYPE_LARGE_OTC_TRADING.code,
+        OPERATION_TYPE_BINANCE_CONVERT.code,
+        OPERATION_TYPE_TRANSACTION_BUY.code,
+        OPERATION_TYPE_TRANSACTION_SPEND.code,
+        OPERATION_TYPE_TRANSACTION_REVENUE.code,
+        OPERATION_TYPE_TRANSACTION_SOLD.code,
+        OPERATION_TYPE_BUY_CRYPTO_WITH_FIAT.code,
+        OPERATION_TYPE_SELL_CRYPTO_TO_FIAT.code,
+        OPERATION_TYPE_CONVERT_FIAT_TO_CRYPTO_OCBS.code
+    );
+
+    private static final Set<String> REWARD_OPS = Set.of(
+        OPERATION_TYPE_DISTRIBUTION.code,
+        OPERATION_TYPE_BNB_VAULT_REWARDS.code
+    );
+
+    private static final Set<String> REBATE_OPS = Set.of(
+        OPERATION_TYPE_CARD_CASHBACK.code,
+        OPERATION_TYPE_COMMISSION_REBATE.code,
+        OPERATION_TYPE_CASHBACK_VOUCHER.code
+    );
+
+    private static void add(Map<Currency, List<BinanceBeanV4>> bucket, Currency coin, BinanceBeanV4 row) {
+        bucket.computeIfAbsent(coin, k -> new ArrayList<>()).add(row);
+    }
+
+    private static BinanceBeanV4 copyAsWithdrawalWithNoteAndNegatedChange(BinanceBeanV4 original, String note) {
+        BinanceBeanV4 copy = original.shallowCopy();
+        copy.setType(WITHDRAWAL);
+        copy.setNote(note);
+        if (copy.getChange() != null) {
+            copy.setChange(copy.getChange().negate());
+        }
+        return copy;
+    }
+
+    private void addRow(BinanceBeanV4 row, int groupSize) {
+        final String operation = row.getOriginalOperation();
+        final var operationEnum = row.getOperationType();
+        final Currency coin = row.getCoin();
+
+        if (FEE_OPS.contains(operation)) {
+            add(rowsFees, coin, row);
+            return;
+        }
+
+        if (DEPOSIT_OPS.contains(operation)) {
+            add(rowsDeposit, coin, row);
+            return;
+        }
+
+        if (operationEnum == OPERATION_TYPE_SIMPLE_EARN_LOCKED_REDEMPTION) {
             OPERATION_TYPE_SIMPLE_EARN_LOCKED_REDEMPTION.setMultiRowType(OPERATION_TYPE_SIMPLE_EARN_LOCKED_REDEMPTION.code, false);
-            if (rowsDeposit.containsKey(row.getCoin())) {
-                rowsDeposit.get(row.getCoin()).add(row);
-            } else {
-                List<BinanceBeanV4> newList = new ArrayList<>();
-                newList.add(row);
-                rowsDeposit.put(row.getCoin(), newList);
-            }
-            if (rowsWithdrawal.containsKey(row.getCoin())) {
-                try {
-                    var rowWithdrawal = (BinanceBeanV4) row.clone();
-                    rowWithdrawal.setType(WITHDRAWAL);
-                    rowWithdrawal.setNote(SIMPLE_EARN_LOCKED_REDEMPTION_BINANCE_EARN.code);
-                    rowWithdrawal.setChange(rowWithdrawal.getChange().negate());
-                    rowsWithdrawal.get(row.getCoin()).add(rowWithdrawal);
-                } catch (CloneNotSupportedException e) {
-                    throw new DataValidationException("Cannot make withdrawal from the line ");
-                }
-            } else {
-                try {
-                    var rowClone = (BinanceBeanV4) row.clone();
-                    rowClone.setType(WITHDRAWAL);
-                    rowClone.setNote(SIMPLE_EARN_LOCKED_REDEMPTION_BINANCE_EARN.code);
-                    rowClone.setChange(rowClone.getChange().negate());
-                    List<BinanceBeanV4> newList = new ArrayList<>();
-                    newList.add(rowClone);
-                    rowsWithdrawal.put(rowClone.getCoin(), newList);
-                } catch (CloneNotSupportedException e) {
-                    throw new DataValidationException("Cannot make withdrawal from the line ");
-                }
-            }
-        } else if (List.of(OPERATION_TYPE_STAKING_PURCHASE.code, OPERATION_TYPE_STAKING_REWARDS.code,
-            OPERATION_TYPE_STAKING_REDEMPTION.code).contains(row.getOriginalOperation())) {
-            if (rowsStakings.containsKey(row.getCoin())) {
-                rowsStakings.get(row.getCoin()).add(row);
-            } else {
-                List<BinanceBeanV4> newList = new ArrayList<>();
-                newList.add(row);
-                rowsStakings.put(row.getCoin(), newList);
-            }
-        } else if (List.of(OPERATION_TYPE_WITHDRAWAL.code, OPERATION_TYPE_FIAT_WITHDRAWAL.code,
-                OPERATION_TYPE_FIAT_WITHDRAW.code, OPERATION_TYPE_C2C_TRANSFER.code)
-            .contains(row.getOriginalOperation())) {
-            if (rowsWithdrawal.containsKey(row.getCoin())) {
-                rowsWithdrawal.get(row.getCoin()).add(row);
-            } else {
-                List<BinanceBeanV4> newList = new ArrayList<>();
-                newList.add(row);
-                rowsWithdrawal.put(row.getCoin(), newList);
-            }
-        } else if (List.of(OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_SUBSCRIPTION.code, OPERATION_TYPE_SAVING_DISTRIBUTION.code,
-            OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_REDEMPTION.code).contains(row.getOriginalOperation())) {
-            row.setNote(row.getOriginalOperation().toUpperCase());
-            if (row.getChange().compareTo(ZERO) < 0) {
+            add(rowsDeposit, coin, row);
+
+            var withdrawal = copyAsWithdrawalWithNoteAndNegatedChange(row, SIMPLE_EARN_LOCKED_REDEMPTION_BINANCE_EARN.code);
+            add(rowsWithdrawal, coin, withdrawal);
+            return;
+        }
+
+        if (operation.equals(OPERATION_TYPE_STAKING_PURCHASE.code)
+            || operation.equals(OPERATION_TYPE_STAKING_REWARDS.code)
+            || operation.equals(OPERATION_TYPE_STAKING_REDEMPTION.code)) {
+            add(rowsStakings, coin, row);
+            return;
+        }
+
+        if (WITHDRAW_OPS.contains(operation)) {
+            add(rowsWithdrawal, coin, row);
+            return;
+        }
+
+        if (FLEX_EARN_SIMPLE_OPS.contains(operation)) {
+            row.setNote(operation.toUpperCase());
+            if (row.getChange() != null && row.getChange().compareTo(ZERO) < 0) {
                 row.setType(WITHDRAWAL);
-                if (rowsWithdrawal.containsKey(row.getCoin())) {
-                    rowsWithdrawal.get(row.getCoin()).add(row);
-                } else {
-                    List<BinanceBeanV4> newList = new ArrayList<>();
-                    newList.add(row);
-                    rowsWithdrawal.put(row.getCoin(), newList);
-                }
+                add(rowsWithdrawal, coin, row);
             } else {
                 row.setType(DEPOSIT);
-                if (rowsDeposit.containsKey(row.getCoin())) {
-                    rowsDeposit.get(row.getCoin()).add(row);
-                } else {
-                    List<BinanceBeanV4> newList = new ArrayList<>();
-                    newList.add(row);
-                    rowsDeposit.put(row.getCoin(), newList);
-                }
+                add(rowsDeposit, coin, row);
             }
-        } else if (row.getOriginalOperation().equals(OPERATION_TYPE_BUY_CRYPTO.code) && groupSize == 1) {
-            row.setType(DEPOSIT);
-            if (rowsDeposit.containsKey(row.getCoin())) {
-                rowsDeposit.get(row.getCoin()).add(row);
-            } else {
-                List<BinanceBeanV4> newList = new ArrayList<>();
-                newList.add(row);
-                rowsDeposit.put(row.getCoin(), newList);
-            }
-        }else if (row.getOriginalOperation().equals(OPERATION_TYPE_BUY_CRYPTO.code) && groupSize > 1) {
-            if (rowsBuySellRelated.containsKey(row.getCoin())) {
-                rowsBuySellRelated.get(row.getCoin()).add(row);
-            } else {
-                List<BinanceBeanV4> newList = new ArrayList<>();
-                newList.add(row);
-                rowsBuySellRelated.put(row.getCoin(), newList);
-            }
-        } else if (row.getOriginalOperation().equals(OPERATION_TYPE_SMALL_ASSETS_EXCHANGE_BNB.code)) {
-            row.setNote(row.getOriginalOperation().toUpperCase());
-            smallAssetExchange.add(row);
-        } else if (row.getOriginalOperation().equals(OPERATION_TYPE_ETH2_0_STAKING.code)){
-            if (rowsStakingETH2_0.containsKey(row.getCoin())) {
-                rowsStakingETH2_0.get(row.getCoin()).add(row);
-            } else {
-                List<BinanceBeanV4> newList = new ArrayList<>();
-                newList.add(row);
-                rowsStakingETH2_0.put(row.getCoin(), newList);
-            }
-        } else if (
-            row.getOriginalOperation().equals(OPERATION_TYPE_BUY.code) ||
-                row.getOriginalOperation().equals(OPERATION_TYPE_SELL.code) ||
-                row.getOriginalOperation().equals(OPERATION_TYPE_TRANSACTION_RELATED.code) ||
-                row.getOriginalOperation().equals(OPERATION_TYPE_LARGE_OTC_TRADING.code) ||
-                row.getOriginalOperation().equals(OPERATION_TYPE_BINANCE_CONVERT.code) ||
-                row.getOriginalOperation().equals(OPERATION_TYPE_TRANSACTION_BUY.code) ||
-                row.getOriginalOperation().equals(OPERATION_TYPE_TRANSACTION_SPEND.code) ||
-                row.getOriginalOperation().equals(OPERATION_TYPE_TRANSACTION_REVENUE.code) ||
-                row.getOriginalOperation().equals(OPERATION_TYPE_TRANSACTION_SOLD.code) ||
-                row.getOriginalOperation().equals(OPERATION_TYPE_CONVERT_FIAT_TO_CRYPTO_OCBS.code)
-        ) {
-            if (rowsBuySellRelated.containsKey(row.getCoin())) {
-                rowsBuySellRelated.get(row.getCoin()).add(row);
-            } else {
-                List<BinanceBeanV4> newList = new ArrayList<>();
-                newList.add(row);
-                rowsBuySellRelated.put(row.getCoin(), newList);
-            }
-        } else if (row.getOriginalOperation().equals(OPERATION_TYPE_DISTRIBUTION.code)
-            || row.getOriginalOperation().equals(OPERATION_TYPE_BNB_VAULT_REWARDS.code)) {
-            if (rowsRewards.containsKey(row.getCoin())) {
-                rowsRewards.get(row.getCoin()).add(row);
-            } else {
-                List<BinanceBeanV4> newList = new ArrayList<>();
-                newList.add(row);
-                rowsRewards.put(row.getCoin(), newList);
-            }
-        } else if (row.getOriginalOperation().equals(OPERATION_TYPE_CARD_CASHBACK.code)
-            || row.getOriginalOperation().equals(OPERATION_TYPE_COMMISSION_REBATE.code)
-            || row.getOriginalOperation().equals(OPERATION_TYPE_CASHBACK_VOUCHER.code)) {
-            if (rowsRebate.containsKey(row.getCoin())) {
-                rowsRebate.get(row.getCoin()).add(row);
-            } else {
-                List<BinanceBeanV4> newList = new ArrayList<>();
-                newList.add(row);
-                rowsRebate.put(row.getCoin(), newList);
-            }
-        } else if (row.getOriginalOperation().equals(OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_INTEREST.code)) {
-            if (rowsEarnings.containsKey(row.getCoin())) {
-                rowsEarnings.get(row.getCoin()).add(row);
-            } else {
-                List<BinanceBeanV4> newList = new ArrayList<>();
-                newList.add(row);
-                rowsEarnings.put(row.getCoin(), newList);
-            }
-        } else {
-            throw new DataIgnoredException("Row " + row.getRowId() + " cannot be added due to wrong operation. ");
+            return;
         }
+
+        if (operation.equals(OPERATION_TYPE_BUY_CRYPTO.code)) {
+            if (groupSize == 1) {
+                row.setType(DEPOSIT);
+                add(rowsDeposit, coin, row);
+            } else {
+                add(rowsBuySellRelated, coin, row);
+            }
+            return;
+        }
+
+        if (operation.equals(OPERATION_TYPE_SMALL_ASSETS_EXCHANGE_BNB.code)) {
+            row.setNote(operation.toUpperCase());
+            smallAssetExchange.add(row);
+            return;
+        }
+
+        if (operation.equals(OPERATION_TYPE_ETH2_0_STAKING.code)) {
+            add(rowsStakingETH2_0, coin, row);
+            return;
+        }
+
+        if (BUYSELL_RELATED_OPS.contains(operation)) {
+            add(rowsBuySellRelated, coin, row);
+            return;
+        }
+
+        if (REWARD_OPS.contains(operation)) {
+            add(rowsRewards, coin, row);
+            return;
+        }
+
+        if (REBATE_OPS.contains(operation)) {
+            add(rowsRebate, coin, row);
+            return;
+        }
+
+        if (operation.equals(OPERATION_TYPE_SIMPLE_EARN_FLEXIBLE_INTEREST.code)) {
+            add(rowsEarnings, coin, row);
+            return;
+        }
+
+        throw new DataIgnoredException("Row " + row.getRowId() + " cannot be added due to wrong operation.");
     }
 }
