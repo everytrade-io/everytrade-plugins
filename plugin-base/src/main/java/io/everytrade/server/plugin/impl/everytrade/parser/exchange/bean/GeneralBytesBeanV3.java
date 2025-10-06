@@ -29,7 +29,7 @@ import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nul
 import static io.everytrade.server.plugin.impl.generalbytes.GbPlugin.parseGbCurrency;
 
 @Headers(sequence = {"Server Time","Local Transaction Id","Remote Transaction Id","Type","Cash Amount","Cash Currency",
-    "Crypto Amount","Crypto Currency","Status", "Expense", "Expense Currency", "Destination Address"}, extract = true)
+    "Crypto Amount","Crypto Currency","Status", "Expense", "Expense Currency", "Destination Address"},extract = true)
 public class GeneralBytesBeanV3 extends ExchangeBean {
     private Instant serverTime;
     private String localTransactionId;
