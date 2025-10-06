@@ -11,6 +11,8 @@ import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
+import io.everytrade.server.plugin.impl.everytrade.parser.utils.ProfileContext;
+import io.everytrade.server.plugin.impl.everytrade.parser.utils.StatusRulesRegistry;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -19,11 +21,10 @@ import java.time.format.DateTimeParseException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import static io.everytrade.server.model.TransactionType.BUY;
-import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.SELL;
-import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
 import static io.everytrade.server.plugin.impl.generalbytes.GbPlugin.parseGbCurrency;
 
@@ -104,14 +105,18 @@ public class GeneralBytesBeanV3 extends ExchangeBean {
     }
 
     @Parsed(field = "Status")
-    public void checkStatus(String status) {
-        boolean statusOk =
-            status.startsWith("COMPLETED")
-                || status.contains("PAYMENT ARRIVED")
-                || status.contains("ERROR (EXCHANGE PURCHASE)");
+    public void checkStatus(String raw) {
+        if (raw == null) {
+            throw new DataIgnoredException(UNSUPPORTED_STATUS_TYPE + "null");
+        }
+        final String status = raw.trim();
 
-        if (!statusOk) {
-            throw new DataIgnoredException(UNSUPPORTED_STATUS_TYPE.concat(status));
+        final String profile = ProfileContext.get();
+        final List<Predicate<String>> rules = StatusRulesRegistry.get("generalbytes", profile);
+
+        boolean ok = rules.stream().anyMatch(r -> r.test(status));
+        if (!ok) {
+            throw new DataIgnoredException(UNSUPPORTED_STATUS_TYPE + status);
         }
     }
 
