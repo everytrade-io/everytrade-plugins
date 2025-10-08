@@ -97,6 +97,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.simplecoin.Si
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.trezorSuite.TrezorSuiteBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.trezorSuite.TrezorSuiteExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.utils.ClusterValidator;
+import io.everytrade.server.plugin.impl.everytrade.parser.utils.ProfileContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1061,46 +1062,59 @@ public class EverytradeCsvMultiParser implements ICsvParser {
 
     @Override
     public ParseResult parse(File file, String header) {
+        return parse(file, header, null);
+    }
+
+    @Override
+    public ParseResult parse(File file, String header, String profileName) {
         var exchangeParseDetail = findCsvDetailByHeader(header);
         if (exchangeParseDetail == null) {
             throw new UnknownHeaderException(String.format("Unknown header: '%s'", header));
         }
-        var exchangeParser = exchangeParseDetail.getParserFactory().get();
-        var listBeans = exchangeParser.parse(file);
-        var parsingProblems = new ArrayList<>(exchangeParser.getParsingProblems());
 
-        if (exchangeParser instanceof IMultiExchangeSpecificParser) {
-            listBeans = ((IMultiExchangeSpecificParser) exchangeParser).convertMultipleRowsToTransactions(listBeans);
-        }
+        ProfileContext.set(profileName);
 
-        List<TransactionCluster> transactionClusters = new ArrayList<>();
-        for (ExchangeBean p : listBeans) {
-            try {
-                var cluster = p.toTransactionCluster();
-                if (cluster != null) {
-                    ClusterValidator.clusterValidator(cluster);
-                    transactionClusters.add(cluster);
-                }
-            } catch (DataIgnoredException e) {
-                parsingProblems.add(new ParsingProblem(p.rowToString(), e.getMessage(), PARSED_ROW_IGNORED));
-            } catch (Exception e) {
-                if (p.getRowValues() != null) {
-                    parsingProblems.add(new ParsingProblem(p.rowToString(), e.getMessage(), ROW_PARSING_FAILED));
+        try {
+            var exchangeParser = exchangeParseDetail.getParserFactory().get();
+            var listBeans = exchangeParser.parse(file);
+            var parsingProblems = new ArrayList<>(exchangeParser.getParsingProblems());
+
+            if (exchangeParser instanceof IMultiExchangeSpecificParser) {
+                listBeans = ((IMultiExchangeSpecificParser) exchangeParser).convertMultipleRowsToTransactions(listBeans);
+            }
+
+            List<TransactionCluster> transactionClusters = new ArrayList<>();
+            for (ExchangeBean p : listBeans) {
+                try {
+                    var cluster = p.toTransactionCluster();
+                    if (cluster != null) {
+                        ClusterValidator.clusterValidator(cluster);
+                        transactionClusters.add(cluster);
+                    }
+                } catch (DataIgnoredException e) {
+                    parsingProblems.add(new ParsingProblem(p.rowToString(), e.getMessage(), PARSED_ROW_IGNORED));
+                } catch (Exception e) {
+                    if (p.getRowValues() != null) {
+                        parsingProblems.add(new ParsingProblem(p.rowToString(), e.getMessage(), ROW_PARSING_FAILED));
+                    }
                 }
             }
-        }
 
-        log.info(
-            "{} transaction cluster(s) with {} transactions parsed successfully.",
-            transactionClusters.size(),
-            countTransactions(transactionClusters)
-        );
-        if (!parsingProblems.isEmpty()) {
-            log.warn("{} row(s) not parsed.", parsingProblems.size());
-        }
+            log.info(
+                "{} transaction cluster(s) with {} transactions parsed successfully.",
+                transactionClusters.size(),
+                countTransactions(transactionClusters)
+            );
+            if (!parsingProblems.isEmpty()) {
+                log.warn("{} row(s) not parsed.", parsingProblems.size());
+            }
 
-        return new ParseResult(transactionClusters, parsingProblems);
+            return new ParseResult(transactionClusters, parsingProblems);
+        } finally {
+            ProfileContext.clear();
+        }
     }
+
 
     private ExchangeParseDetail findCsvDetailByHeader(String header) {
             return EXCHANGE_PARSE_DETAILS.stream()
