@@ -146,38 +146,63 @@ public class BinanceSortedGroupV4 {
     }
 
     private List<BinanceBeanV4> sumRows(Map<Currency, List<BinanceBeanV4>> rows) {
+        if (rows == null || rows.isEmpty()) {
+            return List.of();
+        }
+
         List<BinanceBeanV4> result = new ArrayList<>();
-        if (!rows.isEmpty()) {
-            var time = rows.values().stream()
-                .flatMap(List::stream)
+
+        for (Map.Entry<Currency, List<BinanceBeanV4>> e : rows.entrySet()) {
+            Currency currency = e.getKey();
+            List<BinanceBeanV4> list = e.getValue();
+            if (list == null || list.isEmpty()) {
+                continue;
+            }
+
+            BinanceBeanV4 first = list.get(0);
+
+            if (!first.getOperationType().isMultiRowType) {
+                for (BinanceBeanV4 src : list) {
+                    BinanceBeanV4 copy = src.shallowCopy();
+                    copy.getUsedIds().add(copy.getRowId());
+                    result.add(copy);
+                }
+                continue;
+            }
+
+            BigDecimal change = list.stream()
+                .map(BinanceBeanV4::getChange)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            var date = list.stream()
                 .map(BinanceBeanV4::getDate)
                 .filter(Objects::nonNull)
-                .findFirst();
-            for (Map.Entry<Currency, List<BinanceBeanV4>> entry : rows.entrySet()) {
-                if(!entry.getValue().get(0).getOperationType().isMultiRowType) {
-                    entry.getValue().get(0).usedIds.add(entry.getValue().get(0).getRowId());
-                    result.addAll(entry.getValue());
-                } else {
-                    var newBean = new BinanceBeanV4();
-                    var currency = entry.getKey();
-                    var change = entry.getValue().stream().map(BinanceBeanV4::getChange).reduce(ZERO, BigDecimal::add);
-                    if(change.compareTo(ZERO) == 0 && entry.getValue().get(0).isMergedWithAnotherGroup()) {
-                        throw new DataValidationException(String.format("Rows with currency %s cannot be sum.", currency.code()));
-                    }
-                    var ids = entry.getValue().stream().map(BinanceBeanV4::getRowId).collect(Collectors.toList());
-                    if (entry.getValue().size() > 0) {
-                        newBean.setChange(change);
-                        newBean.setCoin(currency);
-                        newBean.setRowId(entry.getValue().get(0).getRowId());
-                        newBean.setOriginalOperation(entry.getValue().get(0).getOriginalOperation());
-                        newBean.usedIds.addAll(ids);
-                        newBean.setDate(time.orElse(null));
-                        result.add(newBean);
-                    }
-                }
+                .max(Comparator.naturalOrder())
+                .orElse(null);
 
+            boolean mergedWithAnotherGroup = first.isMergedWithAnotherGroup();
+            if (change.signum() == 0 && mergedWithAnotherGroup) {
+                throw new DataValidationException(
+                    String.format("Cannot collapse %s rows: zero net change but merged from multiple groups.", currency.code())
+                );
             }
+
+            List<Integer> ids = list.stream()
+                .map(BinanceBeanV4::getRowId)
+                .toList();
+
+            BinanceBeanV4 agg = new BinanceBeanV4();
+            agg.setCoin(currency);
+            agg.setChange(change);
+            agg.setRowId(ids.stream().min(Comparator.naturalOrder()).orElse(first.getRowId()));
+            agg.setOriginalOperation(first.getOriginalOperation());
+            agg.setDate(date);
+            agg.getUsedIds().addAll(ids);
+
+            result.add(agg);
         }
+
         return result;
     }
 
@@ -264,6 +289,9 @@ public class BinanceSortedGroupV4 {
     public void createTransactionFromOneRowData(List<BinanceBeanV4> group) {
         List<BinanceBeanV4> fees = createFee(group);
         for (BinanceBeanV4 row : group) {
+            if (row.getOperationType().equals(OPERATION_TYPE_BUY_CRYPTO_WITH_FIAT)) {
+                throw new DataIgnoredException("Single row buy crypto with fiat not supported");
+            }
             if (row.getOperationType().equals(OPERATION_TYPE_FEE) || row.getOperationType().equals(OPERATION_TYPE_TRANSACTION_FEE)) {
                 // ignore;
             } else if (OPERATION_TYPE_SELL.equals(row.getOperationType()) || OPERATION_TYPE_BUY.equals(row.getOperationType())) {
@@ -287,7 +315,7 @@ public class BinanceSortedGroupV4 {
                 this.createdTransactions.add(row);
             }
         }
-        if (createdTransactions.size() > 0) {
+        if (!createdTransactions.isEmpty()) {
             createdTransactions.get(0).setFeeTransactions(fees);
         } else {
             createdTransactions.addAll(fees);
