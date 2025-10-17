@@ -1,5 +1,6 @@
 package io.everytrade.server.plugin.impl.everytrade.parser.utils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -14,18 +15,25 @@ public final class StatusRulesRegistry {
 
     static {
         Map<String, List<Predicate<String>>> gb = new HashMap<>();
-        gb.put("default", List.of(
+        List<Predicate<String>> defaultRules = List.of(
             startsWith("COMPLETED"),
             contains("PAYMENT ARRIVED"),
             contains("ERROR (EXCHANGE PURCHASE)")
-        ));
-        gb.put("profile 2", List.of(
-            startsWith("COMPLETED"),
-            contains("PAYMENT ARRIVED"),
-            contains("ERROR (EXCHANGE PURCHASE)"),
+        );
+        gb.put("default", defaultRules);
+
+        List<Predicate<String>> profile1Rules = new ArrayList<>(defaultRules);
+        profile1Rules.addAll(List.of(
+            contains("ERROR (COINS UNCONFIRMED ON EXCHANGE)"),
             contains("ERROR (EXCHANGE SELL)"),
-            contains("ERROR (EXCHANGE WITHDRAWAL)")
+            contains("ERROR (EXCHANGE WITHDRAWAL)"),
+            contains("IN PROGRESS"),
+            contains("ERROR (INVALID UNKNOWN ERROR)"),
+            contains("ERROR (NO ERROR)"),
+            contains("ERROR (WITHDRAWAL PROBLEM)")
         ));
+        gb.put("profile 1", profile1Rules);
+
         RULES.put("generalbytes", gb);
     }
 

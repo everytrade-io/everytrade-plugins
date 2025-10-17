@@ -43,6 +43,7 @@ public class GeneralBytesBeanV3 extends ExchangeBean {
     private BigDecimal expense;
     private Currency expenseCurrency;
     private String destinationAddress;
+    private String labelsFromStatus;
 
     private static final Map<Currency, Integer> CURRENCY_SCALE_MAP = Map.of(
         Currency.ADA, 6
@@ -119,6 +120,8 @@ public class GeneralBytesBeanV3 extends ExchangeBean {
         if (!ok) {
             throw new DataIgnoredException(UNSUPPORTED_STATUS_TYPE + status);
         }
+
+        this.labelsFromStatus = status;
     }
 
     @Parsed(field = "Expense", defaultNullRead = "0")
@@ -166,7 +169,9 @@ public class GeneralBytesBeanV3 extends ExchangeBean {
                     TransactionType.FEE,
                     expense.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
                     expenseCurrency,
-                    remoteTransactionId      //note
+                    remoteTransactionId,
+                    null,
+                    labelsFromStatus
                 )
             );
         }
@@ -182,7 +187,7 @@ public class GeneralBytesBeanV3 extends ExchangeBean {
                     cashAmount,
                     destinationAddress,
                     null,
-                    null
+                    labelsFromStatus
                 ),
                 related
             );
@@ -197,7 +202,8 @@ public class GeneralBytesBeanV3 extends ExchangeBean {
                     cryptoAmount,               //base quantity
                     evalUnitPrice(cashAmount, cryptoAmount), //unit price
                     remoteTransactionId,         //note
-                    destinationAddress
+                    destinationAddress,
+                    labelsFromStatus
                 ),
                 related
             );
