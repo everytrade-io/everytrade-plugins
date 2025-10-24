@@ -117,13 +117,17 @@ public class ParserTestUtils {
         return CSV_PARSER.parse(ParserTestUtils.createTestFile(rows), getHeader(rows));
     }
 
-    public static List<TransactionCluster> getTransactionClusters(String rows) {
+    public static List<TransactionCluster> getTransactionClusters(String rows, String profile) {
         try {
-            final ParseResult result = CSV_PARSER.parse(ParserTestUtils.createTestFile(rows), getHeader(rows));
+            final ParseResult result = CSV_PARSER.parse(
+                ParserTestUtils.createTestFile(rows),
+                getHeader(rows),
+                profile
+            );
             if (!result.getParsingProblems().isEmpty()) {
                 StringBuilder stringBuilder = new StringBuilder();
                 result.getParsingProblems().forEach(p -> stringBuilder.append(p).append("\n"));
-                System.out.println("Not parsed rows: " + stringBuilder.toString());
+                System.out.println("Not parsed rows: " + stringBuilder);
             }
             List<TransactionCluster> list = result.getTransactionClusters();
             if (list.isEmpty()) {
@@ -134,6 +138,10 @@ public class ParserTestUtils {
             fail(e);
         }
         throw new IllegalStateException("Unexpected state during tests.");
+    }
+
+    public static List<TransactionCluster> getTransactionClusters(String rows) {
+        return getTransactionClusters(rows, null);
     }
 
     public static void testParsing(String rows) {
