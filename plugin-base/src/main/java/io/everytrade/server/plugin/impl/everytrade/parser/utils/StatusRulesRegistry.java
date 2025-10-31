@@ -23,14 +23,15 @@ public final class StatusRulesRegistry {
         gb.put("default", defaultRules);
 
         List<Predicate<String>> profile1Rules = new ArrayList<>(List.of(
-                startsWith("COMPLETED"),
-                containsButNot("PAYMENT ARRIVED", "ON HOLD"),
-                contains("ERROR (COINS UNCONFIRMED ON EXCHANGE)"),
-                contains("ERROR (EXCHANGE SELL)"),
-                contains("ERROR (EXCHANGE WITHDRAWAL)"),
-                contains("IN PROGRESS"),
-                contains("ERROR (INVALID UNKNOWN ERROR)"),
-                contains("ERROR (WITHDRAWAL PROBLEM)")
+            startsWith("COMPLETED"),
+            containsButNot("PAYMENT ARRIVED", "ON HOLD"),
+            contains("ERROR (COINS UNCONFIRMED ON EXCHANGE)"),
+            contains("ERROR (EXCHANGE SELL)"),
+            contains("ERROR (NO ERROR)"),
+            contains("ERROR (EXCHANGE WITHDRAWAL)"),
+            contains("IN PROGRESS"),
+            contains("ERROR (INVALID UNKNOWN ERROR)"),
+            contains("ERROR (WITHDRAWAL PROBLEM)")
         ));
         gb.put("profile 1", profile1Rules);
 
