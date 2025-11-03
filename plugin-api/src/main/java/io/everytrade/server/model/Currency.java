@@ -995,7 +995,10 @@ public enum Currency {
     WMTX(false, Instant.parse("2022-04-28T00:00:00Z"), "World Mobile Token"),
     AIG(false, Instant.parse("2024-09-07T00:00:00Z"), "AiG"),
     APFC(false, Instant.parse("2023-06-15T00:00:00Z"), "APF Coin"),
-    SMH(false, Instant.parse("2023-08-31T00:00:00Z"), "Spacemesh");
+    SMH(false, Instant.parse("2023-08-31T00:00:00Z"), "Spacemesh"),
+    SAHARA(false, Instant.parse("2025-06-26T00:00:00Z"), "Sahara AI"),
+    SKI(false, Instant.parse("2024-04-18T00:00:00Z"), "Ski Mask Dog"),
+    ASTER(false, Instant.parse("2025-09-19T00:00:00Z"), "Aster");
 
     String code;
     int decimalDigits;
