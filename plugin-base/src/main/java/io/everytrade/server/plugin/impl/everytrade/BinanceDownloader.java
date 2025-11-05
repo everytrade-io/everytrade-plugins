@@ -31,7 +31,7 @@ import static java.time.temporal.ChronoUnit.DAYS;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.joining;
 import static lombok.AccessLevel.PRIVATE;
-import static org.apache.commons.lang.StringUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 @FieldDefaults(level = PRIVATE)
 public class BinanceDownloader {

@@ -58,6 +58,17 @@ public class XChangeConnectorParser {
         return new ParseResult(transactionClusters, parsingProblems);
     }
 
+    public ParseResult getOkxParseResult(List<UserTrade> userTrades,
+                                         List<FundingRecord> withdrawals,
+                                         List<FundingRecord> deposits) {
+        List<ParsingProblem> parsingProblems = new ArrayList<>();
+        List<TransactionCluster> transactionClusters = new ArrayList<>();
+        transactionClusters.addAll(tradesToCluster(userTrades, parsingProblems));
+        transactionClusters.addAll(fundingToCluster(withdrawals, parsingProblems));
+        transactionClusters.addAll(fundingToCluster(deposits, parsingProblems));
+        return new ParseResult(transactionClusters, parsingProblems);
+    }
+
     public ParseResult getBittrexResult(List<UserTrade> trades,
                                         List<BittrexDepositHistory> deposits,
                                         List<BittrexWithdrawalHistory> withdrawals) {
