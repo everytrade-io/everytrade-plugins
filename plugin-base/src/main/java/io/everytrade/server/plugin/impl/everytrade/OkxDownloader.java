@@ -1,94 +1,368 @@
 package io.everytrade.server.plugin.impl.everytrade;
 
-import com.okcoin.commons.okex.open.api.bean.spot.result.OrderInfo;
-import com.okcoin.commons.okex.open.api.service.spot.SpotOrderAPIServive;
-import org.knowm.xchange.currency.CurrencyPair;
+import org.knowm.xchange.Exchange;
+import org.knowm.xchange.dto.account.FundingRecord;
+import org.knowm.xchange.dto.meta.ExchangeMetaData;
+import org.knowm.xchange.dto.trade.UserTrade;
+import org.knowm.xchange.dto.trade.UserTrades;
+import org.knowm.xchange.okex.dto.OkexResponse;
+import org.knowm.xchange.okex.dto.account.OkexDeposit;
+import org.knowm.xchange.okex.dto.account.OkexWithdrawal;
+import org.knowm.xchange.okex.dto.trade.OkexOrderDetails;
+import org.knowm.xchange.okex.service.OkexAccountServiceRaw;
+import org.knowm.xchange.okex.service.OkexTradeServiceRaw;
 
-import java.time.Duration;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 
+//https://www.okex.com/docs/en/#spot-account_information - limit 20 requests per second
 public class OkxDownloader {
-    //https://www.okex.com/docs/en/#spot-account_information - limit 20 requests per second
-    private static final int MAX_REQUESTS = 30;
-    private static final Duration SLEEP_BETWEEN_REQUESTS = Duration.ofMillis(100);
-    private static final String MAX_TXS_PER_REQUEST = "100";
-    public static final String STATUS_FULLY_FILLED = "2";
-    private final SpotOrderAPIServive spotOrderApiService;
-    private final OkxCurrencyPairDonwloadState donwloadState;
+    private static final String STATE_SEP = "|";
+    private static final String KV_SEP = "=";
 
-    public OkxDownloader(SpotOrderAPIServive spotOrderApiService, String lastTransactionId) {
-        Objects.requireNonNull(this.spotOrderApiService = spotOrderApiService);
-        donwloadState = new OkxCurrencyPairDonwloadState(lastTransactionId);
+    private static final String K_TRD = "TRD";
+    private static final String K_DEP = "DEP";
+    private static final String K_WDR = "WDR";
+
+    private String lastTradeId;
+    private String lastDepositTs;
+    private String lastWithdrawalTs;
+
+    private String newTradeId;
+    private String newDepositTs;
+    private String newWithdrawalTs;
+    private final Exchange exchange;
+    private final OkexAccountServiceRaw accountRaw;
+    private final OkexTradeServiceRaw tradeRaw;
+
+    public OkxDownloader(String downloadState, Exchange exchange) {
+        this.exchange = exchange;
+        this.accountRaw = (OkexAccountServiceRaw) exchange.getAccountService();
+        this.tradeRaw = (OkexTradeServiceRaw) exchange.getTradeService();
+        deserializeState(downloadState);
     }
 
-    public List<OrderInfo> download(String currencyPairs) {
-        final List<CurrencyPair> pairs = ConnectorUtils.toCurrencyPairs(currencyPairs);
-        final List<OrderInfo> orders = new ArrayList<>();
-        int sentRequests = 0;
-        for (CurrencyPair pair : pairs) {
-            final List<OrderInfo> pairOrders = new ArrayList<>();
-            String pairCode = String.format("%s-%s", pair.getBase(), pair.getCounter());
-            final String continuousBlockLastTxId = donwloadState.getContinuousBlockLastTxId(pairCode);
-            String currentAfterGapFirstTxId = donwloadState.getAfterGapFirstTxId(pairCode);
-            boolean isGapClosed = false;
+    public List<UserTrade> downloadTrades() {
+        final List<UserTrade> allTrades = new ArrayList<>();
+        final ExchangeMetaData meta = exchange.getExchangeMetaData();
 
-            while (sentRequests < MAX_REQUESTS) {
-                final List<OrderInfo> ordersBlock;
-                try {
-                    ordersBlock = spotOrderApiService.getOrders(
-                        pairCode,
-                        STATUS_FULLY_FILLED,
-                        currentAfterGapFirstTxId,
-                        currentAfterGapFirstTxId == null ? continuousBlockLastTxId : null,
-                        MAX_TXS_PER_REQUEST
-                    );
-                    Thread.sleep(SLEEP_BETWEEN_REQUESTS.toMillis());
-                } catch (Exception e) {
-                    throw new IllegalStateException("User trade history download failed. ", e);
+        try {
+            if (lastTradeId == null || lastTradeId.isEmpty()) {
+                // OLDER txs
+                String afterOrdId = null;
+                boolean firstPage = true;
+
+                for (; ; ) {
+                    OkexResponse<List<OkexOrderDetails>> resp;
+                    try {
+                        resp = tradeRaw.getOrderHistory(
+                            "SPOT",
+                            null,
+                            null,
+                            afterOrdId,
+                            null,
+                            "100"
+                        );
+                    } catch (IOException e) {
+                        String msg = e.getMessage();
+                        if (msg != null && msg.contains("429")) {
+                            try {
+                                Thread.sleep(300);
+                            } catch (InterruptedException ignored) {
+                                Thread.currentThread().interrupt();
+                            }
+                            continue;
+                        }
+                        throw e;
+                    }
+                    List<OkexOrderDetails> page = resp.getData();
+                    if (page == null || page.isEmpty()) {
+                        break;
+                    }
+                    if (firstPage) {
+                        newTradeId = page.get(0).getOrderId();
+                        firstPage = false;
+                    }
+                    UserTrades ut = OkxMappers.adaptUserTrades(page, meta);
+                    if (ut.getUserTrades() != null) {
+                        allTrades.addAll(ut.getUserTrades());
+                    }
+                    afterOrdId = page.get(page.size() - 1).getOrderId();
+                    try {
+                        Thread.sleep(80);
+                    } catch (InterruptedException ignored) {
+                        Thread.currentThread().interrupt();
+                    }
                 }
-                final List<OrderInfo> ordersToAdd = getOrdersToAdd(ordersBlock, continuousBlockLastTxId);
-                isGapClosed = ordersBlock.isEmpty() || ordersToAdd.size() < ordersBlock.size();
-                if (ordersToAdd.isEmpty()) {
+
+            } else {
+                // NEWER txs
+                String beforeOrdId = lastTradeId;
+                boolean firstPage = true;
+
+                for (; ; ) {
+                    OkexResponse<List<OkexOrderDetails>> resp;
+                    try {
+                        resp = tradeRaw.getOrderHistory(
+                            "SPOT",
+                            null,
+                            null,
+                            null,
+                            beforeOrdId,
+                            "100"
+                        );
+                    } catch (IOException e) {
+                        String msg = e.getMessage();
+                        if (msg != null && msg.contains("429")) {
+                            try {
+                                Thread.sleep(300);
+                            } catch (InterruptedException ignored) {
+                                Thread.currentThread().interrupt();
+                            }
+                            continue;
+                        }
+                        throw e;
+                    }
+                    List<OkexOrderDetails> page = resp.getData();
+                    if (page == null || page.isEmpty()) {
+                        break;
+                    }
+                    if (firstPage) {
+                        newTradeId = page.get(0).getOrderId();
+                        firstPage = false;
+                    }
+                    UserTrades ut = OkxMappers.adaptUserTrades(page, meta);
+                    if (ut.getUserTrades() != null) {
+                        allTrades.addAll(ut.getUserTrades());
+                    }
+                    beforeOrdId = page.get(0).getOrderId();
+                    try {
+                        Thread.sleep(80);
+                    } catch (InterruptedException ignored) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        allTrades.sort(Comparator
+            .comparing(UserTrade::getTimestamp, Comparator.nullsLast(Comparator.naturalOrder()))
+            .thenComparing(UserTrade::getId, Comparator.nullsLast(Comparator.naturalOrder()))
+            .reversed()
+        );
+
+        return allTrades;
+    }
+
+    public List<FundingRecord> downloadWithdrawals() {
+        List<FundingRecord> results = new ArrayList<>();
+
+        if (lastWithdrawalTs == null || lastWithdrawalTs.isEmpty()) {
+            String after = null;
+            boolean first = true;
+            for (; ; ) {
+                OkexResponse<List<OkexWithdrawal>> resp;
+                try {
+                    resp = accountRaw.getWithdrawalHistory(null, after, null);
+                } catch (IOException e) {
+                    String msg = e.getMessage();
+                    if (msg != null && msg.contains("429")) {
+                        try {
+                            Thread.sleep(300);
+                        } catch (InterruptedException ignored) {
+                            Thread.currentThread().interrupt();
+                        }
+                        continue;
+                    }
+                    throw new RuntimeException(e);
+                }
+                List<OkexWithdrawal> page = resp.getData();
+                if (page == null || page.isEmpty()) {
                     break;
                 }
 
-                pairOrders.addAll(ordersToAdd);
-                currentAfterGapFirstTxId = ordersToAdd.get(ordersToAdd.size() - 1).getOrder_id();
-                ++sentRequests;
+                if (first) {
+                    newWithdrawalTs = page.get(0).getTs();
+                    first = false;
+                }
+                for (OkexWithdrawal w : page) {
+                    results.add(OkxMappers.mapWithdrawal(w));
+                }
+                after = page.get(page.size() - 1).getTs(); // older
+            }
+        } else {
+            String before = lastWithdrawalTs;
+            boolean first = true;
+            for (; ; ) {
+                OkexResponse<List<OkexWithdrawal>> resp;
+                try {
+                    resp = accountRaw.getWithdrawalHistory(null, null, before);
+                } catch (IOException e) {
+                    String msg = e.getMessage();
+                    if (msg != null && msg.contains("429")) {
+                        try {
+                            Thread.sleep(300);
+                        } catch (InterruptedException ignored) {
+                            Thread.currentThread().interrupt();
+                        }
+                        continue;
+                    }
+                    throw new RuntimeException(e);
+                }
+                List<OkexWithdrawal> page = resp.getData();
+                if (page == null || page.isEmpty()) {
+                    break;
+                }
+
+                if (first) {
+                    newWithdrawalTs = page.get(0).getTs();
+                    first = false;
+                }
+                for (OkexWithdrawal w : page) {
+                    results.add(OkxMappers.mapWithdrawal(w));
+                }
+                before = page.get(0).getTs(); // newer
+                try {
+                    Thread.sleep(80);
+                } catch (InterruptedException ignored) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }
+
+        results.sort(Comparator.comparing(FundingRecord::getDate).reversed());
+        return results;
+    }
+
+    public List<FundingRecord> downloadDeposits() {
+        List<FundingRecord> results = new ArrayList<>();
+
+        if (lastDepositTs == null || lastDepositTs.isEmpty()) {
+            String after = null;
+            boolean first = true;
+            for (; ; ) {
+                OkexResponse<List<OkexDeposit>> resp;
+                try {
+                    resp = accountRaw.getDepositHistory(null, after, null);
+                } catch (IOException e) {
+                    String msg = e.getMessage();
+                    if (msg != null && msg.contains("429")) {
+                        try {
+                            Thread.sleep(300);
+                        } catch (InterruptedException ignored) {
+                            Thread.currentThread().interrupt();
+                        }
+                        continue;
+                    }
+                    throw new RuntimeException(e);
+                }
+
+                List<OkexDeposit> page = resp.getData();
+                if (page == null || page.isEmpty()) {
+                    break;
+                }
+
+                if (first) {
+                    newDepositTs = page.get(0).getTs();
+                    first = false;
+                }
+                for (OkexDeposit d : page) {
+                    results.add(OkxMappers.mapDeposit(d));
+                }
+                after = page.get(page.size() - 1).getTs(); // older
+            }
+        } else {
+            String before = lastDepositTs;
+            boolean first = true;
+            for (; ; ) {
+                OkexResponse<List<OkexDeposit>> resp;
+                try {
+                    resp = accountRaw.getDepositHistory(null, null, before);
+                } catch (IOException e) {
+                    String msg = e.getMessage();
+                    if (msg != null && msg.contains("429")) {
+                        try {
+                            Thread.sleep(300);
+                        } catch (InterruptedException ignored) {
+                            Thread.currentThread().interrupt();
+                        }
+                        continue;
+                    }
+                    throw new RuntimeException(e);
+                }
+
+                List<OkexDeposit> page = resp.getData();
+                if (page == null || page.isEmpty()) {
+                    break;
+                }
+
+                if (first) {
+                    newDepositTs = page.get(0).getTs();
+                    first = false;
+                }
+                for (OkexDeposit d : page) {
+                    results.add(OkxMappers.mapDeposit(d));
+                }
+                before = page.get(0).getTs(); // newer
+                try {
+                    Thread.sleep(80);
+                } catch (InterruptedException ignored) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }
+
+        results.sort(Comparator.comparing(FundingRecord::getDate).reversed());
+        return results;
+    }
+
+    private void deserializeState(String state) {
+        lastTradeId = null;
+        lastDepositTs = null;
+        lastWithdrawalTs = null;
+
+        if (state == null || state.isEmpty()) {
+            return;
+        }
+
+        String[] parts = state.split("\\" + STATE_SEP, -1);
+        for (String p : parts) {
+            int idx = p.indexOf(KV_SEP);
+            if (idx <= 0) {
+                continue;
+            }
+            String key = p.substring(0, idx).trim();
+            String val = p.substring(idx + 1).trim();
+            if (val.isEmpty()) {
+                val = null;
             }
 
-            donwloadState.update(
-                pairCode,
-                isGapClosed,
-                pairOrders
-            );
-            orders.addAll(pairOrders);
-        }
-        return orders;
-    }
-
-    public String getLastTransactionId() {
-        return donwloadState.toLastTransactionId();
-    }
-
-    private List<OrderInfo> getOrdersToAdd(List<OrderInfo> ordersBlock, String continuousBlockLastTxId) {
-        final int duplicate = findDuplicate(continuousBlockLastTxId, ordersBlock);
-        final List<OrderInfo> ordersToAdd = new ArrayList<>(ordersBlock);
-        if (duplicate > -1) {
-            ordersToAdd.removeAll(ordersToAdd.subList(0, duplicate + 1));
-        }
-        return ordersToAdd;
-    }
-
-    private int findDuplicate(String transactionId, List<OrderInfo> ordersBlock) {
-        for (int i = 0; i < ordersBlock.size(); i++) {
-            final OrderInfo orderInfo = ordersBlock.get(i);
-            if (orderInfo.getOrder_id().equals(transactionId)) {
-                return i;
+            switch (key) {
+                case K_TRD:
+                    lastTradeId = val;
+                    break;
+                case K_DEP:
+                    lastDepositTs = val;
+                    break;
+                case K_WDR:
+                    lastWithdrawalTs = val;
+                    break;
+                default: // ignore unknown keys
             }
         }
-        return -1;
+    }
+
+    public String serializeState() {
+        String trd = (newTradeId != null ? newTradeId : (lastTradeId != null ? lastTradeId : ""));
+        String dep = (newDepositTs != null ? newDepositTs : (lastDepositTs != null ? lastDepositTs : ""));
+        String wdr = (newWithdrawalTs != null ? newWithdrawalTs : (lastWithdrawalTs != null ? lastWithdrawalTs : ""));
+
+        return K_TRD + KV_SEP + trd + STATE_SEP
+            + K_DEP + KV_SEP + dep + STATE_SEP
+            + K_WDR + KV_SEP + wdr;
     }
 }

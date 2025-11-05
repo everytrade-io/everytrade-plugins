@@ -1,9 +1,5 @@
 package io.everytrade.server.plugin.impl.everytrade;
 
-import com.okcoin.commons.okex.open.api.bean.spot.result.OrderInfo;
-import com.okcoin.commons.okex.open.api.config.APIConfiguration;
-import com.okcoin.commons.okex.open.api.service.spot.SpotOrderAPIServive;
-import com.okcoin.commons.okex.open.api.service.spot.impl.SpotOrderApiServiceImpl;
 import io.everytrade.server.UiKey;
 import io.everytrade.server.model.SupportedExchange;
 import io.everytrade.server.plugin.api.IPlugin;
@@ -13,6 +9,13 @@ import io.everytrade.server.plugin.api.connector.ConnectorParameterType;
 import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.connector.IConnector;
 import io.everytrade.server.plugin.api.parser.ParseResult;
+import lombok.NonNull;
+import org.knowm.xchange.Exchange;
+import org.knowm.xchange.ExchangeFactory;
+import org.knowm.xchange.ExchangeSpecification;
+import org.knowm.xchange.dto.account.FundingRecord;
+import org.knowm.xchange.dto.trade.UserTrade;
+import org.knowm.xchange.okex.OkexExchange;
 
 import java.util.List;
 import java.util.Map;
@@ -47,33 +50,32 @@ public class OkxConnector implements IConnector {
             "",
             false
         );
-    private static final ConnectorParameterDescriptor PARAMETER_CURRENCY_PAIRS =
-        new ConnectorParameterDescriptor(
-            "currencyPairs",
-            ConnectorParameterType.STRING,
-            UiKey.CONNECTION_CURRENCY_PAIRS_DESC,
-            "",
-            false
-        );
 
     public static final ConnectorDescriptor DESCRIPTOR = new ConnectorDescriptor(
         ID,
         "OKX Connector",
         "",
         SupportedExchange.OKX.getInternalId(),
-        List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET, PARAMETER_PASS_PHRASE, PARAMETER_CURRENCY_PAIRS)
+        List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET, PARAMETER_PASS_PHRASE)
     );
-    private static final String OKEX_URL = "https://www.okex.com/";
-    private final String apiKey;
-    private final String apiSecret;
-    private final String passPhrase;
-    private final String currencyPairs;
+
+    private static final String OKEX_URL = "https://eea.okx.com";
+    Exchange exchange;
 
     public OkxConnector(Map<String, String> parameters) {
-        Objects.requireNonNull(this.apiKey = parameters.get(PARAMETER_API_KEY.getId()));
-        Objects.requireNonNull(this.apiSecret = parameters.get(PARAMETER_API_SECRET.getId()));
-        Objects.requireNonNull(this.passPhrase = parameters.get(PARAMETER_PASS_PHRASE.getId()));
-        Objects.requireNonNull(this.currencyPairs = parameters.get(PARAMETER_CURRENCY_PAIRS.getId()));
+        this(
+            Objects.requireNonNull(parameters.get(PARAMETER_API_KEY.getId())),
+            Objects.requireNonNull(parameters.get(PARAMETER_API_SECRET.getId())),
+            Objects.requireNonNull(parameters.get(PARAMETER_PASS_PHRASE.getId()))
+        );
+    }
+
+    public OkxConnector(@NonNull String apiKey, @NonNull String apiSecret, @NonNull String passPhrase) {
+        final ExchangeSpecification exSpec = new OkexExchange().getDefaultExchangeSpecification();
+        exSpec.setApiKey(apiKey);
+        exSpec.setSecretKey(apiSecret);
+        exSpec.setExchangeSpecificParametersItem(OkexExchange.PARAM_PASSPHRASE, passPhrase);
+        this.exchange = ExchangeFactory.INSTANCE.createExchange(exSpec);
     }
 
     @Override
@@ -83,15 +85,14 @@ public class OkxConnector implements IConnector {
 
     @Override
     public DownloadResult getTransactions(String lastTransactionId) {
-        APIConfiguration config = new APIConfiguration();
-        config.setEndpoint(OKEX_URL);
-        config.setApiKey(apiKey);
-        config.setSecretKey(apiSecret);
-        config.setPassphrase(passPhrase);
-        final SpotOrderAPIServive spotOrderApiService = new SpotOrderApiServiceImpl(config);
-        final OkxDownloader okxDownloader = new OkxDownloader(spotOrderApiService, lastTransactionId);
-        final List<OrderInfo> orderInfos = okxDownloader.download(currencyPairs);
-        final ParseResult parseResult = OkxConnectorParser.getParseResult(orderInfos);
-        return new DownloadResult(parseResult, okxDownloader.getLastTransactionId());
+        final OkxDownloader okxDownloader = new OkxDownloader(lastTransactionId, exchange);
+
+        List<UserTrade> userTrades = okxDownloader.downloadTrades();
+        List<FundingRecord> deposits = okxDownloader.downloadDeposits();
+        List<FundingRecord> withdrawals = okxDownloader.downloadWithdrawals();
+
+        final ParseResult parseResult = new XChangeConnectorParser().getOkxParseResult(userTrades, deposits, withdrawals);
+        return new DownloadResult(parseResult, okxDownloader.serializeState());
+
     }
 }
