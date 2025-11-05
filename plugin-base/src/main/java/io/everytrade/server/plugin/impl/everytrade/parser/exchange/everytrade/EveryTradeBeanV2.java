@@ -9,11 +9,8 @@ import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
-import io.everytrade.server.plugin.impl.everytrade.OkxConnectorParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.EverytradeCSVParserValidator;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -34,7 +31,6 @@ public class EveryTradeBeanV2 extends ExchangeBean {
     private BigDecimal quantity;
     private BigDecimal volume;
     private BigDecimal fee;
-    private static final Logger LOG = LoggerFactory.getLogger(OkxConnectorParser.class);
 
     @Parsed(field = "UID")
     public void setUid(String uid) {

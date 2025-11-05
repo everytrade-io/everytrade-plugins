@@ -38,6 +38,7 @@ dependencies {
 //    pluginCompile "com.github.martinkyov.Xchange:xchange-binance:b36e03ffae18c1ac0b4349d48d014fc95cfd26b4"
     pluginCompile "com.github.Slithercze.Xchange:xchange-binance:58410b1cb5c641d526e379fd44580853da3d01ba"
     pluginCompile "com.github.Slithercze.Xchange:xchange-bitstamp:7e2851a1c061fc2a50f535527b00b1187a3ba509"
+    pluginCompile "com.github.Slithercze.Xchange:xchange-okex:46e999f24b1d1905401bd55bfcac0cd95ab62ba2"
 
     pluginCompile "org.knowm.xchange:xchange-bittrex:$xchangeVersion"
     pluginCompile "org.knowm.xchange:xchange-bitfinex:$xchangeVersion"
@@ -45,11 +46,6 @@ dependencies {
     pluginCompile "org.knowm.xchange:xchange-bitflyer:$xchangeVersion"
     pluginCompile "org.knowm.xchange:xchange-core:$xchangeVersion"
     pluginCompile "org.knowm.xchange:xchange-kucoin:$xchangeVersion"
-
-    pluginCompile("com.github.charvam:V3-Open-API-SDK:db22182525f075bfb8999bcdbea4a132e4d933cf") {
-        exclude group: 'org.springframework', module: 'spring-context'
-        exclude group: 'javax.servlet', module: 'javax.servlet-api'
-    }
 
     /*
      * only for temporary use till pull request confirmation https://github.com/knowm/XChange/pull/4402
