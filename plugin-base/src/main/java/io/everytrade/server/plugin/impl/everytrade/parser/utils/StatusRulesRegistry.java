@@ -1,44 +1,49 @@
 package io.everytrade.server.plugin.impl.everytrade.parser.utils;
 
+import io.everytrade.server.model.TransactionType;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.function.Predicate;
+import java.util.function.BiPredicate;
+
+import static io.everytrade.server.model.TransactionType.BUY;
+import static io.everytrade.server.model.TransactionType.SELL;
 
 public final class StatusRulesRegistry {
     private StatusRulesRegistry() {
     }
 
-    private static final Map<String, Map<String, List<Predicate<String>>>> RULES = new HashMap<>();
+    private static final Map<String, Map<String, List<BiPredicate<String, TransactionType>>>> RULES = new HashMap<>();
 
     static {
-        Map<String, List<Predicate<String>>> gb = new HashMap<>();
-        List<Predicate<String>> defaultRules = List.of(
-            startsWith("COMPLETED"),
-            contains("PAYMENT ARRIVED"),
-            contains("ERROR (EXCHANGE PURCHASE)")
+        Map<String, List<BiPredicate<String, TransactionType>>> gb = new HashMap<>();
+
+        List<BiPredicate<String, TransactionType>> defaultRules = List.of(
+            statusStartsWith("COMPLETED"),
+            statusContains("PAYMENT ARRIVED"),
+            statusContains("ERROR (EXCHANGE PURCHASE)")
         );
         gb.put("default", defaultRules);
 
-        List<Predicate<String>> profile1Rules = new ArrayList<>(List.of(
-            startsWith("COMPLETED"),
-            containsButNot("PAYMENT ARRIVED", "ON HOLD"),
-            contains("ERROR (COINS UNCONFIRMED ON EXCHANGE)"),
-            contains("ERROR (EXCHANGE SELL)"),
-            contains("ERROR (NO ERROR)"),
-            contains("ERROR (EXCHANGE WITHDRAWAL)"),
-            contains("IN PROGRESS"),
-            contains("ERROR (INVALID UNKNOWN ERROR)"),
-            contains("ERROR (WITHDRAWAL PROBLEM)")
+        List<BiPredicate<String, TransactionType>> profile1Rules = new ArrayList<>(List.of(
+            and(statusStartsWith("COMPLETED"), typeIs(BUY)),
+            and(statusContains("IN PROGRESS"), typeIs(BUY)),
+            and(statusContainsButNot("PAYMENT ARRIVED", "ON HOLD"), typeIs(SELL)),
+            and(statusContains("ERROR (COINS UNCONFIRMED ON EXCHANGE)"), typeIs(SELL)),
+            and(statusContains("ERROR (EXCHANGE SELL)"), typeIs(SELL)),
+            and(statusContains("ERROR (EXCHANGE WITHDRAWAL)"), typeIs(BUY)),
+            statusContains("ERROR (INVALID UNKNOWN ERROR)"),
+            and(statusContains("ERROR (NO ERROR)"), typeIs(BUY)),
+            and(statusContains("ERROR (WITHDRAWAL PROBLEM)"), typeIs(SELL))
         ));
         gb.put("profile 1", profile1Rules);
 
         RULES.put("generalbytes", gb);
     }
 
-    public static List<Predicate<String>> get(String exchangeId, String profileId) {
+    public static List<BiPredicate<String, TransactionType>> get(String exchangeId, String profileId) {
         var perProfile = RULES.get(exchangeId);
         if (perProfile == null) {
             return List.of();
@@ -46,17 +51,21 @@ public final class StatusRulesRegistry {
         return perProfile.getOrDefault(profileId, perProfile.getOrDefault("default", List.of()));
     }
 
-    private static Predicate<String> containsButNot(String mustContain, String mustNotContain) {
-        return s -> s.contains(mustContain) && !s.contains(mustNotContain);
+    private static BiPredicate<String, TransactionType> statusStartsWith(String s) {
+        return (status, type) -> status != null && status.startsWith(s);
     }
-
-    private static Predicate<String> startsWith(String prefix) {
-        final String p = prefix.toLowerCase(Locale.ROOT);
-        return s -> s != null && s.toLowerCase(Locale.ROOT).startsWith(p);
+    private static BiPredicate<String, TransactionType> statusContains(String s) {
+        return (status, type) -> status != null && status.contains(s);
     }
-
-    private static Predicate<String> contains(String needle) {
-        final String n = needle.toLowerCase(Locale.ROOT);
-        return s -> s != null && s.toLowerCase(Locale.ROOT).contains(n);
+    private static BiPredicate<String, TransactionType> statusContainsButNot(String yes, String no) {
+        return (status, type) -> status != null && status.contains(yes) && !status.contains(no);
+    }
+    private static BiPredicate<String, TransactionType> typeIs(TransactionType t) {
+        return (status, type) -> type == t;
+    }
+    private static BiPredicate<String, TransactionType> and(
+        BiPredicate<String, TransactionType> a,
+        BiPredicate<String, TransactionType> b) {
+        return a.and(b);
     }
 }

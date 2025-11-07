@@ -44,6 +44,7 @@ public class GeneralBytesBeanV3 extends ExchangeBean {
     private Currency expenseCurrency;
     private String destinationAddress;
     private String labelsFromStatus;
+    private TransactionType originalType;
 
     private static final Map<Currency, Integer> CURRENCY_SCALE_MAP = Map.of(
         Currency.ADA, 6
@@ -70,17 +71,19 @@ public class GeneralBytesBeanV3 extends ExchangeBean {
     }
 
     @Parsed(field = "Type")
-    public void setType(String type) {
-        if ("SELL".equals(type)) {
-            this.type = BUY;
-        } else if ("BUY".equals(type)) {
-            this.type = SELL;
-//        } else if ("WITHDRAW".equalsIgnoreCase(type)) {
-//            this.type = WITHDRAWAL;
-//        } else if ("DEPOSIT".equalsIgnoreCase(type)) {
-//            this.type = DEPOSIT;
+    public void setType(String value) {
+        if ("SELL".equals(value)) {
+            this.originalType = SELL;
+        } else if ("BUY".equals(value)) {
+            this.originalType = BUY;
         } else {
-            throw new DataIgnoredException(UNSUPPORTED_TRANSACTION_TYPE.concat(type));
+            throw new DataIgnoredException(UNSUPPORTED_TRANSACTION_TYPE.concat(value));
+        }
+
+        if (originalType == SELL) {
+            this.type = BUY;
+        } else {
+            this.type = SELL;
         }
     }
 
@@ -114,13 +117,12 @@ public class GeneralBytesBeanV3 extends ExchangeBean {
         final String status = raw.trim();
 
         final String profile = ProfileContext.get();
-        final List<Predicate<String>> rules = StatusRulesRegistry.get("generalbytes", profile);
+        var rules = StatusRulesRegistry.get("generalbytes", profile);
 
-        boolean ok = rules.stream().anyMatch(r -> r.test(status));
+        boolean ok = rules.stream().anyMatch(r -> r.test(status, this.originalType));
         if (!ok) {
             throw new DataIgnoredException(UNSUPPORTED_STATUS_TYPE + status);
         }
-
         this.labelsFromStatus = status;
     }
 
