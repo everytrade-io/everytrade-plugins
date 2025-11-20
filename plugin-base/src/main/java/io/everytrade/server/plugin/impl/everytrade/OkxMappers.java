@@ -35,8 +35,8 @@ public final class OkxMappers {
             BigDecimal cv = imd != null ? imd.getContractValue() : null;
 
             BigDecimal amount = (cv != null)
-                ? convertContractSizeToVolume(new BigDecimal(d.getAmount()), instrument, cv)
-                : new BigDecimal(d.getAmount());
+                ? convertContractSizeToVolume(new BigDecimal(d.getAccumulatedFill()), instrument, cv)
+                : new BigDecimal(d.getAccumulatedFill());
 
             Date ts = Date.from(Instant.ofEpochMilli(Long.parseLong(d.getUpdateTime())));
             OrderType type = adaptOkexOrderSideToOrderType(d.getSide());
@@ -49,7 +49,7 @@ public final class OkxMappers {
                 type, amount, instrument, price, ts,
                 d.getOrderId(),
                 d.getOrderId(),
-                fee,
+                fee.abs(),
                 feeCcy,
                 d.getClientOrderId()
             ));
