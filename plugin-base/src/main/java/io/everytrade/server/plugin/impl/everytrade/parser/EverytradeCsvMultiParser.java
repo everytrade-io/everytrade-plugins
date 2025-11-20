@@ -25,7 +25,8 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.IMultiExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.KrakenDoubleQuotesUnivocitySpecificParserV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.KrakenExchangeSpecificParser;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.OkxExchangeSpecificParser;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.okx.OkxBeanWdrlDepV2;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.okx.OkxExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.SimplecoinExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.anycoin.AnycoinBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.AquanowBeanV1;
@@ -93,6 +94,8 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.KuCoin
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.KuCoinDepositV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.KuCoinWithdrawalV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.okx.OkxBeanV2;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.okx.OkxExchangeSpecificParserV2;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.okx.OkxWdrlDepExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.simplecoin.SimplecoinBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.trezorSuite.TrezorSuiteBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.trezorSuite.TrezorSuiteExchangeSpecificParser;
@@ -690,6 +693,27 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                         .withSeparator(delimiter)
                 ))
                 .parserFactory(() -> new OkxExchangeSpecificParser(OkxBeanV2.class, delimiter))
+                .supportedExchange(OKX)
+                .build());
+
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader
+                        .of("id","Order id","Time","Trade Type","Symbol","Action","Amount","Trading Unit","Filled Price",
+                            "PnL","Fee", "Fee Unit","Position Change","Position Balance", "Balance Change","Balance", "Balance Unit")
+                        .withSeparator(delimiter)
+                ))
+                .parserFactory(() -> new OkxExchangeSpecificParserV2(OkxBeanV2.class, delimiter))
+                .supportedExchange(OKX)
+                .build());
+
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader
+                        .of("id","Time","Type","Amount","Before Balance","After Balance","Symbol")
+                        .withSeparator(delimiter)
+                ))
+                .parserFactory(() -> new OkxWdrlDepExchangeSpecificParser(OkxBeanWdrlDepV2.class, delimiter))
                 .supportedExchange(OKX)
                 .build());
 
