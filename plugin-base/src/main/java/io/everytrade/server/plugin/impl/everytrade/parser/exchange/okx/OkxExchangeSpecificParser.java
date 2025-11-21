@@ -1,9 +1,11 @@
-package io.everytrade.server.plugin.impl.everytrade.parser.exchange;
+package io.everytrade.server.plugin.impl.everytrade.parser.exchange.okx;
 
 import com.univocity.parsers.common.DataValidationException;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.DefaultUnivocityExchangeSpecificParser;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.IExchangeSpecificParser;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.IMultiExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.anycoin.AnycoinSortedGroupV1;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.okx.OkxBeanV2;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.okx.OkxSortedGroup;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -16,7 +18,6 @@ public class OkxExchangeSpecificParser extends DefaultUnivocityExchangeSpecificP
 
     List<OkxBeanV2> originalRows;
     List<OkxBeanV2> unSupportedRows = new LinkedList<>();
-    List<OkxBeanV2> rowsWithOneRowTransactionType = new LinkedList<>();
     List<OkxBeanV2> rowsWithMultipleRowTransactionType = new LinkedList<>();
 
     public OkxExchangeSpecificParser(Class<? extends ExchangeBean> exchangeBean, String delimiter) {
@@ -28,11 +29,10 @@ public class OkxExchangeSpecificParser extends DefaultUnivocityExchangeSpecificP
         List<OkxBeanV2> result;
         this.originalRows = rows;
         filterRowsByType(rows);
-        List<OkxBeanV2> beans = prepareBeansForTransactions(rowsWithMultipleRowTransactionType, rowsWithOneRowTransactionType);
-        result = beans;
+        result = prepareBeansForTransactions(rowsWithMultipleRowTransactionType);
         unSupportedRows.forEach(r -> r.setRowNumber(r.getRowId()));
         result.addAll(unSupportedRows);
-        return beans;
+        return result;
     }
 
     private void filterRowsByType(List<OkxBeanV2> rows) {
@@ -47,13 +47,9 @@ public class OkxExchangeSpecificParser extends DefaultUnivocityExchangeSpecificP
         });
     }
 
-    private List<OkxBeanV2> prepareBeansForTransactions(List<OkxBeanV2> rowsWithMultipleRowTransactionType,
-                                                        List<OkxBeanV2> rowsWithOneRowTransactionType) {
+    private List<OkxBeanV2> prepareBeansForTransactions(List<OkxBeanV2> rowsWithMultipleRowTransactionType) {
         List<OkxBeanV2> result;
-        List<OkxBeanV2> oneRowTxs = prepareBeansForTransactionsFromOneRowTypes(rowsWithOneRowTransactionType);
-        List<OkxBeanV2> multiRowsTxs = prepareBeansForTransactionsFromMultiRows(rowsWithMultipleRowTransactionType);
-        result = multiRowsTxs;
-        result.addAll(oneRowTxs);
+        result = prepareBeansForTransactionsFromMultiRows(rowsWithMultipleRowTransactionType);
         return result;
     }
 
@@ -62,10 +58,6 @@ public class OkxExchangeSpecificParser extends DefaultUnivocityExchangeSpecificP
 
         // creating transaction
         return createTransactionFromGroupOfRows(groupsFromRows);
-    }
-
-    private List<OkxBeanV2> prepareBeansForTransactionsFromOneRowTypes(List<OkxBeanV2> singleRow) {
-        return new ArrayList<>();
     }
 
     @Override
