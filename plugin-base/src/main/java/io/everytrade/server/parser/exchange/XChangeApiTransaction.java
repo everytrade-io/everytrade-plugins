@@ -59,10 +59,9 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
 
     public static XChangeApiTransaction fromTrade(UserTrade trade) {
         final Instrument instrument = trade.getInstrument();
-        if (!(instrument instanceof org.knowm.xchange.currency.CurrencyPair)) {
+        if (!(instrument instanceof org.knowm.xchange.currency.CurrencyPair currencyPair)) {
             throw new DataValidationException("Derivatives are not supported yet.");
         }
-        org.knowm.xchange.currency.CurrencyPair currencyPair = (org.knowm.xchange.currency.CurrencyPair) instrument;
 
         return XChangeApiTransaction.builder()
             .id(trade.getId())
