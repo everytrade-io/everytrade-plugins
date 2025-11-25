@@ -156,70 +156,45 @@ public class OkxBeanV2 extends ExchangeBean implements Cloneable{
 
     @Override
     public TransactionCluster toTransactionCluster() {
-        List<ImportedTransactionBean> related = new ArrayList<>();
-        boolean isFailedFee = false;
-        String failedFeeMessage = "";
-
         if (isUnsupportedRow()) {
             throw new DataIgnoredException(getMessage());
         }
 
-        if (feeTransactions.size() > 0) {
-            try {
-                for (OkxBeanV2 fee : feeTransactions) {
-                    var feeTxs = new FeeRebateImportedTransactionBean(
-                        FEE_UID_PART,
-                        fee.getTime(),
-                        fee.getFeeCurrency(),
-                        fee.getFeeCurrency(),
-                        FEE,
-                        fee.getFeeAmount(),
-                        fee.getFeeCurrency()
-                    );
-                    related.add(feeTxs);
-                }
-            } catch (NullPointerException e) {
-                isFailedFee = true;
-                failedFeeMessage = "unsupported fee currency";
-            } catch (Exception e) {
-                isFailedFee = true;
-                failedFeeMessage = e.getMessage();
-            }
+        List<ImportedTransactionBean> related = new ArrayList<>();
+
+        for (OkxBeanV2 fee : feeTransactions) {
+            var feeTx = new FeeRebateImportedTransactionBean(
+                FEE_UID_PART,
+                fee.getTime(),
+                fee.getFeeCurrency(),
+                fee.getFeeCurrency(),
+                FEE,
+                fee.getFeeAmount(),
+                fee.getFeeCurrency()
+            );
+            related.add(feeTx);
         }
 
-        if (transactionType.equals(BUY)) {
-            return new TransactionCluster(
-                new ImportedTransactionBean(
-                    null,
-                    time,
-                    baseCurrency,
-                    quoteCurrency,
-                    BUY,
-                    baseAmount,
-                    evalUnitPrice(quoteAmount, baseAmount),
-                    null,
-                    null
-                ),
-                related
-            );
+        if (transactionType == null) {
+            throw new DataIgnoredException("Missing transaction type");
         }
-        if (transactionType.equals(SELL)) {
-            return new TransactionCluster(
-                new ImportedTransactionBean(
-                    null,
-                    time,
-                    baseCurrency,
-                    quoteCurrency,
-                    SELL,
-                    baseAmount,
-                    evalUnitPrice(quoteAmount, baseAmount),
-                    null,
-                    null
-                ),
-                related
-            );
+        if (!BUY.equals(transactionType) && !SELL.equals(transactionType)) {
+            throw new DataIgnoredException("Unsupported transaction type: " + transactionType);
         }
-        return null;
+
+        ImportedTransactionBean main = new ImportedTransactionBean(
+            null,
+            time,
+            baseCurrency,
+            quoteCurrency,
+            transactionType,
+            baseAmount,
+            evalUnitPrice(quoteAmount, baseAmount),
+            null,
+            null
+        );
+
+        return new TransactionCluster(main, related);
     }
 
     @Override
