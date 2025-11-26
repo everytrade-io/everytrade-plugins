@@ -38,7 +38,7 @@ dependencies {
 //    pluginCompile "com.github.martinkyov.Xchange:xchange-binance:b36e03ffae18c1ac0b4349d48d014fc95cfd26b4"
     pluginCompile "com.github.Slithercze.Xchange:xchange-binance:58410b1cb5c641d526e379fd44580853da3d01ba"
     pluginCompile "com.github.Slithercze.Xchange:xchange-bitstamp:7e2851a1c061fc2a50f535527b00b1187a3ba509"
-    pluginCompile "com.github.Slithercze.Xchange:xchange-okex:46e999f24b1d1905401bd55bfcac0cd95ab62ba2"
+    pluginCompile "com.github.Slithercze.Xchange:xchange-okex:74e9ea1851a8aa0fdb8634c820b821e3c4216b4d"
 
     pluginCompile "org.knowm.xchange:xchange-bittrex:$xchangeVersion"
     pluginCompile "org.knowm.xchange:xchange-bitfinex:$xchangeVersion"
