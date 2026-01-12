@@ -127,6 +127,7 @@ import static io.everytrade.server.model.SupportedExchange.COINBASE;
 import static io.everytrade.server.model.SupportedExchange.COINBASE_PRO;
 import static io.everytrade.server.model.SupportedExchange.COINMATE;
 import static io.everytrade.server.model.SupportedExchange.COINSQUARE;
+import static io.everytrade.server.model.SupportedExchange.DASE;
 import static io.everytrade.server.model.SupportedExchange.DVCHAIN;
 import static io.everytrade.server.model.SupportedExchange.EVERYTRADE;
 import static io.everytrade.server.model.SupportedExchange.GENERAL_BYTES;
