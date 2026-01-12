@@ -34,6 +34,31 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class AnycoinBeanV1Test {
 
     public static final String HEADER_CORRECT = "Date,Type,Amount,Currency,Order ID\n";
+    public static final String HEADER_DASE = "Date,Type,Amount,Currency,Order ID,dase TX ID\n";
+
+    @Test
+    void testDaseBuy() {
+        final String row0 = "2021-04-10T18:16:50.367Z,trade payment,-1000,CZK,113180,\n";
+        final String row1 = "2021-04-10T18:28:12.885Z,trade fill,0.00075667,BTC,113180,\n";
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_DASE + row0.concat(row1));
+
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                "113180",
+                Instant.parse("2021-04-10T18:28:12.885Z"),
+                BTC,
+                CZK,
+                BUY,
+                new BigDecimal("0.00075667"),
+                new BigDecimal("1321580.08114501698230404"),
+                null,
+                null
+            ),
+            List.of()
+        );
+
+        TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
+    }
 
     @Test
     void testBuy() {

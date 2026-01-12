@@ -190,14 +190,30 @@ public class EverytradeCsvMultiParser implements ICsvParser {
 
             /* ANYCOIN */
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
-                    .headers(List.of(
-                            CsvHeader
-                                    .of("Date", "Type", "Amount", "Currency", "Order ID")
-                                    .withSeparator(delimiter)
-                    ))
-                    .parserFactory(() -> new AnycoinExchangeSpecificParserV1(AnycoinBeanV1.class, delimiter))
-                    .supportedExchange(ANYCOIN)
-                    .build());
+                .headers(List.of(
+                    CsvHeader
+                        .of("Date", "Type", "Amount", "Currency", "Order ID")
+                        .withSeparator(delimiter),
+                    CsvHeader
+                        .of("Date", "Type", "Amount", "Currency", "Order ID", "anycoin TX ID")
+                        .withSeparator(delimiter)
+
+                ))
+                .parserFactory(() -> new AnycoinExchangeSpecificParserV1(AnycoinBeanV1.class, delimiter))
+                .supportedExchange(ANYCOIN)
+                .build());
+
+            /* DASE */
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader
+                        .of("Date", "Type", "Amount", "Currency", "Order ID", "dase TX ID")
+                        .withSeparator(delimiter)
+
+                ))
+                .parserFactory(() -> new AnycoinExchangeSpecificParserV1(AnycoinBeanV1.class, delimiter))
+                .supportedExchange(DASE)
+                .build());
 
             /* AQUANOW */
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
