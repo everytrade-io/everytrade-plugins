@@ -25,8 +25,6 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.IMultiExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.KrakenDoubleQuotesUnivocitySpecificParserV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.KrakenExchangeSpecificParser;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.okx.OkxBeanWdrlDepV2;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.okx.OkxExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.SimplecoinExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.anycoin.AnycoinBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.AquanowBeanV1;
@@ -94,12 +92,15 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.KuCoin
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.KuCoinDepositV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.KuCoinWithdrawalV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.okx.OkxBeanV2;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.okx.OkxBeanWdrlDepV2;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.okx.OkxExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.okx.OkxExchangeSpecificParserV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.okx.OkxWdrlDepExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.simplecoin.SimplecoinBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.trezorSuite.TrezorSuiteBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.trezorSuite.TrezorSuiteExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.utils.ClusterValidator;
+import io.everytrade.server.plugin.impl.everytrade.parser.utils.ImportValidation;
 import io.everytrade.server.plugin.impl.everytrade.parser.utils.ProfileContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1129,6 +1130,7 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 try {
                     var cluster = p.toTransactionCluster();
                     if (cluster != null) {
+                        ImportValidation.validateClusterOrThrow(cluster);
                         ClusterValidator.clusterValidator(cluster);
                         transactionClusters.add(cluster);
                     }
