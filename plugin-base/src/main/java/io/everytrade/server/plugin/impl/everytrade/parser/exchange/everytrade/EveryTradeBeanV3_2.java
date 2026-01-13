@@ -156,7 +156,7 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
             default -> normalized;
         };
 
-        action = TransactionType.valueOf(normalized);
+        action = ExchangeBean.detectTransactionType(normalized);
     }
 
     @Parsed(field = {"QUANTY", "QUANTITY"})
