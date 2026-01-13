@@ -354,7 +354,7 @@ class EveryTradeBeanV3_2Test {
         // test wrong unsupported tx type
         final String row = "1;12.1.2022 14:01:00;BTC/CZK;WITHDRAWZ;0,13;500000;65000;;;;;;;nnnnnn;Label1\n";
         final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
-        assertTrue(parsingProblem.getMessage().contains(ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE.concat("WITHDRAWZ"))
+        assertTrue(parsingProblem.getMessage().contains("Unable to set value 'WITHDRAWZ' to method 'setAction'")
         );
     }
 
