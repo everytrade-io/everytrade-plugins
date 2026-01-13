@@ -142,16 +142,21 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
 
     @Parsed(field = {"ACTION", "TYPE"})
     public void setAction(String value) {
-        if (value.equalsIgnoreCase("STAKING REWARD")
-            || value.equalsIgnoreCase("STAKE REWARD")) {
-            action = STAKING_REWARD;
-        } else if (value.equalsIgnoreCase("AIRDROP")) {
-            action = AIRDROP;
-        } else if (value.equalsIgnoreCase("EARN")) {
-            action = EARNING;
-        } else {
-            action = detectTransactionType(value);
+        if (value == null) {
+            action = TransactionType.UNKNOWN;
+            return;
         }
+
+        String normalized = value.trim().toUpperCase()
+            .replaceAll("[\\s-]+", "_");
+
+        normalized = switch (normalized) {
+            case "STAKE_REWARD" -> "STAKING_REWARD";
+            case "EARN" -> "EARNING";
+            default -> normalized;
+        };
+
+        action = TransactionType.valueOf(normalized);
     }
 
     @Parsed(field = {"QUANTY", "QUANTITY"})
@@ -239,30 +244,26 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
         validateRelatedTransactionAndMainTransaction(quantity,fee,rebate);
 
         switch (action) {
-            case BUY:
-            case SELL:
+            case BUY, SELL, INCOMING_PAYMENT, OUTGOING_PAYMENT -> {
                 return createBuySellTransactionCluster();
-            case DEPOSIT:
-            case WITHDRAWAL:
+            }
+            case DEPOSIT, WITHDRAWAL -> {
                 return createDepositOrWithdrawalTxCluster();
-            case FEE:
+            }
+            case FEE -> {
                 return new TransactionCluster(createFeeTransactionBean(true), List.of());
-            case REBATE:
+            }
+            case REBATE -> {
                 return new TransactionCluster(createRebateTransactionBean(true), List.of());
-            case STAKE:
-            case UNSTAKE:
-            case STAKING_REWARD:
-            case REWARD:
-            case EARNING:
-            case FORK:
-            case AIRDROP:
+            }
+            case STAKE, UNSTAKE, STAKING_REWARD, REWARD, EARNING, FORK, AIRDROP -> {
                 try {
                     return createOtherTransactionCluster();
                 } catch (Exception e) {
                     throw new DataValidationException(String.format("Wrong transaction type data: %s", e.getMessage()));
                 }
-            default:
-                throw new IllegalStateException(String.format("Unsupported transaction type %s.", action));
+            }
+            default -> throw new IllegalStateException(String.format("Unsupported transaction type %s.", action));
         }
     }
 
@@ -328,16 +329,18 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
     }
 
     private FeeRebateImportedTransactionBean createFeeTransactionBean(boolean unrelated) {
-        if (action.equals(FEE) && fee.compareTo(ZERO) == 0 && quantity != null && quantity.compareTo(ZERO) != 0) {
-            fee = quantity;
+        BigDecimal feeValue = fee;
+        if (action == FEE && (feeValue == null || feeValue.compareTo(ZERO) == 0) && quantity != null && quantity.compareTo(ZERO) != 0) {
+            feeValue = quantity;
         }
+
         return new FeeRebateImportedTransactionBean(
             unrelated ? uid : uid + FEE_UID_PART,
             date,
             feeCurrency != null ? feeCurrency : symbolBase,
             feeCurrency != null ? feeCurrency : symbolBase,
             FEE,
-            fee,
+            feeValue,
             feeCurrency != null ? feeCurrency : symbolBase,
             unrelated ? note : null,
             getAddress(),

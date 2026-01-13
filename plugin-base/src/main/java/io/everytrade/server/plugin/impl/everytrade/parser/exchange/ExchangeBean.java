@@ -117,7 +117,7 @@ public abstract class ExchangeBean implements IImportableBean {
     protected static TransactionType detectTransactionType(String value) {
         TransactionType type;
         try {
-            type = TransactionType.valueOf(value.toUpperCase());
+            type = TransactionType.fromString(value);
         } catch (IllegalArgumentException e) {
             throw new DataValidationException(UNSUPPORTED_TRANSACTION_TYPE.concat(value));
         }
