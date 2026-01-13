@@ -127,6 +127,7 @@ import static io.everytrade.server.model.SupportedExchange.COINBASE;
 import static io.everytrade.server.model.SupportedExchange.COINBASE_PRO;
 import static io.everytrade.server.model.SupportedExchange.COINMATE;
 import static io.everytrade.server.model.SupportedExchange.COINSQUARE;
+import static io.everytrade.server.model.SupportedExchange.DASE;
 import static io.everytrade.server.model.SupportedExchange.DVCHAIN;
 import static io.everytrade.server.model.SupportedExchange.EVERYTRADE;
 import static io.everytrade.server.model.SupportedExchange.GENERAL_BYTES;
@@ -190,14 +191,30 @@ public class EverytradeCsvMultiParser implements ICsvParser {
 
             /* ANYCOIN */
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
-                    .headers(List.of(
-                            CsvHeader
-                                    .of("Date", "Type", "Amount", "Currency", "Order ID")
-                                    .withSeparator(delimiter)
-                    ))
-                    .parserFactory(() -> new AnycoinExchangeSpecificParserV1(AnycoinBeanV1.class, delimiter))
-                    .supportedExchange(ANYCOIN)
-                    .build());
+                .headers(List.of(
+                    CsvHeader
+                        .of("Date", "Type", "Amount", "Currency", "Order ID")
+                        .withSeparator(delimiter),
+                    CsvHeader
+                        .of("Date", "Type", "Amount", "Currency", "Order ID", "anycoin TX ID")
+                        .withSeparator(delimiter)
+
+                ))
+                .parserFactory(() -> new AnycoinExchangeSpecificParserV1(AnycoinBeanV1.class, delimiter))
+                .supportedExchange(ANYCOIN)
+                .build());
+
+            /* DASE */
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader
+                        .of("Date", "Type", "Amount", "Currency", "Order ID", "dase TX ID")
+                        .withSeparator(delimiter)
+
+                ))
+                .parserFactory(() -> new AnycoinExchangeSpecificParserV1(AnycoinBeanV1.class, delimiter))
+                .supportedExchange(DASE)
+                .build());
 
             /* AQUANOW */
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()

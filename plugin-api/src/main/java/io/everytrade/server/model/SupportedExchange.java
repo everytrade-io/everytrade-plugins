@@ -51,7 +51,8 @@ public enum SupportedExchange {
     TREZOR_SUITE("Trezor Suite", "trezorsuite"),
     CHANGE_INVEST("Change Invest", "changeinvest"),
     WALLET_OF_SATOSHI("Wallet of Satoshi", "walletofsatoshi"),
-    BTCPAY_SERVER("BTCPay Server", "btcpayserver");
+    BTCPAY_SERVER("BTCPay Server", "btcpayserver"),
+    DASE("DASE", "dase");
 
 
     String displayName;
