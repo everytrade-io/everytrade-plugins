@@ -1,5 +1,6 @@
 package io.everytrade.server.plugin.impl.everytrade;
 
+import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.SupportedExchange;
 import io.everytrade.server.parser.exchange.KrakenXChangeApiTransaction;
@@ -38,8 +39,9 @@ public class XChangeConnectorParser {
         final List<ParsingProblem> parsingProblems = new ArrayList<>();
         return getParseResult(userTrades, funding, parsingProblems);
     }
+
     public ParseResult getParseResultWithProblems(List<UserTrade> userTrades, List<FundingRecord> funding,
-                                             List<ParsingProblem> parsingProblems) {
+                                                  List<ParsingProblem> parsingProblems) {
         return getParseResult(userTrades, funding, parsingProblems);
     }
 
@@ -69,6 +71,15 @@ public class XChangeConnectorParser {
         return new ParseResult(transactionClusters, parsingProblems);
     }
 
+    public ParseResult getDaseParseResult(List<UserTrade> userTrades,
+                                          List<FundingRecord> fundings) {
+        List<ParsingProblem> parsingProblems = new ArrayList<>();
+        List<TransactionCluster> transactionClusters = new ArrayList<>();
+        transactionClusters.addAll(tradesToCluster(userTrades, parsingProblems));
+        transactionClusters.addAll(fundingToCluster(fundings, parsingProblems));
+        return new ParseResult(transactionClusters, parsingProblems);
+    }
+
     public ParseResult getBittrexResult(List<UserTrade> trades,
                                         List<BittrexDepositHistory> deposits,
                                         List<BittrexWithdrawalHistory> withdrawals) {
@@ -79,7 +90,7 @@ public class XChangeConnectorParser {
         return new ParseResult(transactionClusters, parsingProblems);
     }
 
-    public ParseResult getCoinMateResult(List<CoinmateTransactionHistoryEntry> transactions){
+    public ParseResult getCoinMateResult(List<CoinmateTransactionHistoryEntry> transactions) {
         final List<ParsingProblem> parsingProblems = new ArrayList<>();
         final List<TransactionCluster> transactionClusters = transactionsToCluster(transactions, parsingProblems);
         return new ParseResult(transactionClusters, parsingProblems);
@@ -92,7 +103,7 @@ public class XChangeConnectorParser {
                     XChangeApiTransaction xchangeApiTransaction = XChangeApiTransaction.fromCoinMateTransactions(transaction);
                     return xchangeApiTransaction.toTransactionCluster();
                 } catch (DataStatusException e) {
-                    logParsingIgnore(e,problems, transaction.toString());
+                    logParsingIgnore(e, problems, transaction.toString());
                 } catch (Exception e) {
                     logParsingError(e, problems, transaction.toString());
                 }
@@ -116,7 +127,7 @@ public class XChangeConnectorParser {
             .collect(toList());
     }
 
-    protected List<TransactionCluster> fundingToCluster( List<FundingRecord> funding, List<ParsingProblem> problems) {
+    protected List<TransactionCluster> fundingToCluster(List<FundingRecord> funding, List<ParsingProblem> problems) {
         return funding.stream().map(f -> {
                 try {
                     if (KRAKEN == exchange) {
@@ -136,24 +147,24 @@ public class XChangeConnectorParser {
     protected List<TransactionCluster> coinbaseTransactionCluster(List<CoinbaseShowTransactionV2> tx, List<ParsingProblem> problems) {
         List<TransactionCluster> result = new ArrayList<>();
         tx.forEach(cb -> {
-                try {
-                    switch (cb.getType().toLowerCase()) {
-                        case "send", "tx", "earn_payout", "interest", "fiat_withdrawal",
-                            "fiat_deposit", "pro_withdrawal", "pro_deposit" -> {
-                            result.add(XChangeApiTransaction.depositWithdrawalCoinbase(cb).toTransactionCluster());
-                        }
-                        case "buy", "sell" -> {
-                            result.add(XChangeApiTransaction.buySellCoinbase(cb).toTransactionCluster());
-                        }
-                        default -> {
-                            //ignore
-                        }
+            try {
+                switch (cb.getType().toLowerCase()) {
+                    case "send", "tx", "earn_payout", "interest", "fiat_withdrawal",
+                        "fiat_deposit", "pro_withdrawal", "pro_deposit" -> {
+                        result.add(XChangeApiTransaction.depositWithdrawalCoinbase(cb).toTransactionCluster());
                     }
-                } catch (DataIgnoredException e) {
-                    //ignore
-                } catch (Exception e) {
-                    logParsingError(e, problems, cb.toString());
+                    case "buy", "sell" -> {
+                        result.add(XChangeApiTransaction.buySellCoinbase(cb).toTransactionCluster());
+                    }
+                    default -> {
+                        //ignore
+                    }
                 }
+            } catch (DataIgnoredException e) {
+                //ignore
+            } catch (Exception e) {
+                logParsingError(e, problems, cb.toString());
+            }
         });
 
         Map<String, List<CoinbaseShowTransactionV2>> tradeTx = tx.stream()
@@ -161,12 +172,12 @@ public class XChangeConnectorParser {
             .collect(groupingBy(x -> x.getTrade().getId()));
 
         tradeTx.forEach((k, v) -> {
-                try {
-                    result.add(XChangeApiTransaction.tradeCoinbase(v).toTransactionCluster());
-                } catch (Exception e) {
-                    logParsingError(e, problems, v.toString());
-                }
-            });
+            try {
+                result.add(XChangeApiTransaction.tradeCoinbase(v).toTransactionCluster());
+            } catch (Exception e) {
+                logParsingError(e, problems, v.toString());
+            }
+        });
         return result;
     }
 
@@ -219,12 +230,40 @@ public class XChangeConnectorParser {
             .collect(toList());
     }
 
-    protected void logParsingError(Exception e, List<ParsingProblem> parsingProblems, String row) {
+    protected void logParsingError(Exception e,
+                                   List<ParsingProblem> parsingProblems,
+                                   String row) {
+
         LOG.error("Error converting to ImportedTransactionBean: {}", e.getMessage());
         LOG.debug("Exception by converting to ImportedTransactionBean.", e);
-        parsingProblems.add(
-            new ParsingProblem(row, e.getMessage(), ParsingProblemType.ROW_PARSING_FAILED)
-        );
+
+        ParsingProblemType type;
+        String message;
+
+        if (e instanceof DataIgnoredException) {
+            type = ParsingProblemType.PARSED_ROW_IGNORED;
+
+            String m = e.getMessage();
+            message = (m == null || m.isBlank())
+                ? "Ignored transaction."
+                : safeMessage(m);
+        } else if (e instanceof DataValidationException) {
+            type = ParsingProblemType.ROW_PARSING_FAILED;
+            message = "Validation failed: " + safeMessage(e.getMessage());
+        } else {
+            type = ParsingProblemType.ROW_PARSING_FAILED;
+            message = "Row parsing failed.";
+        }
+
+        parsingProblems.add(new ParsingProblem(row, message, type));
+    }
+
+    private static String safeMessage(String msg) {
+        if (msg == null) {
+            return "";
+        }
+        return msg.replaceAll("([a-zA-Z_][a-zA-Z0-9_]*\\.){2,}[A-Za-z_][A-Za-z0-9_]*",
+            "<internal>");
     }
 
     protected void logParsingIgnore(Exception e, List<ParsingProblem> parsingProblems, String row) {

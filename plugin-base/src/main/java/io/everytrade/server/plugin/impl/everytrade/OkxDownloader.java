@@ -1,5 +1,6 @@
 package io.everytrade.server.plugin.impl.everytrade;
 
+import io.everytrade.server.util.serialization.DownloadState;
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.dto.account.FundingRecord;
 import org.knowm.xchange.dto.meta.ExchangeMetaData;
@@ -21,43 +22,37 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-//https://www.okex.com/docs/en/#spot-account_information - limit 20 requests per second
+// https://www.okex.com/docs/en/#spot-account_information - limit 20 requests per second
 public class OkxDownloader {
-    private static final String STATE_SEP = "|";
-    private static final String KV_SEP = "=";
-
-    private static final String K_TRD = "TRD";
-    private static final String K_DEP = "DEP";
-    private static final String K_WDR = "WDR";
-
-    private String lastTradeId;
-    private String lastDepositTs;
-    private String lastWithdrawalTs;
-
-    private String newTradeId;
-    private String newDepositTs;
-    private String newWithdrawalTs;
     private final Exchange exchange;
     private final OkexAccountServiceRaw accountRaw;
     private final OkexTradeServiceRaw tradeRaw;
+
+    private final DownloadState state;
 
     public OkxDownloader(String downloadState, Exchange exchange) {
         this.exchange = exchange;
         this.accountRaw = (OkexAccountServiceRaw) exchange.getAccountService();
         this.tradeRaw = (OkexTradeServiceRaw) exchange.getTradeService();
-        deserializeState(downloadState);
+        this.state = DownloadState.from(downloadState);
+    }
+
+    public String serializeState() {
+        return state.serialize();
     }
 
     public List<UserTrade> downloadTrades() {
         final List<UserTrade> allTrades = new ArrayList<>();
         final ExchangeMetaData meta = exchange.getExchangeMetaData();
 
+        final String lastTradeId = state.getLastTradeId();
+
         try {
             String afterOrdId = null;
             boolean firstPage = true;
             boolean reachedLastTrade = false;
 
-            for (;;) {
+            for (; ; ) {
                 OkexResponse<List<OkexOrderDetails>> resp;
                 try {
                     resp = tradeRaw.getOrderHistory(
@@ -69,13 +64,8 @@ public class OkxDownloader {
                         "100"
                     );
                 } catch (IOException e) {
-                    String msg = e.getMessage();
-                    if (msg != null && msg.contains("429")) {
-                        try {
-                            Thread.sleep(300);
-                        } catch (InterruptedException ignored) {
-                            Thread.currentThread().interrupt();
-                        }
+                    if (is429(e)) {
+                        sleepQuietly(300);
                         continue;
                     }
                     throw e;
@@ -87,7 +77,7 @@ public class OkxDownloader {
                 }
 
                 if (firstPage) {
-                    newTradeId = page.get(0).getOrderId();
+                    state.setNewTradeId(page.get(0).getOrderId());
                     firstPage = false;
                 }
 
@@ -108,11 +98,8 @@ public class OkxDownloader {
 
                 afterOrdId = page.get(page.size() - 1).getOrderId();
 
-                try {
-                    Thread.sleep(80);
-                } catch (InterruptedException ignored) {
-                    Thread.currentThread().interrupt();
-                }
+                // OKX rate limiting
+                sleepQuietly(80);
             }
 
         } catch (IOException e) {
@@ -121,11 +108,8 @@ public class OkxDownloader {
 
         Map<String, UserTrade> dedup = new LinkedHashMap<>();
         for (UserTrade t : allTrades) {
-            if (t.getId() != null) {
-                dedup.put(t.getId(), t);
-            } else {
-                dedup.put(UUID.randomUUID().toString(), t);
-            }
+            String id = (t.getId() != null) ? t.getId() : UUID.randomUUID().toString();
+            dedup.put(id, t);
         }
 
         List<UserTrade> result = new ArrayList<>(dedup.values());
@@ -143,27 +127,19 @@ public class OkxDownloader {
     public List<FundingRecord> downloadWithdrawals() {
         List<FundingRecord> results = new ArrayList<>();
 
-        Long lastTs = null;
-        if (lastWithdrawalTs != null && !lastWithdrawalTs.isEmpty()) {
-            lastTs = Long.parseLong(lastWithdrawalTs);
-        }
+        Long lastTs = parseLongOrNull(state.getLastWithdrawalTs());
 
         String after = null;
         boolean first = true;
         boolean reachedLast = false;
 
-        for (;;) {
+        for (; ; ) {
             OkexResponse<List<OkexWithdrawal>> resp;
             try {
                 resp = accountRaw.getWithdrawalHistory(null, after, null);
             } catch (IOException e) {
-                String msg = e.getMessage();
-                if (msg != null && msg.contains("429")) {
-                    try {
-                        Thread.sleep(300);
-                    } catch (InterruptedException ignored) {
-                        Thread.currentThread().interrupt();
-                    }
+                if (is429(e)) {
+                    sleepQuietly(300);
                     continue;
                 }
                 throw new RuntimeException(e);
@@ -175,7 +151,8 @@ public class OkxDownloader {
             }
 
             if (first) {
-                newWithdrawalTs = page.get(0).getTs();
+                // newest timestamp cursor
+                state.setNewWithdrawalTs(page.get(0).getTs());
                 first = false;
             }
 
@@ -195,12 +172,7 @@ public class OkxDownloader {
             }
 
             after = page.get(page.size() - 1).getTs();
-
-            try {
-                Thread.sleep(80);
-            } catch (InterruptedException ignored) {
-                Thread.currentThread().interrupt();
-            }
+            sleepQuietly(80);
         }
 
         results.sort(Comparator.comparing(FundingRecord::getDate).reversed());
@@ -210,27 +182,19 @@ public class OkxDownloader {
     public List<FundingRecord> downloadDeposits() {
         List<FundingRecord> results = new ArrayList<>();
 
-        Long lastTs = null;
-        if (lastDepositTs != null && !lastDepositTs.isEmpty()) {
-            lastTs = Long.parseLong(lastDepositTs);
-        }
+        Long lastTs = parseLongOrNull(state.getLastDepositTs());
 
         String after = null;
         boolean first = true;
         boolean reachedLast = false;
 
-        for (;;) {
+        for (; ; ) {
             OkexResponse<List<OkexDeposit>> resp;
             try {
                 resp = accountRaw.getDepositHistory(null, after, null);
             } catch (IOException e) {
-                String msg = e.getMessage();
-                if (msg != null && msg.contains("429")) {
-                    try {
-                        Thread.sleep(300);
-                    } catch (InterruptedException ignored) {
-                        Thread.currentThread().interrupt();
-                    }
+                if (is429(e)) {
+                    sleepQuietly(300);
                     continue;
                 }
                 throw new RuntimeException(e);
@@ -242,7 +206,7 @@ public class OkxDownloader {
             }
 
             if (first) {
-                newDepositTs = page.get(0).getTs();
+                state.setNewDepositTs(page.get(0).getTs());
                 first = false;
             }
 
@@ -262,61 +226,30 @@ public class OkxDownloader {
             }
 
             after = page.get(page.size() - 1).getTs();
-
-            try {
-                Thread.sleep(80);
-            } catch (InterruptedException ignored) {
-                Thread.currentThread().interrupt();
-            }
+            sleepQuietly(80);
         }
 
         results.sort(Comparator.comparing(FundingRecord::getDate).reversed());
         return results;
     }
 
-    private void deserializeState(String state) {
-        lastTradeId = null;
-        lastDepositTs = null;
-        lastWithdrawalTs = null;
-
-        if (state == null || state.isEmpty()) {
-            return;
-        }
-
-        String[] parts = state.split("\\" + STATE_SEP, -1);
-        for (String p : parts) {
-            int idx = p.indexOf(KV_SEP);
-            if (idx <= 0) {
-                continue;
-            }
-            String key = p.substring(0, idx).trim();
-            String val = p.substring(idx + 1).trim();
-            if (val.isEmpty()) {
-                val = null;
-            }
-
-            switch (key) {
-                case K_TRD:
-                    lastTradeId = val;
-                    break;
-                case K_DEP:
-                    lastDepositTs = val;
-                    break;
-                case K_WDR:
-                    lastWithdrawalTs = val;
-                    break;
-                default: // ignore unknown keys
-            }
-        }
+    private static boolean is429(IOException e) {
+        String msg = e.getMessage();
+        return msg != null && msg.contains("429");
     }
 
-    public String serializeState() {
-        String trd = (newTradeId != null ? newTradeId : (lastTradeId != null ? lastTradeId : ""));
-        String dep = (newDepositTs != null ? newDepositTs : (lastDepositTs != null ? lastDepositTs : ""));
-        String wdr = (newWithdrawalTs != null ? newWithdrawalTs : (lastWithdrawalTs != null ? lastWithdrawalTs : ""));
+    private static Long parseLongOrNull(String v) {
+        if (v == null || v.isBlank()) {
+            return null;
+        }
+        return Long.parseLong(v);
+    }
 
-        return K_TRD + KV_SEP + trd + STATE_SEP
-            + K_DEP + KV_SEP + dep + STATE_SEP
-            + K_WDR + KV_SEP + wdr;
+    private static void sleepQuietly(long ms) {
+        try {
+            Thread.sleep(ms);
+        } catch (InterruptedException ignored) {
+            Thread.currentThread().interrupt();
+        }
     }
 }
