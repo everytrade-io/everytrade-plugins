@@ -43,9 +43,9 @@ public class DaseConnector implements IConnector {
 
     public static final ConnectorDescriptor DESCRIPTOR = new ConnectorDescriptor(
         ID,
-        "OKX Connector",
+        "Dase Connector",
         "",
-        SupportedExchange.OKX.getInternalId(),
+        SupportedExchange.DASE.getInternalId(),
         List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET)
     );
 

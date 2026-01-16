@@ -1,5 +1,6 @@
 package io.everytrade.server.plugin.impl.everytrade;
 
+import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.SupportedExchange;
 import io.everytrade.server.parser.exchange.KrakenXChangeApiTransaction;
@@ -229,12 +230,36 @@ public class XChangeConnectorParser {
             .collect(toList());
     }
 
-    protected void logParsingError(Exception e, List<ParsingProblem> parsingProblems, String row) {
+    protected void logParsingError(Exception e,
+                                   List<ParsingProblem> parsingProblems,
+                                   String row) {
+
         LOG.error("Error converting to ImportedTransactionBean: {}", e.getMessage());
         LOG.debug("Exception by converting to ImportedTransactionBean.", e);
-        parsingProblems.add(
-            new ParsingProblem(row, e.getMessage(), ParsingProblemType.ROW_PARSING_FAILED)
-        );
+
+        ParsingProblemType type;
+        String message;
+
+        if (e instanceof DataIgnoredException) {
+            type = ParsingProblemType.PARSED_ROW_IGNORED;
+            message = "Ignored transaction.";
+        }
+        else if (e instanceof DataValidationException) {
+            type = ParsingProblemType.ROW_PARSING_FAILED;
+            message = "Validation failed: " + safeMessage(e.getMessage());
+        }
+        else {
+            type = ParsingProblemType.ROW_PARSING_FAILED;
+            message = "Row parsing failed.";
+        }
+
+        parsingProblems.add(new ParsingProblem(row, message, type));
+    }
+
+    private static String safeMessage(String msg) {
+        if (msg == null) return "";
+        return msg.replaceAll("([a-zA-Z_][a-zA-Z0-9_]*\\.){2,}[A-Za-z_][A-Za-z0-9_]*",
+            "<internal>");
     }
 
     protected void logParsingIgnore(Exception e, List<ParsingProblem> parsingProblems, String row) {
