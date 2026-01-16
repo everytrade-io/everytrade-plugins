@@ -243,12 +243,10 @@ public class XChangeConnectorParser {
         if (e instanceof DataIgnoredException) {
             type = ParsingProblemType.PARSED_ROW_IGNORED;
             message = "Ignored transaction.";
-        }
-        else if (e instanceof DataValidationException) {
+        } else if (e instanceof DataValidationException) {
             type = ParsingProblemType.ROW_PARSING_FAILED;
             message = "Validation failed: " + safeMessage(e.getMessage());
-        }
-        else {
+        } else {
             type = ParsingProblemType.ROW_PARSING_FAILED;
             message = "Row parsing failed.";
         }
@@ -257,7 +255,9 @@ public class XChangeConnectorParser {
     }
 
     private static String safeMessage(String msg) {
-        if (msg == null) return "";
+        if (msg == null) {
+            return "";
+        }
         return msg.replaceAll("([a-zA-Z_][a-zA-Z0-9_]*\\.){2,}[A-Za-z_][A-Za-z0-9_]*",
             "<internal>");
     }
