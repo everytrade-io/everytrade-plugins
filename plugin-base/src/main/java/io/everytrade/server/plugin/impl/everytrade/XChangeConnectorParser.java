@@ -242,7 +242,11 @@ public class XChangeConnectorParser {
 
         if (e instanceof DataIgnoredException) {
             type = ParsingProblemType.PARSED_ROW_IGNORED;
-            message = "Ignored transaction.";
+
+            String m = e.getMessage();
+            message = (m == null || m.isBlank())
+                ? "Ignored transaction."
+                : safeMessage(m);
         } else if (e instanceof DataValidationException) {
             type = ParsingProblemType.ROW_PARSING_FAILED;
             message = "Validation failed: " + safeMessage(e.getMessage());

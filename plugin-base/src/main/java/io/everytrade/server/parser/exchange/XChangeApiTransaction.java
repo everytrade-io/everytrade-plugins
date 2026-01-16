@@ -34,6 +34,7 @@ import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.ROUNDING_MODE;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE;
 import static java.util.Collections.emptyList;
 
 @Value
@@ -317,7 +318,7 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
         }
 
         throw new DataValidationException(
-            "ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE " + record.getType().name());
+            UNSUPPORTED_TRANSACTION_TYPE + record.getType().name());
     }
 
     private static Currency convert(org.knowm.xchange.currency.Currency currency) {
