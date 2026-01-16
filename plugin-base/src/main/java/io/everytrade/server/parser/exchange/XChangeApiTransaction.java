@@ -278,17 +278,23 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
     }
 
     private static TransactionType orderTypeToTxType(Order.OrderType orderType) {
-        switch (orderType) {
-            case ASK:
-                return TransactionType.SELL;
-            case BID:
-                return TransactionType.BUY;
-            default:
-                throw new DataValidationException("ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE ".concat(orderType.name()));
-        }
+        return switch (orderType) {
+            case ASK -> TransactionType.SELL;
+            case BID -> TransactionType.BUY;
+            default -> throw new DataValidationException("ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE ".concat(orderType.name()));
+        };
     }
 
     private static TransactionType fundingTypeToTxType(FundingRecord record) {
+        if (record.getDescription() != null) {
+            String desc = record.getDescription().toLowerCase();
+
+            if (desc.equals("withdrawal_block") || desc.equals("withdrawal_unblock")) {
+                throw new DataIgnoredException(
+                    "Ignored transaction: " + record.getDescription());
+            }
+        }
+
         switch (record.getType()) {
             case WITHDRAWAL:
                 return WITHDRAWAL;
@@ -308,12 +314,13 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
                 if (isStakingReward(record)) {
                     return TransactionType.STAKING_REWARD;
                 }
-            default:
-                throw new DataValidationException("ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE ".concat(record.getType().name()));
         }
+
+        throw new DataValidationException(
+            "ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE " + record.getType().name());
     }
 
-    protected static Currency convert(org.knowm.xchange.currency.Currency currency) {
+    private static Currency convert(org.knowm.xchange.currency.Currency currency) {
         try {
             return Currency.fromCode(currency.getCurrencyCode());
         } catch (IllegalArgumentException e) {
