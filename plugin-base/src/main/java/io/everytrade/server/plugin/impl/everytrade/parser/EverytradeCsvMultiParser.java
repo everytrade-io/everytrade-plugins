@@ -70,6 +70,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.Poloniex
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.PoloniexBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.PoloniexBuySellBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.PoloniexDepWdrlBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.RevolutBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.ShakePayBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.SimplecoinBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.WalletOfSatoshiBeanV1;
@@ -143,6 +144,7 @@ import static io.everytrade.server.model.SupportedExchange.OPEN_NODE;
 import static io.everytrade.server.model.SupportedExchange.PAXFUL;
 import static io.everytrade.server.model.SupportedExchange.POCKETAPP;
 import static io.everytrade.server.model.SupportedExchange.POLONIEX;
+import static io.everytrade.server.model.SupportedExchange.REVOLUT;
 import static io.everytrade.server.model.SupportedExchange.SHAKEPAY;
 import static io.everytrade.server.model.SupportedExchange.SIMPLECOIN;
 import static io.everytrade.server.model.SupportedExchange.TREZOR_SUITE;
@@ -805,6 +807,17 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(PoloniexBeanV1.class, delimiter))
                 .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(PoloniexBeanV1.class, delimiter))
                 .supportedExchange(POLONIEX)
+                .build());
+
+            /* REVOLUT */
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader
+                        .of("Symbol","Type","Quantity","Price","Value","Fees","Date")
+                        .withSeparator(delimiter)
+                ))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(RevolutBeanV1.class, delimiter))
+                .supportedExchange(REVOLUT)
                 .build());
 
             /* SHAKEPAY */
