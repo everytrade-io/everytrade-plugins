@@ -7,6 +7,8 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -1008,6 +1010,16 @@ public enum Currency {
     Instant endDate;
     String description;
 
+    private static final Map<String, Currency> BY_CODE =
+        Arrays.stream(values())
+            .collect(Collectors.toUnmodifiableMap(
+                c -> norm(c.code()),
+                c -> c,
+                (a, b) -> {
+                    throw new IllegalStateException("Duplicate currency code after normalization: " + a.code());
+                }
+            ));
+
     Currency(boolean fiat, Instant introduction, String description) {
         this(null, fiat ? 2 : DECIMAL_DIGITS, fiat, false, introduction, null, description);
     }
@@ -1063,11 +1075,14 @@ public enum Currency {
 
     public static Currency fromCode(String code) {
         Objects.requireNonNull(code, "code is null");
-        for (Currency c : values()) {
-            if (code.equals(c.code())) {
-                return c;
-            }
+        Currency c = BY_CODE.get(code.trim().toUpperCase(Locale.ROOT));
+        if (c == null) {
+            throw new IllegalArgumentException("Unknown currency code: " + code);
         }
-        throw new IllegalArgumentException("No enum constant " + Currency.class.getCanonicalName() + "." + code);
+        return c;
+    }
+
+    private static String norm(String code) {
+        return code == null ? null : code.trim().toUpperCase(Locale.ROOT);
     }
 }
