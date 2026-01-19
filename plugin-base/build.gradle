@@ -21,6 +21,14 @@ configurations {
     }
 }
 
+configurations.all {
+    resolutionStrategy {
+        force "com.github.mmazi:rescu:2.1.0"
+        force "javax.ws.rs:javax.ws.rs-api:2.1.1"
+    }
+    exclude group: "jakarta.ws.rs", module: "jakarta.ws.rs-api"
+}
+
 dependencies {
     annotationProcessor 'org.projectlombok:lombok:1.18.26'
     annotationProcessor "org.pf4j:pf4j:$pf4jVersion"
@@ -39,6 +47,7 @@ dependencies {
     pluginCompile "com.github.Slithercze.Xchange:xchange-binance:58410b1cb5c641d526e379fd44580853da3d01ba"
     pluginCompile "com.github.Slithercze.Xchange:xchange-bitstamp:7e2851a1c061fc2a50f535527b00b1187a3ba509"
     pluginCompile "com.github.Slithercze.Xchange:xchange-okex:74e9ea1851a8aa0fdb8634c820b821e3c4216b4d"
+    pluginCompile "com.github.Slithercze.XChange:xchange-dase:fa9cdc9d304c4250c260bdfdd0a0ad305c189981"
 
     pluginCompile "org.knowm.xchange:xchange-bittrex:$xchangeVersion"
     pluginCompile "org.knowm.xchange:xchange-bitfinex:$xchangeVersion"
