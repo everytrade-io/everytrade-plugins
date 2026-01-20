@@ -1107,6 +1107,7 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             )
             .collect(toMap(Map.Entry::getKey, Map.Entry::getValue))
     );
+
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Override
