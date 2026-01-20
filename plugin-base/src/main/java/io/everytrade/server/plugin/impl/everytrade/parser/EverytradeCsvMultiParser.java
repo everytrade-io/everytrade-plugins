@@ -1,6 +1,5 @@
 package io.everytrade.server.plugin.impl.everytrade.parser;
 
-import io.everytrade.server.model.Currency;
 import io.everytrade.server.plugin.api.IPlugin;
 import io.everytrade.server.plugin.api.parser.ICsvParser;
 import io.everytrade.server.plugin.api.parser.ParseResult;
@@ -108,7 +107,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.EnumSet;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -162,7 +161,6 @@ public class EverytradeCsvMultiParser implements ICsvParser {
     private static final List<String> DELIMITERS = List.of(DELIMITER_COMMA,DELIMITER_SEMICOLON);
 
     private static final List<ExchangeParseDetail> EXCHANGE_PARSE_DETAILS = new ArrayList<>();
-    private static EnumSet allCurrencies = EnumSet.allOf(Currency.class);
 
     static {
 
@@ -306,17 +304,18 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 .build());
 
             /* BITFLYER */
-            allCurrencies.stream().forEach(currency -> {
-                EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
-                    .headers(List.of(
-                        CsvHeader.of("Trade Date", "Product", "Trade Type", "Traded Price", "Currency 1", "Amount (Currency 1)", "Fee",
-                                currency.toString() + " Rate (Currency 1)", "Currency 2", "Amount (Currency 2)", "Order ID", "Details")
-                            .withSeparator(delimiter)
-                    ))
-                    .parserFactory(() -> new BitflyerMultiRowParser(BitflyerBeanV2.class, delimiter))
-                    .supportedExchange(BITFLYER)
-                    .build());
-            });
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader.of(
+                        "Trade Date", "Product", "Trade Type", "Traded Price",
+                        "Currency 1", "Amount (Currency 1)", "Fee",
+                        "^.* Rate \\(Currency 1\\)$",
+                        "Currency 2", "Amount (Currency 2)", "Order ID", "Details"
+                    ).withSeparator(delimiter)
+                ))
+                .parserFactory(() -> new BitflyerMultiRowParser(BitflyerBeanV2.class, delimiter))
+                .supportedExchange(BITFLYER)
+                .build());
 
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
                 .headers(List.of(
@@ -1108,6 +1107,7 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             )
             .collect(toMap(Map.Entry::getKey, Map.Entry::getValue))
     );
+
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Override
@@ -1173,10 +1173,15 @@ public class EverytradeCsvMultiParser implements ICsvParser {
 
 
     private ExchangeParseDetail findCsvDetailByHeader(String header) {
-            return EXCHANGE_PARSE_DETAILS.stream()
-                .filter(parseDetail -> parseDetail.getHeaders().stream().anyMatch(h -> h.matching(header)))
-                .findFirst()
-                .orElse(null);
+        return EXCHANGE_PARSE_DETAILS.stream()
+            .flatMap(detail ->
+                detail.getHeaders().stream()
+                    .filter(h -> h.matching(header))
+                    .map(h -> Map.entry(detail, h))
+            )
+            .max(Comparator.comparingInt(e -> e.getValue().getHeaderValues().size()))
+            .map(Map.Entry::getKey)
+            .orElse(null);
     }
 
     private int countTransactions(List<TransactionCluster> transactionClusters) {
