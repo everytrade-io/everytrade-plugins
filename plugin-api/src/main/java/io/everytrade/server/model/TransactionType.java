@@ -52,6 +52,23 @@ public enum TransactionType {
         return transactionType;
     }
 
+    public static TransactionType fromString(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return UNKNOWN;
+        }
+
+        String normalized = raw
+            .trim()
+            .toUpperCase()
+            .replaceAll("\\s+", "_");
+
+        try {
+            return TransactionType.valueOf(normalized);
+        } catch (IllegalArgumentException ex) {
+            throw new IllegalArgumentException("Unrecognized transaction type: '" + raw + "'");
+        }
+    }
+
     public boolean isBuyOrSell() {
         return this == BUY || this == SELL;
     }

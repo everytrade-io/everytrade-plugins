@@ -24,8 +24,6 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.IMultiExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.KrakenDoubleQuotesUnivocitySpecificParserV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.KrakenExchangeSpecificParser;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.okx.OkxBeanWdrlDepV2;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.okx.OkxExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.SimplecoinExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.anycoin.AnycoinBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.AquanowBeanV1;
@@ -71,6 +69,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.Poloniex
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.PoloniexBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.PoloniexBuySellBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.PoloniexDepWdrlBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.RevolutBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.ShakePayBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.SimplecoinBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.WalletOfSatoshiBeanV1;
@@ -93,12 +92,15 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.KuCoin
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.KuCoinDepositV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.KuCoinWithdrawalV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.okx.OkxBeanV2;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.okx.OkxBeanWdrlDepV2;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.okx.OkxExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.okx.OkxExchangeSpecificParserV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.okx.OkxWdrlDepExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.simplecoin.SimplecoinBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.trezorSuite.TrezorSuiteBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.trezorSuite.TrezorSuiteExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.utils.ClusterValidator;
+import io.everytrade.server.plugin.impl.everytrade.parser.utils.ImportValidation;
 import io.everytrade.server.plugin.impl.everytrade.parser.utils.ProfileContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -141,6 +143,7 @@ import static io.everytrade.server.model.SupportedExchange.OPEN_NODE;
 import static io.everytrade.server.model.SupportedExchange.PAXFUL;
 import static io.everytrade.server.model.SupportedExchange.POCKETAPP;
 import static io.everytrade.server.model.SupportedExchange.POLONIEX;
+import static io.everytrade.server.model.SupportedExchange.REVOLUT;
 import static io.everytrade.server.model.SupportedExchange.SHAKEPAY;
 import static io.everytrade.server.model.SupportedExchange.SIMPLECOIN;
 import static io.everytrade.server.model.SupportedExchange.TREZOR_SUITE;
@@ -805,6 +808,17 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 .supportedExchange(POLONIEX)
                 .build());
 
+            /* REVOLUT */
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader
+                        .of("Symbol","Type","Quantity","Price","Value","Fees","Date")
+                        .withSeparator(delimiter)
+                ))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(RevolutBeanV1.class, delimiter))
+                .supportedExchange(REVOLUT)
+                .build());
+
             /* SHAKEPAY */
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
                 .headers(List.of(
@@ -1128,6 +1142,7 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 try {
                     var cluster = p.toTransactionCluster();
                     if (cluster != null) {
+                        ImportValidation.validateClusterOrThrow(cluster);
                         ClusterValidator.clusterValidator(cluster);
                         transactionClusters.add(cluster);
                     }

@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 
 import static io.everytrade.server.model.Currency.AXL;
@@ -24,13 +23,14 @@ import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.FORK;
+import static io.everytrade.server.model.TransactionType.INCOMING_PAYMENT;
+import static io.everytrade.server.model.TransactionType.OUTGOING_PAYMENT;
 import static io.everytrade.server.model.TransactionType.REBATE;
 import static io.everytrade.server.model.TransactionType.REWARD;
 import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.STAKE;
 import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
 import static io.everytrade.server.model.TransactionType.UNSTAKE;
-import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.REBATE_UID_PART;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -74,6 +74,47 @@ class EveryTradeBeanV3_2Test {
             List.of()
         );
         ParserTestUtils.checkEqual(expected, actual.get(0));
+    }
+
+    @Test
+    void testPayments() {
+        final String row = """
+            17;08.01.2026 11:16:00;BTC;INCOMING PAYMENT;0,001;;;;BTC;xxxxxxx;;nnnnnn;Label1;name;Ref-1A2b-3C4d
+            22;08.01.2026 11:21:00;BTC/EUR;OUTGOING PAYMENT;0,001;80000;80;0,;BTC;;xxxxxxx;nnnnnn;Label1:Label2;name;Ref-1A2b-3C4d
+            """;
+        final var actual = ParserTestUtils.getTransactionClusters(HEADER_V3_3 + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                "17",
+                Instant.parse("2026-01-08T11:16:00Z"),
+                BTC,
+                BTC,
+                INCOMING_PAYMENT,
+                new BigDecimal("0.001"),
+                null,
+                "nnnnnn",
+                "xxxxxxx",
+                "Label1"
+            ),
+            List.of()
+        );
+        final TransactionCluster expected2 = new TransactionCluster(
+            new ImportedTransactionBean(
+                "22",
+                Instant.parse("2026-01-08T11:21:00Z"),
+                BTC,
+                EUR,
+                OUTGOING_PAYMENT,
+                new BigDecimal("0.001"),
+                new BigDecimal("80000.00000000000000000"),
+                "nnnnnn",
+                "xxxxxxx",
+                "Label1:Label2"
+            ),
+            List.of()
+        );
+        ParserTestUtils.checkEqual(expected, actual.get(0));
+        ParserTestUtils.checkEqual(expected2, actual.get(1));
     }
 
     @Test
