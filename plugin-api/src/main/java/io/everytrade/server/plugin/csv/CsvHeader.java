@@ -1,6 +1,8 @@
 package io.everytrade.server.plugin.csv;
 
 
+import lombok.Getter;
+
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -16,8 +18,9 @@ public class CsvHeader {
     private static final String QUOTE = "\"";
     private static final String MAGIC_MARK = "\uFEFF";
 
-    private List<String> headerValues;
-    private String separator;
+    @Getter
+    private final List<String> headerValues;
+    private final String separator;
     private boolean ordered = true; // if order of header values matters or not
 
     public CsvHeader(List<String> headerValues, String separator) {
@@ -46,10 +49,8 @@ public class CsvHeader {
 
     private boolean compareOrdered(List<String> currentHeaderValues) {
         Iterator<String> currentIt = currentHeaderValues.iterator();
-        Iterator<String> templateIt = headerValues.iterator();
 
-        while (templateIt.hasNext()) {
-            String template = templateIt.next();
+        for (String template : headerValues) {
             String current = null;
             while (currentIt.hasNext()) {
                 current = currentIt.next();

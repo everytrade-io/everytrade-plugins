@@ -34,12 +34,25 @@ public class ParserDescriptor {
     }
 
     public CsvHeader findHeaderTemplate(String header) {
-        for (CsvHeader headerTemplate : exchangeHeaderTemplates.keySet()) {
-            if (headerTemplate.matching(header)) {
-                return headerTemplate;
+
+        CsvHeader bestMatch = null;
+        int bestColumnCount = -1;
+
+        for (CsvHeader template : exchangeHeaderTemplates.keySet()) {
+
+            if (!template.matching(header)) {
+                continue;
+            }
+
+            int columnCount = template.getHeaderValues().size();
+
+            if (columnCount > bestColumnCount) {
+                bestMatch = template;
+                bestColumnCount = columnCount;
             }
         }
-        return null;
+
+        return bestMatch;
     }
 
     @Override

@@ -12,7 +12,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 class BitflyerBeanV1Test {
@@ -20,10 +19,34 @@ class BitflyerBeanV1Test {
         = "Trade Date;Product;Trade Type;Traded Price;Currency 1;Amount (Currency 1);Fee;USD Rate (Currency);Currency" +
         " 2;Amount (Currency 2);Order ID;Details\n";
 
+    private static final String HEADER_EUR = "Trade Date;Product;Trade Type;Traded Price;Currency 1;Amount (Currency 1);" +
+        "Fee;EUR Rate (Currency 1);Currency 2;Amount (Currency 2);Order ID;Details\n";
+
+    private static final String HEADER_USD = "Trade Date;Product;Trade Type;Traded Price;Currency 1;Amount (Currency 1);" +
+        "Fee;USD Rate (Currency 1);Currency 2;Amount (Currency 2);Order ID;Details\n";
+
     @Test
     void testCorrectHeader() {
         try {
             ParserTestUtils.testParsing(HEADER_CORRECT);
+        } catch (ParsingProcessException e) {
+            fail("Unexpected exception has been thrown.");
+        }
+    }
+
+    @Test
+    void testCorrectHeaderUSD() {
+        try {
+            ParserTestUtils.testParsing(HEADER_USD);
+        } catch (ParsingProcessException e) {
+            fail("Unexpected exception has been thrown.");
+        }
+    }
+
+    @Test
+    void testCorrectHeaderEUR() {
+        try {
+            ParserTestUtils.testParsing(HEADER_EUR);
         } catch (ParsingProcessException e) {
             fail("Unexpected exception has been thrown.");
         }

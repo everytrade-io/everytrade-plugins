@@ -52,7 +52,8 @@ public enum SupportedExchange {
     CHANGE_INVEST("Change Invest", "changeinvest"),
     WALLET_OF_SATOSHI("Wallet of Satoshi", "walletofsatoshi"),
     BTCPAY_SERVER("BTCPay Server", "btcpayserver"),
-    DASE("DASE", "dase");
+    DASE("DASE", "dase"),
+    REVOLUT("Revolut", "revolut");
 
 
     String displayName;
