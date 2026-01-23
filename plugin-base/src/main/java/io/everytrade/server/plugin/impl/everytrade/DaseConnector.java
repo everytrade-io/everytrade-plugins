@@ -43,7 +43,7 @@ public class DaseConnector implements IConnector {
 
     public static final ConnectorDescriptor DESCRIPTOR = new ConnectorDescriptor(
         ID,
-        "Dase Connector",
+        "DASE Connector",
         "",
         SupportedExchange.DASE.getInternalId(),
         List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET)

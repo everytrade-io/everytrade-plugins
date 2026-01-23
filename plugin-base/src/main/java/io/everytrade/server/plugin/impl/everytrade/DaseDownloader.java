@@ -23,8 +23,8 @@ import java.util.List;
 public class DaseDownloader {
     private final DaseAccountService accountService;
     private final DaseTradeService tradeService;
-
     private final DownloadState state;
+    private static final int MAX_TRADES_PER_RUN = 100_000;
 
     public DaseDownloader(String downloadState, Exchange exchange) {
         this.accountService = (DaseAccountService) exchange.getAccountService();
@@ -37,7 +37,7 @@ public class DaseDownloader {
     }
 
     public List<UserTrade> downloadTrades() {
-        final List<UserTrade> result = new ArrayList<>();
+        final List<UserTrade> result = new ArrayList<>(Math.min(10_000, MAX_TRADES_PER_RUN));
 
         final String lastTradeId = state.getLastTradeId();
 
@@ -71,15 +71,19 @@ public class DaseDownloader {
                     reachedLast = true;
                     break;
                 }
+
                 result.add(adaptTrade(o));
+
+                if (result.size() >= MAX_TRADES_PER_RUN) {
+                    break;
+                }
             }
 
-            if (reachedLast) {
+            if (reachedLast || result.size() == MAX_TRADES_PER_RUN) {
                 break;
             }
 
             String nextBefore = orders.get(orders.size() - 1).getId();
-
             if (nextBefore == null || nextBefore.equals(before)) {
                 break;
             }
