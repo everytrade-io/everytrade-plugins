@@ -37,7 +37,7 @@ public class DaseDownloader {
     }
 
     public List<UserTrade> downloadTrades() {
-        final List<UserTrade> result = new ArrayList<>(Math.min(10_000, MAX_TRADES_PER_RUN));
+        final List<UserTrade> result = new ArrayList<>(Math.min(1_000, MAX_TRADES_PER_RUN));
 
         final String lastTradeId = state.getLastTradeId();
 
