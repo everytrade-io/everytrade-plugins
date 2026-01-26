@@ -49,7 +49,13 @@ public class BitmexBeanV1 extends ExchangeBean {
     }
 
     @Parsed(field = "transactTime")
-    @Format(formats = {"MM/dd/yyyy, hh:mm:ss a"}, options = {"locale=US", "timezone=UTC"})
+    @Format(
+        formats = {
+            "MM/dd/yyyy, hh:mm:ss a",
+            "yyyy-MM-dd'T'HH:mm:ss.SSSX"
+        },
+        options = {"locale=US", "timezone=UTC"}
+    )
     public void setTransactTime(Date date) {
         transactTime = date.toInstant();
     }
@@ -111,7 +117,9 @@ public class BitmexBeanV1 extends ExchangeBean {
     @Override
     public TransactionCluster toTransactionCluster() {
         validateCurrencyPair(symbolBase, symbolQuote);
-        validatePositivity(lastPx,lastQty,execComm);
+        validatePositivity(lastPx, lastQty, execComm);
+
+        Instant transactTimeSeconds = transactTime == null ? null : transactTime.truncatedTo(java.time.temporal.ChronoUnit.SECONDS);
 
         List<ImportedTransactionBean> related;
         if (ParserUtils.equalsToZero(execComm)) {
@@ -120,7 +128,7 @@ public class BitmexBeanV1 extends ExchangeBean {
             related = List.of(
                 new FeeRebateImportedTransactionBean(
                     orderID + FEE_UID_PART,
-                    transactTime,
+                    transactTimeSeconds,
                     symbolQuote,
                     symbolQuote,
                     TransactionType.FEE,
@@ -133,7 +141,7 @@ public class BitmexBeanV1 extends ExchangeBean {
         return new TransactionCluster(
             new ImportedTransactionBean(
                 orderID,
-                transactTime,
+                transactTimeSeconds,
                 symbolBase,
                 symbolQuote,
                 side,
