@@ -332,6 +332,10 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                     CsvHeader.of(
                         "transactTime", "symbol", "execType", "side", "lastQty", "lastPx", "execCost",
                         "commission", "execComm", "ordType", "orderQty", "leavesQty", "price", "text", "orderID"
+                    ).withSeparator(delimiter),
+                    CsvHeader.of(
+                        "transactTime","account","symbol","execType","side","lastQty","lastPx","execCost",
+                        "commission","execComm","ordType","orderQty","leavesQty","price","text","orderID"
                     ).withSeparator(delimiter)
                 ))
                 .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(BitmexBeanV1.class, delimiter))

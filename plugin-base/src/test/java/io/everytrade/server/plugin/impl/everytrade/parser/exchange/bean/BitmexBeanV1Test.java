@@ -22,6 +22,10 @@ class BitmexBeanV1Test {
         = "\uFEFF\"transactTime\",\"symbol\",\"execType\",\"side\",\"lastQty\",\"lastPx\",\"execCost\"," +
         "\"commission\",\"execComm\",\"ordType\",\"orderQty\",\"leavesQty\",\"price\",\"text\",\"orderID\"\n";
 
+    private static final String HEADER_CORRECT_V2
+        = "\uFEFF\"transactTime\",\"account\",\"symbol\",\"execType\",\"side\",\"lastQty\",\"lastPx\",\"execCost\"," +
+        "\"commission\",\"execComm\",\"ordType\",\"orderQty\",\"leavesQty\",\"price\",\"text\",\"orderID\"\n";
+
     @Test
     void testCorrectHeader() {
         try {
@@ -66,6 +70,39 @@ class BitmexBeanV1Test {
                     Currency.USD,
                     TransactionType.FEE,
                     new BigDecimal("0.00001505000000000"),
+                    Currency.USD
+                )
+            )
+        );
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
+    void testNewHeader() {
+        final String row = """
+                "2020-10-20T17:46:13.553Z","665454","XBTUSD","Trade","Buy","20472","11996","-170654592","0.00075","127990",\
+                "StopLimit","20472","0","12178","Triggered: Order stop price reached
+                Submission from www.bitmex.com","aa6efd43-4945-4ae1-979c-dc1d1ade2a1b"
+                """;
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT_V2 + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                "aa6efd43-4945-4ae1-979c-dc1d1ade2a1b",
+                Instant.parse("2020-10-20T17:46:13Z"),
+                Currency.BTC,
+                Currency.USD,
+                TransactionType.BUY,
+                new BigDecimal("20472.00000000000000000"),
+                new BigDecimal("11996.00000000000000000")
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    "aa6efd43-4945-4ae1-979c-dc1d1ade2a1b-fee",
+                    Instant.parse("2020-10-20T17:46:13Z"),
+                    Currency.USD,
+                    Currency.USD,
+                    TransactionType.FEE,
+                    new BigDecimal("0.00127990000000000"),
                     Currency.USD
                 )
             )
