@@ -61,7 +61,7 @@ dependencies {
      */
     //    pluginCompile "org.knowm.xchange:xchange-coinmate:$xchangeVersion"
 //    pluginCompile "com.github.martinkyov.Xchange:xchange-coinmate:eb87b858ff861db863793bd92c6d8b8e0a662b8c"
-    pluginCompile "com.github.Slithercze.Xchange:xchange-coinmate:27e29ebfc9e9227139f364709afbfbf9b0af6624"
+    pluginCompile "com.github.Slithercze.Xchange:xchange-coinmate:a4f532bf4387986416dc91113f315f88d26a9965"
 
 //    pluginCompile "org.knowm.xchange:xchange-huobi:$xchangeVersion"
     pluginCompile "com.github.Slithercze.Xchange:xchange-huobi:9443aa3422820346b299a60ac3765ad2a73078fa"
