@@ -15,6 +15,7 @@ import lombok.Value;
 import org.knowm.xchange.coinbase.v2.dto.account.transactions.CoinbaseShowTransactionV2;
 import org.knowm.xchange.coinbase.v2.dto.account.transactions.CoinbaseTransactionV2Expand;
 import org.knowm.xchange.coinmate.dto.trade.CoinmateTransactionHistoryEntry;
+import org.knowm.xchange.dase.dto.account.ApiAccountTxn;
 import org.knowm.xchange.dto.Order;
 import org.knowm.xchange.dto.account.FundingRecord;
 import org.knowm.xchange.dto.trade.UserTrade;
@@ -23,6 +24,7 @@ import org.knowm.xchange.instrument.Instrument;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
@@ -112,6 +114,7 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
             .originalAmount(base.getAmount().getAmount())
             .build();
     }
+
     public static XChangeApiTransaction buySellCoinbase(CoinbaseShowTransactionV2 transaction) {
         TransactionType type = null;
         CoinbaseTransactionV2Expand buySellTx = null;
@@ -137,7 +140,7 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
         }
 
         Currency feeCurrency = null;
-        if (buySellTx.getFee() != null){
+        if (buySellTx.getFee() != null) {
             feeCurrency = buySellTx.getFee().getCurrency() != null ? Currency.fromCode(buySellTx.getFee().getCurrency()) : null;
         }
 
@@ -193,6 +196,86 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
             .feeCurrency(fee)
             .build();
 
+    }
+
+    public static TransactionCluster tradeFillGroupToCluster(List<ApiAccountTxn> group) {
+        long createdAt = group.stream()
+            .map(ApiAccountTxn::getCreatedAt)
+            .findFirst()
+            .orElseThrow(() ->
+                new IllegalStateException("Missing createdAt in trade fill group: " + group)
+            );
+
+        ApiAccountTxn baseLeg = group.stream()
+            .filter(t -> "trade_fill_credit_base".equals(t.getTxnType()) || "trade_fill_debit_base".equals(t.getTxnType()))
+            .findFirst()
+            .orElse(null);
+
+        ApiAccountTxn quoteLeg = group.stream()
+            .filter(t -> "trade_fill_credit_quote".equals(t.getTxnType()) || "trade_fill_debit_quote".equals(t.getTxnType()))
+            .findFirst()
+            .orElse(null);
+
+        if (baseLeg == null || quoteLeg == null) {
+            return null;
+        }
+
+        BigDecimal baseAmt = baseLeg.getAmount();
+        BigDecimal quoteAmt = quoteLeg.getAmount();
+
+        if (baseAmt == null || quoteAmt == null) {
+            throw new IllegalStateException("Missing amount in trade fill group: " + group);
+        }
+
+        boolean buy = baseAmt.signum() > 0 || quoteAmt.signum() < 0;
+
+        Currency base = Currency.fromCode(baseLeg.getCurrency());
+        Currency quote = Currency.fromCode(quoteLeg.getCurrency());
+
+        BigDecimal price = quoteAmt.abs().divide(baseAmt.abs(), 18, java.math.RoundingMode.HALF_UP);
+
+        String tradeId = baseLeg.getTradeId() != null ? baseLeg.getTradeId() : quoteLeg.getTradeId();
+        Instant ts = Instant.ofEpochMilli(createdAt);
+
+        XChangeApiTransaction x = XChangeApiTransaction.builder()
+            .id(tradeId != null ? tradeId : baseLeg.getId())
+            .timestamp(ts)
+            .type(buy ? TransactionType.BUY : TransactionType.SELL)
+            .base(base)
+            .quote(quote)
+            .originalAmount(baseAmt.abs())
+            .price(price)
+            .build();
+
+        return x.toTransactionCluster();
+    }
+
+    public static TransactionCluster fundingOrSingleTxnToCluster(List<ApiAccountTxn> group) {
+        ApiAccountTxn t = group.stream().filter(Objects::nonNull).findFirst().orElse(null);
+        if (t == null) {
+            return null;
+        }
+
+        TransactionType type = switch (t.getTxnType()) {
+            case "deposit" -> TransactionType.DEPOSIT;
+            case "withdrawal_commit" -> TransactionType.WITHDRAWAL;
+            default -> throw new DataIgnoredException(
+                UNSUPPORTED_TRANSACTION_TYPE + t.getTxnType());
+        };
+
+        Instant ts = Instant.ofEpochMilli(t.getCreatedAt());
+        Currency ccy = Currency.fromCode(t.getCurrency());
+
+        XChangeApiTransaction x = XChangeApiTransaction.builder()
+            .id(t.getFundingId() != null ? t.getFundingId() : t.getId())
+            .timestamp(ts)
+            .type(type)
+            .base(ccy)
+            .quote(ccy)
+            .originalAmount(t.getAmount().abs())
+            .build();
+
+        return x.toTransactionCluster();
     }
 
     public TransactionCluster toTransactionCluster() {
