@@ -13,8 +13,7 @@ import org.knowm.xchange.Exchange;
 import org.knowm.xchange.ExchangeFactory;
 import org.knowm.xchange.ExchangeSpecification;
 import org.knowm.xchange.dase.DaseExchange;
-import org.knowm.xchange.dto.account.FundingRecord;
-import org.knowm.xchange.dto.trade.UserTrade;
+import org.knowm.xchange.dase.dto.account.ApiAccountTxn;
 
 import java.util.List;
 import java.util.Map;
@@ -22,6 +21,7 @@ import java.util.Objects;
 
 public class DaseConnector implements IConnector {
     private static final String ID = WhaleBooksPlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "daseApiConnector";
+    private static final int MAX_TOTAL_RECORDS_PER_RUN = 90_000;
 
     private static final ConnectorParameterDescriptor PARAMETER_API_SECRET =
         new ConnectorParameterDescriptor(
@@ -74,10 +74,9 @@ public class DaseConnector implements IConnector {
     public DownloadResult getTransactions(String lastTransactionId) {
         final DaseDownloader daseDownloader = new DaseDownloader(lastTransactionId, exchange);
 
-        List<UserTrade> userTrades = daseDownloader.downloadTrades();
-        List<FundingRecord> fundings = daseDownloader.downloadFundings();
+        List<ApiAccountTxn> transactions = daseDownloader.downloadAllTransactions(MAX_TOTAL_RECORDS_PER_RUN);
 
-        final ParseResult parseResult = new XChangeConnectorParser().getDaseParseResult(userTrades, fundings);
+        final ParseResult parseResult = new XChangeConnectorParser().getDaseParseResult(transactions);
         return new DownloadResult(parseResult, daseDownloader.serializeState());
     }
 }

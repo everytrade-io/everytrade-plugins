@@ -2,33 +2,23 @@ package io.everytrade.server.plugin.impl.everytrade;
 
 import io.everytrade.server.util.serialization.DownloadState;
 import org.knowm.xchange.Exchange;
-import org.knowm.xchange.currency.Currency;
 import org.knowm.xchange.dase.dto.account.ApiAccountTxn;
 import org.knowm.xchange.dase.dto.account.ApiGetAccountTxnsOutput;
 import org.knowm.xchange.dase.service.DaseAccountService;
-import org.knowm.xchange.dase.service.DaseTradeService;
-import org.knowm.xchange.dto.Order;
-import org.knowm.xchange.dto.account.FundingRecord;
-import org.knowm.xchange.dto.trade.LimitOrder;
-import org.knowm.xchange.dto.trade.OpenOrders;
-import org.knowm.xchange.dto.trade.UserTrade;
-import org.knowm.xchange.instrument.Instrument;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class DaseDownloader {
     private final DaseAccountService accountService;
-    private final DaseTradeService tradeService;
     private final DownloadState state;
-    private static final int MAX_TRADES_PER_RUN = 100_000;
 
     public DaseDownloader(String downloadState, Exchange exchange) {
         this.accountService = (DaseAccountService) exchange.getAccountService();
-        this.tradeService = (DaseTradeService) exchange.getTradeService();
         this.state = DownloadState.from(downloadState);
     }
 
@@ -36,197 +26,186 @@ public class DaseDownloader {
         return state.serialize();
     }
 
-    public List<UserTrade> downloadTrades() {
-        final List<UserTrade> result = new ArrayList<>(Math.min(1_000, MAX_TRADES_PER_RUN));
+    public List<ApiAccountTxn> downloadAllTransactions(int maxLimitTransactions) {
+        final List<ApiAccountTxn> result = new ArrayList<>(Math.min(1_000, Math.max(0, maxLimitTransactions)));
+        if (maxLimitTransactions <= 0) {
+            return result;
+        }
 
-        final String lastTradeId = state.getLastTradeId();
+        final String lastCursor = firstNonBlank(state.getLastDepositTs(), state.getLastWithdrawalTs());
 
-        String before = null;
-        boolean firstPage = true;
-        boolean reachedLast = false;
+        final int limit = 100;
+        String before = lastCursor;
 
-        while (true) {
-            OpenOrders page;
-            try {
-                page = tradeService.getFilledOrders(before);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+        int pages = 0;
+        final int maxPages = 200;
 
-            List<LimitOrder> orders = page.getOpenOrders();
-            if (orders == null || orders.isEmpty()) {
+        String pagingCursor = lastCursor;
+
+        while (pages++ < maxPages && result.size() < maxLimitTransactions) {
+            final ApiGetAccountTxnsOutput resp;
+            resp = getAccountTransactionsWithRetry(limit, before);
+
+            final List<ApiAccountTxn> txns = (resp == null) ? null : resp.getTransactions();
+            if (txns == null || txns.isEmpty()) {
                 break;
             }
 
-            if (firstPage) {
-                String newestId = orders.get(0).getId();
-                if (newestId != null && !newestId.isBlank()) {
-                    state.setNewTradeId(newestId);
-                }
-                firstPage = false;
-            }
-
-            for (LimitOrder o : orders) {
-                if (lastTradeId != null && lastTradeId.equals(o.getId())) {
-                    reachedLast = true;
+            for (ApiAccountTxn t : txns) {
+                if (result.size() >= maxLimitTransactions) {
                     break;
                 }
-
-                result.add(adaptTrade(o));
-
-                if (result.size() >= MAX_TRADES_PER_RUN) {
-                    break;
+                if (t == null) {
+                    continue;
                 }
+                result.add(t);
             }
 
-            if (reachedLast || result.size() == MAX_TRADES_PER_RUN) {
+            final String oldestIdOnPage = txns.get(txns.size() - 1).getId();
+            if (oldestIdOnPage == null || oldestIdOnPage.isBlank() || oldestIdOnPage.equals(before)) {
                 break;
             }
 
-            String nextBefore = orders.get(orders.size() - 1).getId();
-            if (nextBefore == null || nextBefore.equals(before)) {
-                break;
-            }
+            before = oldestIdOnPage;
+            pagingCursor = oldestIdOnPage;
+        }
 
-            before = nextBefore;
+        String safeCursor = computeSafeCursorNotCuttingTrades(result, pagingCursor);
+
+        if (safeCursor != null && !safeCursor.isBlank()) {
+            state.setNewDepositTs(safeCursor);
+            state.setNewWithdrawalTs(safeCursor);
         }
 
         result.sort(
-            Comparator
-                .comparing(UserTrade::getTimestamp, Comparator.nullsLast(Comparator.naturalOrder()))
-                .thenComparing(UserTrade::getId, Comparator.nullsLast(Comparator.naturalOrder()))
+            Comparator.comparing(ApiAccountTxn::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
                 .reversed()
         );
 
         return result;
     }
 
-    public List<FundingRecord> downloadFundings() {
-        final List<FundingRecord> result = new ArrayList<>();
+    private static String computeSafeCursorNotCuttingTrades(List<ApiAccountTxn> batch, String defaultCursor) {
+        if (batch == null || batch.isEmpty()) {
+            return defaultCursor;
+        }
 
-        final String lastDepCursor = state.getLastDepositTs();
-        final String lastWdrCursor = state.getLastWithdrawalTs();
+        final int tailN = Math.min(25, batch.size());
+        final List<ApiAccountTxn> tail = batch.subList(batch.size() - tailN, batch.size());
 
-        final int limit = 100;
-        String before = null;
-
-        boolean firstPage = true;
-        boolean reachedLast = false;
-
-        int pages = 0;
-        final int maxPages = 200;
-
-        while (pages++ < maxPages) {
-            ApiGetAccountTxnsOutput resp;
-            try {
-                resp = accountService.getAccountTransactions(limit, before);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+        final Set<String> tailTradeIds = new HashSet<>();
+        for (ApiAccountTxn t : tail) {
+            if (t != null && t.getTradeId() != null && !t.getTradeId().isBlank()) {
+                tailTradeIds.add(t.getTradeId());
             }
+        }
+        if (tailTradeIds.isEmpty()) {
+            return defaultCursor;
+        }
 
-            List<ApiAccountTxn> txns = (resp == null) ? null : resp.getTransactions();
-            if (txns == null || txns.isEmpty()) {
-                break;
-            }
+        Set<String> incomplete = new HashSet<>();
+        for (String tradeId : tailTradeIds) {
+            boolean hasBase = false;
+            boolean hasQuote = false;
 
-            if (firstPage) {
-                String newestId = txns.get(0).getId();
-                if (newestId != null && !newestId.isBlank()) {
-                    state.setNewDepositTs(newestId);
-                    state.setNewWithdrawalTs(newestId);
-                }
-                firstPage = false;
-            }
-
-            for (ApiAccountTxn t : txns) {
+            for (ApiAccountTxn t : batch) {
                 if (t == null) {
                     continue;
                 }
+                if (!tradeId.equals(t.getTradeId())) {
+                    continue;
+                }
 
-                String id = t.getId();
-                if (id != null && (id.equals(lastDepCursor) || id.equals(lastWdrCursor))) {
-                    reachedLast = true;
+                String tt = t.getTxnType();
+                if ("trade_fill_credit_base".equals(tt) || "trade_fill_debit_base".equals(tt)) {
+                    hasBase = true;
+                }
+                if ("trade_fill_credit_quote".equals(tt) || "trade_fill_debit_quote".equals(tt)) {
+                    hasQuote = true;
+                }
+
+                if (hasBase && hasQuote) {
                     break;
                 }
+            }
 
-                FundingRecord fr = adaptFundingRecord(t);
-                if (fr != null) {
-                    result.add(fr);
+            if (!(hasBase && hasQuote)) {
+                incomplete.add(tradeId);
+            }
+        }
+
+        if (incomplete.isEmpty()) {
+            return defaultCursor;
+        }
+
+        int oldestIncompleteIndex = -1;
+        for (int i = batch.size() - 1; i >= 0; i--) {
+            ApiAccountTxn t = batch.get(i);
+            if (t == null) {
+                continue;
+            }
+            String tradeId = t.getTradeId();
+            if (tradeId != null && incomplete.contains(tradeId)) {
+                oldestIncompleteIndex = i;
+            }
+        }
+
+        if (oldestIncompleteIndex < 0) {
+            return defaultCursor;
+        }
+
+        ApiAccountTxn oldestIncomplete = batch.get(oldestIncompleteIndex);
+        String cursor = oldestIncomplete.getId();
+
+        return (cursor == null || cursor.isBlank()) ? defaultCursor : cursor;
+    }
+
+    private ApiGetAccountTxnsOutput getAccountTransactionsWithRetry(int limit, String before) {
+        int attempt = 0;
+        int maxAttempts = 6;
+        long baseDelayMs = 500;
+
+        while (true) {
+            try {
+                return accountService.getAccountTransactions(limit, before);
+            } catch (IOException e) {
+                attempt++;
+
+                if (attempt >= maxAttempts) {
+                    throw new RuntimeException(
+                        "Failed to fetch account transactions after " + attempt + " attempts (before=" + before + ")",
+                        e
+                    );
+                }
+
+                long delay = computeBackoff(baseDelayMs, attempt);
+
+                delay += (long) (Math.random() * 250);
+
+                try {
+                    Thread.sleep(delay);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException(ie);
                 }
             }
-
-            if (reachedLast) {
-                break;
-            }
-
-            String nextBefore = txns.get(txns.size() - 1).getId();
-            if (nextBefore == null || nextBefore.isBlank() || nextBefore.equals(before)) {
-                break;
-            }
-            before = nextBefore;
         }
-
-        result.sort(Comparator.comparing(FundingRecord::getDate, Comparator.nullsLast(Comparator.naturalOrder())).reversed());
-
-        return result;
     }
 
-    private UserTrade adaptTrade(LimitOrder order) {
-        Order.OrderType type = order.getType();
-        Instrument instrument = order.getInstrument();
-
-        return new UserTrade(
-            type,
-            order.getOriginalAmount(),
-            instrument,
-            order.getAveragePrice(),
-            order.getTimestamp(),
-            order.getId(),
-            order.getId(),
-            null,
-            null,
-            null
-        );
+    private long computeBackoff(long baseMs, int attempt) {
+        long delay = baseMs * (1L << Math.min(attempt, 5)); // 0.5s → 1s → 2s → 4s → 8s → cap
+        return Math.min(delay, 10_000);
     }
 
-    private static FundingRecord adaptFundingRecord(ApiAccountTxn t) {
-        if (t == null) {
+    private static String firstNonBlank(String... values) {
+        if (values == null) {
             return null;
         }
-
-        Currency currency = t.getCurrency() == null ? null : Currency.getInstance(t.getCurrency());
-        Date date = new Date(t.getCreatedAt());
-
-        FundingRecord.Type type = mapTxnTypeToFundingType(t.getTxnType());
-        FundingRecord.Status status = FundingRecord.Status.COMPLETE;
-        String description = t.getTxnType();
-
-        return new FundingRecord.Builder()
-            .setDate(date)
-            .setCurrency(currency)
-            .setAmount(t.getAmount())
-            .setInternalId(t.getId())
-            .setType(type)
-            .setStatus(status)
-            .setDescription(description)
-            .build();
-    }
-
-    private static FundingRecord.Type mapTxnTypeToFundingType(String txnType) {
-        if (txnType == null) {
-            throw new IllegalArgumentException("txnType is null");
+        for (String v : values) {
+            if (v != null && !v.isBlank()) {
+                return v;
+            }
         }
-        return switch (txnType) {
-            case "deposit" -> FundingRecord.Type.DEPOSIT;
-            case "withdrawal_commit" -> FundingRecord.Type.WITHDRAWAL;
-            case "withdrawal_block" -> FundingRecord.Type.OTHER_OUTFLOW;
-            case "withdrawal_unblock" -> FundingRecord.Type.OTHER_INFLOW;
-            case "trade_fill_fee_base", "trade_fill_fee_quote" -> FundingRecord.Type.OTHER_OUTFLOW;
-            case "trade_fill_credit_base", "trade_fill_credit_quote" -> FundingRecord.Type.OTHER_INFLOW;
-            case "trade_fill_debit_base", "trade_fill_debit_quote" -> FundingRecord.Type.OTHER_OUTFLOW;
-            case "portfolio_transfer_credit" -> FundingRecord.Type.INTERNAL_DEPOSIT;
-            case "portfolio_transfer_debit" -> FundingRecord.Type.INTERNAL_WITHDRAWAL;
-            default -> throw new IllegalArgumentException("Unknown txnType: " + txnType);
-        };
+        return null;
     }
 }
