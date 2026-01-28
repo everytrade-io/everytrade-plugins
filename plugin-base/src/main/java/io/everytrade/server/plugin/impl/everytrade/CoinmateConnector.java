@@ -132,7 +132,7 @@ public class CoinmateConnector implements IConnector {
             List<CoinmateTransactionHistoryEntry> userTransactionBlock;
             try {
                 userTransactionBlock = rawServices.getCoinmateTransactionHistory(
-                    0, TX_PER_REQUEST, SORT_FIELD, txFrom, txTo, null
+                    0, TX_PER_REQUEST, SORT_FIELD, txFrom, txTo, null, true
                 ).getData();
             } catch (IOException e) {
                 throw new IllegalStateException("Download user trade history failed.", e);
