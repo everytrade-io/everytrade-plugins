@@ -116,51 +116,77 @@ public class CoinmateConnector implements IConnector {
     private List<CoinmateTransactionHistoryEntry> downloadTransactions(DownloadState state) {
         var rawServices = new CoinmateTradeServiceRaw(exchange);
         setTxFromTimestamp(state);
+
         List<CoinmateTransactionHistoryEntry> allData = new ArrayList<>();
 
         long txFrom = state.getTxFrom();
-        long txTo = (state.getTxFrom() != 0) ? Instant.now().toEpochMilli() :
-                    (state.getTxTo() == 0L) ? Instant.now().toEpochMilli() : state.getTxTo();
+        long initialTxTo = (state.getTxFrom() != 0)
+            ? Instant.now().toEpochMilli()
+            : (state.getTxTo() == 0L ? Instant.now().toEpochMilli() : state.getTxTo());
 
         int iterationCount = 0;
 
-        while (true) {
-            if (iterationCount++ >= MAX_ITERATIONS) {
-                break;
-            }
+        for (boolean archived : new boolean[]{false, true}) {
 
-            List<CoinmateTransactionHistoryEntry> userTransactionBlock;
-            try {
-                userTransactionBlock = rawServices.getCoinmateTransactionHistory(
-                    0, TX_PER_REQUEST, SORT_FIELD, txFrom, txTo, null, true
-                ).getData();
-            } catch (IOException e) {
-                throw new IllegalStateException("Download user trade history failed.", e);
-            }
+            long txTo = initialTxTo;
 
-            if (userTransactionBlock.isEmpty()) {
-                break;
-            }
+            Long lastTxToUsed = null;
 
-            allData.addAll(userTransactionBlock);
+            while (true) {
+                if (iterationCount++ >= MAX_ITERATIONS) {
+                    return allData;
+                }
 
-            state.highestTimestamp = Math.max(state.highestTimestamp, allData.get(0).getTimestamp() + 1);
+                if (lastTxToUsed != null && lastTxToUsed == txTo) {
+                    break;
+                }
+                lastTxToUsed = txTo;
 
-            if (userTransactionBlock.size() < TX_PER_REQUEST) {
-                state.txFrom = state.highestTimestamp;
-                break;
-            }
+                List<CoinmateTransactionHistoryEntry> userTransactionBlock;
+                try {
+                    userTransactionBlock = rawServices.getCoinmateTransactionHistory(
+                        0, TX_PER_REQUEST, SORT_FIELD, txFrom, txTo, null, archived
+                    ).getData();
+                } catch (IOException e) {
+                    throw new IllegalStateException("Download user trade history failed.", e);
+                }
 
-            txTo = userTransactionBlock.get(userTransactionBlock.size() - 1).getTimestamp() - 1;
-            state.txTo = txTo;
+                if (userTransactionBlock.isEmpty()) {
+                    break;
+                }
 
-            try {
-                Thread.sleep(600);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new IllegalStateException("Thread was interrupted during sleep.", e);
+                var originalBlock = userTransactionBlock;
+
+                var filteredBlock = originalBlock.stream()
+                    .filter(e -> e.getTimestamp() >= txFrom)
+                    .toList();
+
+                if (!filteredBlock.isEmpty()) {
+                    allData.addAll(filteredBlock);
+
+                    long newestTsInBlock = filteredBlock.get(0).getTimestamp();
+                    state.highestTimestamp = Math.max(state.highestTimestamp, newestTsInBlock + 1);
+                }
+
+                if (originalBlock.size() < TX_PER_REQUEST) {
+                    break;
+                }
+
+                long oldestTsInBlock = originalBlock.get(originalBlock.size() - 1).getTimestamp();
+                txTo = oldestTsInBlock - 1;
+
+                try {
+                    Thread.sleep(600);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new IllegalStateException("Thread was interrupted during sleep.", e);
+                }
             }
         }
+
+        state.txFrom = Math.max(state.txFrom, state.highestTimestamp);
+        state.txTo = 0L;
+
         return allData;
     }
 
