@@ -178,24 +178,49 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
     }
 
     public static XChangeApiTransaction fromCoinMateTransactions(CoinmateTransactionHistoryEntry transaction) {
+        if (transaction == null) {
+            throw new IllegalArgumentException("transaction must not be null");
+        }
+
         CoinMateDataUtil.adaptTransactionStatus(transaction.getStatus());
-        var currency = Currency.fromCode(transaction.getAmountCurrency());
+
+        Currency base = Currency.fromCode(transaction.getAmountCurrency());
+
+        Currency quote = null;
         String priceCurrency = transaction.getPriceCurrency();
-        Currency quote = priceCurrency != null ? Currency.fromCode(priceCurrency) : currency;
-        String feeCurrency = transaction.getFeeCurrency();
-        Currency fee = feeCurrency != null ? Currency.fromCode(feeCurrency) : null;
+        if (priceCurrency != null && !priceCurrency.isBlank()) {
+            quote = Currency.fromCode(priceCurrency);
+        }
+
+        Currency feeCurrency = null;
+        String feeCurrencyStr = transaction.getFeeCurrency();
+        if (feeCurrencyStr != null && !feeCurrencyStr.isBlank()) {
+            feeCurrency = Currency.fromCode(feeCurrencyStr);
+        }
+
+        var type = CoinMateDataUtil.mapCoinMateType(transaction.getTransactionType());
+
+        var amount = transaction.getAmount();
+        if (amount != null) {
+            amount = amount.abs();
+        }
+
+        var feeAmount = transaction.getFee();
+        if (feeAmount != null) {
+            feeAmount = feeAmount.abs();
+        }
+
         return XChangeApiTransaction.builder()
             .id(String.valueOf(transaction.getTransactionId()))
             .timestamp(Instant.ofEpochMilli(transaction.getTimestamp()))
-            .type(CoinMateDataUtil.mapCoinMateType(transaction.getTransactionType()))
+            .type(type)
             .price(transaction.getPrice())
-            .base(currency)
+            .base(base)
             .quote(quote)
-            .originalAmount(transaction.getAmount())
-            .feeAmount(transaction.getFee() != null ? transaction.getFee() : null)
-            .feeCurrency(fee)
+            .originalAmount(amount)
+            .feeAmount(feeAmount)
+            .feeCurrency(feeCurrency)
             .build();
-
     }
 
     public static TransactionCluster tradeFillGroupToCluster(List<ApiAccountTxn> group) {

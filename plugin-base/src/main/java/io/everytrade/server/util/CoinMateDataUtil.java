@@ -28,12 +28,10 @@ public class CoinMateDataUtil {
     public static final String REFERRAL_OPERATION = "REFERRAL";
 
     public static void adaptTransactionStatus(String status) {
-        switch (status) {
-            case "OK", "COMPLETED" -> {
-                String empty = "checkStyle does not like empty line";
-            }
-            default -> throw new DataStatusException(String.format("Wrong transaction status %s", status));
+        if ("OK".equals(status) || "COMPLETED".equals(status)) {
+            return;
         }
+        throw new DataStatusException(String.format("Wrong transaction status %s", status));
     }
 
     public static String getAddressFromDescription(String desc, String type) {
