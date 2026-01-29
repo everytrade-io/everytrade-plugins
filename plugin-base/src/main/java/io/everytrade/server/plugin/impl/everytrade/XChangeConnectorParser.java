@@ -15,6 +15,7 @@ import org.knowm.xchange.bittrex.dto.account.BittrexDepositHistory;
 import org.knowm.xchange.bittrex.dto.account.BittrexWithdrawalHistory;
 import org.knowm.xchange.coinbase.v2.dto.account.transactions.CoinbaseShowTransactionV2;
 import org.knowm.xchange.coinmate.dto.trade.CoinmateTransactionHistoryEntry;
+import org.knowm.xchange.dase.dto.account.ApiAccountTxn;
 import org.knowm.xchange.dto.account.FundingRecord;
 import org.knowm.xchange.dto.trade.UserTrade;
 import org.slf4j.Logger;
@@ -71,12 +72,9 @@ public class XChangeConnectorParser {
         return new ParseResult(transactionClusters, parsingProblems);
     }
 
-    public ParseResult getDaseParseResult(List<UserTrade> userTrades,
-                                          List<FundingRecord> fundings) {
+    public ParseResult getDaseParseResult(List<ApiAccountTxn> transactions) {
         List<ParsingProblem> parsingProblems = new ArrayList<>();
-        List<TransactionCluster> transactionClusters = new ArrayList<>();
-        transactionClusters.addAll(tradesToCluster(userTrades, parsingProblems));
-        transactionClusters.addAll(fundingToCluster(fundings, parsingProblems));
+        List<TransactionCluster> transactionClusters = new ArrayList<>(daseTransactionCluster(transactions, parsingProblems));
         return new ParseResult(transactionClusters, parsingProblems);
     }
 
@@ -142,6 +140,45 @@ public class XChangeConnectorParser {
             })
             .filter(Objects::nonNull)
             .collect(toList());
+    }
+
+    protected List<TransactionCluster> daseTransactionCluster(List<ApiAccountTxn> txns, List<ParsingProblem> problems) {
+        Map<String, List<ApiAccountTxn>> grouped = txns.stream()
+            .filter(Objects::nonNull)
+            .collect(java.util.stream.Collectors.groupingBy(t -> {
+                if (t.getTradeId() != null && !t.getTradeId().isBlank()) {
+                    return "TRADE:" + t.getTradeId();
+                }
+                if (t.getFundingId() != null && !t.getFundingId().isBlank()) {
+                    return "FUNDING:" + t.getFundingId();
+                }
+                return "TXN:" + t.getId();
+            }));
+
+        List<TransactionCluster> result = new ArrayList<>();
+
+        for (Map.Entry<String, List<ApiAccountTxn>> e : grouped.entrySet()) {
+            String key = e.getKey();
+            List<ApiAccountTxn> group = e.getValue();
+
+            try {
+                if (key.startsWith("TRADE:")) {
+                    var trade = XChangeApiTransaction.tradeFillGroupToCluster(group);
+                    if (trade != null) {
+                        result.add(trade);
+                    }
+                } else {
+                    var funding = XChangeApiTransaction.fundingOrSingleTxnToCluster(group);
+                    if (funding != null) {
+                        result.add(funding);
+                    }
+                }
+            } catch (Exception ex) {
+                logParsingError(ex, problems, "Group " + key);
+            }
+        }
+
+        return result;
     }
 
     protected List<TransactionCluster> coinbaseTransactionCluster(List<CoinbaseShowTransactionV2> tx, List<ParsingProblem> problems) {
