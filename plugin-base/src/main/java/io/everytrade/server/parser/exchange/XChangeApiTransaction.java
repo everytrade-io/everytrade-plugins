@@ -178,24 +178,129 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
     }
 
     public static XChangeApiTransaction fromCoinMateTransactions(CoinmateTransactionHistoryEntry transaction) {
+        if (transaction == null) {
+            throw new IllegalArgumentException("transaction must not be null");
+        }
+
         CoinMateDataUtil.adaptTransactionStatus(transaction.getStatus());
-        var currency = Currency.fromCode(transaction.getAmountCurrency());
+
+        Currency base = Currency.fromCode(transaction.getAmountCurrency());
+
+        Currency quote = null;
         String priceCurrency = transaction.getPriceCurrency();
-        Currency quote = priceCurrency != null ? Currency.fromCode(priceCurrency) : currency;
-        String feeCurrency = transaction.getFeeCurrency();
-        Currency fee = feeCurrency != null ? Currency.fromCode(feeCurrency) : null;
+        if (priceCurrency != null && !priceCurrency.isBlank()) {
+            quote = Currency.fromCode(priceCurrency);
+        }
+
+        Currency feeCurrency = null;
+        String feeCurrencyStr = transaction.getFeeCurrency();
+        if (feeCurrencyStr != null && !feeCurrencyStr.isBlank()) {
+            feeCurrency = Currency.fromCode(feeCurrencyStr);
+        }
+
+        var type = CoinMateDataUtil.mapCoinMateType(transaction.getTransactionType());
+
+        var amount = transaction.getAmount();
+        if (amount != null) {
+            amount = amount.abs();
+        }
+
+        var feeAmount = transaction.getFee();
+        if (feeAmount != null) {
+            feeAmount = feeAmount.abs();
+        }
+
         return XChangeApiTransaction.builder()
             .id(String.valueOf(transaction.getTransactionId()))
             .timestamp(Instant.ofEpochMilli(transaction.getTimestamp()))
-            .type(CoinMateDataUtil.mapCoinMateType(transaction.getTransactionType()))
+            .type(type)
             .price(transaction.getPrice())
-            .base(currency)
+            .base(base)
             .quote(quote)
-            .originalAmount(transaction.getAmount())
-            .feeAmount(transaction.getFee() != null ? transaction.getFee() : null)
-            .feeCurrency(fee)
+            .originalAmount(amount)
+            .feeAmount(feeAmount)
+            .feeCurrency(feeCurrency)
+            .build();
+    }
+
+    public static TransactionCluster tradeFillGroupToCluster(List<ApiAccountTxn> group) {
+        long createdAt = group.stream()
+            .map(ApiAccountTxn::getCreatedAt)
+            .findFirst()
+            .orElseThrow(() ->
+                new IllegalStateException("Missing createdAt in trade fill group: " + group)
+            );
+
+        ApiAccountTxn baseLeg = group.stream()
+            .filter(t -> "trade_fill_credit_base".equals(t.getTxnType()) || "trade_fill_debit_base".equals(t.getTxnType()))
+            .findFirst()
+            .orElse(null);
+
+        ApiAccountTxn quoteLeg = group.stream()
+            .filter(t -> "trade_fill_credit_quote".equals(t.getTxnType()) || "trade_fill_debit_quote".equals(t.getTxnType()))
+            .findFirst()
+            .orElse(null);
+
+        if (baseLeg == null || quoteLeg == null) {
+            return null;
+        }
+
+        BigDecimal baseAmt = baseLeg.getAmount();
+        BigDecimal quoteAmt = quoteLeg.getAmount();
+
+        if (baseAmt == null || quoteAmt == null) {
+            throw new IllegalStateException("Missing amount in trade fill group: " + group);
+        }
+
+        boolean buy = baseAmt.signum() > 0 || quoteAmt.signum() < 0;
+
+        Currency base = Currency.fromCode(baseLeg.getCurrency());
+        Currency quote = Currency.fromCode(quoteLeg.getCurrency());
+
+        BigDecimal price = quoteAmt.abs().divide(baseAmt.abs(), 18, java.math.RoundingMode.HALF_UP);
+
+        String tradeId = baseLeg.getTradeId() != null ? baseLeg.getTradeId() : quoteLeg.getTradeId();
+        Instant ts = Instant.ofEpochMilli(createdAt);
+
+        XChangeApiTransaction x = XChangeApiTransaction.builder()
+            .id(tradeId != null ? tradeId : baseLeg.getId())
+            .timestamp(ts)
+            .type(buy ? TransactionType.BUY : TransactionType.SELL)
+            .base(base)
+            .quote(quote)
+            .originalAmount(baseAmt.abs())
+            .price(price)
             .build();
 
+        return x.toTransactionCluster();
+    }
+
+    public static TransactionCluster fundingOrSingleTxnToCluster(List<ApiAccountTxn> group) {
+        ApiAccountTxn t = group.stream().filter(Objects::nonNull).findFirst().orElse(null);
+        if (t == null) {
+            return null;
+        }
+
+        TransactionType type = switch (t.getTxnType()) {
+            case "deposit" -> TransactionType.DEPOSIT;
+            case "withdrawal_commit" -> TransactionType.WITHDRAWAL;
+            default -> throw new DataIgnoredException(
+                UNSUPPORTED_TRANSACTION_TYPE + t.getTxnType());
+        };
+
+        Instant ts = Instant.ofEpochMilli(t.getCreatedAt());
+        Currency ccy = Currency.fromCode(t.getCurrency());
+
+        XChangeApiTransaction x = XChangeApiTransaction.builder()
+            .id(t.getFundingId() != null ? t.getFundingId() : t.getId())
+            .timestamp(ts)
+            .type(type)
+            .base(ccy)
+            .quote(ccy)
+            .originalAmount(t.getAmount().abs())
+            .build();
+
+        return x.toTransactionCluster();
     }
 
     public static TransactionCluster tradeFillGroupToCluster(List<ApiAccountTxn> group) {

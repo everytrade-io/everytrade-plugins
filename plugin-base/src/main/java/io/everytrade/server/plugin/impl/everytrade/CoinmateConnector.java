@@ -16,10 +16,8 @@ import lombok.experimental.FieldDefaults;
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.ExchangeFactory;
 import org.knowm.xchange.ExchangeSpecification;
-import org.knowm.xchange.coinmate.CoinmateException;
 import org.knowm.xchange.coinmate.CoinmateExchange;
 import org.knowm.xchange.coinmate.dto.trade.CoinmateTransactionHistoryEntry;
-import org.knowm.xchange.coinmate.service.CoinmateTradeService;
 import org.knowm.xchange.coinmate.service.CoinmateTradeServiceRaw;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,17 +32,21 @@ import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 @AllArgsConstructor
-@FieldDefaults(makeFinal = true, level = PRIVATE)
+@FieldDefaults(level = PRIVATE)
 public class CoinmateConnector implements IConnector {
 
     private static final String ID = WhaleBooksPlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "coinmateApiConnector";
-    private static final String SORT_FIELD = "DESC";
-    private static final long DELAY = 24 * 60 * 60 * 1000L;
+    private static final Logger LOG = LoggerFactory.getLogger(CoinmateConnector.class);
     // MAX 100 request per minute per user, https://coinmate.docs.apiary.io/#reference/request-limits
     // https://coinmate.docs.apiary.io/#reference/transaction-history/get-transaction-history
-    private static final int TX_PER_REQUEST = 10;
-    private static final Logger LOG = LoggerFactory.getLogger(CoinmateConnector.class);
-    private static final int MAX_ITERATIONS = 80;
+
+    private static final int TX_PER_REQUEST = 1000;
+    private static final String SORT_DESC = "DESC";
+    private static final int MAX_ITERATIONS = 200;
+
+    private static final long REQUEST_SLEEP_MS = 650;
+    private static final long MIN_INTERVAL_MS = 750;
+    private long nextAllowedRequestAtMs = 0;
 
     private static final ConnectorParameterDescriptor PARAMETER_API_USERNAME =
         new ConnectorParameterDescriptor(
@@ -114,86 +116,125 @@ public class CoinmateConnector implements IConnector {
     }
 
     private List<CoinmateTransactionHistoryEntry> downloadTransactions(DownloadState state) {
-        var rawServices = new CoinmateTradeServiceRaw(exchange);
-        setTxFromTimestamp(state);
-        List<CoinmateTransactionHistoryEntry> allData = new ArrayList<>();
+        var tradeServiceRaw = new CoinmateTradeServiceRaw(exchange);
 
-        long txFrom = state.getTxFrom();
-        long txTo = (state.getTxFrom() != 0) ? Instant.now().toEpochMilli() :
-                    (state.getTxTo() == 0L) ? Instant.now().toEpochMilli() : state.getTxTo();
+        long from = Math.max(0L, state.nextFrom);
+        long initialTo = Instant.now().toEpochMilli();
 
-        int iterationCount = 0;
+        List<CoinmateTransactionHistoryEntry> all = new ArrayList<>();
 
-        while (true) {
-            if (iterationCount++ >= MAX_ITERATIONS) {
-                break;
-            }
+        int iterations = 0;
 
-            List<CoinmateTransactionHistoryEntry> userTransactionBlock;
-            try {
-                userTransactionBlock = rawServices.getCoinmateTransactionHistory(
-                    0, TX_PER_REQUEST, SORT_FIELD, txFrom, txTo, null, true
-                ).getData();
-            } catch (IOException e) {
-                throw new IllegalStateException("Download user trade history failed.", e);
-            }
+        for (boolean archived : new boolean[]{false, true}) {
+            long to = initialTo;
+            long lastTo = -1L;
 
-            if (userTransactionBlock.isEmpty()) {
-                break;
-            }
+            while (true) {
+                if (++iterations > MAX_ITERATIONS) {
+                    LOG.warn("Hit MAX_ITERATIONS={}, returning partial result (count={})", MAX_ITERATIONS, all.size());
+                    break;
+                }
 
-            allData.addAll(userTransactionBlock);
+                if (to == lastTo) {
+                    break;
+                }
+                lastTo = to;
 
-            state.highestTimestamp = Math.max(state.highestTimestamp, allData.get(0).getTimestamp() + 1);
+                List<CoinmateTransactionHistoryEntry> block;
+                try {
+                    block = fetchWithRetry(tradeServiceRaw, from, to, archived);
+                } catch (IOException e) {
+                    throw new IllegalStateException("Download Coinmate transaction history failed.", e);
+                }
 
-            if (userTransactionBlock.size() < TX_PER_REQUEST) {
-                state.txFrom = state.highestTimestamp;
-                break;
-            }
+                if (block == null || block.isEmpty()) {
+                    break;
+                }
 
-            txTo = userTransactionBlock.get(userTransactionBlock.size() - 1).getTimestamp() - 1;
-            state.txTo = txTo;
+                long maxTsSeenInBlock = -1L;
 
-            try {
-                Thread.sleep(600);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new IllegalStateException("Thread was interrupted during sleep.", e);
+                for (CoinmateTransactionHistoryEntry e : block) {
+                    long ts = e.getTimestamp();
+                    if (ts < from) {
+                        break;
+                    }
+                    all.add(e);
+                    if (ts > maxTsSeenInBlock) {
+                        maxTsSeenInBlock = ts;
+                    }
+                }
+
+                if (maxTsSeenInBlock >= 0) {
+                    state.nextFrom = Math.max(state.nextFrom, maxTsSeenInBlock + 1);
+                }
+
+                if (block.size() < TX_PER_REQUEST) {
+                    break;
+                }
+
+                long oldestTs = block.get(block.size() - 1).getTimestamp();
+                long newTo = oldestTs - 1;
+
+                if (newTo >= to) {
+                    break;
+                }
+                to = newTo;
+
+                sleepQuietly(REQUEST_SLEEP_MS);
             }
         }
-        return allData;
+
+        return all;
     }
 
-    /**
-     * We used to use two separate endpoints (tradehistory - buy/sell, transferHistory - deposit/withdrawal) but
-     * switch to transactionHistory where are both data.
-     *
-     * @param state
-     */
-    private void setTxFromTimestamp(DownloadState state) {
-        List<Long> timestamps = new ArrayList<>();
-        if (state.txFrom == 0L) {
-            // Old tradeHistory endpoint sent lastTxId but we require timestamp
-            long lastTradeTimestamp;
-            if (!"".equals(state.lastTradeId) && !"0".equals(state.lastTradeId)) {
-                try {
-                    var tradeService = exchange.getTradeService();
-                    var params = (CoinmateTradeService.CoinmateTradeHistoryHistoryParams) tradeService.createTradeHistoryParams();
-                    params.setStartId(state.lastTradeId);
-                    params.setLimit(1);
-                    var userTradesBlock = tradeService.getTradeHistory(params).getUserTrades();
-                    lastTradeTimestamp = userTradesBlock.get(0).getTimestamp().getTime() - (1000L);
-                } catch (Exception e) {
-                    LOG.error("Cannot download last tx timestamp %s", e.getMessage());
-                    throw new CoinmateException(String.format("Cannot download last tx timestamp %s", e.getMessage()));
+    private static void sleepQuietly(long ms) {
+        try {
+            Thread.sleep(ms);
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interrupted while throttling Coinmate requests.", ie);
+        }
+    }
+
+    private void throttle() {
+        long now = System.currentTimeMillis();
+        long wait = nextAllowedRequestAtMs - now;
+        if (wait > 0) {
+            sleepQuietly(wait);
+        }
+        nextAllowedRequestAtMs = System.currentTimeMillis() + MIN_INTERVAL_MS;
+    }
+
+    private List<CoinmateTransactionHistoryEntry> fetchWithRetry(
+        CoinmateTradeServiceRaw raw,
+        long from,
+        long to,
+        boolean archived
+    ) throws IOException {
+
+        int attempts = 0;
+        long backoff = 1_000;
+
+        while (true) {
+            throttle();
+            try {
+                var resp = raw.getCoinmateTransactionHistory(
+                    0, TX_PER_REQUEST, SORT_DESC, from, to, null, archived
+                );
+                return resp.getData();
+            } catch (org.knowm.xchange.coinmate.CoinmateException e) {
+                String msg = e.getMessage();
+                if (msg != null && msg.toLowerCase().contains("too many requests")) {
+                    attempts++;
+                    if (attempts >= 8) {
+                        throw e;
+                    }
+                    sleepQuietly(backoff);
+                    backoff = Math.min(backoff * 2, 30_000);
+                    continue;
                 }
-            } else {
-                lastTradeTimestamp = 0L;
+                throw e;
             }
-            timestamps.add(lastTradeTimestamp);
-            timestamps.add(state.fundingsFrom);
-            timestamps.add(state.txFrom);
-            state.txFrom = timestamps.stream().max(Long::compareTo).get();
         }
     }
 
@@ -203,36 +244,40 @@ public class CoinmateConnector implements IConnector {
     @FieldDefaults(level = PRIVATE)
     private static class DownloadState {
         private static final String SEPARATOR = "=";
-        String lastTradeId = "";
-        Long fundingsFrom = 0L;
-        long txFrom;
-        long txTo;
-        int offset;
-        long highestTimestamp;
+
+        long nextFrom;
 
         public static DownloadState deserialize(String state) {
             if (isEmpty(state)) {
-                return new DownloadState();
+                return new DownloadState(0L);
             }
-            var strA = state.split(SEPARATOR);
-            return new DownloadState(
-                strA[0],
-                strA.length > 1 ? Long.parseLong(strA[1]) : 0,
-                strA.length > 2 ? Long.parseLong(strA[2]) : 0,
-                strA.length > 3 ? Long.parseLong(strA[3]) : 0,
-                strA.length > 4 ? Integer.parseInt(strA[4]) : 0,
-                strA.length > 5 ? Long.parseLong(strA[5]) : 0
-            );
+
+            String[] parts = state.split(SEPARATOR);
+
+            if (parts.length == 1) {
+                try {
+                    return new DownloadState(Long.parseLong(parts[0]));
+                } catch (NumberFormatException ignored) {
+                }
+            }
+
+            long legacyTxFrom = parts.length > 2 ? parseLongSafe(parts[2]) : 0L;
+            long legacyHighest = parts.length > 5 ? parseLongSafe(parts[5]) : 0L;
+
+            long nextFrom = Math.max(legacyTxFrom, legacyHighest);
+            return new DownloadState(nextFrom);
         }
 
-        // new endpoint requires only state txFrom and txTo
         public String serialize() {
-            return lastTradeId + SEPARATOR +
-                fundingsFrom + SEPARATOR +
-                txFrom + SEPARATOR +
-                txTo + SEPARATOR +
-                offset + SEPARATOR +
-                highestTimestamp;
+            return Long.toString(nextFrom);
+        }
+
+        private static long parseLongSafe(String s) {
+            try {
+                return Long.parseLong(s);
+            } catch (Exception e) {
+                return 0L;
+            }
         }
     }
 }
