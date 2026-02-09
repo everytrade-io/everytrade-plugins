@@ -15,6 +15,12 @@ import org.knowm.xchange.ExchangeSpecification;
 import org.knowm.xchange.dase.DaseExchange;
 import org.knowm.xchange.dase.dto.account.ApiAccountTxn;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -62,7 +68,28 @@ public class DaseConnector implements IConnector {
         final ExchangeSpecification exSpec = new DaseExchange().getDefaultExchangeSpecification();
         exSpec.setApiKey(apiKey);
         exSpec.setSecretKey(apiSecret);
+        exSpec.setMetaDataJsonFileOverride(extractMetaData("xchange-metadata/dase.json").toString());
         this.exchange = ExchangeFactory.INSTANCE.createExchange(exSpec);
+    }
+
+
+    private static Path extractMetaData(String resourcePath) {
+        try (InputStream in =
+                 DaseConnector.class.getClassLoader().getResourceAsStream(resourcePath)) {
+
+            if (in == null) {
+                throw new IllegalStateException("Missing metadata resource: " + resourcePath);
+            }
+
+            Path tmp = Files.createTempFile("xchange-dase-", ".json");
+            tmp.toFile().deleteOnExit();
+
+            Files.copy(in, tmp, StandardCopyOption.REPLACE_EXISTING);
+            return tmp;
+
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to load DASE metadata", e);
+        }
     }
 
     @Override
