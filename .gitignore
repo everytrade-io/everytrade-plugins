@@ -161,3 +161,7 @@ gradle-app.setting
 
 # Private user dir (for plugins credentials, etc)
 private/
+
+# Claude Code documentation
+CLAUDE.md
+.claude/

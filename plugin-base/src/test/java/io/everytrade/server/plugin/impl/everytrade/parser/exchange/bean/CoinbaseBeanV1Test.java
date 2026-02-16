@@ -29,6 +29,7 @@ import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.REWARD;
 import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
+import static io.everytrade.server.model.TransactionType.UNSTAKE;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 import static java.util.Collections.emptyList;
@@ -169,6 +170,74 @@ class CoinbaseBeanV1Test {
                 new BigDecimal("0.00000400000000000"),
                 null,
                 "Staking Income",
+                null
+            ),
+            emptyList());
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
+    void testCorrectParsingRetailUnstakingTransferPositive() {
+        var row = "2024-02-15 10:00:00 UTC,Retail Unstaking Transfer,ETH,1.5,USD,2500.00,3750.00,3750.00,0,\n";
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT_SPOT + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2024-02-15T10:00:00Z"),
+                Currency.ETH,
+                Currency.ETH,
+                UNSTAKE,
+                new BigDecimal("1.50000000000000000"),
+                null,
+                "Retail Unstaking Transfer",
+                null
+            ),
+            emptyList());
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
+    void testRetailUnstakingTransferNegativeIgnored() {
+        var row = "2024-02-15 10:00:00 UTC,Retail Unstaking Transfer,ETH,-1.5,USD,2500.00,3750.00,3750.00,0,\n";
+        final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT_SPOT + row);
+        final String error = parsingProblem.getMessage();
+        assertTrue(error.contains("Retail Unstaking Transfer with negative quantity is ignored"));
+    }
+
+    @Test
+    void testCorrectParsingSubscriptionPositiveQuantity() {
+        var row = "2024-03-01 12:00:00 UTC,Subscription,USD,2.99,USD,1.00,2.99,2.99,0,\n";
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT_SPOT + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2024-03-01T12:00:00Z"),
+                USD,
+                USD,
+                FEE,
+                new BigDecimal("2.99000000000000000"),
+                null,
+                "Subscription",
+                null
+            ),
+            emptyList());
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
+    void testCorrectParsingSubscriptionNegativeQuantity() {
+        var row = "2024-03-01 12:00:00 UTC,Subscription,EUR,-1.99,EUR,1.00,1.99,1.99,0,\n";
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT_SPOT + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2024-03-01T12:00:00Z"),
+                EUR,
+                EUR,
+                FEE,
+                new BigDecimal("1.99000000000000000"),
+                null,
+                "Subscription",
                 null
             ),
             emptyList());
