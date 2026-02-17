@@ -20,6 +20,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.Objects;
 
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
@@ -28,6 +29,7 @@ import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.REWARD;
 import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
+import static io.everytrade.server.model.TransactionType.UNSTAKE;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.util.CoinBaseDataUtil.ADVANCE_TRADE_BUY;
 import static io.everytrade.server.util.CoinBaseDataUtil.ADVANCE_TRADE_SELL;
@@ -41,6 +43,8 @@ import static io.everytrade.server.util.CoinBaseDataUtil.TRANSACTION_TYPE_LEARNI
 import static io.everytrade.server.util.CoinBaseDataUtil.TRANSACTION_TYPE_RECEIVE;
 import static io.everytrade.server.util.CoinBaseDataUtil.TRANSACTION_TYPE_REWARDS_INCOME;
 import static io.everytrade.server.util.CoinBaseDataUtil.TRANSACTION_TYPE_SEND;
+import static io.everytrade.server.util.CoinBaseDataUtil.RETAIL_UNSTAKING_TRANSFER;
+import static io.everytrade.server.util.CoinBaseDataUtil.SUBSCRIPTION;
 import static java.util.Collections.emptyList;
 
 @ToString
@@ -95,10 +99,14 @@ public class CoinbaseBeanV1 extends ExchangeBean {
             transactionType = BUY;
         } else if (TRANSACTION_TYPE_RECEIVE.equalsIgnoreCase(value)) {
             transactionType = REWARD;
-        } else if (List.of(TRANSACTION_TYPE_REWARDS_INCOME).contains(value)) {
+        } else if (Objects.equals(TRANSACTION_TYPE_REWARDS_INCOME, value)) {
             transactionType = REWARD;
-        } else if (List.of(STAKING_INCOME).contains(value)) {
+        } else if (Objects.equals(STAKING_INCOME, value)) {
             transactionType = STAKING_REWARD;
+        } else if (RETAIL_UNSTAKING_TRANSFER.equalsIgnoreCase(value)) {
+            transactionType = UNSTAKE;
+        } else if (SUBSCRIPTION.equalsIgnoreCase(value)) {
+            transactionType = FEE;
         } else {
             transactionType = detectTransactionType(value);
         }
@@ -107,8 +115,7 @@ public class CoinbaseBeanV1 extends ExchangeBean {
     @Parsed(field = "Asset")
     public void setAsset(String value) {
         try {
-            Currency asset = CoinbaseProCurrencySwitch.getCurrency(value);
-            this.asset = asset;
+            this.asset = CoinbaseProCurrencySwitch.getCurrency(value);
         } catch (IllegalArgumentException e) {
             throw new DataIgnoredException("Unsupported type of asset " + value + ". ");
         }
@@ -162,105 +169,138 @@ public class CoinbaseBeanV1 extends ExchangeBean {
 
     @Override
     public TransactionCluster toTransactionCluster() {
+        validateRetailUnstakingTransfer();
 
-        Currency quoteCurrency = null;
-        Currency feeCurrency;
-        if (transactionType.equals(WITHDRAWAL)) {
-            feeCurrency = Currency.fromCode(spotPriceCurrency);
-        } else {
-            quoteCurrency = detectQuoteCurrency(notes);
-            feeCurrency = detectFeeCurrency(quoteCurrency);
-        }
+        Currency feeCurrency = resolveFeeCurrency();
+        List<ImportedTransactionBean> related = buildFeeTransactions(feeCurrency);
+        ImportedTransactionBean main = buildMainTransaction();
 
-        List<ImportedTransactionBean> related;
-        if (ParserUtils.nullOrZero(fees) || isFailedFee) {
-            related = emptyList();
-        } else {
-            try {
-                related = List.of(
-                    new FeeRebateImportedTransactionBean(
-                        FEE_UID_PART,
-                        timeStamp,
-                        feeCurrency,
-                        feeCurrency,
-                        FEE,
-                        fees.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
-                        feeCurrency
-                    )
-                );
-            } catch (Exception e) {
-                isFailedFee = true;
-                failedFeeMessage = e.getMessage();
-                related = emptyList();
-            }
-        }
-        final ImportedTransactionBean main;
-        if (transactionType.isDepositOrWithdrawal()) {
-            main = ImportedTransactionBean.createDepositWithdrawal(
-                null,
-                timeStamp,
-                asset,
-                asset,
-                transactionType,
-                quantityTransacted.abs().setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
-                extractAddressFromNote(),
-                transactionType.name().equalsIgnoreCase(type) ? null : type,
-                null
-            );
-        } else if (List.of(TRANSACTION_TYPE_LEARNING_REWARD,STAKING_INCOME, TRANSACTION_TYPE_RECEIVE).contains(type)) {
-            main = new ImportedTransactionBean(
-                null,
-                timeStamp,
-                asset,
-                asset,
-                transactionType,
-                quantityTransacted.abs().setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
-                null,
-                transactionType.name().equalsIgnoreCase(type) ? null : type,
-                null
-            );
-        } else if (List.of(ADVANCE_TRADE_BUY, ADVANCE_TRADE_SELL).contains(type)) {
-            main = new ImportedTransactionBean(
-                null,
-                timeStamp,
-                asset,
-                detectQuoteCurrency(spotPriceCurrency),
-                transactionType,
-                quantityTransacted.abs().setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
-                null,
-                transactionType.name().equalsIgnoreCase(type) ? null : type,
-                null
-            );
-        } else {
-            final Currency baseCurrency = detectBaseCurrency(notes);
-            final BigDecimal volume = detectBasePrice(notes);
-            validateCurrencyPair(baseCurrency, quoteCurrency);
-            BigDecimal unitPrice = null;
-            try {
-                unitPrice = (!converted) ? evalUnitPrice(subtotal, volume) : evalConvertUnitPrice(volume, quantityTransacted);
-                if (unitPrice == null) {
-                    unitPrice = spotPriceAtTransaction;
-                }
-            } catch (Exception ignore) {
-                unitPrice = spotPriceAtTransaction;
-            }
-            main = new ImportedTransactionBean(
-                null,
-                timeStamp,
-                baseCurrency,
-                quoteCurrency,
-                transactionType,
-                volume.abs().setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
-                unitPrice,
-                transactionType.name().equalsIgnoreCase(type) ? null : type,
-                null
-            );
-        }
         var cluster = new TransactionCluster(main, related);
         if (isFailedFee) {
             cluster.setFailedFee(1, String.format("Fee cannot be added. Reason: %s ", failedFeeMessage));
         }
         return cluster;
+    }
+
+    private void validateRetailUnstakingTransfer() {
+        if (transactionType == UNSTAKE && RETAIL_UNSTAKING_TRANSFER.equalsIgnoreCase(type)) {
+            if (quantityTransacted.compareTo(BigDecimal.ZERO) < 0) {
+                throw new DataIgnoredException("Retail Unstaking Transfer with negative quantity is ignored.");
+            }
+        }
+    }
+
+    private Currency resolveFeeCurrency() {
+        if (transactionType.equals(WITHDRAWAL)) {
+            return Currency.fromCode(spotPriceCurrency);
+        }
+        return detectFeeCurrency(detectQuoteCurrency(notes));
+    }
+
+    private List<ImportedTransactionBean> buildFeeTransactions(Currency feeCurrency) {
+        if (ParserUtils.nullOrZero(fees) || isFailedFee) {
+            return emptyList();
+        }
+        try {
+            return List.of(
+                new FeeRebateImportedTransactionBean(
+                    FEE_UID_PART,
+                    timeStamp,
+                    feeCurrency,
+                    feeCurrency,
+                    FEE,
+                    fees.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
+                    feeCurrency
+                )
+            );
+        } catch (Exception e) {
+            isFailedFee = true;
+            failedFeeMessage = e.getMessage();
+            return emptyList();
+        }
+    }
+
+    private ImportedTransactionBean buildMainTransaction() {
+        if (transactionType.isDepositOrWithdrawal()) {
+            return ImportedTransactionBean.createDepositWithdrawal(
+                null,
+                timeStamp,
+                asset,
+                asset,
+                transactionType,
+                scaledVolume(quantityTransacted),
+                extractAddressFromNote(),
+                resolveNote(),
+                null
+            );
+        }
+        if (List.of(TRANSACTION_TYPE_LEARNING_REWARD, STAKING_INCOME,
+            TRANSACTION_TYPE_RECEIVE, RETAIL_UNSTAKING_TRANSFER, SUBSCRIPTION).contains(type)) {
+            return new ImportedTransactionBean(
+                null,
+                timeStamp,
+                asset,
+                asset,
+                transactionType,
+                scaledVolume(quantityTransacted),
+                null,
+                resolveNote(),
+                null
+            );
+        }
+        if (List.of(ADVANCE_TRADE_BUY, ADVANCE_TRADE_SELL).contains(type)) {
+            return new ImportedTransactionBean(
+                null,
+                timeStamp,
+                asset,
+                detectQuoteCurrency(spotPriceCurrency),
+                transactionType,
+                scaledVolume(quantityTransacted),
+                null,
+                resolveNote(),
+                null
+            );
+        }
+        return buildStandardTradeTransaction();
+    }
+
+    private ImportedTransactionBean buildStandardTradeTransaction() {
+        Currency quoteCurrency = detectQuoteCurrency(notes);
+        Currency baseCurrency = detectBaseCurrency(notes);
+        BigDecimal volume = detectBasePrice(notes);
+        validateCurrencyPair(baseCurrency, quoteCurrency);
+        BigDecimal unitPrice = resolveUnitPrice(volume);
+
+        return new ImportedTransactionBean(
+            null,
+            timeStamp,
+            baseCurrency,
+            quoteCurrency,
+            transactionType,
+            scaledVolume(volume),
+            unitPrice,
+            resolveNote(),
+            null
+        );
+    }
+
+    private BigDecimal resolveUnitPrice(BigDecimal volume) {
+        try {
+            BigDecimal unitPrice = converted
+                ? evalConvertUnitPrice(volume, quantityTransacted)
+                : evalUnitPrice(subtotal, volume);
+            return unitPrice != null ? unitPrice : spotPriceAtTransaction;
+        } catch (Exception e) {
+            return spotPriceAtTransaction;
+        }
+    }
+
+    private String resolveNote() {
+        return transactionType.name().equalsIgnoreCase(type) ? null : type;
+    }
+
+    private static BigDecimal scaledVolume(BigDecimal volume) {
+        return volume.abs().setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP);
     }
 
     /**
@@ -319,7 +359,7 @@ public class CoinbaseBeanV1 extends ExchangeBean {
             }
             throw new DataIgnoredException("Unsupported quote currency in 'Notes': " + note);
         } else {
-            return quantityTransacted;
+            return quantityTransacted.abs();
         }
     }
 

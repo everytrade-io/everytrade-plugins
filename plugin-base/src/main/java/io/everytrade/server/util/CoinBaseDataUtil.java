@@ -13,5 +13,7 @@ public class CoinBaseDataUtil {
     public static final String STAKING_INCOME = "Staking Income";
     public static final String PRO_DEPOSIT = "Pro Deposit";
     public static final String PRO_WITHDRAWAL = "Pro Withdrawal";
+    public static final String RETAIL_UNSTAKING_TRANSFER = "Retail Unstaking Transfer";
+    public static final String SUBSCRIPTION = "Subscription";
 
 }
