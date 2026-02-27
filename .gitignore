@@ -165,3 +165,4 @@ private/
 # Claude Code documentation
 CLAUDE.md
 .claude/
+.mcp.json
