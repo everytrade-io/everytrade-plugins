@@ -147,15 +147,15 @@ public class BitfinexConnector implements IConnector {
 
         int sentRequests = 0;
         while (sentRequests < MAX_REQUEST_COUNT) {
-            params.setStartTime(downloadState.lastTxId.date);
+            params.setStartTime(downloadState.lastFundingId.date);
             final List<FundingRecord> fundingBlock;
             try {
                 fundingBlock = accountService.getFundingHistory(params);
             } catch (IOException e) {
-                throw new IllegalStateException("User trade history download failed. ", e);
+                throw new IllegalStateException("Funding history download failed. ", e);
             }
             final List<FundingRecord> fundingToAdd;
-            final int duplicateTxIndex = findDuplicateFunding(downloadState.lastTxId.id, fundingBlock);
+            final int duplicateTxIndex = findDuplicateFunding(downloadState.lastFundingId.id, fundingBlock);
             if (duplicateTxIndex > -1) {
                 if (duplicateTxIndex < fundingBlock.size() - 1) {
                     fundingToAdd = fundingBlock.subList(duplicateTxIndex + 1, fundingBlock.size());
@@ -233,9 +233,9 @@ public class BitfinexConnector implements IConnector {
         private static final String SEPARATOR = "=";
 
         @Builder.Default
-        TransactionIdentifier lastTxId = new TransactionIdentifier();
+        TransactionIdentifier lastTxId = new TransactionIdentifier(Date.from(Instant.EPOCH), null);
         @Builder.Default
-        TransactionIdentifier lastFundingId = new TransactionIdentifier();
+        TransactionIdentifier lastFundingId = new TransactionIdentifier(Date.from(Instant.EPOCH), null);
 
         public static DownloadState deserialize(String state) {
             if (isEmpty(state)) {
@@ -244,7 +244,9 @@ public class BitfinexConnector implements IConnector {
             var strArray = state.split(SEPARATOR);
             return DownloadState.builder()
                 .lastTxId(TransactionIdentifier.parseFrom(strArray[0]))
-                .lastFundingId(strArray.length > 1 ? TransactionIdentifier.parseFrom(strArray[1]) : new TransactionIdentifier())
+                .lastFundingId(strArray.length > 1
+                    ? TransactionIdentifier.parseFrom(strArray[1])
+                    : new TransactionIdentifier(Date.from(Instant.EPOCH), null))
                 .build();
         }
 
