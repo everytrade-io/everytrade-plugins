@@ -7,10 +7,12 @@ import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParseResult;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.plugin.impl.everytrade.parser.EverytradeCsvMultiParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -33,6 +35,7 @@ import static io.everytrade.server.model.TransactionType.UNSTAKE;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 import static java.util.Collections.emptyList;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -55,6 +58,14 @@ class CoinbaseBeanV1Test {
     private static final String HEADER_WITHOUT_SPOT
         = "ID,Timestamp,Transaction Type,Asset,Quantity Transacted,Price Currency,Price at Transaction,Subtotal,Total (inclusive of fees " +
         "and/or spread),Fees and/or Spread,Notes\n";
+
+    @Test
+    void testCoinbaseCsvWithThreeExtraHeaderRows() {
+        File file = new File("../parser-files/coinbase_v002_M.csv");
+        String header = "";  // first line of the file is empty
+        ParseResult result = new EverytradeCsvMultiParser().parse(file, header);
+        assertFalse(result.getTransactionClusters().isEmpty(), "Should parse transactions after skipping 3 header rows");
+    }
 
     @Test
     void testCorrectHeader() {
@@ -593,5 +604,91 @@ class CoinbaseBeanV1Test {
         );
 
         ParserTestUtils.checkEqual(expected, actual.getTransactionClusters().get(0));
+    }
+
+    @Test
+    void testStakingIncomeWithEuroSymbol() {
+        var row = "676f564c0a6b3ca4c20b322a,2024-12-28 01:37:16 UTC,Staking Income,SOL,0.0008133407425,EUR," +
+            "€177.40073250988269757,€0.14429,€0.22177,€0.07748509112921474394679584,\n";
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_WITHOUT_SPOT + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2024-12-28T01:37:16Z"),
+                Currency.SOL,
+                Currency.SOL,
+                STAKING_REWARD,
+                new BigDecimal("0.00081334074250000"),
+                null,
+                "Staking Income",
+                null
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    FEE_UID_PART,
+                    Instant.parse("2024-12-28T01:37:16Z"),
+                    EUR,
+                    EUR,
+                    FEE,
+                    new BigDecimal("0.07748509112921474"),
+                    EUR
+                )
+            )
+        );
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
+    void testAdvancedTradeBuyWithEuroSymbol() {
+        var row = "67645f1f8e8ebf2624a29d83,2024-12-19 17:59:59 UTC,Advanced Trade Buy,SOL,0.035,EUR," +
+            "€190.00,€6.65,€6.68990,€0.0399,Bought 0.035 SOL for 6.6899 EUR on SOL-EUR at 190 EUR/SOL\n";
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_WITHOUT_SPOT + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2024-12-19T17:59:59Z"),
+                Currency.SOL,
+                EUR,
+                BUY,
+                new BigDecimal("0.03500000000000000"),
+                new BigDecimal("190.00000000000000000"),
+                "Advanced Trade Buy",
+                null
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    FEE_UID_PART,
+                    Instant.parse("2024-12-19T17:59:59Z"),
+                    EUR,
+                    EUR,
+                    FEE,
+                    new BigDecimal("0.03990000000000000"),
+                    EUR
+                )
+            )
+        );
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
+    void testDepositWithEuroSymbol() {
+        var row = "67645eb7d971b2c0e632fa20,2024-12-19 17:58:15 UTC,Deposit,EUR,6.88,EUR," +
+            "€1.00,€6.88,€6.88,€0.00,Deposit from New Bank (****8741)\n";
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_WITHOUT_SPOT + row);
+        final TransactionCluster expected = new TransactionCluster(
+            ImportedTransactionBean.createDepositWithdrawal(
+                null,
+                Instant.parse("2024-12-19T17:58:15Z"),
+                EUR,
+                EUR,
+                TransactionType.DEPOSIT,
+                new BigDecimal("6.88000000000000000"),
+                null,
+                null,
+                null
+            ),
+            emptyList()
+        );
+        ParserTestUtils.checkEqual(expected, actual);
     }
 }

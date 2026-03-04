@@ -35,8 +35,13 @@ public class CsvHeader {
     }
 
     public boolean matching(String headerLine) {
-        if (headerLine == null || headerLine.isEmpty()) {
+        if (headerLine == null) {
             return false;
+        }
+        if (headerLine.isEmpty()) {
+            return headerValues.size() == 1
+                && isHeaderTemplateRegex(headerValues.get(0))
+                && Pattern.compile(headerValues.get(0)).matcher("").matches();
         }
         List<String> vals = Arrays.asList(headerLine.split(separator));
 
