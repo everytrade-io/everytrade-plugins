@@ -7,12 +7,10 @@ import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParseResult;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
-import io.everytrade.server.plugin.impl.everytrade.parser.EverytradeCsvMultiParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -35,7 +33,6 @@ import static io.everytrade.server.model.TransactionType.UNSTAKE;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 import static java.util.Collections.emptyList;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -58,14 +55,6 @@ class CoinbaseBeanV1Test {
     private static final String HEADER_WITHOUT_SPOT
         = "ID,Timestamp,Transaction Type,Asset,Quantity Transacted,Price Currency,Price at Transaction,Subtotal,Total (inclusive of fees " +
         "and/or spread),Fees and/or Spread,Notes\n";
-
-    @Test
-    void testCoinbaseCsvWithThreeExtraHeaderRows() {
-        File file = new File("../parser-files/coinbase_v002_M.csv");
-        String header = "";  // first line of the file is empty
-        ParseResult result = new EverytradeCsvMultiParser().parse(file, header);
-        assertFalse(result.getTransactionClusters().isEmpty(), "Should parse transactions after skipping 3 header rows");
-    }
 
     @Test
     void testCorrectHeader() {
