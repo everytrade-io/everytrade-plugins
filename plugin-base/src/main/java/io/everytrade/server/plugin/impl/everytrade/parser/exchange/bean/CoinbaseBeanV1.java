@@ -132,7 +132,8 @@ public class CoinbaseBeanV1 extends ExchangeBean {
         spotPriceCurrency = value;
     }
 
-    @Parsed(field = "Spot Price at Transaction")
+    @Parsed(field = {"Spot Price at Transaction", "Price at Transaction"})
+    @Replace(expression = IGNORED_CHARS_IN_NUMBER, replacement = "")
     public void setSpotPriceAtTransaction(String value) {
         try {
             spotPriceAtTransaction = new BigDecimal(value).abs().setScale(ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE);

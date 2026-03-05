@@ -506,6 +506,23 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 .supportedExchange(COINBASE)
                 .build());
 
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader.of("^$")
+                ))
+                .parserFactory(() -> SkipLineParser.builder()
+                    .delegate(new CoinbaseUnivocitySpecificParserV1(CoinbaseBeanV1.class, delimiter))
+                    .linesToSkip(3)
+                    .expectedHeader(CsvHeader.of(
+                        "ID", "Timestamp", "Transaction Type", "Asset", "Quantity Transacted",
+                        "Price Currency", "Price at Transaction", "Subtotal",
+                        "Total (inclusive of fees and/or spread)", "Fees and/or Spread", "Notes"
+                    ).withSeparator(delimiter))
+                    .build()
+                )
+                .supportedExchange(COINBASE)
+                .build());
+
             /* COINBASE_PRO */
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
                 .headers(List.of(
