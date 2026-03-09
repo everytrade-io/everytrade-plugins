@@ -235,8 +235,20 @@ public class CoinbaseBeanV1 extends ExchangeBean {
                 null
             );
         }
+        if (SUBSCRIPTION.equalsIgnoreCase(type)) {
+            return new FeeRebateImportedTransactionBean(
+                null,
+                timeStamp,
+                asset,
+                asset,
+                transactionType,
+                scaledVolume(quantityTransacted),
+                asset,
+                resolveNote()
+            );
+        }
         if (List.of(TRANSACTION_TYPE_LEARNING_REWARD, STAKING_INCOME,
-            TRANSACTION_TYPE_RECEIVE, RETAIL_UNSTAKING_TRANSFER, SUBSCRIPTION).contains(type)) {
+            TRANSACTION_TYPE_RECEIVE, RETAIL_UNSTAKING_TRANSFER).contains(type)) {
             return new ImportedTransactionBean(
                 null,
                 timeStamp,
