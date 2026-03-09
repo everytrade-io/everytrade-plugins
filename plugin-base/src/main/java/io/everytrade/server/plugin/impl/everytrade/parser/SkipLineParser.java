@@ -50,15 +50,14 @@ public class SkipLineParser implements IExchangeSpecificParser {
             var bufferedReader = new BufferedReader(new FileReader(file));
             var printWriter = new PrintWriter(tempFile)
         ) {
-            for (int i = 0; i < linesToSkip; i++) {
-                bufferedReader.readLine(); // skip line
-            }
-            String headerLine = bufferedReader.readLine();
-            if (expectedHeader != null && !expectedHeader.matching(headerLine)) {
-                throw new ParsingProcessException(
-                    String.format("Header after skipping %d lines does not match expected format: '%s'",
-                        linesToSkip, headerLine)
-                );
+            String headerLine;
+            if (expectedHeader != null) {
+                headerLine = scanForExpectedHeader(bufferedReader);
+            } else {
+                for (int i = 0; i < linesToSkip; i++) {
+                    bufferedReader.readLine(); // skip line
+                }
+                headerLine = bufferedReader.readLine();
             }
             printWriter.println(headerLine);
             String line;
@@ -69,5 +68,20 @@ public class SkipLineParser implements IExchangeSpecificParser {
             throw new ParsingProcessException("s");
         }
         return tempFile;
+    }
+
+    private String scanForExpectedHeader(BufferedReader bufferedReader) throws IOException {
+        for (int i = 0; i <= linesToSkip; i++) {
+            String line = bufferedReader.readLine();
+            if (line == null) {
+                break;
+            }
+            if (expectedHeader.matching(line)) {
+                return line;
+            }
+        }
+        throw new ParsingProcessException(
+            String.format("Expected header not found within the first %d lines", linesToSkip + 1)
+        );
     }
 }
