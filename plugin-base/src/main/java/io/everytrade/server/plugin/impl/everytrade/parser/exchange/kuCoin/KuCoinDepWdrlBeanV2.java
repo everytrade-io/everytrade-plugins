@@ -30,13 +30,13 @@ public class KuCoinDepWdrlBeanV2 extends BaseTransactionMapper {
         this.orderId = orderId;
     }
 
-    @Parsed(field = "Time(UTC+02:00)")
+    @Parsed(field = {"Time(UTC+02:00)", "Time(UTC+08:00)"})
     @Format(formats = {"dd.MM.yyyy HH:mm:ss", "yyyy-MM-dd HH:mm:ss"}, options = {"locale=US", "timezone=UTC"})
     public void setTimeOfUpdate(Date date) {
         timeOfUpdate = date.toInstant();
     }
 
-    @Parsed(field = "Remarks")
+    @Parsed(field = {"Remarks", "Side"})
     public void setRemarks(String remarks) {
         this.remarks = remarks.toUpperCase();
     }
@@ -51,7 +51,7 @@ public class KuCoinDepWdrlBeanV2 extends BaseTransactionMapper {
         this.feeAmount = new BigDecimal(fee);
     }
 
-    @Parsed(field = "Coin")
+    @Parsed(field = {"Coin", "Currency"})
     public void setCoin(String coin) {
         try {
             this.coin = Currency.fromCode(coin);
@@ -62,6 +62,9 @@ public class KuCoinDepWdrlBeanV2 extends BaseTransactionMapper {
 
     @Parsed(field = "Transfer Network")
     public void setTransferNetwork(String transferNetwork) {
+        if (transferNetwork == null) {
+            return;
+        }
         try {
             this.transferNetwork = Currency.fromCode(transferNetwork);
         } catch (Exception e) {
@@ -71,6 +74,9 @@ public class KuCoinDepWdrlBeanV2 extends BaseTransactionMapper {
 
     @Parsed(field = "Status")
     public void setStatus(String status) {
+        if (status == null) {
+            return;
+        }
         try {
             this.status = KuCoinStatus.valueOf(status);
         } catch (Exception e) {

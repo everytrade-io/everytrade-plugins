@@ -20,4 +20,10 @@ public class ParseResult {
     @NonNull
     @Builder.Default
     List<ParsingProblem> parsingProblems = new ArrayList<>();
+
+    @Override
+    public String toString() {
+        return "ParseResult(transactionClusters=" + transactionClusters.size()
+            + ", parsingProblems=" + parsingProblems.size() + ")";
+    }
 }
