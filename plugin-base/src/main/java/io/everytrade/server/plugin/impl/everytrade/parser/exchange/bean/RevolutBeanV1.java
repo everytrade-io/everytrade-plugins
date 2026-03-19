@@ -50,6 +50,12 @@ public class RevolutBeanV1 extends BaseTransactionMapper {
             .appendPattern("d MMM uuuu, HH:mm:ss")
             .toFormatter(Locale.ENGLISH);
 
+    private static final DateTimeFormatter REVOLUT_DATE_TIME_V2 =
+        new DateTimeFormatterBuilder()
+            .parseCaseInsensitive()
+            .appendPattern("MMM d, uuuu, h:mm:ss a")
+            .toFormatter(Locale.ENGLISH);
+
     private static final Map<String, String> SYMBOL_TO_CODE = Map.of(
         "$", "USD",
         "€", "EUR",
@@ -105,7 +111,12 @@ public class RevolutBeanV1 extends BaseTransactionMapper {
 
         s = s.replace(" Sept ", " Sep ");
 
-        LocalDateTime ldt = LocalDateTime.parse(s, REVOLUT_DATE_TIME);
+        LocalDateTime ldt;
+        try {
+            ldt = LocalDateTime.parse(s, REVOLUT_DATE_TIME);
+        } catch (Exception e) {
+            ldt = LocalDateTime.parse(s, REVOLUT_DATE_TIME_V2);
+        }
         this.date = ldt.atZone(REVOLUT_ZONE).toInstant();
     }
 

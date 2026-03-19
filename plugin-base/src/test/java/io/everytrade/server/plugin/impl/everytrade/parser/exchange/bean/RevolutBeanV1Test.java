@@ -3,11 +3,9 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
-import io.everytrade.server.plugin.impl.everytrade.parser.EverytradeCsvMultiParser;
 import io.everytrade.server.test.TestUtils;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -117,6 +115,40 @@ public class RevolutBeanV1Test {
         );
 
         TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
+    }
+
+    @Test
+    void testBuyV2DateFormat() {
+        final String row0 = "BTC,Buy,0.00000004,2392643.76 CZK,0.10 CZK,0.01 CZK,\"Jan 2, 2025, 3:42:51 PM\"";
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row0);
+
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2025-01-02T14:42:51Z"),
+                BTC,
+                CZK,
+                BUY,
+                new BigDecimal("0.00000004"),
+                new BigDecimal("2500000.00"),
+                null,
+                null
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    FEE_UID_PART,
+                    Instant.parse("2025-01-02T14:42:51Z"),
+                    CZK,
+                    CZK,
+                    FEE,
+                    new BigDecimal("0.01000000000000000"),
+                    CZK
+                )
+            )
+        );
+
+        TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
+        TestUtils.testTxs(expected.getRelated().get(0), actual.get(0).getRelated().get(0));
     }
 
     @Test
