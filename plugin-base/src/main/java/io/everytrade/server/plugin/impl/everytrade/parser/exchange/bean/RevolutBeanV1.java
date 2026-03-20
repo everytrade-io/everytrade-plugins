@@ -204,7 +204,7 @@ public class RevolutBeanV1 extends BaseTransactionMapper {
     @Override
     protected BaseClusterData mapData() {
         var type = findTransactionType();
-        if (type.isDepositOrWithdrawal()) {
+        if (type.isDepositOrWithdrawal() && quantity == null) {
             quantity = value;
         }
 

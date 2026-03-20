@@ -207,4 +207,27 @@ public class RevolutBeanV1Test {
 
         TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
     }
+
+    @Test
+    void testCryptoDepositWithQuantity() {
+        final String row0 = "BTC,Receive,0.00000123,,\"1000,00 CZK\",\"0,00 CZK\",\"13 Apr 2021, 09:54:54\"";
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row0);
+
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2021-04-13T07:54:54Z"),
+                BTC,
+                CZK,
+                DEPOSIT,
+                new BigDecimal("0.00000123"),
+                null,
+                null,
+                null
+            ),
+            List.of()
+        );
+
+        TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
+    }
 }
