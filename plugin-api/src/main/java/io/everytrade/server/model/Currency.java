@@ -1006,7 +1006,27 @@ public enum Currency {
     NIGHT(false, Instant.parse("2025-12-09T00:00:00Z"), "Midnight"),
     AIA(false, Instant.parse("2025-09-18T00:00:00Z"), "DeAgent (AIA)"),
     PUMP(false, Instant.parse("2025-07-10T00:00:00Z"), "Pump.fun"),
-    WLFI(false, Instant.parse("2025-09-01T00:00:00Z"), "Official World Liberty Financial");
+    WLFI(false, Instant.parse("2025-09-01T00:00:00Z"), "Official World Liberty Financial"),
+    NEIRO(false, Instant.parse("2024-08-01T00:00:00Z"), "First Neiro On Ethereum"),
+    VIRTUAL(false, Instant.parse("2023-12-21T00:00:00Z"), "Virtuals Protocol"),
+    AIXBT(false, Instant.parse("2024-12-26T00:00:00Z"), "aixbt by Virtuals"),
+    PENGU(false, Instant.parse("2024-12-12T00:00:00Z"), "Pudgy Penguins"),
+    HMSTR(false, Instant.parse("2024-09-26T00:00:00Z"), "Hamster Kombat"),
+    _1000CHEEMS("1000CHEEMS", false, Instant.parse("2025-03-05T00:00:00Z"), "1000CHEEMS"),
+    DOGS(false, Instant.parse("2024-08-22T00:00:00Z"), "Dogs"),
+    BB(false, Instant.parse("2024-05-16T00:00:00Z"), "BounceBit"),
+    _1MBABYDOGE("1MBABYDOGE", false, Instant.parse("2024-09-12T00:00:00Z"), "Baby Doge Coin"),
+    PNUT(false, Instant.parse("2024-11-07T00:00:00Z"), "Peanut the Squirrel"),
+    NOT(false, Instant.parse("2024-05-16T00:00:00Z"), "Notcoin"),
+    A2Z(false, Instant.parse("2025-07-30T00:00:00Z"), "Arena-Z"),
+    SOMI(false, Instant.parse("2025-09-02T00:00:00Z"), "Somnia"),
+    CGPT(false, Instant.parse("2023-05-04T00:00:00Z"), "ChainCHPT"),
+    CAT(false, Instant.parse("2025-04-13T00:00:00Z"), "Simon's Cat"),
+    W(false, Instant.parse("2024-03-28T00:00:00Z"), "Wormhole"),
+    BROCCOLI(false, Instant.parse("2025-02-13T00:00:00Z"), "CZ'S Dog (broccoli.gg)"),
+    S(false, Instant.parse("2025-01-06T00:00:00Z"), "Sonic"),
+    ASM(false, Instant.parse("2021-08-19T00:00:00Z"), "Assemble Protocol"),
+    ALEO(false, Instant.parse("2025-01-23T00:00:00Z"), "ALEO");
 
     String code;
     int decimalDigits;
