@@ -79,8 +79,12 @@ public class RevolutBeanV1 extends BaseTransactionMapper {
     }
 
     @Parsed(field = "Quantity")
-    public void setQuantity(BigDecimal quantity) {
-        this.quantity = quantity;
+    public void setQuantity(String quantity) {
+        if (quantity == null || quantity.isBlank()) {
+            this.quantity = null;
+        } else {
+            this.quantity = parseDecimal(quantity.trim());
+        }
     }
 
     @Parsed(field = "Price")
@@ -186,8 +190,10 @@ public class RevolutBeanV1 extends BaseTransactionMapper {
     }
 
     private static BigDecimal parseDecimal(String num) {
-        String normalized = num.replace(",", "");
-        return new BigDecimal(normalized);
+        if (num.contains(",") && num.contains(".")) {
+            return new BigDecimal(num.replace(",", ""));
+        }
+        return new BigDecimal(num.replace(",", "."));
     }
 
     private record ParsedMoney(

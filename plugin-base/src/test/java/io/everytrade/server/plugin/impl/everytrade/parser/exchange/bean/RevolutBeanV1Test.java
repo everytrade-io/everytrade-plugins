@@ -152,6 +152,40 @@ public class RevolutBeanV1Test {
     }
 
     @Test
+    void testBuyCommaDecimalSeparator() {
+        final String row0 = "BTC,Buy,0.00000123,\"71000,00 CZK\",\"0,09 CZK\",\"0,01 CZK\",\"13 Apr 2021, 09:54:54\"";
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row0);
+
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2021-04-13T07:54:54Z"),
+                BTC,
+                CZK,
+                BUY,
+                new BigDecimal("0.00000123"),
+                new BigDecimal("73170.73"),
+                null,
+                null
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    FEE_UID_PART,
+                    Instant.parse("2021-04-13T07:54:54Z"),
+                    CZK,
+                    CZK,
+                    FEE,
+                    new BigDecimal("0.01000000000000000"),
+                    CZK
+                )
+            )
+        );
+
+        TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
+        TestUtils.testTxs(expected.getRelated().get(0), actual.get(0).getRelated().get(0));
+    }
+
+    @Test
     void testDeposit() {
         final String row0 = "EUR,Receive,,,€8.00,€0.00,\"12 May 2025, 09:19:04\"\n";
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row0);
