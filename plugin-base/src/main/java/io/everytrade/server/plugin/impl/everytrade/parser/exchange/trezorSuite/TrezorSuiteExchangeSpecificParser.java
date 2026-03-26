@@ -31,10 +31,21 @@ public class TrezorSuiteExchangeSpecificParser extends DefaultUnivocityExchangeS
     private List<TrezorSuiteBeanV1> prepareBeansForTransactions(List<TrezorSuiteBeanV1> rows) {
         List<TrezorSuiteBeanV1> result = new LinkedList<>();
         for (TrezorSuiteBeanV1 row : rows) {
-            switch (row.getType().toUpperCase()) {
-                case "SENT" -> result.add(TrezorSuiteSortedGroup.createWithdrawalTx(row));
-                case "RECV" -> result.add(TrezorSuiteSortedGroup.createDepositTx(row));
-                case "SELF" -> result.addAll(TrezorSuiteSortedGroup.createTransferInOut(row));
+            try {
+                switch (row.getType().toUpperCase()) {
+                    case "SENT" -> result.add(TrezorSuiteSortedGroup.createWithdrawalTx(row));
+                    case "RECV" -> result.add(TrezorSuiteSortedGroup.createDepositTx(row));
+                    case "SELF" -> result.addAll(TrezorSuiteSortedGroup.createTransferInOut(row));
+                    default -> {
+                        row.setUnsupportedRow(true);
+                        row.setMessage("Unsupported transaction type: " + row.getType());
+                        unSupportedRows.add(row);
+                    }
+                }
+            } catch (Exception e) {
+                row.setUnsupportedRow(true);
+                row.setMessage(e.getMessage());
+                unSupportedRows.add(row);
             }
         }
         return result;
