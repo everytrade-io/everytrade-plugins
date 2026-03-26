@@ -4,6 +4,7 @@ import com.univocity.parsers.annotations.Parsed;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
+import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BaseClusterData;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.kuCoin.BaseTransactionMapper;
 import lombok.AllArgsConstructor;
@@ -11,6 +12,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
+
+import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -21,6 +24,9 @@ import java.time.Instant;
 @NoArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class TrezorSuiteBeanV1 extends BaseTransactionMapper {
+
+    boolean unsupportedRow;
+    String message;
 
     String timestamp;
     String date;
@@ -138,6 +144,14 @@ public class TrezorSuiteBeanV1 extends BaseTransactionMapper {
     @Parsed(field = "Other")
     public void setOther(String other) {
         this.other = other;
+    }
+
+    @Override
+    public TransactionCluster toTransactionCluster() {
+        if (unsupportedRow) {
+            throw new DataIgnoredException(message);
+        }
+        return super.toTransactionCluster();
     }
 
     @Override

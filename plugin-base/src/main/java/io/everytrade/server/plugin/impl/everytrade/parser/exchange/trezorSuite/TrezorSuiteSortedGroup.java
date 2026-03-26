@@ -61,6 +61,7 @@ public class TrezorSuiteSortedGroup {
             DateTimeFormatter.ofPattern("d.M.yyyy", Locale.ENGLISH),
             DateTimeFormatter.ofPattern("d. M. yyyy", Locale.ENGLISH),
             DateTimeFormatter.ofPattern("d/M/yyyy", Locale.ENGLISH),
+//            DateTimeFormatter.ofPattern("M/d/yyyy", Locale.ENGLISH),
             DateTimeFormatter.ofPattern("d-M-yyyy", Locale.ENGLISH),
             DateTimeFormatter.ofPattern("yyyy.M.d", Locale.ENGLISH),
             DateTimeFormatter.ofPattern("yyyy-M-d", Locale.ENGLISH),
@@ -85,8 +86,12 @@ public class TrezorSuiteSortedGroup {
         String timeZone = time.substring(time.lastIndexOf("GMT")).trim();
         String timePart = time.substring(0, time.indexOf("GMT")).trim();
 
-        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("H:mm:ss");
-        LocalTime localTime = LocalTime.parse(timePart, timeFormatter);
+        LocalTime localTime;
+        try {
+            localTime = LocalTime.parse(timePart, DateTimeFormatter.ofPattern("H:mm:ss"));
+        } catch (DateTimeParseException e) {
+            localTime = LocalTime.parse(timePart, DateTimeFormatter.ofPattern("h:mm:ss a", Locale.ENGLISH));
+        }
 
         ZonedDateTime zonedDateTime = ZonedDateTime.of(
             localDate,
