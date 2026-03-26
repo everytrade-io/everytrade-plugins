@@ -14,7 +14,9 @@ import static io.everytrade.server.model.Currency.DOGE;
 import static io.everytrade.server.model.Currency.KAS;
 import static io.everytrade.server.model.Currency.USDT;
 import static io.everytrade.server.model.TransactionType.BUY;
+import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.SELL;
+import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 
 public class KuCoinBuySellTest {
 
@@ -22,7 +24,14 @@ public class KuCoinBuySellTest {
         "orderType\n";
     public static final String HEADER_BUY_SELL_V2 = "UID,Account Type,Order ID,Symbol,Side,Order Type,Avg. Filled Price,Filled Amount," +
         "Filled Volume,Filled Volume (USDT),Filled Time(UTC+02:00),Fee,Maker/Taker,Fee Currency\n";
+    public static final String HEADER_BUY_SELL_V2_1 = "UID,Account Type,Order ID,Order Time(UTC+02:00),Symbol,Side,Order Type," +
+        "Order Price,Order Amount,Avg. Filled Price,Filled Amount,Filled Volume,Filled Volume (USDT),Filled Time(UTC+02:00)," +
+        "Fee,Fee Currency,Tax,Status\n";
     public static final String HEADER_BUY_SELL_V3 = "UID,Account Type,Payment Account,Sell,Buy,Price,Time of Update(UTC+02:00),Status\n";
+    public static final String HEADER_DEP_WDRL_V2_1 = "UID,Account Type,Time(UTC+02:00),Coin,Amount,Fee,Hash," +
+        "Deposit Address,Transfer Network,Status,Remarks\n";
+    public static final String HEADER_DEP_WDRL_V2_2 = "UID,Account Type,Time(UTC+02:00),Coin,Amount,Fee,Hash," +
+        "Withdrawal Address/Account,Transfer Network,Status,Remarks\n";
 
     @Test
     void testBuyHeaderV1() {
@@ -111,6 +120,74 @@ public class KuCoinBuySellTest {
                 new BigDecimal("16272.9897"),
                 new BigDecimal("0.63203596816631675"),
                 null,
+                null
+            ),
+            List.of()
+        );
+
+        TestUtils.testTxs(expected.getMain(), actual.getTransactionClusters().get(0).getMain());
+    }
+
+    @Test
+    void testSellHeaderV2_1() {
+        final String row0 = "68194228,mainAccount,order123,2024-01-18 11:47:17,DOGE-USDT,SELL,MARKET,0,100," +
+            "0.09542,7634.811,728.51366562,728.51366562,2024-01-18 11:47:17,0.72851366562,USDT,,deal\n";
+        final var actual = ParserTestUtils.getParseResult(HEADER_BUY_SELL_V2_1 + row0);
+
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2024-01-18T11:47:17Z"),
+                DOGE,
+                USDT,
+                SELL,
+                new BigDecimal("7634.811"),
+                new BigDecimal("0.09542"),
+                "order123",
+                null
+            ),
+            List.of()
+        );
+
+        TestUtils.testTxs(expected.getMain(), actual.getTransactionClusters().get(0).getMain());
+    }
+
+    @Test
+    void testDepositHeaderV2_1() {
+        final String row0 = "68194228,mainAccount,2024-03-07 20:21:41,USDT,1042.561287,1.042561," +
+            "0xhash,0xaddr,ETH,SUCCESS,Deposit\n";
+        final var actual = ParserTestUtils.getParseResult(HEADER_DEP_WDRL_V2_1 + row0);
+
+        final TransactionCluster expected = new TransactionCluster(
+            ImportedTransactionBean.createDepositWithdrawal(
+                "68194228",
+                Instant.parse("2024-03-07T20:21:41Z"),
+                USDT,
+                USDT,
+                DEPOSIT,
+                new BigDecimal("1042.561287"),
+                null
+            ),
+            List.of()
+        );
+
+        TestUtils.testTxs(expected.getMain(), actual.getTransactionClusters().get(0).getMain());
+    }
+
+    @Test
+    void testWithdrawalHeaderV2_2() {
+        final String row0 = "68194228,mainAccount,2024-03-13 02:02:54,USDT,100.5,0.5," +
+            "0xhash,0xaddr,ETH,SUCCESS,\n";
+        final var actual = ParserTestUtils.getParseResult(HEADER_DEP_WDRL_V2_2 + row0);
+
+        final TransactionCluster expected = new TransactionCluster(
+            ImportedTransactionBean.createDepositWithdrawal(
+                "68194228",
+                Instant.parse("2024-03-13T02:02:54Z"),
+                USDT,
+                USDT,
+                WITHDRAWAL,
+                new BigDecimal("100.5"),
                 null
             ),
             List.of()

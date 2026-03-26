@@ -24,6 +24,7 @@ public class KuCoinDepWdrlBeanV2 extends BaseTransactionMapper {
     BigDecimal amount;
     Currency coin;
     Currency transferNetwork;
+    boolean hasWithdrawalAddress;
 
     @Parsed(field = "UID")
     public void setPair(String orderId) {
@@ -38,7 +39,14 @@ public class KuCoinDepWdrlBeanV2 extends BaseTransactionMapper {
 
     @Parsed(field = {"Remarks", "Side"})
     public void setRemarks(String remarks) {
-        this.remarks = remarks.toUpperCase();
+        if (remarks != null) {
+            this.remarks = remarks.toUpperCase();
+        }
+    }
+
+    @Parsed(field = "Withdrawal Address/Account")
+    public void setWithdrawalAddress(String address) {
+        hasWithdrawalAddress = true;
     }
 
     @Parsed(field = "Amount")
@@ -86,11 +94,17 @@ public class KuCoinDepWdrlBeanV2 extends BaseTransactionMapper {
 
     @Override
     protected TransactionType findTransactionType() {
-        return switch (remarks) {
-            case "DEPOSIT" -> DEPOSIT;
-            case "WITHDRAWAL" -> WITHDRAWAL;
-            default -> throw new DataValidationException(String.format("Unsupported transaction type %s. ", remarks));
-        };
+        if (remarks != null && !remarks.isEmpty()) {
+            return switch (remarks) {
+                case "DEPOSIT" -> DEPOSIT;
+                case "WITHDRAWAL" -> WITHDRAWAL;
+                default -> throw new DataValidationException(String.format("Unsupported transaction type %s. ", remarks));
+            };
+        }
+        if (hasWithdrawalAddress) {
+            return WITHDRAWAL;
+        }
+        throw new DataValidationException("Cannot determine transaction type from remarks or columns.");
     }
 
     @Override
