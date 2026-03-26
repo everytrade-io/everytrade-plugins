@@ -61,7 +61,7 @@ public class TrezorSuiteSortedGroup {
             DateTimeFormatter.ofPattern("d.M.yyyy", Locale.ENGLISH),
             DateTimeFormatter.ofPattern("d. M. yyyy", Locale.ENGLISH),
             DateTimeFormatter.ofPattern("d/M/yyyy", Locale.ENGLISH),
-//            DateTimeFormatter.ofPattern("M/d/yyyy", Locale.ENGLISH),
+            DateTimeFormatter.ofPattern("M/d/yyyy", Locale.ENGLISH),
             DateTimeFormatter.ofPattern("d-M-yyyy", Locale.ENGLISH),
             DateTimeFormatter.ofPattern("yyyy.M.d", Locale.ENGLISH),
             DateTimeFormatter.ofPattern("yyyy-M-d", Locale.ENGLISH),
