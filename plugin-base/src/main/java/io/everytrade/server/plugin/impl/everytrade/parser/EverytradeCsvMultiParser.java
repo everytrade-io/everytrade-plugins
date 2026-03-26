@@ -1083,6 +1083,16 @@ public class EverytradeCsvMultiParser implements ICsvParser {
 
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
                 .headers(List.of(CsvHeader.of(
+                    "UID", "Account Type", "Order ID", "Order Time(UTC+02:00)", "Symbol", "Side", "Order Type",
+                    "Avg. Filled Price", "Filled Amount", "Filled Volume", "Filled Volume (USDT)",
+                    "Filled Time(UTC+02:00)", "Fee", "Fee Currency", "Status"
+                ).withSeparator(delimiter)))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(KuCoinBuySellV2.class, delimiter))
+                .supportedExchange(KUCOIN)
+                .build());
+
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(CsvHeader.of(
                     "Time","Coin","Amount","Type","Wallet Address","Remark"
                 ).withSeparator(delimiter)))
                 .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(KuCoinWithdrawalV1.class, delimiter))
@@ -1099,6 +1109,24 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
                 .headers(List.of(CsvHeader.of(
                     "UID","Account Type","Time(UTC+02:00)","Remarks","Status","Fee","Amount","Coin","Transfer Network"
+                ).withSeparator(delimiter)))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(KuCoinDepWdrlBeanV2.class, delimiter))
+                .supportedExchange(KUCOIN)
+                .build());
+
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(CsvHeader.of(
+                    "UID", "Account Type", "Time(UTC+02:00)", "Coin", "Amount", "Fee",
+                    "Transfer Network", "Status", "Remarks"
+                ).withSeparator(delimiter)))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(KuCoinDepWdrlBeanV2.class, delimiter))
+                .supportedExchange(KUCOIN)
+                .build());
+
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(CsvHeader.of(
+                    "UID", "Account Type", "Time(UTC+02:00)", "Coin", "Amount", "Fee",
+                    "Withdrawal Address/Account", "Transfer Network", "Status"
                 ).withSeparator(delimiter)))
                 .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(KuCoinDepWdrlBeanV2.class, delimiter))
                 .supportedExchange(KUCOIN)
