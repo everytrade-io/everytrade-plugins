@@ -75,8 +75,7 @@ public class KuCoinDepWdrlBeanV2 extends BaseTransactionMapper {
         }
         try {
             this.transferNetwork = Currency.fromCode(transferNetwork);
-        } catch (Exception e) {
-            throw new DataValidationException(UNSUPPORTED_CURRENCY_PAIR + transferNetwork);
+        } catch (Exception ignored) {
         }
     }
 
