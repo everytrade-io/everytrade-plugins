@@ -55,6 +55,14 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.HitBtcBe
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.HuobiBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.HuobiBuySellBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.HuobiDepWdrlBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.InvityFinanceBuySellExchangeSpecificParser;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.InvityFinanceTurboExchangeSpecificParser;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.InvityFinanceOptionSettlementExchangeSpecificParser;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.InvityFinancePremiumPaymentExchangeSpecificParser;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.InvityFinanceBuySellBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.InvityFinanceTurboBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.InvityFinanceOptionSettlementBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.InvityFinancePremiumPaymentBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.KrakenBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.KrakenBeanV4;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.KvaPayBeanV1;
@@ -134,6 +142,7 @@ import static io.everytrade.server.model.SupportedExchange.EVERYTRADE;
 import static io.everytrade.server.model.SupportedExchange.GENERAL_BYTES;
 import static io.everytrade.server.model.SupportedExchange.HITBTC;
 import static io.everytrade.server.model.SupportedExchange.HUOBI;
+import static io.everytrade.server.model.SupportedExchange.INVITY_FINANCE;
 import static io.everytrade.server.model.SupportedExchange.KRAKEN;
 import static io.everytrade.server.model.SupportedExchange.KUCOIN;
 import static io.everytrade.server.model.SupportedExchange.KVAPAY;
@@ -660,6 +669,153 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 ))
                 .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(HuobiDepWdrlBeanV1.class, delimiter))
                 .supportedExchange(HUOBI)
+                .build());
+
+            /* INVITY */
+
+            // Custodial Buy / Custodial Sell
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader.of(
+                        "\"finalizedAt",
+                        "\"\"id\"\"",
+                        "\"\"identityId\"\"",
+                        "\"\"type\"\"",
+                        "\"\"fiatCurrency\"\"",
+                        "\"\"settledFiatFinalAmount\"\"",
+                        "\"\"settledFiatAmount\"\"",
+                        "\"\"feeAmount\"\"",
+                        "\"\"cryptoCurrency\"\"",
+                        "\"\"settledCryptoAmount\"\"",
+                        "\"\"paymentMethodType\"\"",
+                        "\"\"externalId\"\"",
+                        "\"\"paymentCreated\"\"\""
+                    ).withSeparator(delimiter),
+                    CsvHeader.of(
+                        "finalizedAt", "id", "identityId", "type", "fiatCurrency", "settledFiatFinalAmount",
+                        "settledFiatAmount", "feeAmount", "cryptoCurrency", "settledCryptoAmount", "paymentMethodType",
+                        "externalId", "paymentCreated"
+                    ).withSeparator(delimiter)
+                ))
+                .parserFactory(() -> new InvityFinanceBuySellExchangeSpecificParser(InvityFinanceBuySellBeanV1.class, delimiter))
+                .supportedExchange(INVITY_FINANCE)
+                .build());
+
+            // Non-custodial Buy
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader.of(
+                        "\"finalizedAt",
+                        "\"\"id\"\"",
+                        "\"\"identityId\"\"",
+                        "\"\"type\"\"",
+                        "\"\"fiatCurrency\"\"",
+                        "\"\"settledFiatFinalAmount\"\"",
+                        "\"\"settledFiatAmount\"\"",
+                        "\"\"feeAmount\"\"",
+                        "\"\"cryptoCurrency\"\"",
+                        "\"\"settledCryptoAmount\"\"",
+                        "\"\"blockchainTxid\"\"",
+                        "\"\"paymentMethodType\"\"",
+                        "\"\"externalId\"\"",
+                        "\"\"paymentCreated\"\"\""
+                    ).withSeparator(delimiter),
+                    CsvHeader.of(
+                        "finalizedAt", "id", "identityId", "type", "fiatCurrency", "settledFiatFinalAmount",
+                        "settledFiatAmount", "feeAmount", "cryptoCurrency", "settledCryptoAmount", "blockchainTxid",
+                        "paymentMethodType", "externalId", "paymentCreated"
+                    ).withSeparator(delimiter)
+                ))
+                .parserFactory(() -> {
+                    InvityFinanceBuySellExchangeSpecificParser parser = new InvityFinanceBuySellExchangeSpecificParser(
+                        InvityFinanceBuySellBeanV1.class, delimiter);
+                    parser.setNoncustodialMode(true);
+                    return parser;
+                })
+                .supportedExchange(INVITY_FINANCE)
+                .build());
+
+            // Turbo Buy - Add Option Value
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader.of(
+                        "finalizedAt", "\"id\"", "\"identityId\"", "\"type\"", "\"fiatCurrency\"",
+                        "\"settledFiatFinalAmount\"", "\"settledFiatAmount\"", "\"feeAmount\"",
+                        "\"optionContractPremium\"", "\"cryptoCurrency\"", "\"collateralCryptoAmount\"",
+                        "\"paymentMethodType\"", "\"externalId\"", "\"paymentCreated\"",
+                        "\"optionValueCryptoAmount\"", "\"optionValueFiatAmount\""
+                    ).withSeparator(delimiter),
+                    CsvHeader.of(
+                        "\"finalizedAt",
+                        "\"\"id\"\"",
+                        "\"\"identityId\"\"",
+                        "\"\"type\"\"",
+                        "\"\"fiatCurrency\"\"",
+                        "\"\"settledFiatFinalAmount\"\"",
+                        "\"\"settledFiatAmount\"\"",
+                        "\"\"feeAmount\"\"",
+                        "\"\"optionContractPremium\"\"",
+                        "\"\"cryptoCurrency\"\"",
+                        "\"\"collateralCryptoAmount\"\"",
+                        "\"\"paymentMethodType\"\"",
+                        "\"\"externalId\"\"",
+                        "\"\"paymentCreated\"\"",
+                        "\"\"optionValueCryptoAmount\"\"",
+                        "\"\"optionValueFiatAmount\"\"\""
+                    ).withSeparator(delimiter),
+                    CsvHeader.of(
+                        "finalizedAt", "id", "identityId", "type", "fiatCurrency", "settledFiatFinalAmount",
+                        "settledFiatAmount", "feeAmount", "optionContractPremium", "cryptoCurrency",
+                        "collateralCryptoAmount", "paymentMethodType", "externalId", "paymentCreated",
+                        "optionValueCryptoAmount", "optionValueFiatAmount"
+                    ).withSeparator(delimiter)
+                ))
+                .parserFactory(() -> new InvityFinanceTurboExchangeSpecificParser(InvityFinanceTurboBeanV1.class, delimiter))
+                .supportedExchange(INVITY_FINANCE)
+                .build());
+
+            // Turbo Buy - Option Settlement
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader.of(
+                        "\"\"finalizedAt\"\"",
+                        "\"\"id\"\"",
+                        "\"\"identityId\"\"",
+                        "\"\"type\"\"",
+                        "\"\"fiatCurrency\"\"",
+                        "\"\"cryptoCurrency\"\"",
+                        "\"\"collateralCryptoAmount\"\"",
+                        "\"\"optionValueCryptoAmount\"\"",
+                        "\"\"optionValueFiatAmount\"\"",
+                        "\"\"customerCryptoAmount\"\"",
+                        "\"\"customerFiatAmount\"\"",
+                        "\"\"settlementCryptoAmount\"\"",
+                        "\"\"settlementFiatAmount\"\"\""
+                    ).withSeparator(delimiter),
+                    CsvHeader.of(
+                        "finalizedAt", "id", "identityId", "type", "fiatCurrency", "cryptoCurrency",
+                        "collateralCryptoAmount", "optionValueCryptoAmount", "optionValueFiatAmount",
+                        "customerCryptoAmount", "customerFiatAmount", "settlementCryptoAmount",
+                        "settlementFiatAmount"
+                    ).withSeparator(delimiter)
+                ))
+                .parserFactory(() -> new InvityFinanceOptionSettlementExchangeSpecificParser(
+                    InvityFinanceOptionSettlementBeanV1.class, delimiter))
+                .supportedExchange(INVITY_FINANCE)
+                .build());
+
+            /* INVITY - Premium Payment */
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader.of(
+                        "finalizedAt", "id", "identityId", "type", "fiatCurrency", "cryptoCurrency",
+                        "premiumCryptoAmount", "premiumFiatAmount", "paymentMethodType", "externalId",
+                        "paymentCreated"
+                    ).withSeparator(delimiter)
+                ))
+                .parserFactory(() -> new InvityFinancePremiumPaymentExchangeSpecificParser(
+                    InvityFinancePremiumPaymentBeanV1.class, delimiter))
+                .supportedExchange(INVITY_FINANCE)
                 .build());
 
             /* KRAKEN */
