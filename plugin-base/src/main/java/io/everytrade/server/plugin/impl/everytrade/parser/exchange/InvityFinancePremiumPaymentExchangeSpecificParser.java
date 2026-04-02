@@ -2,18 +2,24 @@ package io.everytrade.server.plugin.impl.everytrade.parser.exchange;
 
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.InvityFinancePremiumPaymentBeanV1;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 public class InvityFinancePremiumPaymentExchangeSpecificParser
-    extends DefaultUnivocityExchangeSpecificParser
+    extends InvityExchangeSpecificParser
     implements IMultiExchangeSpecificParser<InvityFinancePremiumPaymentBeanV1> {
 
     public InvityFinancePremiumPaymentExchangeSpecificParser(Class<? extends ExchangeBean> exchangeBean,
                                                              String delimiter) {
         super(exchangeBean, delimiter);
+    }
+
+    @Override
+    protected void correctFile(File file) {
+        stripQuotesFromFile(file);
     }
 
     @Override
