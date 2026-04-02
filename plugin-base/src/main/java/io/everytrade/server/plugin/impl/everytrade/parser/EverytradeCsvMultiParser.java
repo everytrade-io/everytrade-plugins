@@ -778,6 +778,21 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
                 .headers(List.of(
                     CsvHeader.of(
+                        "\"finalizedAt",
+                        "\"\"id\"\"",
+                        "\"\"identityId\"\"",
+                        "\"\"type\"\"",
+                        "\"\"fiatCurrency\"\"",
+                        "\"\"cryptoCurrency\"\"",
+                        "\"\"collateralCryptoAmount\"\"",
+                        "\"\"optionValueCryptoAmount\"\"",
+                        "\"\"optionValueFiatAmount\"\"",
+                        "\"\"customerCryptoAmount\"\"",
+                        "\"\"customerFiatAmount\"\"",
+                        "\"\"settlementCryptoAmount\"\"",
+                        "\"\"settlementFiatAmount\"\"\""
+                    ).withSeparator(delimiter),
+                    CsvHeader.of(
                         "\"\"finalizedAt\"\"",
                         "\"\"id\"\"",
                         "\"\"identityId\"\"",
@@ -807,6 +822,32 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             /* INVITY - Premium Payment */
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
                 .headers(List.of(
+                    CsvHeader.of(
+                        "\"finalizedAt",
+                        "\"\"id\"\"",
+                        "\"\"identityId\"\"",
+                        "\"\"type\"\"",
+                        "\"\"fiatCurrency\"\"",
+                        "\"\"cryptoCurrency\"\"",
+                        "\"\"premiumCryptoAmount\"\"",
+                        "\"\"premiumFiatAmount\"\"",
+                        "\"\"paymentMethodType\"\"",
+                        "\"\"externalId\"\"",
+                        "\"\"paymentCreated\"\"\""
+                    ).withSeparator(delimiter),
+                    CsvHeader.of(
+                        "\"\"finalizedAt\"\"",
+                        "\"\"id\"\"",
+                        "\"\"identityId\"\"",
+                        "\"\"type\"\"",
+                        "\"\"fiatCurrency\"\"",
+                        "\"\"cryptoCurrency\"\"",
+                        "\"\"premiumCryptoAmount\"\"",
+                        "\"\"premiumFiatAmount\"\"",
+                        "\"\"paymentMethodType\"\"",
+                        "\"\"externalId\"\"",
+                        "\"\"paymentCreated\"\"\""
+                    ).withSeparator(delimiter),
                     CsvHeader.of(
                         "finalizedAt", "id", "identityId", "type", "fiatCurrency", "cryptoCurrency",
                         "premiumCryptoAmount", "premiumFiatAmount", "paymentMethodType", "externalId",
