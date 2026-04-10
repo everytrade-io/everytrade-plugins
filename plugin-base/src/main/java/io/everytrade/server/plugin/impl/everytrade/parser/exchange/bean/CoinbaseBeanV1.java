@@ -98,7 +98,7 @@ public class CoinbaseBeanV1 extends ExchangeBean {
         } else if (ADVANCE_TRADE_BUY.equalsIgnoreCase(value)) {
             transactionType = BUY;
         } else if (TRANSACTION_TYPE_RECEIVE.equalsIgnoreCase(value)) {
-            transactionType = REWARD;
+            transactionType = DEPOSIT;
         } else if (Objects.equals(TRANSACTION_TYPE_REWARDS_INCOME, value)) {
             transactionType = REWARD;
         } else if (Objects.equals(STAKING_INCOME, value)) {
@@ -230,7 +230,7 @@ public class CoinbaseBeanV1 extends ExchangeBean {
                 asset,
                 transactionType,
                 scaledVolume(quantityTransacted),
-                extractAddressFromNote(),
+                resolveDepositWithdrawalAddress(),
                 resolveNote(),
                 null
             );
@@ -248,7 +248,7 @@ public class CoinbaseBeanV1 extends ExchangeBean {
             );
         }
         if (List.of(TRANSACTION_TYPE_LEARNING_REWARD, STAKING_INCOME,
-            TRANSACTION_TYPE_RECEIVE, RETAIL_UNSTAKING_TRANSFER).contains(type)) {
+            RETAIL_UNSTAKING_TRANSFER).contains(type)) {
             return new ImportedTransactionBean(
                 null,
                 timeStamp,
@@ -309,7 +309,39 @@ public class CoinbaseBeanV1 extends ExchangeBean {
     }
 
     private String resolveNote() {
+        if (TRANSACTION_TYPE_RECEIVE.equalsIgnoreCase(type)) {
+            return resolveReceiveNote();
+        }
         return transactionType.name().equalsIgnoreCase(type) ? null : type;
+    }
+
+    private String resolveDepositWithdrawalAddress() {
+        if (TRANSACTION_TYPE_RECEIVE.equalsIgnoreCase(type)) {
+            return null;
+        }
+        return extractAddressFromNote();
+    }
+
+    private String resolveReceiveNote() {
+        String payload = extractReceiveNotePayload();
+        return payload == null ? TRANSACTION_TYPE_RECEIVE : TRANSACTION_TYPE_RECEIVE + " (" + payload + ")";
+    }
+
+    private String extractReceiveNotePayload() {
+        if (notes == null) {
+            return null;
+        }
+        String trimmedNotes = notes.trim();
+        if (!trimmedNotes.endsWith(")")) {
+            return null;
+        }
+        int payloadStart = trimmedNotes.lastIndexOf('(');
+        int payloadEnd = trimmedNotes.length() - 1;
+        if (payloadStart < 0 || payloadEnd <= payloadStart + 1) {
+            return null;
+        }
+        String payload = trimmedNotes.substring(payloadStart + 1, payloadEnd).trim();
+        return payload.isEmpty() ? null : payload;
     }
 
     private static BigDecimal scaledVolume(BigDecimal volume) {
