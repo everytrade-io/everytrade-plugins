@@ -1,6 +1,7 @@
 package io.everytrade.server.plugin.impl.everytrade.parser;
 
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
+import io.everytrade.server.plugin.csv.CsvHeader;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.IExchangeSpecificParser;
@@ -26,10 +27,16 @@ public class SkipLineParser implements IExchangeSpecificParser {
 
     @NonNull Integer linesToSkip;
     @NonNull IExchangeSpecificParser delegate;
+    CsvHeader expectedHeader;
 
     @Override
     public List<? extends ExchangeBean> parse(File inputFile) {
-        return delegate.parse(skipLines(inputFile));
+        File tempFile = skipLines(inputFile);
+        try {
+            return delegate.parse(tempFile);
+        } finally {
+            tempFile.delete();
+        }
     }
 
     @Override
@@ -43,9 +50,16 @@ public class SkipLineParser implements IExchangeSpecificParser {
             var bufferedReader = new BufferedReader(new FileReader(file));
             var printWriter = new PrintWriter(tempFile)
         ) {
-            for (int i = 0; i < linesToSkip; i++) {
-                bufferedReader.readLine(); // skip line
+            String headerLine;
+            if (expectedHeader != null) {
+                headerLine = scanForExpectedHeader(bufferedReader);
+            } else {
+                for (int i = 0; i < linesToSkip; i++) {
+                    bufferedReader.readLine(); // skip line
+                }
+                headerLine = bufferedReader.readLine();
             }
+            printWriter.println(headerLine);
             String line;
             while ((line = bufferedReader.readLine()) != null) {
                 printWriter.println(line);
@@ -54,5 +68,20 @@ public class SkipLineParser implements IExchangeSpecificParser {
             throw new ParsingProcessException("s");
         }
         return tempFile;
+    }
+
+    private String scanForExpectedHeader(BufferedReader bufferedReader) throws IOException {
+        for (int i = 0; i <= linesToSkip; i++) {
+            String line = bufferedReader.readLine();
+            if (line == null) {
+                break;
+            }
+            if (expectedHeader.matching(line)) {
+                return line;
+            }
+        }
+        throw new ParsingProcessException(
+            String.format("Expected header not found within the first %d lines", linesToSkip + 1)
+        );
     }
 }

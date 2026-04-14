@@ -9,6 +9,23 @@ public class ConnectorDescriptor {
     private final String note;
     private final String exchangeId;
     private final List<ConnectorParameterDescriptor> parameters;
+    private final boolean isDisabled;
+
+    public ConnectorDescriptor(
+        String id,
+        String name,
+        String note,
+        String exchangeId,
+        List<ConnectorParameterDescriptor> parameters,
+        boolean isDisabled
+    ) {
+        Objects.requireNonNull(this.id = id);
+        Objects.requireNonNull(this.name = name);
+        Objects.requireNonNull(this.note = note);
+        Objects.requireNonNull(this.exchangeId = exchangeId);
+        this.parameters = List.copyOf(Objects.requireNonNull(parameters));
+        this.isDisabled = isDisabled;
+    }
 
     public ConnectorDescriptor(
         String id,
@@ -17,11 +34,7 @@ public class ConnectorDescriptor {
         String exchangeId,
         List<ConnectorParameterDescriptor> parameters
     ) {
-        Objects.requireNonNull(this.id = id);
-        Objects.requireNonNull(this.name = name);
-        Objects.requireNonNull(this.note = note);
-        Objects.requireNonNull(this.exchangeId = exchangeId);
-        this.parameters = List.copyOf(Objects.requireNonNull(parameters));
+        this(id, name, note, exchangeId, parameters, false);
     }
 
     public String getId() {
@@ -44,6 +57,10 @@ public class ConnectorDescriptor {
         return parameters;
     }
 
+    public boolean isDisabled() {
+        return isDisabled;
+    }
+
     @Override
     public String toString() {
         return "ConnectorDescriptor{" +
@@ -51,7 +68,8 @@ public class ConnectorDescriptor {
             ", name='" + name + '\'' +
             ", note='" + note + '\'' +
             ", exchangeId='" + exchangeId + '\'' +
-            ", parameters=" + parameters +
+            ", parameters='" + parameters + '\'' +
+            ", isDisabled=" + isDisabled +
             '}';
     }
 }

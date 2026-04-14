@@ -17,6 +17,8 @@ public enum SupportedExchange {
     ANYCOIN("Anycoin", "anycoin"),
     BITSTAMP("Bitstamp", "bitstamp"),
     BITTREX("Bittrex", "bittrex"),
+    BLOCKFI("BlockFi", "blockfi"),
+    COINBANK("Coinbank", "coinbank"),
     GENERAL_BYTES("General Bytes CAS", "generalbytes"),
     KRAKEN("Kraken", "kraken"),
     EVERYTRADE("WhaleBooks", "everytrade"),
@@ -40,10 +42,19 @@ public enum SupportedExchange {
     BLOCKCHAINLTC("Blockchain LTC", "blockchainltc"),
     DVCHAIN("DV Chain", "dvchain"),
     AQUANOW("Aquanow", "aquanow"),
-    SIMPLE_COIN("SimpleCoin", "simplecoin"),
+    SIMPLECOIN("Simplecoin", "simplecoin"),
     OPEN_NODE("OpenNode", "opennode"),
-    KUCOIN("KuCoin", "kucoin");
-
+    KUCOIN("KuCoin", "kucoin"),
+    BITCOINRD("BitcoinRD", "bitcoinrd"),
+    KVAPAY("Kvapay", "kvapay"),
+    POCKETAPP("Pocket App", "pocketapp"),
+    TREZOR_SUITE("Trezor Suite", "trezorsuite"),
+    CHANGE_INVEST("Change Invest", "changeinvest"),
+    WALLET_OF_SATOSHI("Wallet of Satoshi", "walletofsatoshi"),
+    BTCPAY_SERVER("BTCPay Server", "btcpayserver"),
+    DASE("DASE", "dase"),
+    INVITY_FINANCE("Invity Finance", "invityfinance"),
+    REVOLUT("Revolut", "revolut");
 
     String displayName;
     String internalId;

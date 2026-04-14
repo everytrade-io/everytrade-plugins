@@ -29,15 +29,18 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static io.everytrade.server.model.TransactionType.DEPOSIT;
+import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.FEE;
-import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
+import static io.everytrade.server.model.TransactionType.FORK;
+import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static lombok.AccessLevel.PRIVATE;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
 @FieldDefaults(level = PRIVATE)
 @Headers(sequence = {"txid", "refid", "time", "type", "asset", "amount", "fee", "subtype"}, extract = true)
-public class KrakenBeanV2 extends ExchangeBean {
+public class KrakenBeanV2 extends ExchangeBean implements Cloneable{
     String txid;
     String refid;
     Instant time;
@@ -156,6 +159,10 @@ public class KrakenBeanV2 extends ExchangeBean {
         this.txsType = txsType;
     }
 
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
+    }
+
     @Override
     public TransactionCluster toTransactionCluster() {
         final List<ImportedTransactionBean> related = new ArrayList<>();
@@ -176,7 +183,7 @@ public class KrakenBeanV2 extends ExchangeBean {
             related.add(feeTxs);
         }
 
-        if (List.of(TransactionType.DEPOSIT, TransactionType.WITHDRAWAL).contains(this.txsType)) {
+        if (List.of(DEPOSIT, WITHDRAWAL, EARNING, FORK).contains(this.txsType)) {
             TransactionCluster cluster = new TransactionCluster(
                 ImportedTransactionBean.createDepositWithdrawal(
                     txid,

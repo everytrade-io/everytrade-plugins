@@ -11,9 +11,9 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 
+import static io.everytrade.server.model.Currency.AXL;
 import static io.everytrade.server.model.Currency.BTC;
 import static io.everytrade.server.model.Currency.CZK;
 import static io.everytrade.server.model.Currency.EUR;
@@ -23,13 +23,14 @@ import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.FORK;
+import static io.everytrade.server.model.TransactionType.INCOMING_PAYMENT;
+import static io.everytrade.server.model.TransactionType.OUTGOING_PAYMENT;
 import static io.everytrade.server.model.TransactionType.REBATE;
 import static io.everytrade.server.model.TransactionType.REWARD;
 import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.STAKE;
 import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
 import static io.everytrade.server.model.TransactionType.UNSTAKE;
-import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.REBATE_UID_PART;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -37,6 +38,12 @@ class EveryTradeBeanV3_2Test {
     private static final String HEADER_CORRECT =
         "UID;DATE;SYMBOL;ACTION;QUANTITY;UNIT_PRICE;VOLUME_QUOTE;FEE;FEE_CURRENCY;REBATE;REBATE_CURRENCY;ADDRESS_FROM;ADDRESS_TO;NOTE;" +
             "LABELS\n";
+    private static final String HEADER_COMMA_SEPARATED = "UID,DATE,SYMBOL,ACTION,QUANTITY,UNIT_PRICE,VOLUME_QUOTE,FEE,FEE_CURRENCY," +
+        "REBATE,REBATE_CURRENCY,ADDRESS_FROM,ADDRESS_TO,NOTE,LABELS\n";
+    private static final String HEADER_V3_3 = "UID;DATE;SYMBOL;ACTION;QUANTITY;UNIT_PRICE;VOLUME_QUOTE;FEE;FEE_CURRENCY;" +
+        "ADDRESS_FROM;ADDRESS_TO;NOTE;LABELS;PARTNER;REFERENCE\n";
+    private static final String HEADER_EXCEL_FORMAT = "DATE;TYPE;SYMBOL;QUANTITY;QUANTITY_CURRENCY;UNIT_PRICE;UNIT_PRICE_CURRENCY;TOTAL;" +
+        "TOTAL_CURRENCY;FEE;FEE_CURRENCY;SOURCE;ADDRESS;STATUS;NOTE;LABELS;REFERENCE;PARTNER;CREATED;UPDATED\n";
 
     @Test
     void testCorrectHeader() {
@@ -45,6 +52,91 @@ class EveryTradeBeanV3_2Test {
         } catch (ParsingProcessException e) {
             fail("Unexpected exception has been thrown.");
         }
+    }
+
+    @Test
+    void testNoUnitPrice() {
+        final String row = "1;01.11.2024 00:00:00;BTC/EUR;BUY;5;;;;;;;;;;\n";
+        final var actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                "1",
+                Instant.parse("2024-11-01T00:00:00Z"),
+                BTC,
+                EUR,
+                BUY,
+                new BigDecimal("5"),
+                null,
+                null,
+                null,
+                null
+            ),
+            List.of()
+        );
+        ParserTestUtils.checkEqual(expected, actual.get(0));
+    }
+
+    @Test
+    void testPayments() {
+        final String row = """
+            17;08.01.2026 11:16:00;BTC;INCOMING PAYMENT;0,001;;;;BTC;xxxxxxx;;nnnnnn;Label1;name;Ref-1A2b-3C4d
+            22;08.01.2026 11:21:00;BTC/EUR;OUTGOING PAYMENT;0,001;80000;80;0,;BTC;;xxxxxxx;nnnnnn;Label1:Label2;name;Ref-1A2b-3C4d
+            """;
+        final var actual = ParserTestUtils.getTransactionClusters(HEADER_V3_3 + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                "17",
+                Instant.parse("2026-01-08T11:16:00Z"),
+                BTC,
+                BTC,
+                INCOMING_PAYMENT,
+                new BigDecimal("0.001"),
+                null,
+                "nnnnnn",
+                "xxxxxxx",
+                "Label1"
+            ),
+            List.of()
+        );
+        final TransactionCluster expected2 = new TransactionCluster(
+            new ImportedTransactionBean(
+                "22",
+                Instant.parse("2026-01-08T11:21:00Z"),
+                BTC,
+                EUR,
+                OUTGOING_PAYMENT,
+                new BigDecimal("0.001"),
+                new BigDecimal("80000.00000000000000000"),
+                "nnnnnn",
+                "xxxxxxx",
+                "Label1:Label2"
+            ),
+            List.of()
+        );
+        ParserTestUtils.checkEqual(expected, actual.get(0));
+        ParserTestUtils.checkEqual(expected2, actual.get(1));
+    }
+
+    @Test
+    void testNewFormatV3() {
+        final String row = "38319660;11.06.2025 00:00:00;BTC;REBATE;31;;;;;;;;;partneer;refee\n";
+        final var actual = ParserTestUtils.getTransactionClusters(HEADER_V3_3 + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                "38319660",
+                Instant.parse("2025-06-11T00:00:00Z"),
+                BTC,
+                BTC,
+                REBATE,
+                new BigDecimal("31"),
+                null,
+                null,
+                null,
+                null
+            ),
+            List.of()
+        );
+        ParserTestUtils.checkEqual(expected, actual.get(0));
     }
 
     @Test
@@ -70,10 +162,33 @@ class EveryTradeBeanV3_2Test {
                 CZK,
                 BUY,
                 new BigDecimal("0.13"),
-                new BigDecimal("500000.00000000"),
+                new BigDecimal("500000.00000000000000000"),
                 "nnnnnn",
                 null,
                 "Label1"
+            ),
+            List.of()
+        );
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
+    void testExcelHeaderFormat() {
+        final String row = "04.05.2023 00:00:00;BUY;BTC/CZK;1;BTC;12;CZK;12;CZK;;;;\"testAdr;0x1234\";;;Error:Internal;" +
+            "26.02.2025 13:46:20;04.03.2025 10:53:50\n";
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_EXCEL_FORMAT + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2023-05-04T00:00:00Z"),
+                BTC,
+                CZK,
+                BUY,
+                new BigDecimal("1"),
+                new BigDecimal("12.00000000000000000"),
+                null,
+                "testAdr;0x1234",
+                "Error:Internal"
             ),
             List.of()
         );
@@ -92,7 +207,7 @@ class EveryTradeBeanV3_2Test {
                 CZK,
                 BUY,
                 new BigDecimal("0.13"),
-                new BigDecimal("500000.00000000"),
+                new BigDecimal("500000.00000000000000000"),
                 "nnnnnn",
                 null,
                 "Label1"
@@ -127,7 +242,7 @@ class EveryTradeBeanV3_2Test {
                 EUR,
                 SELL,
                 new BigDecimal("0.06"),
-                new BigDecimal("20000.00000000"),
+                new BigDecimal("20000.00000000000000000"),
                 "nnnnnn",
                 null,
                 "Label1"
@@ -139,20 +254,7 @@ class EveryTradeBeanV3_2Test {
 
     @Test
     void testCorrectParsingRawTransactionSellWithRebate() {
-        final String row = "6;12.1.2022 14:06:00;BTC/EUR;SELL;0,06;20000;1200;;;5.7;EUR;;;nnnnnn;Label1\n";
-        List<ImportedTransactionBean> related = new ArrayList<>();
-        related.add(new FeeRebateImportedTransactionBean(
-            "6" + REBATE_UID_PART,
-            Instant.parse("2022-01-12T14:06:00Z"),
-            EUR,
-            EUR,
-            REBATE,
-            new BigDecimal("5.7"),
-            EUR,
-            null,
-            null,
-            "Label1"
-        ));
+        final String row = "6;12.1.2022 14:06:00;BTC/EUR;SELL;0,06;20000;1200;;;;EUR;;;nnnnnn;Label1\n";
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row);
         final TransactionCluster expected = new TransactionCluster(
             new ImportedTransactionBean(
@@ -162,12 +264,12 @@ class EveryTradeBeanV3_2Test {
                 EUR,
                 SELL,
                 new BigDecimal("0.06"),
-                new BigDecimal("20000.00000000"),
+                new BigDecimal("20000.00000000000000000"),
                 "nnnnnn",
                 null,
                 "Label1"
             ),
-            related
+            List.of()
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
@@ -753,6 +855,41 @@ class EveryTradeBeanV3_2Test {
                     null,
                     null,
                     "Label1"
+                )
+            )
+        );
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
+    void testNewDateFormat() {
+        var row = "1,31.12.2023,Axl,STAKE REWARD,12167.60559,,,0.0014,Axl,,,axelar1jv65s3grqf6v6jl3dp4t6c9t9rk99cd8r3j5z7," +
+            "axelar1cwhkdnf59gp58637xfvwp57xlr9g26rhgp8p7d,,\n";
+        var actual = ParserTestUtils.getTransactionCluster(HEADER_COMMA_SEPARATED + row);
+        var expected = new TransactionCluster(
+            ImportedTransactionBean.createDepositWithdrawal(
+                "1",
+                Instant.parse("2023-12-31T00:00:00Z"),
+                AXL,
+                AXL,
+                STAKING_REWARD,
+                new BigDecimal("12167.60559"),
+                "axelar1jv65s3grqf6v6jl3dp4t6c9t9rk99cd8r3j5z7",
+                null,
+                null
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    "1-fee",
+                    Instant.parse("2023-12-31T00:00:00Z"),
+                    AXL,
+                    AXL,
+                    FEE,
+                    new BigDecimal("0.0014"),
+                    AXL,
+                    null,
+                    "axelar1jv65s3grqf6v6jl3dp4t6c9t9rk99cd8r3j5z7",
+                    null
                 )
             )
         );

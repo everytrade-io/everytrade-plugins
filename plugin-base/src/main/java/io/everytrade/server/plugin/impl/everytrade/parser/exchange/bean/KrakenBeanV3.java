@@ -181,47 +181,22 @@ public class KrakenBeanV3 extends ExchangeBean {
         }
     }
 
-
     private void findStandardPair(String pair) {
-        try {
-            CurrencyPair currPair = findKrakenCurrencyPair(pair.replaceAll("Z", ""));
-            this.pairBase = currPair.getBase();
-            this.pairQuote = currPair.getQuote();
-        } catch (Exception ignore) {
+        for (int i = 1; i < pair.length(); i++) {
+            String baseCode = pair.substring(0, i);
+            String quoteCode = pair.substring(i);
+
             try {
-                CurrencyPair currPair = findKrakenCurrencyPair(pair.replaceFirst("X", ""));
-                this.pairBase = currPair.getBase();
-                this.pairQuote = currPair.getQuote();
-            } catch (Exception e) {
-                try {
-                    if (pair.length() == 6) {
-                        this.pairBase = KrakenCurrencyUtil.fromCode(pair.substring(0, 3));
-                        String quote = pair.substring(3, 6);
-                        this.pairQuote = KrakenCurrencyUtil.fromCode(quote);
-                    } else if (pair.length() == 7) {
-                        try {
-                            this.pairBase = KrakenCurrencyUtil.fromCode(pair.substring(0, 4));
-                            this.pairQuote = KrakenCurrencyUtil.fromCode(pair.substring(4, 7));
-                        } catch (Exception ign) {
-                            this.pairBase = KrakenCurrencyUtil.fromCode(pair.substring(0, 3));
-                            String quote = pair.substring(3, 7);
-                            this.pairQuote = KrakenCurrencyUtil.fromCode(quote);
-                        }
-                    } else if (pair.length() == 8) {
-                        this.pairBase = KrakenCurrencyUtil.fromCode(pair.substring(0, 4));
-                        String quote = pair.substring(4, 8);
-                        this.pairQuote = KrakenCurrencyUtil.fromCode(quote);
-                    } else if (pair.contains("Z") && pair.contains("X")) {
-                        CurrencyPair currPair = findKrakenCurrencyPair(pair.replaceAll("Z", "").replaceFirst("X", ""));
-                        this.pairBase = currPair.getBase();
-                        this.pairQuote = currPair.getQuote();
-                    }
-                } catch (Exception ex) {
-                    throw new DataValidationException(String.format("Can not parse pair %s.", pair));
-                }
+                Currency base = Currency.fromCode(baseCode);
+                Currency quote = Currency.fromCode(quoteCode);
+
+                this.pairBase = base;
+                this.pairQuote = quote;
+                return; // Parsing successful, return immediately.
+            } catch (IllegalArgumentException e) {
+                // Ignore exception and continue to next iteration
             }
         }
+        throw new DataValidationException(String.format("Can not parse pair %s.", pair));
     }
-
-
 }

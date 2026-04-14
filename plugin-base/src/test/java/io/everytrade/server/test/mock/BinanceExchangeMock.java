@@ -2,6 +2,7 @@ package io.everytrade.server.test.mock;
 
 import org.knowm.xchange.binance.dto.trade.BinanceTradeHistoryParams;
 import org.knowm.xchange.binance.dto.account.BinanceFundingHistoryParams;
+import org.knowm.xchange.binance.service.BinanceAccountService;
 import org.knowm.xchange.binance.service.BinanceTradeService;
 import org.knowm.xchange.dto.account.FundingRecord;
 import org.knowm.xchange.dto.marketdata.Trades;
@@ -58,7 +59,7 @@ public class BinanceExchangeMock extends KnowmExchangeMock {
     }
 
     protected AccountService mockAccountService() throws Exception {
-        var mock = mock(AccountService.class);
+        var mock = mock(BinanceAccountService.class);
 
         when(mock.createFundingHistoryParams())
             .thenReturn(new BinanceFundingHistoryParams());

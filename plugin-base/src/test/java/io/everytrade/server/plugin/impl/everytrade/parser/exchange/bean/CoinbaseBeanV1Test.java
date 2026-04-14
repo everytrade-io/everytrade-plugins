@@ -7,13 +7,10 @@ import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ParseResult;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
-import io.everytrade.server.plugin.impl.everytrade.parser.EverytradeCsvMultiParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.ParsingProcessException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
-import io.everytrade.server.test.TestUtils;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -32,6 +29,7 @@ import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
+import static io.everytrade.server.model.TransactionType.UNSTAKE;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 import static java.util.Collections.emptyList;
@@ -42,9 +40,6 @@ class CoinbaseBeanV1Test {
     private static final String HEADER_CORRECT
         = "Timestamp,Transaction Type,Asset,Quantity Transacted,EUR Spot Price at Transaction,EUR Subtotal,EUR Total " +
         "(inclusive of fees),EUR Fees,Notes\n";
-    private static final String HEADER_CORRECT2
-        = "Timestamp,Transaction Type,Asset,Quantity Transacted,Spot Price Currency,Spot Price at Transaction," +
-        "Subtotal,Total,Fees and/or Spread,Notes\n";
     private static final String HEADER_CORRECT_SEK
         = "Timestamp,Transaction Type,Asset,Quantity Transacted,SEK Spot Price at Transaction,SEK Subtotal,SEK Total " +
         "(inclusive of fees),SEK Fees,Notes\n";
@@ -56,6 +51,10 @@ class CoinbaseBeanV1Test {
     private static final String HEADER_CORRECT_SPOT_SPREAD
         = "Timestamp,Transaction Type,Asset,Quantity Transacted,Spot Price Currency,Spot Price at Transaction,Subtotal," +
         "Total (inclusive of fees and/or spread),Fees and/or Spread,Notes\n";
+
+    private static final String HEADER_WITHOUT_SPOT
+        = "ID,Timestamp,Transaction Type,Asset,Quantity Transacted,Price Currency,Price at Transaction,Subtotal,Total (inclusive of fees " +
+        "and/or spread),Fees and/or Spread,Notes\n";
 
     @Test
     void testCorrectHeader() {
@@ -108,7 +107,7 @@ class CoinbaseBeanV1Test {
                     EUR,
                     EUR,
                     FEE,
-                    new BigDecimal("4.40"),
+                    new BigDecimal("4.40000000000000000"),
                     EUR
                 )
             )
@@ -148,7 +147,7 @@ class CoinbaseBeanV1Test {
                 GRT,
                 GRT,
                 EARNING,
-                new BigDecimal("16.68056713"),
+                new BigDecimal("16.68056713000000000"),
                 null,
                 "Learning Reward",
                 null
@@ -168,10 +167,76 @@ class CoinbaseBeanV1Test {
                 XTZ,
                 XTZ,
                 STAKING_REWARD,
-                new BigDecimal("0.0000040000"),
+                new BigDecimal("0.00000400000000000"),
                 null,
                 "Staking Income",
                 null
+            ),
+            emptyList());
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
+    void testCorrectParsingRetailUnstakingTransferPositive() {
+        var row = "2024-02-15 10:00:00 UTC,Retail Unstaking Transfer,ETH,1.5,USD,2500.00,3750.00,3750.00,0,\n";
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT_SPOT + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2024-02-15T10:00:00Z"),
+                Currency.ETH,
+                Currency.ETH,
+                UNSTAKE,
+                new BigDecimal("1.50000000000000000"),
+                null,
+                "Retail Unstaking Transfer",
+                null
+            ),
+            emptyList());
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
+    void testRetailUnstakingTransferNegativeIgnored() {
+        var row = "2024-02-15 10:00:00 UTC,Retail Unstaking Transfer,ETH,-1.5,USD,2500.00,3750.00,3750.00,0,\n";
+        final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT_SPOT + row);
+        final String error = parsingProblem.getMessage();
+        assertTrue(error.contains("Retail Unstaking Transfer with negative quantity is ignored"));
+    }
+
+    @Test
+    void testCorrectParsingSubscriptionPositiveQuantity() {
+        var row = "2024-03-01 12:00:00 UTC,Subscription,USD,2.99,USD,1.00,2.99,2.99,0,\n";
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT_SPOT + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new FeeRebateImportedTransactionBean(
+                null,
+                Instant.parse("2024-03-01T12:00:00Z"),
+                USD,
+                USD,
+                FEE,
+                new BigDecimal("2.99000000000000000"),
+                USD,
+                "Subscription"
+            ),
+            emptyList());
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
+    void testCorrectParsingSubscriptionNegativeQuantity() {
+        var row = "2024-03-01 12:00:00 UTC,Subscription,EUR,-1.99,EUR,1.00,1.99,1.99,0,\n";
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT_SPOT + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new FeeRebateImportedTransactionBean(
+                null,
+                Instant.parse("2024-03-01T12:00:00Z"),
+                EUR,
+                EUR,
+                FEE,
+                new BigDecimal("1.99000000000000000"),
+                EUR,
+                "Subscription"
             ),
             emptyList());
         ParserTestUtils.checkEqual(expected, actual);
@@ -186,7 +251,7 @@ class CoinbaseBeanV1Test {
         final TransactionCluster actual0 = ParserTestUtils.getTransactionCluster(HEADER_CORRECT_SPOT + row0);
         final TransactionCluster actual1 = ParserTestUtils.getTransactionCluster(HEADER_CORRECT_SPOT + row1);
 
-        BigDecimal quantityTransacted = new BigDecimal("40.002654");
+        BigDecimal quantityTransacted = new BigDecimal("40.00265400000000000");
         Currency asset = Currency.fromCode("XRP");
         String note = "rDsbeomae4FXwgQTJp9Rs64Qg9vDiTCdBv";
 
@@ -249,7 +314,7 @@ class CoinbaseBeanV1Test {
                     USD,
                     USD,
                     FEE,
-                    new BigDecimal("111.73"),
+                    new BigDecimal("111.73000000000000000"),
                     USD
                 )));
         ParserTestUtils.checkEqual(expected, actual);
@@ -279,7 +344,7 @@ class CoinbaseBeanV1Test {
                     CZK,
                     CZK,
                     FEE,
-                    new BigDecimal("197.46"),
+                    new BigDecimal("197.46000000000000000"),
                     CZK
                 )
             )
@@ -309,7 +374,7 @@ class CoinbaseBeanV1Test {
                     EUR,
                     EUR,
                     FEE,
-                    new BigDecimal("3.58"),
+                    new BigDecimal("3.58000000000000000"),
                     EUR
                 )
             )
@@ -381,7 +446,7 @@ class CoinbaseBeanV1Test {
                     CZK,
                     CZK,
                     TransactionType.FEE,
-                    new BigDecimal("106.44"),
+                    new BigDecimal("106.44000000000000000"),
                     CZK
                 )
             )
@@ -394,7 +459,7 @@ class CoinbaseBeanV1Test {
                 BTC,
                 BTC,
                 WITHDRAWAL,
-                new BigDecimal("0.01208795"),
+                new BigDecimal("0.01208795000000000"),
                 "1PCzuXqY6MkYqNvbrKareZPJQPX8XExzb7",
                 "Send",
                 null
@@ -411,7 +476,7 @@ class CoinbaseBeanV1Test {
         var row = "2023-01-20T07:09:23Z,Send,BTC,0.01031941,CZK,19339.02,199.57,199.57,0," +
             "Sent 0.01031941 BTC to bc1ql83d5c4dwwj4k6z8km5v8chff7688xxxxxxxxx\n";
         var row1 = "2023-01-19T22:16:25Z,Buy,BTC,0.01031941,CZK,19569.92,4832.82,4905.81,72.99,Bought 0.01031941 BTC for 4905.81 CZK\n";
-        final ParseResult actual = ParserTestUtils.getParseResult(HEADER_CORRECT2 + row.concat(row1));
+        final ParseResult actual = ParserTestUtils.getParseResult(HEADER_CORRECT_SPOT_SPREAD + row.concat(row1));
 
         final TransactionCluster expected = new TransactionCluster(
             new ImportedTransactionBean(
@@ -440,16 +505,200 @@ class CoinbaseBeanV1Test {
             ), List.of(
             new FeeRebateImportedTransactionBean(
                 FEE_UID_PART,
-                Instant.parse("2023-01-19T22:16:25Z"), //stejny cas jako sell
+                Instant.parse("2023-01-19T22:16:25Z"),
                 CZK,
                 CZK,
                 FEE,
-                new BigDecimal("72.99"),
+                new BigDecimal("72.99000000000000000"),
                 CZK
             )
         )
         );
         ParserTestUtils.checkEqual(expected, actual.getTransactionClusters().get(0));
         ParserTestUtils.checkEqual(expected2, actual.getTransactionClusters().get(1));
+    }
+
+    @Test
+    void testWithdrawalWithFee() {
+        var row = "5fdb253d835a950001badb32,2020-12-17 09:30:37 UTC,Withdrawal,EUR,348.42,USD,1,427.22,418.68,-8.5464049,\n";
+        final ParseResult actual = ParserTestUtils.getParseResult(HEADER_WITHOUT_SPOT + row);
+
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2020-12-17T09:30:37Z"),
+                EUR,
+                EUR,
+                WITHDRAWAL,
+                new BigDecimal("348.42000000000000000"),
+                null,
+                null,
+                ""
+            ), List.of(
+            new FeeRebateImportedTransactionBean(
+                FEE_UID_PART,
+                Instant.parse("2020-12-17T09:30:37Z"),
+                USD,
+                USD,
+                FEE,
+                new BigDecimal("8.54640490000000000"),
+                USD
+            ))
+        );
+
+        ParserTestUtils.checkEqual(expected, actual.getTransactionClusters().get(0));
+    }
+
+    @Test
+    void testReceiveToDeposit() {
+        var row = "2022-01-07 22:41:54 UTC,Receive,BTC,0.00013634,EUR,895782.60,122.13,122.13,0,Received 0.00013634 BTC from Coinbase\n";
+        final ParseResult actual = ParserTestUtils.getParseResult(HEADER_CORRECT_SPOT_SPREAD + row);
+
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-01-07T22:41:54Z"),
+                BTC,
+                BTC,
+                DEPOSIT,
+                new BigDecimal("0.00013634000000000"),
+                null,
+                "Receive",
+                null
+            ), List.of()
+        );
+
+        ParserTestUtils.checkEqual(expected, actual.getTransactionClusters().get(0));
+    }
+
+    @Test
+    void testReceiveWithParentheticalNote() {
+        var row = "689cd73986293213d62f31b5,2025-08-13 18:19:37 UTC,Receive,BTC,0.195,USD," +
+            "$121898.55,$23770.22,$23770.22,$0.00,Received 0.195 BTC from an external account (to 3DhJ3...GQtNQ)\n";
+        final ParseResult actual = ParserTestUtils.getParseResult(HEADER_WITHOUT_SPOT + row);
+
+        final TransactionCluster expected = new TransactionCluster(
+            ImportedTransactionBean.createDepositWithdrawal(
+                null,
+                Instant.parse("2025-08-13T18:19:37Z"),
+                BTC,
+                BTC,
+                DEPOSIT,
+                new BigDecimal("0.19500000000000000"),
+                null,
+                "Receive (to 3DhJ3...GQtNQ)",
+                null
+            ), List.of()
+        );
+
+        ParserTestUtils.checkEqual(expected, actual.getTransactionClusters().get(0));
+    }
+
+    @Test
+    void testSendToWithdrawal() {
+        var row = "2022-01-07 22:59:53 UTC,Send,BTC,0.0108036,EUR,893306.61,9650.93,9650.93,0,Sent 0.0108036 BTC to \n";
+        final ParseResult actual = ParserTestUtils.getParseResult(HEADER_CORRECT_SPOT_SPREAD + row);
+
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-01-07T22:59:53Z"),
+                BTC,
+                BTC,
+                WITHDRAWAL,
+                new BigDecimal("0.01080360000000000"),
+                null,
+                "Send",
+                null
+            ), List.of()
+        );
+
+        ParserTestUtils.checkEqual(expected, actual.getTransactionClusters().get(0));
+    }
+
+    @Test
+    void testStakingIncomeWithEuroSymbol() {
+        var row = "676f564c0a6b3ca4c20b322a,2024-12-28 01:37:16 UTC,Staking Income,SOL,0.0008133407425,EUR," +
+            "€177.40073250988269757,€0.14429,€0.22177,€0.07748509112921474394679584,\n";
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_WITHOUT_SPOT + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2024-12-28T01:37:16Z"),
+                Currency.SOL,
+                Currency.SOL,
+                STAKING_REWARD,
+                new BigDecimal("0.00081334074250000"),
+                null,
+                "Staking Income",
+                null
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    FEE_UID_PART,
+                    Instant.parse("2024-12-28T01:37:16Z"),
+                    EUR,
+                    EUR,
+                    FEE,
+                    new BigDecimal("0.07748509112921474"),
+                    EUR
+                )
+            )
+        );
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
+    void testAdvancedTradeBuyWithEuroSymbol() {
+        var row = "67645f1f8e8ebf2624a29d83,2024-12-19 17:59:59 UTC,Advanced Trade Buy,SOL,0.035,EUR," +
+            "€190.00,€6.65,€6.68990,€0.0399,Bought 0.035 SOL for 6.6899 EUR on SOL-EUR at 190 EUR/SOL\n";
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_WITHOUT_SPOT + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2024-12-19T17:59:59Z"),
+                Currency.SOL,
+                EUR,
+                BUY,
+                new BigDecimal("0.03500000000000000"),
+                new BigDecimal("190.00000000000000000"),
+                "Advanced Trade Buy",
+                null
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    FEE_UID_PART,
+                    Instant.parse("2024-12-19T17:59:59Z"),
+                    EUR,
+                    EUR,
+                    FEE,
+                    new BigDecimal("0.03990000000000000"),
+                    EUR
+                )
+            )
+        );
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
+    void testDepositWithEuroSymbol() {
+        var row = "67645eb7d971b2c0e632fa20,2024-12-19 17:58:15 UTC,Deposit,EUR,6.88,EUR," +
+            "€1.00,€6.88,€6.88,€0.00,Deposit from New Bank (****8741)\n";
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_WITHOUT_SPOT + row);
+        final TransactionCluster expected = new TransactionCluster(
+            ImportedTransactionBean.createDepositWithdrawal(
+                null,
+                Instant.parse("2024-12-19T17:58:15Z"),
+                EUR,
+                EUR,
+                TransactionType.DEPOSIT,
+                new BigDecimal("6.88000000000000000"),
+                null,
+                null,
+                null
+            ),
+            emptyList()
+        );
+        ParserTestUtils.checkEqual(expected, actual);
     }
 }

@@ -5,6 +5,7 @@ import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.test.TestUtils;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -12,25 +13,52 @@ import java.time.Instant;
 import java.util.List;
 
 import static io.everytrade.server.model.Currency.ADA;
+import static io.everytrade.server.model.Currency.BSV;
+import static io.everytrade.server.model.Currency.BTC;
 import static io.everytrade.server.model.Currency.EUR;
 import static io.everytrade.server.model.Currency.LUNA2;
+import static io.everytrade.server.model.Currency.SHIB;
 import static io.everytrade.server.model.Currency.SOL;
+import static io.everytrade.server.model.Currency.TRX;
 import static io.everytrade.server.model.Currency.USD;
 import static io.everytrade.server.model.Currency.USDT;
 import static io.everytrade.server.model.TransactionType.BUY;
+import static io.everytrade.server.model.TransactionType.DEPOSIT;
+import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.FEE;
+import static io.everytrade.server.model.TransactionType.FORK;
 import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.STAKE;
 import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
 import static io.everytrade.server.model.TransactionType.UNSTAKE;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 class KrakenBeanV2Test {
     private static final String HEADER_CORRECT
         = "txid,refid,time,type,subtype,aclass,asset,amount,fee,balance\n";
 
+    private static final String HEADER_CORRECT_WALLET
+        = "txid,refid,time,type,subtype,aclass,asset,wallet,amount,fee,balance\n";
 
+    @Test
+    void testTransferNullSubType() {
+        final String row = "\"LBSRGM-3UKWS-RW3RBY\",\"LAKXOJM-6CXWX-DW6ACQ\",\"2018-11-18 23:31:29\"," +
+            "\"transfer\",\"\",\"currency\",\"BSV\",\"spot / main\",0.3011222300,0,0.3011222300";
+        final TransactionCluster actual1 = ParserTestUtils.getTransactionCluster(HEADER_CORRECT_WALLET + row);
+        final TransactionCluster expected1 = new TransactionCluster(
+
+            new ImportedTransactionBean(
+                "LBSRGM-3UKWS-RW3RBY",
+                Instant.parse("2018-11-18T23:31:29Z"),
+                BSV,
+                BSV,
+                FORK,
+                new BigDecimal("0.3011222300"),
+                null
+            ),
+            List.of()
+        );
+        ParserTestUtils.checkEqual(expected1, actual1);
+    }
 
     @Test
     void testZeurCurrency()  {
@@ -69,23 +97,58 @@ class KrakenBeanV2Test {
 
 
     @Test
-    void testSpendReceived()  {
+    void testSpendReceivedSell()  {
+        final String row0 = """
+            "LUDYHN-5HEPE-6D4JL7","TSV6VHB-GLENO-YXRNYB","2022-09-13 18:28:22","spend","","currency","USDT",\
+            -730.00000000,0.00000000,0.00000000
+            "LQCWGW-MOV62-RL4VCV","TSV6VHB-GLENO-YXRNYB","2022-09-13 18:28:22","receive","","currency","ZEUR",\
+            730.8000,10.8000,728.7239""";
+
+
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row0);
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                "LUDYHN-5HEPE-6D4JL7 LQCWGW-MOV62-RL4VCV",
+                Instant.parse("2022-09-13T18:28:22Z"),
+                USDT,
+                EUR,
+                SELL,
+                new BigDecimal("730.00000000000000000"),
+                new BigDecimal("1.00109589041095890")
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    "LUDYHN-5HEPE-6D4JL7 LQCWGW-MOV62-RL4VCV-fee" ,
+                    Instant.parse("2022-09-13T18:28:22Z"),
+                    EUR,
+                    EUR,
+                    FEE,
+                    new BigDecimal("10.8000"),
+                    EUR
+                )
+            )
+        );
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
+    void testSpendReceivedBuyFiat()  {
         final String row0 = "\"LYVTSS-NIZAI-AC2KVR\",\"TSAJOY3-ZHDY2-J2EQDN\",\"2022-10-12 10:00:57\",\"spend\",\"\",\"currency\"," +
-            "\"USDT\",-1000.00000000,0.00000000,0.00000000\n";
+            "\"ZEUR\",-1000.00000000,0.00000000,0.00000000\n";
         final String row1 = "\"LTAHVF-RGBFO-IYNCGG\",\"TSAJOY3-ZHDY2-J2EQDN\",\"2022-10-12 10:00:57\",\"receive\",\"\",\"currency\"," +
-            "\"ZEUR\",1030.0000,15.2200,1023.4139\n";
+            "\"SHIB\",1030.0000,15.2200,1023.4139\n";
 
 
         final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row0.concat(row1));
         final TransactionCluster expected = new TransactionCluster(
             new ImportedTransactionBean(
-                "LYVTSS-NIZAI-AC2KVR LTAHVF-RGBFO-IYNCGG",
+                "LTAHVF-RGBFO-IYNCGG LYVTSS-NIZAI-AC2KVR",
                 Instant.parse("2022-10-12T10:00:57Z"),
-                USDT,
+                SHIB,
                 EUR,
-                SELL,
-                new BigDecimal("1000.0000000000"),
-                new BigDecimal("1.0300000000")
+                BUY,
+                new BigDecimal("1030.00000000000000000"),
+                new BigDecimal("0.97087378640776699")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -99,7 +162,41 @@ class KrakenBeanV2Test {
                 )
             )
         );
-        ParserTestUtils.checkEqual(expected, actual);
+        TestUtils.testTxs(expected.getMain(), actual.getMain());
+    }
+
+    @Test
+    void testSpendReceivedBuyKrypto()  {
+        final String row0 = "\"LYVTSS-NIZAI-AC2KVR\",\"TSAJOY3-ZHDY2-J2EQDN\",\"2022-10-12 10:00:57\",\"spend\",\"\",\"currency\"," +
+            "\"USDT\",-1000.00000000,0.00000000,0.00000000\n";
+        final String row1 = "\"LTAHVF-RGBFO-IYNCGG\",\"TSAJOY3-ZHDY2-J2EQDN\",\"2022-10-12 10:00:57\",\"receive\",\"\",\"currency\"," +
+            "\"SHIB\",1030.0000,15.2200,1023.4139\n";
+
+
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row0.concat(row1));
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                "LTAHVF-RGBFO-IYNCGG LYVTSS-NIZAI-AC2KVR",
+                Instant.parse("2022-10-12T10:00:57Z"),
+                SHIB,
+                USDT,
+                BUY,
+                new BigDecimal("1030.00000000000000000"),
+                new BigDecimal("0.97087378640776699")
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    "LYVTSS-NIZAI-AC2KVR LTAHVF-RGBFO-IYNCGG-fee" ,
+                    Instant.parse("2022-10-12T10:00:57Z"),
+                    EUR,
+                    EUR,
+                    FEE,
+                    new BigDecimal("15.2200"),
+                    EUR
+                )
+            )
+        );
+        TestUtils.testTxs(expected.getMain(), actual.getMain());
     }
 
     @Test
@@ -118,7 +215,7 @@ class KrakenBeanV2Test {
             new ImportedTransactionBean(
                 "LZZKYL-RLHTD-AEOKX4 L364WP-6OTPI-SKMRKU",
                 Instant.parse("2022-03-15T09:39:46Z"),
-                Currency.BTC,
+                BTC,
                 EUR,
                 BUY,
                 new BigDecimal("0.11388674000000000"),
@@ -423,4 +520,163 @@ class KrakenBeanV2Test {
         ParserTestUtils.checkEqual(expected3, actual3);
     }
 
+    @Test
+    void stakingTest_S() {
+        final String row0 = """
+            "","RUU3EVC-6GIYSL-6YTOMO","2022-11-05 01:14:17","deposit","","currency","SOL.S",0.0178340800,0,"\"\n""";
+        final String row1 = """
+            "L5HYDN-5WP37-ZWS7K4","STAYKUO-GLFCW-HF2WMS","2022-11-05 15:04:28","staking","","currency",\
+            "SOL.S",0.0178340800,0,40.0178340800\n""";
+        var actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row0.concat(row1));
+
+        final TransactionCluster expected0 = new TransactionCluster(
+            new ImportedTransactionBean(
+                "L5HYDN-5WP37-ZWS7K4",
+                Instant.parse("2022-11-05T15:04:28Z"),
+                Currency.SOL,
+                SOL,
+                STAKING_REWARD,
+                new BigDecimal("0.0178340800"),
+                null
+            ),
+            List.of()
+        );
+        final TransactionCluster expected1 = new TransactionCluster(
+            new ImportedTransactionBean(
+                "L5HYDN-5WP37-ZWS7K4",
+                Instant.parse("2022-11-05T15:04:29Z"),
+                Currency.SOL,
+                SOL,
+                STAKE,
+                new BigDecimal("0.0178340800"),
+                null
+            ),
+            List.of()
+        );
+        TestUtils.testTxs(expected0.getMain(), actual.get(0).getMain());
+        TestUtils.testTxs(expected1.getMain(), actual.get(1).getMain());
+    }
+
+    @Test
+    void testTransferStakingFromSpot() {
+        final String row0 = """
+            "L72TKM-EZ7YL-GD5DTI","FTaaRpv-BySE7xcbgINatuc8oC37RA","2023-10-29 20:23:12",\
+            "transfer","stakingfromspot","currency","SOL.S",110.3898385600,0,110.3898385600\n""";
+        var actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row0);
+
+        final TransactionCluster expected0 = new TransactionCluster(
+            new ImportedTransactionBean(
+                "L72TKM-EZ7YL-GD5DTI",
+                Instant.parse("2023-10-29T20:23:12Z"),
+                Currency.SOL,
+                SOL,
+                STAKE,
+                new BigDecimal("110.3898385600"),
+                null
+            ),
+            List.of()
+        );
+        TestUtils.testTxs(expected0.getMain(), actual.get(0).getMain());
+    }
+
+    @Test
+    void testEarning() {
+        final String row0 = """
+            "L7PGI7-XMN6H-SAD36S","Unknown","2024-03-05 13:51:57","earn","","currency","SOL03.S","spot / main",-137.0251478900,0,\
+            0.0000000000
+            "LXCM3R-LMABO-JQWKYU","Unknown","2024-03-05 13:51:57","earn","","currency","SOL","earn / bonded",137.0251478900,0,\
+            137.0251478900
+            "LSTF54-237YA-7AXZAF","Unknown","2024-03-09 21:24:46","earn","","currency","SOL","earn / bonded",0.1260782174,0.0327803365,\
+            137.1184457709""";
+        var actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT_WALLET + row0);
+
+        final TransactionCluster expected0 = new TransactionCluster(
+            new ImportedTransactionBean(
+                "LSTF54-237YA-7AXZAF",
+                Instant.parse("2024-03-09T21:24:46Z"),
+                SOL,
+                SOL,
+                EARNING,
+                new BigDecimal("0.1260782174"),
+                null
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    "LSTF54-237YA-7AXZAF-fee" ,
+                    Instant.parse("2024-03-09T21:24:46Z"),
+                    SOL,
+                    SOL,
+                    FEE,
+                    new BigDecimal("0.0327803365"),
+                    SOL
+                )
+            )
+        );
+        ParserTestUtils.checkEqual(expected0, actual.get(0));
+    }
+
+    @Test
+    void testEurHold() {
+        final String row0 = "\"LIPGAG-WSS3H-O2S3BV\",\"QYTKFNX-3HNDGH-Y4DYOG\",\"2023-05-05 14:28:48\",\"deposit\",\"\",\"currency\"," +
+            "\"EUR.HOLD\",\"spot / main\",30.0000,1.3800,28.6200\n";
+        var actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT_WALLET + row0);
+
+        final TransactionCluster expected0 = new TransactionCluster(
+            new ImportedTransactionBean(
+                "LIPGAG-WSS3H-O2S3BV",
+                Instant.parse("2023-05-05T14:28:48Z"),
+                EUR,
+                EUR,
+                DEPOSIT,
+                new BigDecimal("30.0000"),
+                null
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    "LIPGAG-WSS3H-O2S3BV-fee" ,
+                    Instant.parse("2023-05-05T14:28:48Z"),
+                    EUR,
+                    EUR,
+                    FEE,
+                    new BigDecimal("1.3800"),
+                    EUR
+                )
+            )
+        );
+        ParserTestUtils.checkEqual(expected0, actual.get(0));
+    }
+
+    @Test
+    void testTwoPositiveFees() {
+        final String row0 = """
+            "L6RT6B-NMAMH-RZKC6V","TDYUZC-7AFJO-P6SIT5","2023-04-07 11:06:17","trade","","currency","BTC","spot / main",-0.0291885287,\
+            0.0000661381,0.0000026114
+            "LLVZBZ-5A7QS-YQRUKY","TDYUZC-7AFJO-P6SIT5","2023-04-07 11:06:17","trade","","currency","TRX","spot / main",12355.00000000,\
+            4.12804775,12350.87195280""";
+        var actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT_WALLET + row0);
+
+        final TransactionCluster expected0 = new TransactionCluster(
+            new ImportedTransactionBean(
+                "LLVZBZ-5A7QS-YQRUKY L6RT6B-NMAMH-RZKC6V",
+                Instant.parse("2023-04-07T11:06:17Z"),
+                TRX,
+                BTC,
+                BUY,
+                new BigDecimal("12355.00000000000000000"),
+                new BigDecimal("0.00000236248714690")
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    "LLVZBZ-5A7QS-YQRUKY L6RT6B-NMAMH-RZKC6V-fee" ,
+                    Instant.parse("2023-04-07T11:06:17Z"),
+                    BTC,
+                    BTC,
+                    FEE,
+                    new BigDecimal("0.0000661381"),
+                    BTC
+                )
+            )
+        );
+        ParserTestUtils.checkEqual(expected0, actual.get(0));
+    }
 }

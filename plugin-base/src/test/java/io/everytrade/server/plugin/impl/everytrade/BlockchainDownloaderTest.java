@@ -200,7 +200,7 @@ class BlockchainDownloaderTest {
         DownloadResult result = blockchainDownloader.download(ADDRESS);
 
         var depositCluster = findOneCluster(result, DEPOSIT);
-        assertEquals(1, depositCluster.getRelated().size());
+        assertEquals(0, depositCluster.getRelated().size());
         assertDepositWithdrawal(depositCluster, DEPOSIT, new BigDecimal("0.009999"));
 
         var withdrawalCluster = findOneCluster(result, WITHDRAWAL);

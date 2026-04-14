@@ -7,6 +7,8 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -58,7 +60,7 @@ public enum Currency {
     CUP(true, Instant.parse("1993-01-01T00:00:00Z"), "Cuban peso"),
     CRC(true, Instant.parse("1993-01-01T00:00:00Z"), "Costa Rican colón"),
     JMD(true, Instant.parse("1993-01-01T00:00:00Z"), "Jamaican dollar"),
-    USDT(false, Instant.parse("2015-07-01T00:00:00Z"), "Tether"),
+    USDT(false, true, Instant.parse("2015-07-01T00:00:00Z"), "Tether"),
     BTC(false, Instant.parse("2009-01-03T00:00:00Z"), "Bitcoin"),
     ETH(false, Instant.parse("2015-07-30T00:00:00Z"), "Ethereum"),
     BNB(false, Instant.parse("2017-09-01T00:00:00Z"), "Binance coin"),
@@ -66,12 +68,12 @@ public enum Currency {
     BCH(false, Instant.parse("2017-08-01T00:00:00Z"), "Bitcoin Cash"),
     XMR(false, Instant.parse("2014-04-18T00:00:00Z"), "Monero"),
     XRP(false, Instant.parse("2012-01-01T00:00:00Z"), "Ripple"), // can't find exact date
-    DAI(false, Instant.parse("2017-12-19T00:00:00Z"), "Dai"),
+    DAI(false, true, Instant.parse("2017-12-19T00:00:00Z"), "Dai"),
     DASH(false, Instant.parse("2014-01-18T00:00:00Z"), "Dash"),
     LINK(false, Instant.parse("2017-09-21T00:00:00Z"), "Chainlink"),
     IOTA(false, Instant.parse("2017-07-01T00:00:00Z"), "IOTA"),
     TRX(false, Instant.parse("2017-08-30T00:00:00Z"), "TRON"),
-    USDC(false, Instant.parse("2018-10-10T00:00:00Z"), "USD Coin"),
+    USDC(false, true, Instant.parse("2018-10-10T00:00:00Z"), "USD Coin"),
     XTZ(false, Instant.parse("2017-07-01T00:00:00Z"), "Tezos"),
     XLM(false, Instant.parse("2013-07-19T00:00:00Z"), "Stellar"),
     ADA(false, Instant.parse("2017-09-29T00:00:00Z"), "Cardano"),
@@ -88,7 +90,7 @@ public enum Currency {
     LSK(false, Instant.parse("2016-02-01T00:00:00Z"), "Lisk"),
     OMG(false, Instant.parse("2017-06-23T00:00:00Z"), "OMG Network"), // token
     BAND(false, Instant.parse("2019-09-01T00:00:00Z"), "Band Protocol"), // token; can't find exact date
-    MATIC(false, Instant.parse("2019-04-01T00:00:00Z"), "Matic Network"), // token; can't find exact date
+    MATIC(false, Instant.parse("2019-04-01T00:00:00Z"), "Polygon"), // token; can't find exact date
     DNT(false, Instant.parse("2017-08-01T00:00:00Z"), "district0x"), // token; can't find exact date
     SC(false, Instant.parse("2015-03-17T00:00:00Z"), "Siacoin"),
     KMD(false, Instant.parse("2016-09-14T00:00:00Z"), "Komodo"),
@@ -134,7 +136,7 @@ public enum Currency {
     BSV(false, Instant.parse("2018-11-09T00:00:00Z"), "Bitcoin SV"),
     AVA(false, Instant.parse("2018-05-28T00:00:00Z"), "Travala.com"),
     ATOM(false, Instant.parse("2019-03-15T00:00:00Z"), "Cosmos"),
-    EGLD(false, Instant.parse("2020-09-22T00:00:00Z"), "Elrond"),
+    EGLD(false, Instant.parse("2020-09-22T00:00:00Z"), "MultiversX (Elrond)"),
     ALGO(false, Instant.parse("2019-06-19T00:00:00Z"), "Algorand"),
     ANT(false, Instant.parse("2017-05-05T00:00:00Z"), "Aragon"),
     COMP(false, Instant.parse("2020-06-17T00:00:00Z"), "Compound"),
@@ -144,7 +146,7 @@ public enum Currency {
     FIRO(false, Instant.parse("2016-09-28T00:00:00Z"), "Firo"),
     ZEN(false, Instant.parse("2017-05-30T00:00:00Z"), "Horizen"),
     XVG(false, Instant.parse("2014-10-09T00:00:00Z"), "Verge"),
-    BUSD(false, Instant.parse("2019-09-20T00:00:00Z"), "Binance USD"),
+    BUSD(false, true, Instant.parse("2019-09-20T00:00:00Z"), "Binance USD"),
     THETA(false, Instant.parse("2017-11-23T00:00:00Z"), "THETA"),
     ONT(false, Instant.parse("2018-03-08T00:00:00Z"), "Ontology"),
     AKRO(false, Instant.parse("2019-08-07T00:00:00Z"), "Akropolis"),
@@ -164,7 +166,7 @@ public enum Currency {
     PAXG(false, Instant.parse("2019-09-26T00:00:00Z"), "PAX Gold"),
     CAKE(false, Instant.parse("2021-02-06T00:00:00Z"), "PancakeSwap"),
     BAL(false, Instant.parse("2020-06-24T00:00:00Z"), "Balancer"),
-    BEAM(false, Instant.parse("2019-01-18T00:00:00Z"), "Beam"),
+    BEAM(false, Instant.parse("2023-10-26T00:00:00Z"), "Beam"),
     _1INCH("1INCH", false, Instant.parse("2021-01-14T00:00:00Z"), "1inch"),
     VTC(false, Instant.parse("2014-01-08T00:00:00Z"), "Vertcoin"),
     ERG(false, Instant.parse("2017-07-02T00:00:00Z"), "Ergo"),
@@ -219,7 +221,7 @@ public enum Currency {
     ENG(false, Instant.parse("2017-07-01T00:00:00Z"), "Enigma"),
     ENJ(false, Instant.parse("2017-07-24T00:00:00Z"), "Enjin Coin"),
     ENS(false, Instant.parse("2021-12-03T00:00:00Z"), "Ethereum Name Service"),
-    EURS(false, Instant.parse("2018-07-26T00:00:00Z"), "Stasis euro"),
+    EURS(false, true, Instant.parse("2018-07-26T00:00:00Z"), "Stasis euro"),
     EWT(false, Instant.parse("2019-06-19T00:00:00Z"), "Energy Web Token"),
     FIO(false, Instant.parse("2020-03-25T00:00:00Z"), "FIO Protocol"),
     FORTH(false, Instant.parse("2021-05-12T00:00:00Z"), "Ampleforth Governance Token"),
@@ -378,7 +380,7 @@ public enum Currency {
     TVK(false, Instant.parse("2021-08-24T00:00:00Z"), "Terra Virtua Kolect"),
     BADGER(false, Instant.parse("2020-11-28T00:00:00Z"), "Badger"),
     PERL(false, Instant.parse("2019-08-22T00:00:00Z"), "PERL.eco"),
-    TUSD(false, Instant.parse("2018-03-08T00:00:00Z"), "TrueUSD"),
+    TUSD(false, true, Instant.parse("2018-03-08T00:00:00Z"), "TrueUSD"),
     PSG(false, Instant.parse("2022-02-05T00:00:00Z"), "Paris Saint-Germain"),
     BURGER(false, Instant.parse("2021-05-27T00:00:00Z"), "Burger Swap"),
     BELT(false, Instant.parse("2021-05-27T00:00:00Z"), "Belt"),
@@ -475,7 +477,7 @@ public enum Currency {
     FARM(false, Instant.parse("2021-03-24T00:00:00Z"), "Harvest Finance"),
     FIS(false, Instant.parse("2021-08-31T00:00:00Z"), "Stafi"),
     FLM(false, Instant.parse("2018-08-30T00:00:00Z"), "FolmCoin"),
-    FRAX(false, Instant.parse("2021-08-24T00:00:00Z"), "Frax"),
+    FRAX(false, true, Instant.parse("2021-08-24T00:00:00Z"), "Frax"),
     FTX(false, Instant.parse("2018-04-19T00:00:00Z"), "FintruX Network"),
     GAME(false, Instant.parse("2014-08-25T00:00:00Z"), "GameCredits"),
     GEO(false, Instant.parse("2018-03-07T00:00:00Z"), "GeoCoin"),
@@ -487,7 +489,7 @@ public enum Currency {
     ISP(false, Instant.parse("2022-02-04T00:00:00Z"), "Ispolink Token"),
     KCS(false, Instant.parse("2017-10-17T00:00:00Z"), "KuCoin Token"),
     KDA(false, Instant.parse("2021-03-25T00:00:00Z"), "Kadena"),
-    LUSD(false, Instant.parse("2021-08-26T00:00:00Z"), "Liquity USD"),
+    LUSD(false, true, Instant.parse("2021-08-26T00:00:00Z"), "Liquity USD"),
     MCO(false, Instant.parse("2017-06-29T00:00:00Z"), "MCO"),
     MDX(false, Instant.parse("2021-08-26T00:00:00Z"), "Mdex"),
     MONA(false, Instant.parse("2014-03-16T00:00:00Z"), "MonaCoin"),
@@ -508,7 +510,7 @@ public enum Currency {
     RAY(false, Instant.parse("2021-08-24T00:00:00Z"), "Raydium"),
     RDD(false, Instant.parse("2014-02-02T00:00:00Z"), "ReddCoin"),
     RIF(false, Instant.parse("2019-01-16T00:00:00Z"), "RIF Token"),
-    RNDR(false, Instant.parse("2020-08-06T00:00:00Z"), "Render Token"),
+    RENDER(false, Instant.parse("2020-08-06T00:00:00Z"), "Render"),
     ROOK(false, Instant.parse("2021-03-03T00:00:00Z"), "KeeperDAO"),
     RUB(false, Instant.parse("2022-03-12T00:00:00Z"), "RUBCoin"),
     SANTOS(false, Instant.parse("2022-01-14T00:00:00Z"), "Santos FC Fan Token"),
@@ -625,8 +627,8 @@ public enum Currency {
     PROM(false, Instant.parse("2019-07-10T00:00:00Z"), "Prometeus"),
     SBTC(false, Instant.parse("2017-12-15T00:00:00Z"), "Super Bitcoin"),
     SYN(false, Instant.parse("2021-09-15T00:00:00Z"), "Synapse"),
-    USTC(false, Instant.parse("2020-12-09T00:00:00Z"), "Terra Classic USD"),
-    VAI(false, Instant.parse("2021-09-02T00:00:00Z"), "Vai"),
+    USTC(false, true, Instant.parse("2020-12-09T00:00:00Z"), "Terra Classic USD"),
+    VAI(false, true, Instant.parse("2021-09-02T00:00:00Z"), "Vai"),
     XEQ(false, Instant.parse("2019-04-04T00:00:00Z"), "Equilibria"),
     XYO(false, Instant.parse("2018-05-16T00:00:00Z"), "XYO"),
     XYZ(false, Instant.parse("2021-09-08T00:00:00Z"), "Universe.XYZ"),
@@ -784,7 +786,7 @@ public enum Currency {
     BREAD(false, Instant.parse("2023-05-25T00:00:00Z"), "Bread"),
     BSSB(false, Instant.parse("2023-11-30T00:00:00Z"), "BSSB"),
     BTRFLY(false, Instant.parse("2023-02-23T00:00:00Z"), "Redacted"),
-    BUCK(false, Instant.parse("2019-08-15T00:00:00Z"), "BUCK"),
+    BUCK(false,true, Instant.parse("2019-08-15T00:00:00Z"), "BUCK"),
     CBOT(false, Instant.parse("2023-08-21T00:00:00Z"), "CompanionBot"),
     CEX(false, Instant.parse("2023-10-27T00:00:00Z"), "CEX Index"),
     CLS(false, Instant.parse("2023-02-16T00:00:00Z"), "ColdStack"),
@@ -860,34 +862,218 @@ public enum Currency {
     ETH2(false, Instant.parse("2022-03-23T00:00:00Z"), "Eth 2.0 Staking by Pool-X"),
     ULX(false, Instant.parse("2022-11-23T00:00:00Z"), "ULTRON"),
     WBETH(false, Instant.parse("2022-11-23T00:00:00Z"), "Wrapped Beacon ETH"),
-    FLOKI(false, Instant.parse("2021-09-09T00:00:00Z"), "Floki Inu");
+    FLOKI(false, Instant.parse("2021-09-09T00:00:00Z"), "Floki Inu"),
+    BOME(false, Instant.parse("2024-03-14T00:00:00Z"), "BOOK OF MEME"),
+    JTO(false, Instant.parse("2023-11-06T00:00:00Z"), "Jito"),
+    VRA(false, Instant.parse("2019-03-04T00:00:00Z"), "Verasity"),
+    QCK(false, Instant.parse("2024-04-04T00:00:00Z"), "Quicksilver"),
+    NVT(false, Instant.parse("2021-09-16T00:00:00Z"), "NerveNetwork"),
+    GUSD(false, true, Instant.parse("2018-10-04T00:00:00Z"), "Gemini Dollar"),
+    FCT(false, Instant.parse("2021-08-19T00:00:00Z"), "Firmachain"),
+    START(false, Instant.parse("2022-02-02T00:00:00Z"), "BSCstarter"),
+    STR(false, Instant.parse("2022-07-28T00:00:00Z"), "Stater"),
+    PINK(false, Instant.parse("2021-09-09T00:00:00Z"), "Dot Finance"),
+    AZY(false, Instant.parse("2022-08-11T00:00:00Z"), "Amazy"),
+    EDG(false, Instant.parse("2023-03-15T00:00:00Z"), "Edgeware"),
+    FSN(false, Instant.parse("2018-03-07T00:00:00Z"), "Fusion"),
+    POLYX(false, Instant.parse("2022-08-25T00:00:00Z"), "Polymesh"),
+    XDB(false, Instant.parse("2019-09-12T00:00:00Z"), "DigitalBits"),
+    NYM(false, Instant.parse("2023-03-15T00:00:00Z"), "Nym"),
+    MANTA(false, Instant.parse("2024-01-29T00:00:00Z"), "Manta Network"),
+    WIF(false, Instant.parse("2023-12-14T00:00:00Z"), "dogwifhat"),
+    XHT(false, Instant.parse("2021-08-05T00:00:00Z"), "HollaEx"),
+    ANDY(false, Instant.parse("2024-02-11T00:00:00Z"), "Andy on ETH"),
+    GARA(false, Instant.parse("2023-11-11T00:00:00Z"), "Gara"),
+    EEZY(false, Instant.parse("2023-04-05T00:00:00Z"), "EEZY"),
+    DYM(false, Instant.parse("2024-02-02T00:00:00Z"), "Dymension"),
+    ALT(false, Instant.parse("2024-01-24T00:00:00Z"), "AltLayer"),
+    LEO(false, Instant.parse("2019-05-16T00:00:00Z"), "LEO Token"),
+    TON(false, Instant.parse("2021-09-16T00:00:00Z"), "Toncoin"),
+    BTCB(false, Instant.parse("2021-05-27T00:00:00Z"), "Binance Bitcoin"),
+    OKB(false, Instant.parse("2019-01-16T00:00:00Z"), "OKB"),
+    FDUSD(false,true, Instant.parse("2023-08-15T00:00:00Z"), "First Digital USD"),
+    PNDC(false, Instant.parse("2023-08-05T00:00:00Z"), "pndc-pond-coin"),
+    PIKA(false, Instant.parse("2023-05-18T00:00:00Z"), "pika-pikachueth"),
+    RAIL(false, Instant.parse("2021-09-09T00:00:00Z"), "rail-railgun"),
+    LOLA(false, Instant.parse("2024-02-04T00:00:00Z"), "lola-lola"),
+    FLEX(false, Instant.parse("2024-02-06T00:00:00Z"), "flex-flex"),
+    GROK(false, Instant.parse("2023-11-13T00:00:00Z"), "grok-grok-eth"),
+    TADPOLE(false, Instant.parse("2023-06-06T00:00:00Z"), "tadpole-tadpole"),
+    DREAM(false, Instant.parse("2024-06-14T00:00:00Z"), "dream-dream-cat"),
+    FAO(false, Instant.parse("2021-08-12T00:00:00Z"), "fao-farmer-and-one-farmer-and-one-token"),
+    VITALEK(false, Instant.parse("2024-03-12T00:00:00Z"), "vitalek-vitalek-buteren"),
+    DACAT(false, Instant.parse("2024-01-23T00:00:00Z"), "daCat"),
+    ONDO(false, Instant.parse("2024-01-21T00:00:00Z"), "Ondo"),
+    BEBE(false, Instant.parse("2024-02-03T00:00:00Z"), "Baby Bitcoin"),
+    TURBO(false, Instant.parse("2023-04-27T00:00:00Z"), "Turbo"),
+    BOB(false, Instant.parse("2023-05-04T00:00:00Z"), "BOB Token"),
+    INSP(false, Instant.parse("2023-08-10T00:00:00Z"), "Inspect"),
+    AED(true, Instant.parse("2009-01-03T00:00:00Z"), "United Arab Emirates dirham"),
+    TWD(true, Instant.parse("2009-01-03T00:00:00Z"), "New Taiwan dollar"),
+    GEL(true, Instant.parse("2009-01-03T00:00:00Z"), "Georgian lari"),
+    JUP(false, Instant.parse("2024-02-01T00:00:00Z"), "Jupiter exchange token"),
+    POL(false, Instant.parse("2023-10-19T00:00:00Z"), "Polygon Ecosystem Token"),
+    AEVO(false, Instant.parse("2024-03-14T00:00:00Z"), "Aevo"),
+    ENA(false, Instant.parse("2024-04-03T00:00:00Z"), "Ethena"),
+    IO(false, Instant.parse("2024-06-12T00:00:00Z"), "io.net"),
+    ZK(false, Instant.parse("2024-06-17T00:00:00Z"), "zkSync"),
+    PORTAL(false, Instant.parse("2024-02-29T00:00:00Z"), "Portal"),
+    XBT(false, Instant.parse("2022-08-04T00:00:00Z"), "XBIT Coin"),
+    POPCAT(false, Instant.parse("2024-05-02T00:00:00Z"), "Popcat"),
+    DRIFT(false, Instant.parse("2024-05-14T00:00:00Z"), "Drift Token"),
+    PRIME(false, Instant.parse("2023-11-02T00:00:00Z"), "Echelon Prime"),
+    WAGMIGAMES(false, Instant.parse("2022-12-15T00:00:00Z"), "WAGMI GAMES"),
+    SFUND(false, Instant.parse("2021-07-29T00:00:00Z"), "Seedify.fund"),
+    ASTRO(false, Instant.parse("2022-08-11T00:00:00Z"), "Astroport.fi"),
+    ROOT(false, Instant.parse("2023-11-23T00:00:00Z"), "The Root Network"),
+    DOMI(false, Instant.parse("2022-01-27T00:00:00Z"), "Domi"),
+    DIO(false, Instant.parse("2019-05-02T00:00:00Z"), "Decimated"),
+    WBAI(false, Instant.parse("2024-01-19T00:00:00Z"), "Wrapped Balance AI"),
+    KARRAT(false, Instant.parse("2024-04-24T00:00:00Z"), "Karrat"),
+    ZENT(false, Instant.parse("2024-09-05T00:00:00Z"), "ZENTU"),
+    PLAY(false, Instant.parse("2024-12-12T00:00:00Z"), "PLAY"),
+    BRETT(false, Instant.parse("2024-03-20T00:00:00Z"), "Brett (Base)"),
+    REDO(false, Instant.parse("2024-04-19T00:00:00Z"), "Resistance Dog"),
+    PONKE(false, Instant.parse("2024-02-06T00:00:00Z"), "PONKE"),
+    ROOST(false, Instant.parse("2024-03-28T00:00:00Z"), "Roost"),
+    BOBO(false, Instant.parse("2023-05-18T00:00:00Z"), "BOBO Coin"),
+    BXBT(false, Instant.parse("2023-10-19T00:00:00Z"), "BoxBet"),
+    BAZED(false, Instant.parse("2023-08-03T00:00:00Z"), "Bazed Games"),
+    WOLF(false, Instant.parse("2024-04-26T00:00:00Z"), "Landwolf"),
+    TMANIA(false, Instant.parse("2024-05-31T00:00:00Z"), "T Mania SOL"),
+    WOTF(false, Instant.parse("2024-12-21T00:00:00Z"), "Way of The Future"),
+    NOTCOIN(false, Instant.parse("2024-05-16T00:00:00Z"), "Notcoin"),
+    BOGE(false, Instant.parse("2024-08-23T00:00:00Z"), "Boge v1"),
+    BET(false, Instant.parse("2024-05-14T00:00:00Z"), "Betfin token"),
+    BIT(false, Instant.parse("2021-09-02T00:00:00Z"), "BitDAO"),
+    TRUMP(false, Instant.parse("2025-01-18T00:00:00Z"), "Official TRUMP"),
+    XAI(false, Instant.parse("2024-01-04T00:00:00Z"), "Xai Games"),
+    PIXEL(false, Instant.parse("2024-02-19T00:00:00Z"), "Pixels"),
+    ETHFI(false, Instant.parse("2024-03-18T00:00:00Z"), "Ether.fi"),
+    SAGA(false, Instant.parse("2024-04-09T00:00:00Z"), "Saga"),
+    EIGEN(false, Instant.parse("2024-10-01T00:00:00Z"), "Eigenlayer"),
+    USDE(false, true, Instant.parse("2023-12-14T00:00:00Z"), "Ethena USDe"),
+    PYUSD(false, true, Instant.parse("2023-08-31T00:00:00Z"), "PayPal USD"),
+    USD0(false, true, Instant.parse("2024-08-05T00:00:00Z"), "Usual USD"),
+    USDY(false, true, Instant.parse("2024-02-20T00:00:00Z"), "Ondo US Dollar Yield"),
+    USDD(false, true, Instant.parse("2022-05-26T00:00:00Z"), "USDD"),
+    EURC(false, true, Instant.parse("2022-10-06T00:00:00Z"), "EURC"),
+    USDL(false, true, Instant.parse("2024-12-03T00:00:00Z"), "Lift Dollar"),
+    USDB(false, true, Instant.parse("2024-04-09T00:00:00Z"), "USDB"),
+    USDP(false, true, Instant.parse("2018-10-04T00:00:00Z"), "Pax Dollar"),
+    LISUSD(false, true, Instant.parse("2022-09-08T00:00:00Z"), "Lista USD"),
+    AEUR(false, true, Instant.parse("2023-11-30T00:00:00Z"), "Anchored Coins AEUR"),
+    RLUSD(false, true, Instant.parse("2024-12-17T00:00:00Z"), "Ripple USD"),
+    EURT(false, true, Instant.parse("2021-09-23T00:00:00Z"), "Tether EURt"),
+    CUSD(false, true, Instant.parse("2020-12-10T00:00:00Z"), "Celo Dollar"),
+    EURI(false, true, Instant.parse("2024-09-04T00:00:00Z"), "Eurite"),
+    XSGD(false, true, Instant.parse("2021-01-28T00:00:00Z"), "XSGD"),
+    RSV(false, true, Instant.parse("2020-08-06T00:00:00Z"), "Reserve Dollar"),
+    IDRT(false, true, Instant.parse("2019-09-19T00:00:00Z"), "Rupiah Token"),
+    SUSD(false, true, Instant.parse("2018-07-12T00:00:00Z"), "sUSD"),
+    USDV(false, true, Instant.parse("2024-02-10T00:00:00Z"), "Verified USD"),
+    GYEN(false, true, Instant.parse("2021-05-27T00:00:00Z"), "GYEN"),
+    USDJ(false, true, Instant.parse("2022-12-15T00:00:00Z"), "USDJ"),
+    VCHF(false, true, Instant.parse("2024-02-23T00:00:00Z"), "VNX Swiss Franc"),
+    WUSD(false, true, Instant.parse("2024-02-09T00:00:00Z"), "Worldwide USD"),
+    OUSD(false, true, Instant.parse("2021-08-12T00:00:00Z"), "Origin Dollar"),
+    SBD(false, true, Instant.parse("2016-07-11T00:00:00Z"), "Steem Dollars"),
+    CEUR(false, true, Instant.parse("2021-07-08T00:00:00Z"), "Celo Euro"),
+    VEUR(false, true, Instant.parse("2023-12-14T00:00:00Z"), "VNX Euro"),
+    DJED(false, true, Instant.parse("2023-11-16T00:00:00Z"), "Djed"),
+    EDLC(false, true, Instant.parse("2023-08-17T00:00:00Z"), "Edelcoin"),
+    ESD(false, true, Instant.parse("2021-09-16T00:00:00Z"), "Empty Set Dollar"),
+    IDRX(false, true, Instant.parse("2023-07-06T00:00:00Z"), "IDRX"),
+    BAC(false, true, Instant.parse("2021-07-29T00:00:00Z"), "Basis Cash"),
+    SDAI(false, true, Instant.parse("2023-10-05T00:00:00Z"), "Savings Dai"),
+    AUSD(false, true, Instant.parse("2024-08-16T00:00:00Z"), "AUSD"),
+    MONKY(false, Instant.parse("2024-12-13T00:00:00Z"), "Wise Monkey"),
+    GFT(false, Instant.parse("2017-12-11T00:00:00Z"), "Gifto"),
+    LOOP(false, Instant.parse("2022-03-24T00:00:00Z"), "LoopNetwork"),
+    PRISMA(false, Instant.parse("2024-03-14T00:00:00Z"), "Prisma Governance Token"),
+    SUKU(false, Instant.parse("2021-09-16T00:00:00Z"), "SUKU"),
+    STRK(false, Instant.parse("2024-02-14T00:00:00Z"), "Starknet"),
+    SNEK(false, Instant.parse("2023-11-08T00:00:00Z"), "SNEK"),
+    WMTX(false, Instant.parse("2022-04-28T00:00:00Z"), "World Mobile Token"),
+    AIG(false, Instant.parse("2024-09-07T00:00:00Z"), "AiG"),
+    APFC(false, Instant.parse("2023-06-15T00:00:00Z"), "APF Coin"),
+    SMH(false, Instant.parse("2023-08-31T00:00:00Z"), "Spacemesh"),
+    SAHARA(false, Instant.parse("2025-06-26T00:00:00Z"), "Sahara AI"),
+    SKI(false, Instant.parse("2024-04-18T00:00:00Z"), "Ski Mask Dog"),
+    ASTER(false, Instant.parse("2025-09-19T00:00:00Z"), "Aster"),
+    WFI(false, Instant.parse("2024-11-20T00:00:00Z"), "WeFi"),
+    BERA(false, Instant.parse("2025-02-06T00:00:00Z"), "Berachain"),
+    NIGHT(false, Instant.parse("2025-12-09T00:00:00Z"), "Midnight"),
+    AIA(false, Instant.parse("2025-09-18T00:00:00Z"), "DeAgent (AIA)"),
+    PUMP(false, Instant.parse("2025-07-10T00:00:00Z"), "Pump.fun"),
+    WLFI(false, Instant.parse("2025-09-01T00:00:00Z"), "Official World Liberty Financial"),
+    NEIRO(false, Instant.parse("2024-08-01T00:00:00Z"), "First Neiro On Ethereum"),
+    VIRTUAL(false, Instant.parse("2023-12-21T00:00:00Z"), "Virtuals Protocol"),
+    AIXBT(false, Instant.parse("2024-12-26T00:00:00Z"), "aixbt by Virtuals"),
+    PENGU(false, Instant.parse("2024-12-12T00:00:00Z"), "Pudgy Penguins"),
+    HMSTR(false, Instant.parse("2024-09-26T00:00:00Z"), "Hamster Kombat"),
+    _1000CHEEMS("1000CHEEMS", false, Instant.parse("2025-03-05T00:00:00Z"), "1000CHEEMS"),
+    DOGS(false, Instant.parse("2024-08-22T00:00:00Z"), "Dogs"),
+    BB(false, Instant.parse("2024-05-16T00:00:00Z"), "BounceBit"),
+    _1MBABYDOGE("1MBABYDOGE", false, Instant.parse("2024-09-12T00:00:00Z"), "Baby Doge Coin"),
+    PNUT(false, Instant.parse("2024-11-07T00:00:00Z"), "Peanut the Squirrel"),
+    NOT(false, Instant.parse("2024-05-16T00:00:00Z"), "Notcoin"),
+    A2Z(false, Instant.parse("2025-07-30T00:00:00Z"), "Arena-Z"),
+    SOMI(false, Instant.parse("2025-09-02T00:00:00Z"), "Somnia"),
+    CGPT(false, Instant.parse("2023-05-04T00:00:00Z"), "ChainCHPT"),
+    CAT(false, Instant.parse("2025-04-13T00:00:00Z"), "Simon's Cat"),
+    W(false, Instant.parse("2024-03-28T00:00:00Z"), "Wormhole"),
+    BROCCOLI(false, Instant.parse("2025-02-13T00:00:00Z"), "CZ'S Dog (broccoli.gg)"),
+    S(false, Instant.parse("2025-01-06T00:00:00Z"), "Sonic"),
+    ASM(false, Instant.parse("2021-08-19T00:00:00Z"), "Assemble Protocol"),
+    ALEO(false, Instant.parse("2025-01-23T00:00:00Z"), "ALEO");
 
     String code;
     int decimalDigits;
     boolean fiat;
+    boolean stableCoin;
     Instant introduction;
     Instant endDate;
     String description;
 
+    private static final Map<String, Currency> BY_CODE =
+        Arrays.stream(values())
+            .collect(Collectors.toUnmodifiableMap(
+                c -> norm(c.code()),
+                c -> c,
+                (a, b) -> {
+                    throw new IllegalStateException("Duplicate currency code after normalization: " + a.code());
+                }
+            ));
+
     Currency(boolean fiat, Instant introduction, String description) {
-        this(null, fiat ? 2 : DECIMAL_DIGITS, fiat, introduction, null, description);
+        this(null, fiat ? 2 : DECIMAL_DIGITS, fiat, false, introduction, null, description);
+    }
+
+    Currency(boolean fiat, boolean stableCoin, Instant introduction, String description) {
+        this(null, fiat ? 2 : DECIMAL_DIGITS, fiat, stableCoin, introduction, null, description);
     }
 
     Currency(boolean fiat, Instant introduction, Instant endDate, String description) {
-        this(null, fiat ? 2 : DECIMAL_DIGITS, fiat, introduction, endDate, description);
+        this(null, fiat ? 2 : DECIMAL_DIGITS, fiat, false, introduction, endDate, description);
     }
 
     Currency(String code, boolean fiat, Instant introduction, String description) {
-        this(code, fiat ? 2 : DECIMAL_DIGITS, fiat, introduction, null, description);
+        this(code, fiat ? 2 : DECIMAL_DIGITS, fiat, false, introduction, null, description);
     }
 
-    Currency(String code, int decimalDigits, boolean fiat, Instant introduction, Instant endDate, String description) {
+    Currency(String code, boolean fiat, boolean stableCoin, Instant introduction, String description) {
+        this(code, fiat ? 2 : DECIMAL_DIGITS, fiat, stableCoin, introduction, null, description);
+    }
+
+    Currency(String code, int decimalDigits, boolean fiat, boolean stableCoin, Instant introduction, Instant endDate, String description) {
         this.decimalDigits = decimalDigits;
         this.fiat = fiat;
         this.introduction = introduction;
         this.endDate = endDate;
         this.description = description;
         this.code = code == null ? name() : code;
+        this.stableCoin = stableCoin;
     }
 
     public String code() {
@@ -915,11 +1101,14 @@ public enum Currency {
 
     public static Currency fromCode(String code) {
         Objects.requireNonNull(code, "code is null");
-        for (Currency c : values()) {
-            if (code.equals(c.code())) {
-                return c;
-            }
+        Currency c = BY_CODE.get(code.trim().toUpperCase(Locale.ROOT));
+        if (c == null) {
+            throw new IllegalArgumentException("Unknown currency code: " + code);
         }
-        throw new IllegalArgumentException("No enum constant " + Currency.class.getCanonicalName() + "." + code);
+        return c;
+    }
+
+    private static String norm(String code) {
+        return code == null ? null : code.trim().toUpperCase(Locale.ROOT);
     }
 }

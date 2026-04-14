@@ -23,7 +23,7 @@ import static lombok.AccessLevel.PRIVATE;
 @RequiredArgsConstructor
 @FieldDefaults(level = PRIVATE, makeFinal = true)
 public class CoinbaseConnector implements IConnector {
-    private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "coinbaseApiConnector";
+    private static final String ID = WhaleBooksPlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "coinbaseApiConnector";
     private static final SupportedExchange SUPPORTED_EXCHANGE = SupportedExchange.COINBASE;
 
     private static final ConnectorParameterDescriptor PARAMETER_API_SECRET =

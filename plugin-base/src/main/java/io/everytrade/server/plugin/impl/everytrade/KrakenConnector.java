@@ -9,6 +9,7 @@ import io.everytrade.server.plugin.api.connector.ConnectorParameterType;
 import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.connector.IConnector;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
+import io.everytrade.server.util.KrakenCurrencyUtil;
 import io.everytrade.server.util.serialization.ConnectorSerialization;
 import io.everytrade.server.util.serialization.SequenceIdentifierType;
 import io.everytrade.server.util.serialization.Uid;
@@ -24,29 +25,24 @@ import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.Order;
 import org.knowm.xchange.dto.account.FundingRecord;
 import org.knowm.xchange.dto.trade.UserTrade;
+import org.knowm.xchange.exceptions.RateLimitExceededException;
 import org.knowm.xchange.kraken.KrakenAdapters;
 import org.knowm.xchange.kraken.KrakenExchange;
-import org.knowm.xchange.kraken.KrakenUtils;
 import org.knowm.xchange.kraken.dto.account.DepostitStatus;
 import org.knowm.xchange.kraken.dto.account.KrakenLedger;
 import org.knowm.xchange.kraken.dto.account.LedgerType;
 import org.knowm.xchange.kraken.dto.account.WithdrawStatus;
-import org.knowm.xchange.kraken.dto.trade.KrakenOrderType;
-import org.knowm.xchange.kraken.dto.trade.KrakenTrade;
-import org.knowm.xchange.kraken.dto.trade.KrakenType;
 import org.knowm.xchange.kraken.service.KrakenAccountService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -61,6 +57,10 @@ import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.plugin.api.parser.ParsingProblemType.PARSED_ROW_IGNORED;
 import static io.everytrade.server.plugin.api.parser.ParsingProblemType.ROW_PARSING_FAILED;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.DECIMAL_DIGITS;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.kraken.KrakenAssetCodeType.EARNING_REWARDS;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.kraken.KrakenAssetCodeType.STAKED;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.kraken.KrakenAssetCodeType.STAKED_BEARING;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.kraken.KrakenAssetCodeType.STAKING_REWARDS;
 import static io.everytrade.server.util.serialization.DownloadedStatus.ALL_DATA_DOWNLOADED;
 import static io.everytrade.server.util.serialization.DownloadedStatus.PARTIAL_DATA_DOWNLOADED;
 import static io.everytrade.server.util.serialization.SequenceIdentifierType.END;
@@ -81,13 +81,13 @@ import static org.knowm.xchange.kraken.dto.account.LedgerType.TRADE;
 @FieldDefaults(makeFinal = true, level = PRIVATE)
 public class KrakenConnector implements IConnector {
     private static final Logger LOG = LoggerFactory.getLogger(KrakenConnector.class);
-    private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "krkApiConnector";
+    private static final String ID = WhaleBooksPlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "krkApiConnector";
     private static final String WRONG_NUMBER_OF_TRANSACTIONS = "wrong number of txs - expected (1x RECEIVE and 1x SEND)";
     private static final String SPEND_POSITIVE_NUMBER = "Spend - transaction amount must be negative";
     private static final String RECEIVE_POSITIVE_NUMBER = "Receive - transaction amount must be positive";
-    private static final Duration SLEEP_BETWEEN_FUNDING_REQUESTS = Duration.ofMillis(3 * 1000);
+    private static final Duration SLEEP_BETWEEN_FUNDING_REQUESTS = Duration.ofMillis(6 * 1000);
 
-    private static final int MAX_REQUESTS_COUNT = 50;
+    private static final int MAX_REQUESTS_COUNT = 7;
     public static final String UID_TRADES_ID = "1";
     public static final String UID_SALE_ID = "2";
     public static final String UID_DEPOSIT_ID = "3";
@@ -97,7 +97,7 @@ public class KrakenConnector implements IConnector {
     public static final String EXCEPTION_CURRENCY = "Invalid currencies: ";
     public static final String EXCEPTION_AMOUNT = "Invalid transactionAmounts: ";
     public static final String EXCEPTION_FEE_AMOUNT = "Invalid volume of fees in: ";
-    public static final String EXCEPTION_WITHDRAWAL_PAIR_VALUES = "Invalid withdrawal pair values: ";
+    private static final String UNREALISED_TRANSACTION = "Unrealised transaction: ";
     public static final long DEFAULT_BLOCK_SIZE = 50;
 
     private List<ParsingProblem> parsingProblems = new ArrayList<>();
@@ -280,7 +280,7 @@ public class KrakenConnector implements IConnector {
         var fee2 = ledger2.getFee();
         var feeTime = convertTimeFromUnix(leger1.getUnixTime());
 
-        if ((fee1.compareTo(ZERO) > 1 && fee2.compareTo(ZERO) > 1) || (fee1.compareTo(ZERO) < 0 && fee2.compareTo(ZERO) < 0)) {
+        if (fee1.compareTo(ZERO) < 0 && fee2.compareTo(ZERO) < 0) {
             parsingProblems.add(new ParsingProblem(pair.toString(), EXCEPTION_FEE_AMOUNT + feeTime, ROW_PARSING_FAILED));
         }
     }
@@ -336,36 +336,18 @@ public class KrakenConnector implements IConnector {
                 }
             );
             var resultsKeys = pairsReceiveSend.keySet();
-            List<KrakenTrade> krakenTrades = new ArrayList<>();
-            Map<String, KrakenTrade> sells = new HashMap<>();
+            List<UserTrade> result = new ArrayList<>();
 
             for (String key : resultsKeys) {
                 var receiveSpendPair = pairsReceiveSend.get(key);
                 try {
                     validateReceiveSendPair(receiveSpendPair);
-                    KrakenLedger spend;
-                    KrakenLedger receive;
-                    if (receiveSpendPair.get(0).getLedgerType().toString().equalsIgnoreCase(LedgerType.SPEND.toString())) {
-                        spend = receiveSpendPair.get(0);
-                        receive = receiveSpendPair.get(1);
-                    } else {
-                        spend = receiveSpendPair.get(1);
-                        receive = receiveSpendPair.get(0);
-                    }
-                    var krakenTrade = new KrakenTrade(receive.getRefId(),
-                        currencySwitcher(spend.getAsset()).concat("/").concat(currencySwitcher((receive.getAsset()))),
-                        spend.getUnixTime(), KrakenType.SELL, KrakenOrderType.LIMIT,
-                        spend.getTransactionAmount().abs().divide(receive.getTransactionAmount(),
-                            RoundingMode.HALF_UP), receive.getTransactionAmount(), receive.getFee(), spend.getTransactionAmount().abs(),
-                        null, null, null, null, null, null, null, null, null, null, null);
-                    krakenTrades.add(krakenTrade);
+                    result.add(convertSpendReceivePairToTrade(receiveSpendPair));
                 } catch (Exception e) {
                     parsingProblems.add(new ParsingProblem(receiveSpendPair.toString(), e.getMessage(), ROW_PARSING_FAILED));
                 }
-
             }
-            krakenTrades.forEach(t -> sells.put(t.getOrderTxId(), t));
-            return KrakenAdapters.adaptTradesHistory(sells).getUserTrades();
+            return result;
         } catch (IOException e) {
             throw new IllegalStateException("Download receive spend history failed.", e);
         } catch (InterruptedException e) {
@@ -377,37 +359,57 @@ public class KrakenConnector implements IConnector {
                                         String endUnixId, Long offset, List<KrakenLedger> blocks, String uidType,
                                         LedgerType ledgerType) throws IOException, InterruptedException {
         int requests = 0;
+        int retryCount = 0;
+        int maxRetries = 5;
+
         while (requests < MAX_REQUESTS_COUNT) {
-            Thread.sleep(SLEEP_BETWEEN_FUNDING_REQUESTS.toMillis());
-            var block = accountService.getKrakenPartialLedgerInfo(ledgerType, startUnixId, endUnixId, offset);
-            if (block.isEmpty()) {
-                String start = getNewStart(state, uidType);
-                state.getUidS().get(uidType).setUid(OFFSET, "0");
-                state.getUidS().get(uidType).setUid(END, null);
-                state.getUidS().get(uidType).setUid(START, start);
-                state.getUidS().get(uidType).setUid(STATUS, ALL_DATA_DOWNLOADED.getCode());
-                break;
-            } else if (block.values().size() < DEFAULT_BLOCK_SIZE) {
-                List<KrakenLedger> values = block.values().stream().toList();
-                blocks.addAll(values);
-                String start = getNewStart(state, uidType);
-                state.getUidS().get(uidType).setUid(END, null);
-                state.getUidS().get(uidType).setUid(OFFSET, "0");
-                state.getUidS().get(uidType).setUid(START, start);
-                state.getUidS().get(uidType).setUid(STATUS, ALL_DATA_DOWNLOADED.getCode());
-                break;
-            } else if (block.values().size() == DEFAULT_BLOCK_SIZE) {
-                blocks.addAll(block.values());
-                offset += DEFAULT_BLOCK_SIZE;
-                state.getUidS().get(uidType).setUid(OFFSET, String.valueOf(offset));
-                state.getUidS().get(uidType).setUid(STATUS, PARTIAL_DATA_DOWNLOADED.getCode());
-                state.getUidS().get(uidType).setUid(START, startUnixId);
-                state.getUidS().get(uidType).setUid(END, endUnixId);
-                requests++;
-            } else {
-                throw new IllegalStateException("Unidentified state - ledger sales");
+            try {
+                Thread.sleep(SLEEP_BETWEEN_FUNDING_REQUESTS.toMillis());
+                var block = accountService.getKrakenPartialLedgerInfo(ledgerType, startUnixId, endUnixId, offset);
+
+                if (block.isEmpty()) {
+                    String start = getNewStart(state, uidType);
+                    updateStateForCompletion(state, uidType, start);
+                    break;
+                } else {
+                    List<KrakenLedger> values = List.copyOf(block.values());
+                    blocks.addAll(values);
+
+                    if (values.size() < DEFAULT_BLOCK_SIZE) {
+                        String start = getNewStart(state, uidType);
+                        updateStateForCompletion(state, uidType, start);
+                        break;
+                    } else {
+                        offset += DEFAULT_BLOCK_SIZE;
+                        updateStateForContinuation(state, uidType, offset, startUnixId, endUnixId);
+                        requests++;
+                        retryCount = 0;
+                    }
+                }
+            } catch (RateLimitExceededException e) {
+                if (retryCount >= maxRetries) {
+                    throw new IOException("Exceeded maximum retry attempts due to rate limiting.", e);
+                }
+                retryCount++;
+                long backoffTime = (long) Math.pow(2, retryCount) * 1000;
+                LOG.info("Rate limit exceeded. Retrying after {} ms.", backoffTime);
+                Thread.sleep(backoffTime);
             }
         }
+    }
+
+    private static void updateStateForCompletion(Uids state, String uidType, String start) {
+        state.getUidS().get(uidType).setUid(END, null);
+        state.getUidS().get(uidType).setUid(OFFSET, "0");
+        state.getUidS().get(uidType).setUid(START, start);
+        state.getUidS().get(uidType).setUid(STATUS, ALL_DATA_DOWNLOADED.getCode());
+    }
+
+    private static void updateStateForContinuation(Uids state, String uidType, Long offset, String startUnixId, String endUnixId) {
+        state.getUidS().get(uidType).setUid(OFFSET, String.valueOf(offset));
+        state.getUidS().get(uidType).setUid(STATUS, PARTIAL_DATA_DOWNLOADED.getCode());
+        state.getUidS().get(uidType).setUid(START, startUnixId);
+        state.getUidS().get(uidType).setUid(END, endUnixId);
     }
 
     private static String getNewStart(Uids state, String uidType) {
@@ -501,9 +503,11 @@ public class KrakenConnector implements IConnector {
     private KrakenLedger findFee(KrakenLedger base, KrakenLedger quote) {
         KrakenLedger fee = null;
         try {
-            if(base.getFee().compareTo(ZERO) >= 0 && quote.getFee().compareTo(ZERO) == 0) {
+            if (base.getFee().compareTo(ZERO) >= 0 && quote.getFee().compareTo(ZERO) == 0) {
                 fee = base;
             } else if (quote.getFee().compareTo(ZERO) >= 0 && base.getFee().compareTo(ZERO) == 0) {
+                fee = quote;
+            } else if (quote.getFee().compareTo(ZERO) > 0 && base.getFee().compareTo(ZERO) > 0) {
                 fee = quote;
             } else {
                 parsingProblems.add(new ParsingProblem("Cannot find fee", base.toString(), PARSED_ROW_IGNORED));
@@ -520,6 +524,42 @@ public class KrakenConnector implements IConnector {
         var quote = pairs.get(1);
 
         TransactionType type = getTransactionType(base, quote);
+        KrakenLedger fee = findFee(base, quote);
+
+        return UserTrade.builder()
+            .id(base.getRefId())
+            .timestamp(convertUnixToDate(base.getUnixTime()))
+            .originalAmount(base.getTransactionAmount().abs())
+            .currencyPair(new CurrencyPair(translateKrakenCurrency(base.getAsset()), translateKrakenCurrency(quote.getAsset())))
+            .type(type.equals(BUY) ? Order.OrderType.BID : Order.OrderType.ASK)
+            .price(quote.getTransactionAmount().divide(base.getTransactionAmount(), DECIMAL_DIGITS, HALF_UP).abs())
+            .feeCurrency(translateKrakenCurrency(fee.getAsset()))
+            .feeAmount(fee.getFee().abs())
+            .build();
+    }
+
+    private UserTrade convertSpendReceivePairToTrade(List<KrakenLedger> ledgerPairs) {
+        KrakenLedger spend;
+        KrakenLedger receive;
+        if (ledgerPairs.get(0).getLedgerType().toString().equalsIgnoreCase(LedgerType.SPEND.toString())) {
+            spend = ledgerPairs.get(0);
+            receive = ledgerPairs.get(1);
+        } else {
+            spend = ledgerPairs.get(1);
+            receive = ledgerPairs.get(0);
+        }
+        TransactionType type;
+        KrakenLedger base;
+        KrakenLedger quote;
+        if (io.everytrade.server.model.Currency.fromCode(currencySwitcher(receive.getAsset())).isFiat()) {
+            quote = receive;
+            base = spend;
+            type = TransactionType.SELL;
+        } else {
+            base = receive;
+            quote = spend;
+            type = TransactionType.BUY;
+        }
         KrakenLedger fee = findFee(base, quote);
 
         return UserTrade.builder()
@@ -600,13 +640,29 @@ public class KrakenConnector implements IConnector {
     private List<FundingRecord> createFundings(List<KrakenLedger> blocks, FundingRecord.Type type, String description) {
         List<FundingRecord> records = new ArrayList<>();
         blocks.forEach(ledger -> {
-            Date date = convertUnixToDate(ledger.getUnixTime());
-            Currency currency = translateKrakenCurrency(ledger.getAsset());
-            BigDecimal feeAmount = ledger.getFee();
-            BigDecimal transactionAmount = ledger.getTransactionAmount();
-            String refId = ledger.getRefId();
-            records.add(new FundingRecord(null, null, date, currency, transactionAmount, refId, null, type, null, null, feeAmount,
-                description));
+            try {
+                Date date = convertUnixToDate(ledger.getUnixTime());
+                Currency currency = translateKrakenCurrency(ledger.getAsset());
+                BigDecimal feeAmount = ledger.getFee();
+                BigDecimal transactionAmount = ledger.getTransactionAmount();
+                String refId = ledger.getRefId();
+
+                records.add(new FundingRecord(
+                    null,
+                    null,
+                    date,
+                    currency,
+                    transactionAmount,
+                    refId,
+                    null,
+                    type,
+                    null,
+                    null,
+                    feeAmount,
+                    description));
+            } catch (Exception e) {
+                parsingProblems.add(new ParsingProblem(ledger.toString(), e.getMessage(), ROW_PARSING_FAILED));
+            }
         });
         return records;
     }
@@ -616,7 +672,7 @@ public class KrakenConnector implements IConnector {
         List<KrakenLedger> removeLedgers = new ArrayList<>();
         ledgers.stream().forEach(ledger -> {
                 if (ledgersGroupedByRefId.get(ledger.getRefId()).size() != 1) {
-                    parsingProblems.add(new ParsingProblem(ledger.toString(), EXCEPTION_WITHDRAWAL_PAIR_VALUES, PARSED_ROW_IGNORED));
+                    parsingProblems.add(new ParsingProblem(ledger.toString(), UNREALISED_TRANSACTION, PARSED_ROW_IGNORED));
                     removeLedgers.add(ledger);
                 }
             }
@@ -659,7 +715,7 @@ public class KrakenConnector implements IConnector {
 
     private Currency translateKrakenCurrency(String currency) {
         try {
-            return KrakenUtils.translateKrakenCurrencyCode(currency);
+            return Currency.getInstance(switchKrakenAssetToCurrency(currency).code());
         } catch (Exception ignore) {
             throw new DataValidationException(EXCEPTION_CURRENCY);
         }
@@ -667,7 +723,13 @@ public class KrakenConnector implements IConnector {
 
     private io.everytrade.server.model.Currency switchKrakenAssetToCurrency(String krakenCurrency) {
         try {
-            return io.everytrade.server.model.Currency.fromCode(translateKrakenCurrency(krakenCurrency).getCurrencyCode());
+            krakenCurrency = krakenCurrency
+                .replace(STAKED.getCode(), "") // (staked)
+                .replace(EARNING_REWARDS.getCode(), "") // which represents balances earning automatically in Kraken Rewards
+                .replace(STAKING_REWARDS.getCode(), "") // (opt-in rewards) balances
+                .replace(STAKED_BEARING.getCode(), ""); // which represents balances in new yield-bearing products similar to .S
+
+            return KrakenCurrencyUtil.findCurrencyByCode(krakenCurrency);
         } catch (Exception ignore) {
             throw new DataValidationException(EXCEPTION_CURRENCY);
         }

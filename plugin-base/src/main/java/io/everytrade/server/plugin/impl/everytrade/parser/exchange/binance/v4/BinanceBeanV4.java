@@ -16,6 +16,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
 
+import static io.everytrade.server.model.TransactionType.AIRDROP;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.FEE;
@@ -47,6 +48,11 @@ import java.util.List;
 public class BinanceBeanV4 extends ExchangeBean implements Cloneable {
 
     public static final String LD_COIN_CURRENCY_PREFIX = "LD";
+    public static final String BINANCE_CARD_SPENDING = "Binance Card Spending";
+    public static final String BINANCE_CARD_SPENDING_FIAT  = BINANCE_CARD_SPENDING + " FIAT";
+    public static final String BINANCE_CARD_SPENDING_CRYPTO  = BINANCE_CARD_SPENDING + " CRYPTO";
+    public static final String BINANCE_CARD_SPENDING_CRYPTO_FIAT_WITHDRAWAL  = BINANCE_CARD_SPENDING_CRYPTO + "_FIAT WITHDRAWAL";
+
     Instant date;
     String account;
     String userId;
@@ -124,6 +130,9 @@ public class BinanceBeanV4 extends ExchangeBean implements Cloneable {
             this.operationType = BinanceOperationTypeV4.getEnum(value);
             this.type = BinanceSwitcher.operationTypeSwitcher(value);
         } catch (Exception ignore) {
+        }
+        if (operationType == null) {
+            throw new DataValidationException("Failed operation type " + originalOperation);
         }
     }
 
@@ -224,6 +233,23 @@ public class BinanceBeanV4 extends ExchangeBean implements Cloneable {
                 );
                 related.add(feeTxs);
             }
+        }
+
+        if (AIRDROP.equals(type)) {
+            return new TransactionCluster(
+                new ImportedTransactionBean(
+                    null,
+                    date,
+                    marketBase,
+                    marketBase,
+                    AIRDROP,
+                    amountBase,
+                    null,
+                    note,
+                    null
+                ),
+                emptyList()
+            );
         }
 
         if (REWARD.equals(type)) {
@@ -380,6 +406,14 @@ public class BinanceBeanV4 extends ExchangeBean implements Cloneable {
                 related
             );
             return cluster;
+        }
+    }
+
+    public BinanceBeanV4 shallowCopy() {
+        try {
+            return (BinanceBeanV4) this.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e);
         }
     }
 }

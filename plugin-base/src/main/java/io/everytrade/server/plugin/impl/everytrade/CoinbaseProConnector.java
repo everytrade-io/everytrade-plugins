@@ -8,22 +8,17 @@ import io.everytrade.server.plugin.api.connector.ConnectorParameterDescriptor;
 import io.everytrade.server.plugin.api.connector.ConnectorParameterType;
 import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.connector.IConnector;
-import io.everytrade.server.plugin.api.parser.ParseResult;
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.ExchangeFactory;
 import org.knowm.xchange.ExchangeSpecification;
 import org.knowm.xchange.coinbasepro.CoinbaseProExchange;
-import org.knowm.xchange.dto.trade.UserTrade;
-import org.knowm.xchange.service.trade.TradeService;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import static java.util.Collections.emptyList;
-
 public class CoinbaseProConnector implements IConnector {
-    private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "coinbaseProApiConnector";
+    private static final String ID = WhaleBooksPlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "coinbaseProApiConnector";
     private static final SupportedExchange SUPPORTED_EXCHANGE = SupportedExchange.COINBASE_PRO;
 
     private static final ConnectorParameterDescriptor PARAMETER_API_SECRET =
@@ -67,7 +62,8 @@ public class CoinbaseProConnector implements IConnector {
         "Coinbase Pro Connector",
         "",
         SUPPORTED_EXCHANGE.getInternalId(),
-        List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET, PARAMETER_PASS_PHRASE, PARAMETER_CURRENCY_PAIRS)
+        List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET, PARAMETER_PASS_PHRASE, PARAMETER_CURRENCY_PAIRS),
+        true
     );
 
     private final String apiKey;

@@ -69,7 +69,7 @@ class   HitBtcBeanV1Test {
                 Currency.ETH,
                 Currency.USD,
                 TransactionType.SELL,
-                new BigDecimal("0.27"),
+                new BigDecimal("0.2700"),
                 new BigDecimal("194.01")
             ),
             related
@@ -100,7 +100,7 @@ class   HitBtcBeanV1Test {
                 Currency.ETH,
                 Currency.USD,
                 TransactionType.SELL,
-                new BigDecimal("0.27"),
+                new BigDecimal("0.2700"),
                 new BigDecimal("194.01")
             ),
             related

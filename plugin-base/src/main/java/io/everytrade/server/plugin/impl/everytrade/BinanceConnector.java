@@ -28,7 +28,7 @@ import static lombok.AccessLevel.PRIVATE;
 public class BinanceConnector implements IConnector {
 
     private static final Object LOCK = new Object();
-    private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "binanceApiConnector";
+    private static final String ID = WhaleBooksPlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "binanceApiConnector";
     private static final int MAX_DOWNLOADED_TXS = 7000;
 
     private static final ConnectorParameterDescriptor PARAMETER_API_SECRET =
@@ -58,29 +58,63 @@ public class BinanceConnector implements IConnector {
             false
         );
 
+    private static final ConnectorParameterDescriptor PARAMETER_PAIR_SETTINGS =
+        new ConnectorParameterDescriptor(
+            "pairSettings",
+            ConnectorParameterType.BOOLEAN,
+            UiKey.CONNECTION_CURRENCY_PAIRS_SETTINGS,
+            "",
+            true
+        );
+
+    private static final ConnectorParameterDescriptor PARAMETER_IS_PAID_SUBSCRIPTION =
+        new ConnectorParameterDescriptor(
+            "isPaidSubscription",
+            ConnectorParameterType.HIDDEN,
+            UiKey.IS_PAID_SUBSCRIPTION,
+            "",
+            false
+        );
+
     public static final ConnectorDescriptor DESCRIPTOR = new ConnectorDescriptor(
         ID,
         "Binance Connector",
         "",
         BINANCE.getInternalId(),
-        List.of(PARAMETER_API_KEY, PARAMETER_API_SECRET, PARAMETER_CURRENCY_PAIRS)
+        List.of(
+            PARAMETER_API_KEY,
+            PARAMETER_API_SECRET,
+            PARAMETER_PAIR_SETTINGS,
+            PARAMETER_CURRENCY_PAIRS,
+            PARAMETER_IS_PAID_SUBSCRIPTION)
     );
 
     Exchange exchange;
     XChangeConnectorParser parser;
     String currencyPairs;
+    boolean pairSettings;
+    boolean isPaidSubscription;
 
     public BinanceConnector(Map<String, String> parameters) {
         this(
             parameters.get(PARAMETER_API_KEY.getId()),
             parameters.get(PARAMETER_API_SECRET.getId()),
-            parameters.get(PARAMETER_CURRENCY_PAIRS.getId())
+            parameters.get(PARAMETER_CURRENCY_PAIRS.getId()),
+            Boolean.parseBoolean(parameters.get(PARAMETER_PAIR_SETTINGS.getId())),
+            Boolean.parseBoolean(parameters.get(PARAMETER_IS_PAID_SUBSCRIPTION.getId()))
         );
     }
-    public BinanceConnector(@NonNull String apiKey, @NonNull String apiSecret, @NonNull String currencyPairs) {
+    public BinanceConnector(@NonNull String apiKey, @NonNull String apiSecret, String currencyPairs, boolean pairSettings) {
+        this(apiKey, apiSecret, currencyPairs, pairSettings, false);
+    }
+
+    public BinanceConnector(@NonNull String apiKey, @NonNull String apiSecret, String currencyPairs,
+                            boolean pairSettings, boolean isPaidSubscription) {
         this.exchange = ExchangeFactory.INSTANCE.createExchange(createExchangeSpec(apiKey, apiSecret));
         this.parser = new XChangeConnectorParser();
         this.currencyPairs = currencyPairs;
+        this.pairSettings = pairSettings;
+        this.isPaidSubscription = isPaidSubscription;
     }
 
     @Override
@@ -94,7 +128,7 @@ public class BinanceConnector implements IConnector {
             var binanceDownloader = new BinanceDownloader(exchange, lastTransactionId);
             List<UserTrade> convertedTrades = binanceDownloader.downloadConvertedTrades();
             List<FundingRecord> funding = binanceDownloader.downloadDepositsAndWithdrawals(MAX_DOWNLOADED_TXS);
-            List<UserTrade> userTrades = binanceDownloader.downloadTrades(currencyPairs, MAX_DOWNLOADED_TXS - funding.size());
+            List<UserTrade> userTrades = binanceDownloader.downloadTrades(currencyPairs, pairSettings, isPaidSubscription);
             userTrades.addAll(convertedTrades);
             return DownloadResult.builder()
                 .parseResult(parser.getParseResult(userTrades, funding))

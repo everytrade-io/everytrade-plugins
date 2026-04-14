@@ -22,7 +22,7 @@ import static lombok.AccessLevel.PRIVATE;
 @RequiredArgsConstructor
 @FieldDefaults(makeFinal = true, level = PRIVATE)
 public class KuCoinConnector implements IConnector {
-    private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "kucoinApiConnector";
+    private static final String ID = WhaleBooksPlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "kucoinApiConnector";
     private static final SupportedExchange SUPPORTED_EXCHANGE = SupportedExchange.KUCOIN;
 
     private static final ConnectorParameterDescriptor PARAMETER_API_SECRET =

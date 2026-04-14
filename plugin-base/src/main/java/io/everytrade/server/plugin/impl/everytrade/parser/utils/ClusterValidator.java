@@ -4,15 +4,16 @@ import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public class ClusterValidator {
 
-    static final double MAX_VOLUME_VALUE = 9999999999.999;
+    static final BigDecimal MAX_VOLUME_VALUE = new BigDecimal("99999999999999999999.999");
 
-    public static void validateNumberSize(double number) {
-        if (number > MAX_VOLUME_VALUE) {
-            String message = "Number exceeds 10 digits";
+    public static void validateNumberSize(BigDecimal number) {
+        if (number.compareTo(MAX_VOLUME_VALUE) > 0) {
+            String message = "Number exceeds 20 digits";
             throw new DataIgnoredException(message);
         }
     }
@@ -26,7 +27,7 @@ public class ClusterValidator {
     }
 
     public static void validateTransaction(ImportedTransactionBean tx) {
-        validateNumberSize(tx.getVolume().doubleValue());
+        validateNumberSize(tx.getVolume());
     }
 
 }

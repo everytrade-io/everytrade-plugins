@@ -1,94 +1,255 @@
 package io.everytrade.server.plugin.impl.everytrade;
 
-import com.okcoin.commons.okex.open.api.bean.spot.result.OrderInfo;
-import com.okcoin.commons.okex.open.api.service.spot.SpotOrderAPIServive;
-import org.knowm.xchange.currency.CurrencyPair;
+import io.everytrade.server.util.serialization.DownloadState;
+import org.knowm.xchange.Exchange;
+import org.knowm.xchange.dto.account.FundingRecord;
+import org.knowm.xchange.dto.meta.ExchangeMetaData;
+import org.knowm.xchange.dto.trade.UserTrade;
+import org.knowm.xchange.dto.trade.UserTrades;
+import org.knowm.xchange.okex.dto.OkexResponse;
+import org.knowm.xchange.okex.dto.account.OkexDeposit;
+import org.knowm.xchange.okex.dto.account.OkexWithdrawal;
+import org.knowm.xchange.okex.dto.trade.OkexOrderDetails;
+import org.knowm.xchange.okex.service.OkexAccountServiceRaw;
+import org.knowm.xchange.okex.service.OkexTradeServiceRaw;
 
-import java.time.Duration;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
+import java.util.UUID;
 
+// https://www.okex.com/docs/en/#spot-account_information - limit 20 requests per second
 public class OkxDownloader {
-    //https://www.okex.com/docs/en/#spot-account_information - limit 20 requests per second
-    private static final int MAX_REQUESTS = 30;
-    private static final Duration SLEEP_BETWEEN_REQUESTS = Duration.ofMillis(100);
-    private static final String MAX_TXS_PER_REQUEST = "100";
-    public static final String STATUS_FULLY_FILLED = "2";
-    private final SpotOrderAPIServive spotOrderApiService;
-    private final OkxCurrencyPairDonwloadState donwloadState;
+    private final Exchange exchange;
+    private final OkexAccountServiceRaw accountRaw;
+    private final OkexTradeServiceRaw tradeRaw;
 
-    public OkxDownloader(SpotOrderAPIServive spotOrderApiService, String lastTransactionId) {
-        Objects.requireNonNull(this.spotOrderApiService = spotOrderApiService);
-        donwloadState = new OkxCurrencyPairDonwloadState(lastTransactionId);
+    private final DownloadState state;
+
+    public OkxDownloader(String downloadState, Exchange exchange) {
+        this.exchange = exchange;
+        this.accountRaw = (OkexAccountServiceRaw) exchange.getAccountService();
+        this.tradeRaw = (OkexTradeServiceRaw) exchange.getTradeService();
+        this.state = DownloadState.from(downloadState);
     }
 
-    public List<OrderInfo> download(String currencyPairs) {
-        final List<CurrencyPair> pairs = ConnectorUtils.toCurrencyPairs(currencyPairs);
-        final List<OrderInfo> orders = new ArrayList<>();
-        int sentRequests = 0;
-        for (CurrencyPair pair : pairs) {
-            final List<OrderInfo> pairOrders = new ArrayList<>();
-            String pairCode = String.format("%s-%s", pair.base, pair.counter);
-            final String continuousBlockLastTxId = donwloadState.getContinuousBlockLastTxId(pairCode);
-            String currentAfterGapFirstTxId = donwloadState.getAfterGapFirstTxId(pairCode);
-            boolean isGapClosed = false;
+    public String serializeState() {
+        return state.serialize();
+    }
 
-            while (sentRequests < MAX_REQUESTS) {
-                final List<OrderInfo> ordersBlock;
+    public List<UserTrade> downloadTrades() {
+        final List<UserTrade> allTrades = new ArrayList<>();
+        final ExchangeMetaData meta = exchange.getExchangeMetaData();
+
+        final String lastTradeId = state.getLastTradeId();
+
+        try {
+            String afterOrdId = null;
+            boolean firstPage = true;
+            boolean reachedLastTrade = false;
+
+            for (; ; ) {
+                OkexResponse<List<OkexOrderDetails>> resp;
                 try {
-                    ordersBlock = spotOrderApiService.getOrders(
-                        pairCode,
-                        STATUS_FULLY_FILLED,
-                        currentAfterGapFirstTxId,
-                        currentAfterGapFirstTxId == null ? continuousBlockLastTxId : null,
-                        MAX_TXS_PER_REQUEST
+                    resp = tradeRaw.getOrderHistory(
+                        "SPOT",
+                        null,
+                        null,
+                        afterOrdId, // after
+                        null,       // before
+                        "100"
                     );
-                    Thread.sleep(SLEEP_BETWEEN_REQUESTS.toMillis());
-                } catch (Exception e) {
-                    throw new IllegalStateException("User trade history download failed. ", e);
+                } catch (IOException e) {
+                    if (is429(e)) {
+                        sleepQuietly(300);
+                        continue;
+                    }
+                    throw e;
                 }
-                final List<OrderInfo> ordersToAdd = getOrdersToAdd(ordersBlock, continuousBlockLastTxId);
-                isGapClosed = ordersBlock.isEmpty() || ordersToAdd.size() < ordersBlock.size();
-                if (ordersToAdd.isEmpty()) {
+
+                List<OkexOrderDetails> page = resp.getData();
+                if (page == null || page.isEmpty()) {
                     break;
                 }
 
-                pairOrders.addAll(ordersToAdd);
-                currentAfterGapFirstTxId = ordersToAdd.get(ordersToAdd.size() - 1).getOrder_id();
-                ++sentRequests;
+                if (firstPage) {
+                    state.setNewTradeId(page.get(0).getOrderId());
+                    firstPage = false;
+                }
+
+                for (OkexOrderDetails od : page) {
+                    if (lastTradeId != null && lastTradeId.equals(od.getOrderId())) {
+                        reachedLastTrade = true;
+                        break;
+                    }
+                    UserTrades ut = OkxMappers.adaptUserTrades(Collections.singletonList(od), meta);
+                    if (ut.getUserTrades() != null) {
+                        allTrades.addAll(ut.getUserTrades());
+                    }
+                }
+
+                if (reachedLastTrade) {
+                    break;
+                }
+
+                afterOrdId = page.get(page.size() - 1).getOrderId();
+
+                // OKX rate limiting
+                sleepQuietly(80);
             }
 
-            donwloadState.update(
-                pairCode,
-                isGapClosed,
-                pairOrders
-            );
-            orders.addAll(pairOrders);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        return orders;
-    }
 
-    public String getLastTransactionId() {
-        return donwloadState.toLastTransactionId();
-    }
-
-    private List<OrderInfo> getOrdersToAdd(List<OrderInfo> ordersBlock, String continuousBlockLastTxId) {
-        final int duplicate = findDuplicate(continuousBlockLastTxId, ordersBlock);
-        final List<OrderInfo> ordersToAdd = new ArrayList<>(ordersBlock);
-        if (duplicate > -1) {
-            ordersToAdd.removeAll(ordersToAdd.subList(0, duplicate + 1));
+        Map<String, UserTrade> dedup = new LinkedHashMap<>();
+        for (UserTrade t : allTrades) {
+            String id = (t.getId() != null) ? t.getId() : UUID.randomUUID().toString();
+            dedup.put(id, t);
         }
-        return ordersToAdd;
+
+        List<UserTrade> result = new ArrayList<>(dedup.values());
+
+        result.sort(
+            Comparator
+                .comparing(UserTrade::getTimestamp, Comparator.nullsLast(Comparator.naturalOrder()))
+                .thenComparing(UserTrade::getId, Comparator.nullsLast(Comparator.naturalOrder()))
+                .reversed()
+        );
+
+        return result;
     }
 
-    private int findDuplicate(String transactionId, List<OrderInfo> ordersBlock) {
-        for (int i = 0; i < ordersBlock.size(); i++) {
-            final OrderInfo orderInfo = ordersBlock.get(i);
-            if (orderInfo.getOrder_id().equals(transactionId)) {
-                return i;
+    public List<FundingRecord> downloadWithdrawals() {
+        List<FundingRecord> results = new ArrayList<>();
+
+        Long lastTs = parseLongOrNull(state.getLastWithdrawalTs());
+
+        String after = null;
+        boolean first = true;
+        boolean reachedLast = false;
+
+        for (; ; ) {
+            OkexResponse<List<OkexWithdrawal>> resp;
+            try {
+                resp = accountRaw.getWithdrawalHistory(null, after, null);
+            } catch (IOException e) {
+                if (is429(e)) {
+                    sleepQuietly(300);
+                    continue;
+                }
+                throw new RuntimeException(e);
             }
+
+            List<OkexWithdrawal> page = resp.getData();
+            if (page == null || page.isEmpty()) {
+                break;
+            }
+
+            if (first) {
+                // newest timestamp cursor
+                state.setNewWithdrawalTs(page.get(0).getTs());
+                first = false;
+            }
+
+            for (OkexWithdrawal w : page) {
+                long ts = Long.parseLong(w.getTs());
+
+                if (lastTs != null && ts <= lastTs) {
+                    reachedLast = true;
+                    break;
+                }
+
+                results.add(OkxMappers.mapWithdrawal(w));
+            }
+
+            if (reachedLast) {
+                break;
+            }
+
+            after = page.get(page.size() - 1).getTs();
+            sleepQuietly(80);
         }
-        return -1;
+
+        results.sort(Comparator.comparing(FundingRecord::getDate).reversed());
+        return results;
+    }
+
+    public List<FundingRecord> downloadDeposits() {
+        List<FundingRecord> results = new ArrayList<>();
+
+        Long lastTs = parseLongOrNull(state.getLastDepositTs());
+
+        String after = null;
+        boolean first = true;
+        boolean reachedLast = false;
+
+        for (; ; ) {
+            OkexResponse<List<OkexDeposit>> resp;
+            try {
+                resp = accountRaw.getDepositHistory(null, after, null);
+            } catch (IOException e) {
+                if (is429(e)) {
+                    sleepQuietly(300);
+                    continue;
+                }
+                throw new RuntimeException(e);
+            }
+
+            List<OkexDeposit> page = resp.getData();
+            if (page == null || page.isEmpty()) {
+                break;
+            }
+
+            if (first) {
+                state.setNewDepositTs(page.get(0).getTs());
+                first = false;
+            }
+
+            for (OkexDeposit d : page) {
+                long ts = Long.parseLong(d.getTs());
+
+                if (lastTs != null && ts <= lastTs) {
+                    reachedLast = true;
+                    break;
+                }
+
+                results.add(OkxMappers.mapDeposit(d));
+            }
+
+            if (reachedLast) {
+                break;
+            }
+
+            after = page.get(page.size() - 1).getTs();
+            sleepQuietly(80);
+        }
+
+        results.sort(Comparator.comparing(FundingRecord::getDate).reversed());
+        return results;
+    }
+
+    private static boolean is429(IOException e) {
+        String msg = e.getMessage();
+        return msg != null && msg.contains("429");
+    }
+
+    private static Long parseLongOrNull(String v) {
+        if (v == null || v.isBlank()) {
+            return null;
+        }
+        return Long.parseLong(v);
+    }
+
+    private static void sleepQuietly(long ms) {
+        try {
+            Thread.sleep(ms);
+        } catch (InterruptedException ignored) {
+            Thread.currentThread().interrupt();
+        }
     }
 }

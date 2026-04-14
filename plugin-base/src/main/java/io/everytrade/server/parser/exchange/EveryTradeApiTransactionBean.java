@@ -39,12 +39,12 @@ public class EveryTradeApiTransactionBean {
     BigDecimal volume;
     BigDecimal fee;
     String feeCurrency;
-    BigDecimal rebate;
-    String rebateCurrency;
     String addressFrom;
     String addressTo;
     String note;
     String labels;
+    String partner;
+    String reference;
 
     public void setTimestamp(Long timestamp) {
         this.timestamp = new Date(timestamp * 1000).toInstant();
@@ -59,8 +59,7 @@ public class EveryTradeApiTransactionBean {
             case BUY, SELL -> createBuySellTransactionCluster();
             case DEPOSIT, WITHDRAWAL -> createDepositOrWithdrawalTxCluster();
             case FEE -> new TransactionCluster(createFeeTransactionBean(true), List.of());
-            case REBATE -> new TransactionCluster(createRebateTransactionBean(true), List.of());
-            case STAKE, UNSTAKE, STAKING_REWARD, AIRDROP, EARNING, REWARD, FORK -> createOtherTransactionCluster();
+            case REBATE, STAKE, UNSTAKE, STAKING_REWARD, AIRDROP, EARNING, REWARD, FORK -> createOtherTransactionCluster();
             default -> throw new IllegalStateException(String.format("Unsupported transaction type %s.", action));
         };
     }
@@ -100,7 +99,9 @@ public class EveryTradeApiTransactionBean {
             volume.divide(quantity, DECIMAL_DIGITS, RoundingMode.HALF_UP),
             note,
             null,
-            labels
+            labels,
+            partner,
+            reference
         );
         return new TransactionCluster(tx, getRelatedTxs());
     }
@@ -129,7 +130,9 @@ public class EveryTradeApiTransactionBean {
             volume == null ? null : volume.divide(quantity, DECIMAL_DIGITS, RoundingMode.HALF_UP),
             note,
             null,
-            labels
+            labels,
+            partner,
+            reference
         );
         return new TransactionCluster(tx, getRelatedTxs());
     }
@@ -140,9 +143,6 @@ public class EveryTradeApiTransactionBean {
             related.add(createFeeTransactionBean(false));
         }
 
-        if (rebate != null && rebate.compareTo(ZERO) > 0) {
-            related.add(createRebateTransactionBean(false));
-        }
         return related;
     }
 
@@ -157,22 +157,10 @@ public class EveryTradeApiTransactionBean {
             Currency.fromCode(feeCurrency),
             note,
             null,
-            labels
+            labels,
+            partner,
+            reference
         );
     }
 
-    private FeeRebateImportedTransactionBean createRebateTransactionBean(boolean unrelated) {
-        return new FeeRebateImportedTransactionBean(
-            unrelated ? uid : uid + REBATE_UID_PART,
-            timestamp,
-            Currency.fromCode(rebateCurrency),
-            Currency.fromCode(rebateCurrency),
-            TransactionType.REBATE,
-            rebate,
-            Currency.fromCode(rebateCurrency),
-            note,
-            null,
-            labels
-        );
-    }
 }

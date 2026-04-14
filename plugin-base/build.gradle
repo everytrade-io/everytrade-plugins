@@ -21,6 +21,14 @@ configurations {
     }
 }
 
+configurations.all {
+    resolutionStrategy {
+        force "com.github.mmazi:rescu:2.1.0"
+        force "javax.ws.rs:javax.ws.rs-api:2.1.1"
+    }
+    exclude group: "jakarta.ws.rs", module: "jakarta.ws.rs-api"
+}
+
 dependencies {
     annotationProcessor 'org.projectlombok:lombok:1.18.26'
     annotationProcessor "org.pf4j:pf4j:$pf4jVersion"
@@ -36,34 +44,33 @@ dependencies {
      * original: pluginCompile "org.knowm.xchange:xchange-binance:$xchangeVersion"
      */
 //    pluginCompile "com.github.martinkyov.Xchange:xchange-binance:b36e03ffae18c1ac0b4349d48d014fc95cfd26b4"
-    pluginCompile "com.github.martinkyov.Xchange:xchange-binance:d9f9f0e449d74ae4455e2024eaa8e2b96a0b196c"
+    pluginCompile "com.github.Slithercze.Xchange:xchange-binance:58410b1cb5c641d526e379fd44580853da3d01ba"
+    pluginCompile "com.github.Slithercze.Xchange:xchange-bitstamp:7e2851a1c061fc2a50f535527b00b1187a3ba509"
+    pluginCompile "com.github.Slithercze.Xchange:xchange-okex:74e9ea1851a8aa0fdb8634c820b821e3c4216b4d"
+    pluginCompile "com.github.Slithercze.XChange:xchange-dase:fa9cdc9d304c4250c260bdfdd0a0ad305c189981"
 
     pluginCompile "org.knowm.xchange:xchange-bittrex:$xchangeVersion"
-    pluginCompile "org.knowm.xchange:xchange-bitstamp:$xchangeVersion"
     pluginCompile "org.knowm.xchange:xchange-bitfinex:$xchangeVersion"
     pluginCompile "org.knowm.xchange:xchange-bitmex:$xchangeVersion"
     pluginCompile "org.knowm.xchange:xchange-bitflyer:$xchangeVersion"
     pluginCompile "org.knowm.xchange:xchange-core:$xchangeVersion"
-    pluginCompile "org.knowm.xchange:xchange-huobi:$xchangeVersion"
     pluginCompile "org.knowm.xchange:xchange-kucoin:$xchangeVersion"
-
-    pluginCompile("com.github.charvam:V3-Open-API-SDK:db22182525f075bfb8999bcdbea4a132e4d933cf") {
-        exclude group: 'org.springframework', module: 'spring-context'
-        exclude group: 'javax.servlet', module: 'javax.servlet-api'
-    }
 
     /*
      * only for temporary use till pull request confirmation https://github.com/knowm/XChange/pull/4402
      */
     //    pluginCompile "org.knowm.xchange:xchange-coinmate:$xchangeVersion"
 //    pluginCompile "com.github.martinkyov.Xchange:xchange-coinmate:eb87b858ff861db863793bd92c6d8b8e0a662b8c"
-    pluginCompile "com.github.martinkyov.Xchange:xchange-coinmate:1edf7fb4969ab57ab59651c4bfb11bd7727d5740"
+    pluginCompile "com.github.Slithercze.Xchange:xchange-coinmate:a4f532bf4387986416dc91113f315f88d26a9965"
+
+//    pluginCompile "org.knowm.xchange:xchange-huobi:$xchangeVersion"
+    pluginCompile "com.github.Slithercze.Xchange:xchange-huobi:9443aa3422820346b299a60ac3765ad2a73078fa"
 
     /*
      * only for temporary use till pull request confirmation https://github.com/knowm/XChange/pull/4448
      */
     //    pluginCompile "org.knowm.xchange:xchange-kraken:$xchangeVersion"
-    pluginCompile "com.github.martinkyov.Xchange:xchange-kraken:4180fdf746103c892a11197aa5e375319deea350"
+    pluginCompile "com.github.martinkyov.Xchange:xchange-kraken:483283051b6bfcd83486f019c670b6270a3edba0"
 
 
     /*
@@ -75,7 +82,7 @@ dependencies {
 //    pluginCompile "com.github.martinkyov.Xchange:xchange-coinbase:136289732f459f489caa0cd4860f6dcd3b76712f"
 //    pluginCompile "com.github.martinkyov.Xchange:xchange-coinbase:e55e846c55711644eec463b40d2a484e2092fbec"
 //    pluginCompile "com.github.martinkyov.Xchange:xchange-coinbase:874ff9e8e4f86964368d5bff8969b35f9e2dc557"
-    pluginCompile "com.github.martinkyov.Xchange:xchange-coinbase:87ec0906a19e21bca9770dd2d787b451df76dba7"
+    pluginCompile "com.github.Slithercze.Xchange:xchange-coinbase:3ded337bb7e3e78c3d256fc3993cd3a6f059f45e"
 
     /*
      * only for temporary use till pull request confirmation https://github.com/knowm/XChange/pull/4412
@@ -102,6 +109,7 @@ dependencies {
     testCompileOnly 'org.projectlombok:lombok:1.18.26'
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
     testImplementation "org.mockito:mockito-core:3.+"
+    testImplementation 'com.github.tomakehurst:wiremock-jre8:2.35.0'
     testImplementation project(':plugin-api')
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
 }

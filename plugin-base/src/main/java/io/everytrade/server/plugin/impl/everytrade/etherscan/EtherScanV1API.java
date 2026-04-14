@@ -14,8 +14,9 @@ public interface EtherScanV1API {
 
     @GET
     EtherScanDto<List<EtherScanTransactionDto>> getNormalTxsByAddress(
+        @QueryParam("chainid") String chainId,
         @QueryParam("module") String module,
-        @QueryParam("action") String acion,
+        @QueryParam("action") String action,
         @QueryParam("address") String address,
         @QueryParam("startblock") long startBlock,
         @QueryParam("endblock") long endBlock,
@@ -27,6 +28,7 @@ public interface EtherScanV1API {
 
     @GET
     EtherScanDto<List<EtherScanErc20TransactionDto>> getErc20TxsByAddress(
+        @QueryParam("chainid") String chainId,
         @QueryParam("module") String module,
         @QueryParam("action") String acion,
         @QueryParam("address") String address,
@@ -41,6 +43,7 @@ public interface EtherScanV1API {
 
     @GET
     EtherScanDto<Long> getBlockNumberByTimestamp(
+        @QueryParam("chainid") String chainId,
         @QueryParam("module") String module,
         @QueryParam("action") String action,
         @QueryParam("timestamp") String timeStamp,

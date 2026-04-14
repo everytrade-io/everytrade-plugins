@@ -18,7 +18,7 @@ import java.util.Map;
 @AllArgsConstructor
 public class BlockchainEthConnector implements IConnector {
     private static final Object LOCK = new Object();
-    private static final String ID = EveryTradePlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "blockchainEthApiConnector";
+    private static final String ID = WhaleBooksPlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "blockchainEthApiConnector";
 
     private static final ConnectorParameterDescriptor PARAMETER_ADDRESS =
         new ConnectorParameterDescriptor(
@@ -34,6 +34,15 @@ public class BlockchainEthConnector implements IConnector {
             "fiatCurrency",
             ConnectorParameterType.FIAT_CURRENCY,
             UiKey.CONNECTION_FIAT_CURRENCY,
+            "",
+            false
+        );
+
+    private static final ConnectorParameterDescriptor INTERPRETATION_LABEL =
+        new ConnectorParameterDescriptor(
+            "interpretationLabel",
+            ConnectorParameterType.LABEL,
+            UiKey.INTERPRETATION_LABEL,
             "",
             false
         );
@@ -56,6 +65,15 @@ public class BlockchainEthConnector implements IConnector {
             false
         );
 
+    private static final ConnectorParameterDescriptor FEES_LABEL =
+        new ConnectorParameterDescriptor(
+            "feesLabel",
+            ConnectorParameterType.LABEL,
+            UiKey.FEES_LABEL,
+            "",
+            false
+        );
+
     private static final ConnectorParameterDescriptor PARAMETER_IMPORT_FEES_FROM_DEPOSITS =
         new ConnectorParameterDescriptor(
             "importFeesFromDeposits",
@@ -74,6 +92,33 @@ public class BlockchainEthConnector implements IConnector {
             true
         );
 
+    private static final ConnectorParameterDescriptor SOURCES_LABEL =
+        new ConnectorParameterDescriptor(
+            "sourcesLabel",
+            ConnectorParameterType.LABEL,
+            UiKey.SOURCES_LABEL,
+            "",
+            false
+        );
+
+    private static final ConnectorParameterDescriptor PARAMETER_IMPORT_NORMAL_TXS =
+        new ConnectorParameterDescriptor(
+            "importNormalTxs",
+            ConnectorParameterType.BOOLEAN,
+            UiKey.NORMAL_TXS,
+            "",
+            true
+        );
+
+    private static final ConnectorParameterDescriptor PARAMETER_IMPORT_ERC20_TXS =
+        new ConnectorParameterDescriptor(
+            "importErc20Txs",
+            ConnectorParameterType.BOOLEAN,
+            UiKey.ERC20_TXS,
+            "",
+            false
+        );
+
     public static final ConnectorDescriptor DESCRIPTOR = new ConnectorDescriptor(
         ID,
         "Blockchain ETH Connector",
@@ -82,10 +127,15 @@ public class BlockchainEthConnector implements IConnector {
         List.of(
             PARAMETER_ADDRESS,
             PARAMETER_FIAT_CURRENCY,
+            INTERPRETATION_LABEL,
             PARAMETER_IMPORT_DEPOSITS_AS_BUYS,
             PARAMETER_IMPORT_WITHDRAWALS_AS_SELLS,
+            FEES_LABEL,
             PARAMETER_IMPORT_FEES_FROM_DEPOSITS,
-            PARAMETER_IMPORT_FEES_FROM_WITHDRAWALS
+            PARAMETER_IMPORT_FEES_FROM_WITHDRAWALS,
+            SOURCES_LABEL,
+            PARAMETER_IMPORT_NORMAL_TXS,
+            PARAMETER_IMPORT_ERC20_TXS
         )
     );
 
@@ -94,20 +144,30 @@ public class BlockchainEthConnector implements IConnector {
     String address;
     String apiKeyToken;
     String fiatCurrency;
+    String interpretationLabel;
     String importDepositsAsBuys;
     String importWithdrawalsAsSells;
+    String feesLabel;
     String importFeesFromDeposits;
     String importFeesFromWithdrawals;
+    String sourcesLabel;
+    String importNormalTxs;
+    String importErc20Txs;
 
     public BlockchainEthConnector(Map<String, String> parameters) {
         this(
             parameters.get(PARAMETER_ADDRESS.getId()),
             parameters.get(ETHERSCAN_API_KEY_PARAM),
             parameters.get(PARAMETER_FIAT_CURRENCY.getId()),
+            parameters.get(INTERPRETATION_LABEL.getId()),
             parameters.get(PARAMETER_IMPORT_DEPOSITS_AS_BUYS.getId()),
             parameters.get(PARAMETER_IMPORT_WITHDRAWALS_AS_SELLS.getId()),
+            parameters.get(FEES_LABEL.getId()),
             parameters.get(PARAMETER_IMPORT_FEES_FROM_DEPOSITS.getId()),
-            parameters.get(PARAMETER_IMPORT_FEES_FROM_WITHDRAWALS.getId())
+            parameters.get(PARAMETER_IMPORT_FEES_FROM_WITHDRAWALS.getId()),
+            parameters.get(SOURCES_LABEL.getId()),
+            parameters.get(PARAMETER_IMPORT_NORMAL_TXS.getId()),
+            parameters.get(PARAMETER_IMPORT_ERC20_TXS.getId())
         );
     }
 
@@ -126,7 +186,9 @@ public class BlockchainEthConnector implements IConnector {
                 importDepositsAsBuys,
                 importWithdrawalsAsSells,
                 importFeesFromDeposits,
-                importFeesFromWithdrawals
+                importFeesFromWithdrawals,
+                Boolean.parseBoolean(importNormalTxs),
+                Boolean.parseBoolean(importErc20Txs)
             );
             return blockchainEthDownloader.download(downloadState);
         }

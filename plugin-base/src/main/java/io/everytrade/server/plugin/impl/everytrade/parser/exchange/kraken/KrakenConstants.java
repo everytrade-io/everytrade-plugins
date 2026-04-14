@@ -8,7 +8,8 @@ public enum KrakenConstants {
     TYPE_TRANSFER("transfer"),
     TYPE_SPEND("spend"),
     TYPE_RECEIVE("receive"),
-    TYPE_STAKING("staking");
+    TYPE_STAKING("staking"),
+    TYPE_EARN("earn");
 
     public final String code;
     KrakenConstants(String code) {

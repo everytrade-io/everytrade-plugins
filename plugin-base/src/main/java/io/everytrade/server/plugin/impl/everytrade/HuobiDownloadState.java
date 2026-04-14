@@ -1,5 +1,7 @@
 package io.everytrade.server.plugin.impl.everytrade;
 
+import lombok.Getter;
+
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -11,6 +13,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+@Getter
 public class HuobiDownloadState {
     public static final Duration MAX_TRANSACTION_HISTORY_PERIOD = Duration.ofDays(179);
     private static final Pattern SPLIT_PATTERN = Pattern.compile("^([^:]*):([^:]*):([^:]*):([^:]*)$");
@@ -29,7 +32,7 @@ public class HuobiDownloadState {
         String firstTxIdAfterGap,
         String lastTxIdAfterGap
     ) {
-        if (windowStart.compareTo(LocalDate.now(ZoneOffset.UTC)) > 0) {
+        if (windowStart.isAfter(LocalDate.now(ZoneOffset.UTC))) {
             throw new IllegalArgumentException("Window start can't be in future.");
         }
         this.windowStart = windowStart;
@@ -49,8 +52,8 @@ public class HuobiDownloadState {
 
     public void moveToNextWindow() {
         final boolean isTodayOrYesterday
-            = windowStart.compareTo(LocalDate.now(ZoneOffset.UTC).minusDays(1)) >= 0;
-        if (isTodayOrYesterday) {
+            = windowStart.isBefore(LocalDate.now(ZoneOffset.UTC).minusDays(2));
+        if (!isTodayOrYesterday) {
             end = true;
         } else {
             windowStart = windowStart.plusDays(2);
@@ -58,14 +61,6 @@ public class HuobiDownloadState {
             lastTxIdAfterGap = null;
             firstTxIdAfterGap = null;
         }
-    }
-
-    public String getLastContinuousTxId() {
-        return lastContinuousTxId;
-    }
-
-    public String getFirstTxIdAfterGap() {
-        return firstTxIdAfterGap;
     }
 
     public void setLastContinuousTxId(String lastContinuousTxId) {
@@ -80,8 +75,8 @@ public class HuobiDownloadState {
         this.lastTxIdAfterGap = lastTxIdAfterGap;
     }
 
-    public boolean isEnd() {
-        return end;
+    public void setEnd(boolean end) {
+        this.end = end;
     }
 
     public void closeGap() {

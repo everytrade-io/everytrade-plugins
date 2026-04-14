@@ -11,6 +11,8 @@ import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean;
+import io.everytrade.server.plugin.impl.everytrade.parser.utils.ProfileContext;
+import io.everytrade.server.plugin.impl.everytrade.parser.utils.StatusRulesRegistry;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -18,17 +20,18 @@ import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Predicate;
 
 import static io.everytrade.server.model.TransactionType.BUY;
-import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.SELL;
-import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
 import static io.everytrade.server.plugin.impl.generalbytes.GbPlugin.parseGbCurrency;
 
 @Headers(sequence = {"Server Time","Local Transaction Id","Remote Transaction Id","Type","Cash Amount","Cash Currency",
     "Crypto Amount","Crypto Currency","Status", "Expense", "Expense Currency", "Destination Address"}, extract = true)
 public class GeneralBytesBeanV3 extends ExchangeBean {
+
     private Instant serverTime;
     private String localTransactionId;
     private String remoteTransactionId;
@@ -40,6 +43,12 @@ public class GeneralBytesBeanV3 extends ExchangeBean {
     private BigDecimal expense;
     private Currency expenseCurrency;
     private String destinationAddress;
+    private String labelsFromStatus;
+    private TransactionType originalType;
+
+    private static final Map<Currency, Integer> CURRENCY_SCALE_MAP = Map.of(
+        Currency.ADA, 6
+    );
 
     @Parsed(field = "Server Time")
     public void setDate(String value) {
@@ -62,17 +71,19 @@ public class GeneralBytesBeanV3 extends ExchangeBean {
     }
 
     @Parsed(field = "Type")
-    public void setType(String type) {
-        if ("SELL".equals(type)) {
-            this.type = BUY;
-        } else if ("BUY".equals(type)) {
-            this.type = SELL;
-//        } else if ("WITHDRAW".equalsIgnoreCase(type)) {
-//            this.type = WITHDRAWAL;
-//        } else if ("DEPOSIT".equalsIgnoreCase(type)) {
-//            this.type = DEPOSIT;
+    public void setType(String value) {
+        if ("SELL".equals(value)) {
+            this.originalType = SELL;
+        } else if ("BUY".equals(value)) {
+            this.originalType = BUY;
         } else {
-            throw new DataIgnoredException(UNSUPPORTED_TRANSACTION_TYPE.concat(type));
+            throw new DataIgnoredException(UNSUPPORTED_TRANSACTION_TYPE.concat(value));
+        }
+
+        if (originalType == SELL) {
+            this.type = BUY;
+        } else {
+            this.type = SELL;
         }
     }
 
@@ -99,15 +110,20 @@ public class GeneralBytesBeanV3 extends ExchangeBean {
     }
 
     @Parsed(field = "Status")
-    public void checkStatus(String status) {
-        boolean statusOk =
-            status.startsWith("COMPLETED")
-                || status.contains("PAYMENT ARRIVED")
-                || status.contains("ERROR (EXCHANGE PURCHASE)");
-
-        if (!statusOk) {
-            throw new DataIgnoredException(UNSUPPORTED_STATUS_TYPE.concat(status));
+    public void checkStatus(String raw) {
+        if (raw == null) {
+            throw new DataIgnoredException(UNSUPPORTED_STATUS_TYPE + "null");
         }
+        final String status = raw.trim();
+
+        final String profile = ProfileContext.get();
+        var rules = StatusRulesRegistry.get("generalbytes", profile);
+
+        boolean ok = rules.stream().anyMatch(r -> r.test(status, this.originalType));
+        if (!ok) {
+            throw new DataIgnoredException(UNSUPPORTED_STATUS_TYPE + status);
+        }
+        this.labelsFromStatus = status;
     }
 
     @Parsed(field = "Expense", defaultNullRead = "0")
@@ -132,6 +148,14 @@ public class GeneralBytesBeanV3 extends ExchangeBean {
         if (type.isBuyOrSell()) {
             validateCurrencyPair(cryptoCurrency, cashCurrency);
         }
+        if (CURRENCY_SCALE_MAP.containsKey(cryptoCurrency)) {
+            cryptoAmount = cryptoAmount.setScale(CURRENCY_SCALE_MAP.get(cryptoCurrency), RoundingMode.DOWN);
+        }
+
+        if (CURRENCY_SCALE_MAP.containsKey(cashCurrency)) {
+            cashAmount = cashAmount.setScale(CURRENCY_SCALE_MAP.get(cashCurrency), RoundingMode.DOWN);
+        }
+
         List<ImportedTransactionBean> related;
         final boolean isIncorrectFee =
             !(expenseCurrency == null || expenseCurrency.equals(cryptoCurrency) || expenseCurrency.equals(cashCurrency));
@@ -147,7 +171,9 @@ public class GeneralBytesBeanV3 extends ExchangeBean {
                     TransactionType.FEE,
                     expense.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
                     expenseCurrency,
-                    remoteTransactionId      //note
+                    remoteTransactionId,
+                    null,
+                    labelsFromStatus
                 )
             );
         }
@@ -163,7 +189,7 @@ public class GeneralBytesBeanV3 extends ExchangeBean {
                     cashAmount,
                     destinationAddress,
                     null,
-                    null
+                    labelsFromStatus
                 ),
                 related
             );
@@ -178,7 +204,8 @@ public class GeneralBytesBeanV3 extends ExchangeBean {
                     cryptoAmount,               //base quantity
                     evalUnitPrice(cashAmount, cryptoAmount), //unit price
                     remoteTransactionId,         //note
-                    destinationAddress
+                    destinationAddress,
+                    labelsFromStatus
                 ),
                 related
             );

@@ -48,8 +48,8 @@ class BitfinexBeanV1Test {
                 BTC,
                 USD,
                 BUY,
-                new BigDecimal("0.01048537"),
-                new BigDecimal("9212.82428")
+                new BigDecimal("0.01048537000000000"),
+                new BigDecimal("9212.82428000000000000")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -58,7 +58,7 @@ class BitfinexBeanV1Test {
                     BTC,
                     BTC,
                     FEE,
-                    new BigDecimal("0.00002097"),
+                    new BigDecimal("0.00002097000000000"),
                     BTC
                 )
             )
@@ -77,8 +77,8 @@ class BitfinexBeanV1Test {
                 BTC,
                 USD,
                 BUY,
-                new BigDecimal("0.01048537"),
-                new BigDecimal("9212.82428")
+                new BigDecimal("0.01048537000000000"),
+                new BigDecimal("9212.82428000000000000")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -87,7 +87,7 @@ class BitfinexBeanV1Test {
                     BTC,
                     BTC,
                     FEE,
-                    new BigDecimal("0.00002097"),
+                    new BigDecimal("0.00002097000000000"),
                     BTC
                 )
             )
@@ -106,8 +106,8 @@ class BitfinexBeanV1Test {
                 BTC,
                 USD,
                 BUY,
-                new BigDecimal("0.01048537"),
-                new BigDecimal("9212.82428")
+                new BigDecimal("0.01048537000000000"),
+                new BigDecimal("9212.82428000000000000")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -116,7 +116,7 @@ class BitfinexBeanV1Test {
                     USD,
                     USD,
                     FEE,
-                    new BigDecimal("0.00002097"),
+                    new BigDecimal("0.00002097000000000"),
                     USD
                 )
             )
@@ -136,8 +136,8 @@ class BitfinexBeanV1Test {
                 BTC,
                 USD,
                 TransactionType.SELL,
-                new BigDecimal("0.0095"),
-                new BigDecimal("9214.7")
+                new BigDecimal("0.00950000000000000"),
+                new BigDecimal("9214.70000000000000000")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -146,7 +146,7 @@ class BitfinexBeanV1Test {
                     USD,
                     USD,
                     FEE,
-                    new BigDecimal("0.1750793"),
+                    new BigDecimal("0.17507930000000000"),
                     USD
                 )
             )
@@ -165,8 +165,8 @@ class BitfinexBeanV1Test {
                 BTC,
                 USD,
                 TransactionType.SELL,
-                new BigDecimal("0.0095"),
-                new BigDecimal("9214.7")
+                new BigDecimal("0.00950000000000000"),
+                new BigDecimal("9214.70000000000000000")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -175,7 +175,7 @@ class BitfinexBeanV1Test {
                     BTC,
                     BTC,
                     FEE,
-                    new BigDecimal("0.000000123"),
+                    new BigDecimal("1.2300000000E-7"),
                     BTC
                 )
             )
@@ -203,8 +203,8 @@ class BitfinexBeanV1Test {
                 BTC,
                 USD,
                 BUY,
-                new BigDecimal("0.01048537"),
-                new BigDecimal("9212.82428")
+                new BigDecimal("0.01048537000000000"),
+                new BigDecimal("9212.82428000000000000")
             ),
            Collections.emptyList()
         );
@@ -224,8 +224,8 @@ class BitfinexBeanV1Test {
                 BTC,
                 USD,
                 BUY,
-                new BigDecimal("0.01048537"),
-                new BigDecimal("9212.82428")
+                new BigDecimal("0.01048537000000000"),
+                new BigDecimal("9212.82428000000000000")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -234,7 +234,7 @@ class BitfinexBeanV1Test {
                     BTC,
                     BTC,
                     FEE,
-                    new BigDecimal("0.00002097"),
+                    new BigDecimal("0.00002097000000000"),
                     BTC
                 )
             )
@@ -254,8 +254,8 @@ class BitfinexBeanV1Test {
                 BTC,
                 USD,
                 BUY,
-                new BigDecimal("0.01048537"),
-                new BigDecimal("9212.82428")
+                new BigDecimal("0.01048537000000000"),
+                new BigDecimal("9212.82428000000000000")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -264,7 +264,7 @@ class BitfinexBeanV1Test {
                     BTC,
                     BTC,
                     FEE,
-                    new BigDecimal("0.00002097"),
+                    new BigDecimal("0.00002097000000000"),
                     BTC
                 )
             )

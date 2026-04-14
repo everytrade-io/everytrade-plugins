@@ -22,5 +22,7 @@ public interface ICsvParser extends AutoCloseable {
      */
     default void close() {
     }
+
+    ParseResult parse(File file, String header, String profileName);
 }
 

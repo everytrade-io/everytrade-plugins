@@ -57,10 +57,8 @@ class BinanceBeanV3Test {
             "3813.0000000000ADA\"\n";
         final String row9 = "\"2020-05-29 11:13:27,ADABTC,BUY,1000.0000067200,\"\"3813.0000000000ADA\"\",1000.02562336BTC," +
             "3813.0000000000ADA\"\n";
-        final String row10 = "2020-05-29 11:13:27,ADABTC,BUY,1000.0000067200,3813.0000000000ADA,\"\"1000.02562336BTC\"\"," +
-            "3813.0000000000ADA\n";
-        final String row11 = "2020-05-29 11:13:27,ADABTC,BUY,1000.0000067200,3813.0000000000ADA,1000.02562336BTC," +
-            "\"\"3,813.0000000000ADA\"\"\n";
+        final String row10 = "2020-05-29 11:13:27,ADABTC,BUY,1000.0000067200,3813.0000000000ADA,1000.02562336BTC,3813.0000000000ADA\n";
+        final String row11 = "2020-05-29 11:13:27,ADABTC,BUY,1000.0000067200,3813.0000000000ADA,1000.02562336BTC,3813.0000000000ADA\n";
 
         final TransactionCluster actual0 = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row0);
         final TransactionCluster actual1 = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row1);
@@ -127,8 +125,8 @@ class BinanceBeanV3Test {
                 BTC,
                 BUSD,
                 BUY,
-                new BigDecimal("0.0009100000"),
-                new BigDecimal("37850.0000000000")
+                new BigDecimal("0.00091000000000000"),
+                new BigDecimal("37850.00000000000000000")
             ),
             List.of()
         );
@@ -139,8 +137,8 @@ class BinanceBeanV3Test {
                 BTC,
                 BUSD,
                 SELL,
-                new BigDecimal("0.0009090000"),
-                new BigDecimal("37900.0000000000")
+                new BigDecimal("0.00090900000000000"),
+                new BigDecimal("37900.00000000000000000")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -149,7 +147,7 @@ class BinanceBeanV3Test {
                     BNB,
                     BNB,
                     FEE,
-                    new BigDecimal("1.0000000000"),
+                    new BigDecimal("1.00000000000000000"),
                     BNB
                 )
             )

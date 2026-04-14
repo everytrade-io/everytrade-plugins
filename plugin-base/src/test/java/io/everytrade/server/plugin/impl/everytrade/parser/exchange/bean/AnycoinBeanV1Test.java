@@ -20,6 +20,7 @@ import static io.everytrade.server.model.Currency.BTC;
 import static io.everytrade.server.model.Currency.CZK;
 import static io.everytrade.server.model.Currency.ETH;
 import static io.everytrade.server.model.Currency.ETH2;
+import static io.everytrade.server.model.Currency.SAND;
 import static io.everytrade.server.model.Currency.SOL;
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
@@ -33,6 +34,31 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class AnycoinBeanV1Test {
 
     public static final String HEADER_CORRECT = "Date,Type,Amount,Currency,Order ID\n";
+    public static final String HEADER_DASE = "Date,Type,Amount,Currency,Order ID,dase TX ID\n";
+
+    @Test
+    void testDaseBuy() {
+        final String row0 = "2021-04-10T18:16:50.367Z,trade payment,-1000,CZK,113180,\n";
+        final String row1 = "2021-04-10T18:28:12.885Z,trade fill,0.00075667,BTC,113180,\n";
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_DASE + row0.concat(row1));
+
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                "113180",
+                Instant.parse("2021-04-10T18:28:12.885Z"),
+                BTC,
+                CZK,
+                BUY,
+                new BigDecimal("0.00075667"),
+                new BigDecimal("1321580.08114501698230404"),
+                null,
+                null
+            ),
+            List.of()
+        );
+
+        TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
+    }
 
     @Test
     void testBuy() {
@@ -48,7 +74,7 @@ public class AnycoinBeanV1Test {
                         CZK,
                         BUY,
                         new BigDecimal("0.00075667"),
-                        new BigDecimal("7.5667000000E-7"),
+                        new BigDecimal("1321580.08114501698230404"),
                         null,
                         null
                 ),
@@ -71,8 +97,32 @@ public class AnycoinBeanV1Test {
                         ADA,
                         CZK,
                         SELL,
-                        new BigDecimal("-52"),
-                        new BigDecimal("0.01943198804185351"),
+                        new BigDecimal("52"),
+                        new BigDecimal("51.46153846153846154"),
+                        null,
+                        null
+                ),
+                List.of()
+        );
+
+        TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
+    }
+
+    @Test
+    void testSell2() {
+        final String row0 = "2021-11-24T03:02:35.826Z,trade payment,-177.63419113,SAND,315998\n";
+        final String row1 = "2021-11-24T03:02:39.486Z,trade fill,24899.78,CZK,315998\n";
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row0.concat(row1));
+
+        final TransactionCluster expected = new TransactionCluster(
+                new ImportedTransactionBean(
+                        "315998",
+                        Instant.parse("2021-11-24T03:02:39.486Z"),
+                        SAND,
+                        CZK,
+                        SELL,
+                        new BigDecimal("177.63419113"),
+                        new BigDecimal("140.17447790654963420"),
                         null,
                         null
                 ),
@@ -115,7 +165,7 @@ public class AnycoinBeanV1Test {
                         BTC,
                         BTC,
                         WITHDRAWAL,
-                        new BigDecimal("-0.07070279"),
+                        new BigDecimal("0.07070279"),
                         null
                 ),
                 List.of()
@@ -151,7 +201,7 @@ public class AnycoinBeanV1Test {
                         BTC,
                         BTC,
                         WITHDRAWAL,
-                        new BigDecimal("-0.01013927"),
+                        new BigDecimal("0.01013927"),
                         null
                 ),
                 List.of()
@@ -191,6 +241,7 @@ public class AnycoinBeanV1Test {
 
         TestUtils.testTxs(expected.getMain(), actual.getTransactionClusters().get(0).getMain());
     }
+
     @Test
     void testUnstake() {
         final String row0 = "2022-11-27T07:25:31.020Z,unstake,-0.38908456,ATOM.S\n";
@@ -265,7 +316,7 @@ public class AnycoinBeanV1Test {
                 new ImportedTransactionBean(
                         "",
                         Instant.parse("2024-01-01T09:32:02.361Z"),
-                        ETH2,
+                        ETH,
                         ETH,
                         BUY,
                         new BigDecimal("0.0105416"),
@@ -279,8 +330,8 @@ public class AnycoinBeanV1Test {
                 new ImportedTransactionBean(
                         "",
                         Instant.parse("2024-01-01T09:32:49.003Z"),
-                        ETH2,
-                        ETH2,
+                        ETH,
+                        ETH,
                         STAKE,
                         new BigDecimal("0.0105416"),
                         null,
@@ -305,7 +356,7 @@ public class AnycoinBeanV1Test {
                         "",
                         Instant.parse("2024-03-15T17:27:01.354Z"),
                         ETH,
-                        ETH2,
+                        ETH,
                         BUY,
                         new BigDecimal("0.21907795"),
                         new BigDecimal("1.00000000000000000"),
@@ -318,8 +369,8 @@ public class AnycoinBeanV1Test {
                 new ImportedTransactionBean(
                         "",
                         Instant.parse("2024-03-15T17:26:14.826Z"),
-                        ETH2,
-                        ETH2,
+                        ETH,
+                        ETH,
                         UNSTAKE,
                         new BigDecimal("0.21907795"),
                         null,
@@ -342,8 +393,8 @@ public class AnycoinBeanV1Test {
                 new ImportedTransactionBean(
                         null,
                         Instant.parse("2024-01-04T01:07:53.536Z"),
-                        ETH2,
-                        ETH2,
+                        ETH,
+                        ETH,
                         STAKING_REWARD,
                         new BigDecimal("0.000117"),
                         null,
@@ -357,8 +408,8 @@ public class AnycoinBeanV1Test {
                 new ImportedTransactionBean(
                         null,
                         Instant.parse("2024-01-04T01:07:54.536Z"), // +1 second
-                        ETH2,
-                        ETH2,
+                        ETH,
+                        ETH,
                         STAKE,
                         new BigDecimal("0.000117"),
                         null,
@@ -372,5 +423,4 @@ public class AnycoinBeanV1Test {
         TestUtils.testTxs(expectedStake.getMain(), actual.get(0).getMain());
         TestUtils.testTxs(expectedStakeReward.getMain(), actual.get(1).getMain());
     }
-
 }

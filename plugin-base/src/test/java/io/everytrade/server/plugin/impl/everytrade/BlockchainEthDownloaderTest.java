@@ -16,6 +16,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+import static io.everytrade.server.model.Currency.ETH;
 import static io.everytrade.server.model.Currency.USD;
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
@@ -57,6 +58,8 @@ class BlockchainEthDownloaderTest {
             true,
             false,
             false,
+            true,
+            true,
             mockClient(txs, emptyList())
         );
 
@@ -82,6 +85,8 @@ class BlockchainEthDownloaderTest {
             ADDRESS,
             "apiKey",
             FIAT,
+            true,
+            true,
             true,
             true,
             true,
@@ -115,6 +120,8 @@ class BlockchainEthDownloaderTest {
             false,
             false,
             false,
+            true,
+            true,
             mockClient(txs, emptyList())
         );
 
@@ -144,6 +151,8 @@ class BlockchainEthDownloaderTest {
             false,
             true,
             true,
+            true,
+            true,
             mockClient(txs, emptyList())
         );
 
@@ -166,8 +175,8 @@ class BlockchainEthDownloaderTest {
         assertNotNull(tx.getAddress());
         assertNotNull(tx.getUid());
         assertNotNull(tx.getExecuted());
-        assertEquals(Currency.ETH, tx.getBase());
-        assertEquals(USD, tx.getQuote());
+        assertEquals(ETH, tx.getBase());
+        assertEquals(ETH, tx.getQuote());
         assertEquals(type, tx.getAction());
         assertNotNull(tx.getImported());
     }
@@ -246,7 +255,7 @@ class BlockchainEthDownloaderTest {
             .gas(new BigDecimal("1000000"))
             .gasUsed(new BigDecimal("1000000"))
             .gasPrice(ONE)
-            .txreceiptStatus("")
+            .txreceipt_status("")
             .input("")
             .contractAddress(null)
             .confirmations(100)

@@ -27,4 +27,9 @@ public class ExampleParser implements ICsvParser {
     public ParseResult parse(File file, String header) {
         throw new UnsupportedOperationException("Implement me!");
     }
+
+    @Override
+    public ParseResult parse(File file, String header, String profileName) {
+        return parse(file, header);
+    }
 }
