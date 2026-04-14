@@ -114,10 +114,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.InputStreamReader;
+import java.io.FileInputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -1442,7 +1445,7 @@ public class EverytradeCsvMultiParser implements ICsvParser {
 
 
     private File skipPrefixRows(File file, ExchangeParseDetail detail) {
-        try (var reader = new BufferedReader(new FileReader(file))) {
+        try (var reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
             for (int i = 0; i <= MAX_PREFIX_ROWS_TO_SCAN; i++) {
                 String line = reader.readLine();
                 if (line == null) {
@@ -1453,12 +1456,14 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                     if (i == 0) {
                         return file;
                     }
-                    File tempFile = new File(file.getAbsolutePath() + ".prefix_stripped");
-                    try (var writer = new PrintWriter(tempFile)) {
-                        writer.println(line);
+                    File tempFile = File.createTempFile("everytrade_prefix_stripped_", ".csv");
+                    try (BufferedWriter writer = Files.newBufferedWriter(tempFile.toPath(), StandardCharsets.UTF_8)) {
+                        writer.write(line);
+                        writer.newLine();
                         String dataLine;
                         while ((dataLine = reader.readLine()) != null) {
-                            writer.println(dataLine);
+                            writer.write(dataLine);
+                            writer.newLine();
                         }
                     }
                     return tempFile;
@@ -1467,7 +1472,9 @@ public class EverytradeCsvMultiParser implements ICsvParser {
         } catch (IOException e) {
             throw new UnknownHeaderException("Failed to read file headers: " + e.getMessage());
         }
-        return file;
+        throw new UnknownHeaderException(
+            String.format("Known header not found within the first %d lines of file '%s'",
+                MAX_PREFIX_ROWS_TO_SCAN + 1, file.getName()));
     }
 
     private ExchangeParseDetail findCsvDetailByHeader(String header) {
