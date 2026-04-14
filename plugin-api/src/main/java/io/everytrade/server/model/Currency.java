@@ -1026,7 +1026,10 @@ public enum Currency {
     BROCCOLI(false, Instant.parse("2025-02-13T00:00:00Z"), "CZ'S Dog (broccoli.gg)"),
     S(false, Instant.parse("2025-01-06T00:00:00Z"), "Sonic"),
     ASM(false, Instant.parse("2021-08-19T00:00:00Z"), "Assemble Protocol"),
-    ALEO(false, Instant.parse("2025-01-23T00:00:00Z"), "ALEO");
+    ALEO(false, Instant.parse("2025-01-23T00:00:00Z"), "ALEO"),
+    MIN(false, Instant.parse("2026-01-30T00:00:00Z"), "Minswap"),
+    CLOUD(false, Instant.parse("2024-10-24T00:00:00Z"), "Cloud"),
+    ORDER(false, Instant.parse("2024-09-05T00:00:00Z"), "Orderly Network");
 
     String code;
     int decimalDigits;
