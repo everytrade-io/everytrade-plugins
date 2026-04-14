@@ -113,7 +113,14 @@ import io.everytrade.server.plugin.impl.everytrade.parser.utils.ProfileContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.FileInputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -168,6 +175,7 @@ public class EverytradeCsvMultiParser implements ICsvParser {
     private static final String DELIMITER_SEMICOLON = ";";
     private static final String LINE_SEPARATOR = "\n";
     private static final List<String> DELIMITERS = List.of(DELIMITER_COMMA,DELIMITER_SEMICOLON);
+    private static final int MAX_PREFIX_ROWS_TO_SCAN = 10;
 
     private static final List<ExchangeParseDetail> EXCHANGE_PARSE_DETAILS = new ArrayList<>();
 
@@ -1387,9 +1395,12 @@ public class EverytradeCsvMultiParser implements ICsvParser {
 
         ProfileContext.set(profileName);
 
+        File fileToProcess = skipPrefixRows(file, exchangeParseDetail);
+        boolean usingTempFile = !file.equals(fileToProcess);
+
         try {
             var exchangeParser = exchangeParseDetail.getParserFactory().get();
-            var listBeans = exchangeParser.parse(file);
+            var listBeans = exchangeParser.parse(fileToProcess);
             var parsingProblems = new ArrayList<>(exchangeParser.getParsingProblems());
 
             if (exchangeParser instanceof IMultiExchangeSpecificParser) {
@@ -1425,10 +1436,46 @@ public class EverytradeCsvMultiParser implements ICsvParser {
 
             return new ParseResult(transactionClusters, parsingProblems);
         } finally {
+            if (usingTempFile) {
+                fileToProcess.delete();
+            }
             ProfileContext.clear();
         }
     }
 
+
+    private File skipPrefixRows(File file, ExchangeParseDetail detail) {
+        try (var reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
+            for (int i = 0; i <= MAX_PREFIX_ROWS_TO_SCAN; i++) {
+                String line = reader.readLine();
+                if (line == null) {
+                    break;
+                }
+                boolean lineMatchesHeader = detail.getHeaders().stream().anyMatch(h -> h.matching(line));
+                if (lineMatchesHeader) {
+                    if (i == 0) {
+                        return file;
+                    }
+                    File tempFile = File.createTempFile("everytrade_prefix_stripped_", ".csv");
+                    try (BufferedWriter writer = Files.newBufferedWriter(tempFile.toPath(), StandardCharsets.UTF_8)) {
+                        writer.write(line);
+                        writer.newLine();
+                        String dataLine;
+                        while ((dataLine = reader.readLine()) != null) {
+                            writer.write(dataLine);
+                            writer.newLine();
+                        }
+                    }
+                    return tempFile;
+                }
+            }
+        } catch (IOException e) {
+            throw new UnknownHeaderException("Failed to read file headers: " + e.getMessage());
+        }
+        throw new UnknownHeaderException(
+            String.format("Known header not found within the first %d lines of file '%s'",
+                MAX_PREFIX_ROWS_TO_SCAN + 1, file.getName()));
+    }
 
     private ExchangeParseDetail findCsvDetailByHeader(String header) {
         return EXCHANGE_PARSE_DETAILS.stream()
