@@ -43,7 +43,7 @@ public abstract class BaseTransactionMapper extends ExchangeBean {
         TransactionCluster cluster =
             switch (data.getTransactionType()) {
                 case REWARD -> createRewardTransactionCluster(data);
-                case BUY, SELL -> createBuySellTransactionCluster(data);
+                case BUY, SELL, OUTGOING_PAYMENT, INCOMING_PAYMENT -> createBuySellTransactionCluster(data);
                 case DEPOSIT, WITHDRAWAL -> createDepositOrWithdrawalTxCluster(data);
                 case STAKE, UNSTAKE, STAKING_REWARD, EARNING, FORK, AIRDROP -> createOtherTransactionCluster(data);
                 case FEE, REBATE -> createUnrelatedFeeOrRebate(data);
