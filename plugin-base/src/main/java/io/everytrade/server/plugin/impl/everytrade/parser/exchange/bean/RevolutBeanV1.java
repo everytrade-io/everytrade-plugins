@@ -39,7 +39,8 @@ public class RevolutBeanV1 extends BaseTransactionMapper {
         "buy", TransactionType.BUY,
         "sell", TransactionType.SELL,
         "receive", TransactionType.DEPOSIT,
-        "send", TransactionType.WITHDRAWAL
+        "send", TransactionType.WITHDRAWAL,
+        "payment", TransactionType.OUTGOING_PAYMENT
     );
 
     private static final ZoneId REVOLUT_ZONE = ZoneId.of("Europe/Prague");

@@ -18,6 +18,7 @@ import static io.everytrade.server.model.Currency.XRP;
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.FEE;
+import static io.everytrade.server.model.TransactionType.OUTGOING_PAYMENT;
 import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
@@ -176,6 +177,63 @@ public class RevolutBeanV1Test {
                     CZK,
                     FEE,
                     new BigDecimal("0.01000000000000000"),
+                    CZK
+                )
+            )
+        );
+
+        TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
+        TestUtils.testTxs(expected.getRelated().get(0), actual.get(0).getRelated().get(0));
+    }
+
+    @Test
+    void testPayment() {
+        final String row0 = "BTC,Payment,0.00016507,\"2,235,532.18 CZK\",369.00 CZK,0.00 CZK,\"Aug 31, 2025, 4:20:57 PM\"";
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row0);
+
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2025-08-31T14:20:57Z"),
+                BTC,
+                CZK,
+                OUTGOING_PAYMENT,
+                new BigDecimal("0.00016507"),
+                new BigDecimal("2235415.28"),
+                null,
+                null
+            ),
+            List.of()
+        );
+
+        TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
+    }
+
+    @Test
+    void testPaymentWithFee() {
+        final String row0 = "BTC,Payment,0.00033804,\"2,225,541.31 CZK\",752.30 CZK,0.11 CZK,\"Sep 2, 2025, 2:28:29 PM\"";
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row0);
+
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2025-09-02T12:28:29Z"),
+                BTC,
+                CZK,
+                OUTGOING_PAYMENT,
+                new BigDecimal("0.00033804"),
+                new BigDecimal("2225476.27"),
+                null,
+                null
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    FEE_UID_PART,
+                    Instant.parse("2025-09-02T12:28:29Z"),
+                    CZK,
+                    CZK,
+                    FEE,
+                    new BigDecimal("0.11000000000000000"),
                     CZK
                 )
             )
