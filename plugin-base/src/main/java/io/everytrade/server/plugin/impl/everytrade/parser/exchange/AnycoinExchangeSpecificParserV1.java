@@ -5,19 +5,16 @@ import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.anycoin.AnycoinBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.anycoin.AnycoinSortedGroupV1;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Queue;
 import java.util.stream.Collectors;
 
 import static io.everytrade.server.model.Currency.ETH;
 import static io.everytrade.server.model.Currency.ETH2;
-import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.anycoin.AnycoinOperationTypeV1.OPERATION_TYPE_STAKE;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.anycoin.AnycoinOperationTypeV1.OPERATION_TYPE_TRADE_REFUND;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.anycoin.AnycoinOperationTypeV1.OPERATION_TYPE_UNSTAKE;
@@ -32,9 +29,6 @@ public class AnycoinExchangeSpecificParserV1 extends DefaultUnivocityExchangeSpe
     List<AnycoinBeanV1> unSupportedRows = new LinkedList<>();
     List<AnycoinBeanV1> rowsWithOneRowTransactionType = new LinkedList<>();
     List<AnycoinBeanV1> rowsWithMultipleRowTransactionType = new LinkedList<>();
-
-    Queue<AnycoinBeanV1> eth2Unstake = new ArrayDeque<>();
-    Queue<AnycoinBeanV1> eth2Stake = new ArrayDeque<>();
 
     public AnycoinExchangeSpecificParserV1(Class<? extends ExchangeBean> exchangeBean, String delimiter) {
         super(exchangeBean, delimiter);
@@ -60,10 +54,8 @@ public class AnycoinExchangeSpecificParserV1 extends DefaultUnivocityExchangeSpe
                     r.setMessage("Cannot define transaction");
                     unSupportedRows.add(r);
                 } else if (r.getCoin().equals(ETH) && r.getOperationType().equals(OPERATION_TYPE_STAKE)) {
-                    eth2Stake.add(r);
                     unSupportedRows.add(r);
                 } else if (r.getCoin().equals(ETH) && r.getOperationType().equals(OPERATION_TYPE_UNSTAKE)) {
-                    eth2Unstake.add(r);
                     unSupportedRows.add(r);
                 } else if (r.getOperationType().equals(OPERATION_TYPE_WITHDRAWAL_BLOCK) ||
                     r.getOperationType().equals(OPERATION_TYPE_WITHDRAWAL_UNBLOCK)) {
@@ -140,29 +132,12 @@ public class AnycoinExchangeSpecificParserV1 extends DefaultUnivocityExchangeSpe
     }
 
     private void prepareStakeBeansWithETH2(AnycoinBeanV1 beanFromRow, List<AnycoinBeanV1> result) {
-
-        AnycoinBeanV1 stakeBean = eth2Stake.poll();
-        if (stakeBean != null) {
-            beanFromRow.setDate(beanFromRow.getDate().toString());
-            beanFromRow.setMarketBase(beanFromRow.getCoin());
-            beanFromRow.setBaseAmount(beanFromRow.getAmount());
-            beanFromRow.setMarketQuote(beanFromRow.getCoin());
-            beanFromRow.setQuoteAmount(beanFromRow.getAmount());
-            beanFromRow.setTransactionType(TransactionType.STAKE);
-            beanFromRow.setType(beanFromRow.getOperationType().code);
-
-            AnycoinBeanV1 buyBean = new AnycoinBeanV1();
-            buyBean.setDate(stakeBean.getDate().toString());
-            buyBean.setMarketBase(beanFromRow.getCoin());
-            buyBean.setBaseAmount(beanFromRow.getAmount());
-            buyBean.setMarketQuote(ETH);
-            buyBean.setQuoteAmount(stakeBean.getAmount());
-            buyBean.setTransactionType(BUY);
-            buyBean.setType(BUY.name());
-
-            result.add(buyBean);
-            result.add(beanFromRow);
-        }
+        beanFromRow.setDate(beanFromRow.getDate().toString());
+        beanFromRow.setMarketBase(beanFromRow.getCoin());
+        beanFromRow.setBaseAmount(beanFromRow.getAmount().abs());
+        beanFromRow.setTransactionType(TransactionType.STAKE);
+        beanFromRow.setType(beanFromRow.getOperationType().code);
+        result.add(beanFromRow);
     }
 
     private void prepareStakeBeans(AnycoinBeanV1 beanFromRow,List<AnycoinBeanV1> result) {
@@ -177,29 +152,12 @@ public class AnycoinExchangeSpecificParserV1 extends DefaultUnivocityExchangeSpe
     }
 
     private void prepareUnstakeBeansWithETH2(AnycoinBeanV1 beanFromRow, List<AnycoinBeanV1> result) {
-
-        AnycoinBeanV1 unstakeBean = eth2Unstake.poll();
-        if (unstakeBean != null) {
-            beanFromRow.setDate(beanFromRow.getDate().toString());
-            beanFromRow.setMarketBase(beanFromRow.getCoin());
-            beanFromRow.setBaseAmount(beanFromRow.getAmount().abs());
-            beanFromRow.setMarketQuote(beanFromRow.getCoin());
-            beanFromRow.setQuoteAmount(beanFromRow.getAmount().abs());
-            beanFromRow.setTransactionType(TransactionType.UNSTAKE);
-            beanFromRow.setType(beanFromRow.getOperationType().code);
-
-            AnycoinBeanV1 buyBean = new AnycoinBeanV1();
-            buyBean.setDate(unstakeBean.getDate().toString());
-            buyBean.setMarketBase(unstakeBean.getCoin());
-            buyBean.setBaseAmount(unstakeBean.getAmount());
-            buyBean.setMarketQuote(beanFromRow.getCoin());
-            buyBean.setQuoteAmount(beanFromRow.getAmount());
-            buyBean.setTransactionType(BUY);
-            buyBean.setType(BUY.name());
-
-            result.add(buyBean);
-            result.add(beanFromRow);
-        }
+        beanFromRow.setDate(beanFromRow.getDate().toString());
+        beanFromRow.setMarketBase(beanFromRow.getCoin());
+        beanFromRow.setBaseAmount(beanFromRow.getAmount().abs());
+        beanFromRow.setTransactionType(TransactionType.UNSTAKE);
+        beanFromRow.setType(beanFromRow.getOperationType().code);
+        result.add(beanFromRow);
     }
 
     private void prepareUnstakeBeans(AnycoinBeanV1 beanFromRow,List<AnycoinBeanV1> result) {

@@ -19,7 +19,6 @@ import static io.everytrade.server.model.Currency.ATOM;
 import static io.everytrade.server.model.Currency.BTC;
 import static io.everytrade.server.model.Currency.CZK;
 import static io.everytrade.server.model.Currency.ETH;
-import static io.everytrade.server.model.Currency.ETH2;
 import static io.everytrade.server.model.Currency.SAND;
 import static io.everytrade.server.model.Currency.SOL;
 import static io.everytrade.server.model.TransactionType.BUY;
@@ -312,20 +311,6 @@ public class AnycoinBeanV1Test {
         final String row1 = "2024-01-01T09:32:49.003Z,stake,0.0105416,ETH2.S\n";
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row0.concat(row1));
 
-        final TransactionCluster expectedBuy = new TransactionCluster(
-                new ImportedTransactionBean(
-                        "",
-                        Instant.parse("2024-01-01T09:32:02.361Z"),
-                        ETH,
-                        ETH,
-                        BUY,
-                        new BigDecimal("0.0105416"),
-                        new BigDecimal("1.00000000000000000"),
-                        null,
-                        null
-                ),
-                List.of()
-        );
         final TransactionCluster expectedStake = new TransactionCluster(
                 new ImportedTransactionBean(
                         "",
@@ -341,8 +326,8 @@ public class AnycoinBeanV1Test {
                 List.of()
         );
 
-        TestUtils.testTxs(expectedBuy.getMain(), actual.get(0).getMain());
-        TestUtils.testTxs(expectedStake.getMain(), actual.get(1).getMain());
+        assertEquals(1, actual.size());
+        TestUtils.testTxs(expectedStake.getMain(), actual.get(0).getMain());
     }
 
     @Test
@@ -351,21 +336,7 @@ public class AnycoinBeanV1Test {
         final String row1 = "2024-03-15T17:27:01.354Z,unstake,0.21907795,ETH\n";
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row0.concat(row1));
 
-        final TransactionCluster expectedBuy = new TransactionCluster(
-                new ImportedTransactionBean(
-                        "",
-                        Instant.parse("2024-03-15T17:27:01.354Z"),
-                        ETH,
-                        ETH,
-                        BUY,
-                        new BigDecimal("0.21907795"),
-                        new BigDecimal("1.00000000000000000"),
-                        null,
-                        null
-                ),
-                List.of()
-        );
-        final TransactionCluster expectedStake = new TransactionCluster(
+        final TransactionCluster expectedUnstake = new TransactionCluster(
                 new ImportedTransactionBean(
                         "",
                         Instant.parse("2024-03-15T17:26:14.826Z"),
@@ -380,8 +351,8 @@ public class AnycoinBeanV1Test {
                 List.of()
         );
 
-        TestUtils.testTxs(expectedBuy.getMain(), actual.get(0).getMain());
-        TestUtils.testTxs(expectedStake.getMain(), actual.get(1).getMain());
+        assertEquals(1, actual.size());
+        TestUtils.testTxs(expectedUnstake.getMain(), actual.get(0).getMain());
     }
 
     @Test
