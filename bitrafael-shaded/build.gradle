@@ -1,0 +1,53 @@
+plugins {
+    id 'com.github.johnrengelman.shadow'
+}
+
+group = 'io.everytrade'
+version = projectVersion
+
+// bitrafael_public 1.0.53 is annotated with jakarta.ws.rs and requires rescu 3.x, which
+// collides with plugin-base's rescu 2.x / javax.ws.rs classpath. This module bundles
+// bitrafael + its rescu 3.x + jakarta.ws.rs-api and relocates the two colliding packages
+// so plugin-base can consume bitrafael while XChange continues to use rescu 2.x / javax
+// unchanged in the same fat jar.
+//
+// plugin-base imports bitrafael only via `com.generalbytes.*` — no direct rescu or
+// jakarta.ws.rs types on the plugin-base side — so only those two packages need
+// relocating. Do not relocate `com.generalbytes.*`.
+
+dependencies {
+    implementation("com.github.GENERALBYTESCOM.bitrafael_public:bitrafael-client:1.0.53") {
+        exclude group: 'org.slf4j', module: 'slf4j-simple'
+    }
+    implementation "com.github.GENERALBYTESCOM.bitrafael_public:bitrafael-client-api:1.0.53"
+    implementation "com.github.GENERALBYTESCOM.bitrafael_public:bitrafael-server-api:1.0.53"
+}
+
+shadowJar {
+    archiveClassifier.set('')
+
+    relocate 'si.mazi.rescu', 'shaded.bitrafael.si.mazi.rescu'
+    relocate 'jakarta.ws.rs', 'shaded.bitrafael.jakarta.ws.rs'
+
+    mergeServiceFiles()
+
+    exclude 'org/slf4j/**'
+
+    exclude 'META-INF/*.SF'
+    exclude 'META-INF/*.RSA'
+    exclude 'META-INF/*.DSA'
+}
+
+tasks.named('jar').configure { enabled = false }
+tasks.named('assemble').configure { dependsOn tasks.named('shadowJar') }
+
+configurations {
+    apiElements {
+        outgoing.artifacts.clear()
+        outgoing.artifact(tasks.shadowJar)
+    }
+    runtimeElements {
+        outgoing.artifacts.clear()
+        outgoing.artifact(tasks.shadowJar)
+    }
+}
