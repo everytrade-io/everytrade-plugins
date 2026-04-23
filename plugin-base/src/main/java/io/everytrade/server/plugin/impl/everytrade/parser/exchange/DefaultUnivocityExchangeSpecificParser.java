@@ -85,7 +85,6 @@ public class DefaultUnivocityExchangeSpecificParser implements IExchangeSpecific
     }
 
     private <T extends ExchangeBean> List<T> parse(File file, CsvParserSettings parserSettings, Class<T> exchangeBean) {
-        correctFile(file);
         try (Reader reader = new FileReader(file, StandardCharsets.UTF_8)) {
             BeanListProcessor<T> rowProcessor = new BeanListProcessor<>(exchangeBean) {
                 @Override

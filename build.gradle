@@ -4,6 +4,7 @@ plugins {
     id 'org.owasp.dependencycheck' version "$owaspDependencyCheckGradlePluginVersion" apply false
     id 'org.sonatype.gradle.plugins.scan' version "$sonatypeScanGradlePluginVersion" apply false
     id 'com.github.spotbugs' version "$spotbugsGradlePluginVersion" apply false
+    id 'com.github.johnrengelman.shadow' version "$shadowGradlePluginVersion" apply false
 }
 
 boolean spotbugsEnabled = false
