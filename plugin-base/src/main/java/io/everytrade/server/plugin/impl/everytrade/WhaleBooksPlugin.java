@@ -37,6 +37,7 @@ public class WhaleBooksPlugin implements IPlugin {
             BlockchainBtcConnector.DESCRIPTOR,
             BlockchainLtcConnector.DESCRIPTOR,
             BlockchainEthConnector.DESCRIPTOR,
+            BlockchainSolConnector.DESCRIPTOR,
             KuCoinConnector.DESCRIPTOR,
             KvapayConnector.DESCRIPTOR,
             DaseConnector.DESCRIPTOR
@@ -111,6 +112,9 @@ public class WhaleBooksPlugin implements IPlugin {
         }
         if (connectorId.equals(BlockchainEthConnector.DESCRIPTOR.getId())) {
             return new BlockchainEthConnector(parameters);
+        }
+        if (connectorId.equals(BlockchainSolConnector.DESCRIPTOR.getId())) {
+            return new BlockchainSolConnector(parameters);
         }
         if (connectorId.equals(KuCoinConnector.DESCRIPTOR.getId())) {
             return new KuCoinConnector(parameters);
