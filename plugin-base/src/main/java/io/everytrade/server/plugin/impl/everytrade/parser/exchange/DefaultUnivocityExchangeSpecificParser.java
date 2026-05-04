@@ -58,6 +58,7 @@ public class DefaultUnivocityExchangeSpecificParser implements IExchangeSpecific
     @Override
     public List<? extends ExchangeBean> parse(File inputFile) {
         parsingProblems = new ArrayList<>();
+        correctFile(inputFile);
 
         if (lineSeparator != null) {
             return parse(inputFile, createParserSettings(parsingProblems, lineSeparator), exchangeBean);
