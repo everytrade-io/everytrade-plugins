@@ -37,7 +37,8 @@ public class BlockchainEthDownloader {
     private static final Duration MIN_TIME_BETWEEN_REQUESTS = Duration.ofMillis(200);
     private static final int CONFIRMATIONS = 6;
     private static final long FIRST_BLOCK = 0L;
-    private static final int TRANSACTIONS_PER_PAGE = 2500;
+    // Etherscan free-tier cap; doubles as the page-full threshold, so the supplementary last-block fetch fires.
+    private static final int TRANSACTIONS_PER_PAGE = 1000;
 
     String address;
     String apiKeyToken;
