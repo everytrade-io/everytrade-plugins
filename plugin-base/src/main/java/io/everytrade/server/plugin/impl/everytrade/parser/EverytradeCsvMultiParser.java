@@ -281,7 +281,9 @@ public class EverytradeCsvMultiParser implements ICsvParser {
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
                 .headers(List.of(
                     CsvHeader.of("Date(UTC)", "Pair", "Side", "Price", "Executed", "Amount", "Fee").withSeparator(delimiter),
-                    CsvHeader.of("Date(UTC)", "Pair", "Side", "Price", "Quantity", "Amount", "Fee").withSeparator(delimiter)
+                    CsvHeader.of("Date(UTC)", "Pair", "Side", "Price", "Quantity", "Amount", "Fee").withSeparator(delimiter),
+                    // Binance localized (CZ) Spot Trade History export – same structure, translated column names
+                    CsvHeader.of("Čas", "Pár", "Strana", "Cena", "Provedeno", "Částka", "Poplatek").withSeparator(delimiter)
                 ))
                 .parserFactory(() -> new BinanceExchangeSpecificParserV3(delimiter))
                 .supportedExchange(BINANCE)

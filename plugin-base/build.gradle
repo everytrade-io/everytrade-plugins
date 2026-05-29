@@ -100,12 +100,18 @@ dependencies {
     // version used by ResCU
     pluginCompile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.10.5.1'
 
-    pluginCompile("com.github.GENERALBYTESCOM.batm_public:server_extensions_extra:0a1330d6e14a79e6f45be0c8096ea2698c558ed2") {
+    // GENERALBYTESCOM/batm_public is no longer resolvable on JitPack (ETD-2123); use the
+    // martinkyov fork that JitPack can build. This fork pulls rescu-3.x + jakarta.ws.rs
+    // transitively, which collides with this module's rescu-2.x + javax.ws.rs XChange
+    // classpath, so both are excluded here (bitrafael-shaded provides the relocated 3.x).
+    pluginCompile("com.github.martinkyov.batm_public:server_extensions_extra:6f8a52e0f8") {
         exclude group: 'com.github.GENERALBYTESCOM.bitrafael_public', module: 'bitrafael-client'
         exclude group: 'org.web3j', module: 'core'
         exclude group: 'org.knowm.xchange'
         exclude group: 'com.google.protobuf'
         exclude group: 'javax.servlet'
+        exclude group: 'com.github.mmazi', module: 'rescu'
+        exclude group: 'jakarta.ws.rs', module: 'jakarta.ws.rs-api'
     }
 
 
