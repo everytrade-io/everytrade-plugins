@@ -17,6 +17,7 @@ import static io.everytrade.server.model.Currency.ADA;
 import static io.everytrade.server.model.Currency.BNB;
 import static io.everytrade.server.model.Currency.BTC;
 import static io.everytrade.server.model.Currency.BUSD;
+import static io.everytrade.server.model.Currency.EUR;
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.SELL;
@@ -39,26 +40,26 @@ class BinanceBeanV3Test {
 
     @Test
     void testCorrectParsingRawTransactionBuy() {
-        final String row0 = "\"2020-05-29 11:13:27,ADABTC,BUY,\"\"1,000.0000067200\"\",\"\"3,813.0000000000ADA\"\"," +
-            "\"\"1,000.02562336BTC\"\",\"\"3,813.0000000000ADA\"\"\"\n";
-        final String row1 = "\"2020-05-29 11:13:27,ADABTC,BUY,1000.0000067200,\"\"3,813.0000000000ADA\"\",\"\"1,000.02562336BTC\"\"," +
-            "\"\"3,813.0000000000ADA\"\"\"\n";
-        final String row2 = "\"2020-05-29 11:13:27,ADABTC,BUY,1000.0000067200,\"\"3,813.0000000000ADA\"\",1000.02562336BTC," +
-            "\"\"3,813.0000000000ADA\"\"\"\n";
-        final String row3 = "\"2020-05-29 11:13:27,ADABTC,BUY,1000.0000067200,\"\"3,813.0000000000ADA\"\",1000.02562336BTC," +
-            "3813.0000000000ADA\"\n";
-        final String row4 = "\"2020-05-29 11:13:27,ADABTC,BUY,1000.0000067200,3813.0000000000ADA,1000.02562336BTC,3813.0000000000ADA\"\n";
-        final String row5 = "2020-05-29 11:13:27,ADABTC,BUY,1000.0000067200,3813.0000000000ADA,1000.02562336BTC,3813.0000000000ADA\n";
-        final String row6 = "2020-05-29 11:13:27,ADABTC,BUY,1000.0000067200,\"\"3,813.0000000000ADA\"\",1000.02562336BTC," +
-            "3813.0000000000ADA\n";
-        final String row7 = "2020-05-29 11:13:27,ADABTC,BUY,\"\"1,000.0000067200\"\",3813.0000000000ADA,1000.02562336BTC," +
-            "3813.0000000000ADA\n";
-        final String row8 = "\"2020-05-29 11:13:27,ADABTC,BUY,\"\"1,000.0000067200\"\",3813.0000000000ADA,1000.02562336BTC," +
-            "3813.0000000000ADA\"\n";
-        final String row9 = "\"2020-05-29 11:13:27,ADABTC,BUY,1000.0000067200,\"\"3813.0000000000ADA\"\",1000.02562336BTC," +
-            "3813.0000000000ADA\"\n";
-        final String row10 = "2020-05-29 11:13:27,ADABTC,BUY,1000.0000067200,3813.0000000000ADA,1000.02562336BTC,3813.0000000000ADA\n";
-        final String row11 = "2020-05-29 11:13:27,ADABTC,BUY,1000.0000067200,3813.0000000000ADA,1000.02562336BTC,3813.0000000000ADA\n";
+        final String row0 = "\"2022-02-18 13:24:05,ADABTC,BUY,\"\"1,500.0000050000\"\",\"\"2,500.0000000000ADA\"\"," +
+            "\"\"1,250.0000000000BTC\"\",\"\"2,500.0000000000ADA\"\"\"\n";
+        final String row1 = "\"2022-02-18 13:24:05,ADABTC,BUY,1500.0000050000,\"\"2,500.0000000000ADA\"\",\"\"1,250.0000000000BTC\"\"," +
+            "\"\"2,500.0000000000ADA\"\"\"\n";
+        final String row2 = "\"2022-02-18 13:24:05,ADABTC,BUY,1500.0000050000,\"\"2,500.0000000000ADA\"\",1250.0000000000BTC," +
+            "\"\"2,500.0000000000ADA\"\"\"\n";
+        final String row3 = "\"2022-02-18 13:24:05,ADABTC,BUY,1500.0000050000,\"\"2,500.0000000000ADA\"\",1250.0000000000BTC," +
+            "2500.0000000000ADA\"\n";
+        final String row4 = "\"2022-02-18 13:24:05,ADABTC,BUY,1500.0000050000,2500.0000000000ADA,1250.0000000000BTC,2500.0000000000ADA\"\n";
+        final String row5 = "2022-02-18 13:24:05,ADABTC,BUY,1500.0000050000,2500.0000000000ADA,1250.0000000000BTC,2500.0000000000ADA\n";
+        final String row6 = "2022-02-18 13:24:05,ADABTC,BUY,1500.0000050000,\"\"2,500.0000000000ADA\"\",1250.0000000000BTC," +
+            "2500.0000000000ADA\n";
+        final String row7 = "2022-02-18 13:24:05,ADABTC,BUY,\"\"1,500.0000050000\"\",2500.0000000000ADA,1250.0000000000BTC," +
+            "2500.0000000000ADA\n";
+        final String row8 = "\"2022-02-18 13:24:05,ADABTC,BUY,\"\"1,500.0000050000\"\",2500.0000000000ADA,1250.0000000000BTC," +
+            "2500.0000000000ADA\"\n";
+        final String row9 = "\"2022-02-18 13:24:05,ADABTC,BUY,1500.0000050000,\"\"2500.0000000000ADA\"\",1250.0000000000BTC," +
+            "2500.0000000000ADA\"\n";
+        final String row10 = "2022-02-18 13:24:05,ADABTC,BUY,1500.0000050000,2500.0000000000ADA,1250.0000000000BTC,2500.0000000000ADA\n";
+        final String row11 = "2022-02-18 13:24:05,ADABTC,BUY,1500.0000050000,2500.0000000000ADA,1250.0000000000BTC,2500.0000000000ADA\n";
 
         final TransactionCluster actual0 = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row0);
         final TransactionCluster actual1 = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row1);
@@ -76,21 +77,21 @@ class BinanceBeanV3Test {
         final TransactionCluster expected = new TransactionCluster(
             new ImportedTransactionBean(
                 null,
-                Instant.parse("2020-05-29T11:13:27Z"),
+                Instant.parse("2022-02-18T13:24:05Z"),
                 ADA,
                 BTC,
                 BUY,
-                new BigDecimal("3813.00000000000000000"),
-                new BigDecimal("0.26226740712300026")
+                new BigDecimal("2500.00000000000000000"),
+                new BigDecimal("0.50000000000000000")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
                     FEE_UID_PART,
-                    Instant.parse("2020-05-29T11:13:27Z"),
+                    Instant.parse("2022-02-18T13:24:05Z"),
                     ADA,
                     ADA,
                     FEE,
-                    new BigDecimal("3813.00000000000000000"),
+                    new BigDecimal("2500.00000000000000000"),
                     ADA
                 )
             )
@@ -110,9 +111,42 @@ class BinanceBeanV3Test {
     }
 
     @Test
+    void testLocalizedCzechHeaderWithTwoDigitYear() {
+        // Binance Spot Trade History exported with Czech UI: translated header + 2-digit year (yy-MM-dd). See ETS-5030.
+        final String header = "﻿Čas,Pár,Strana,Cena,Provedeno,Částka,Poplatek\n";
+        final String row0 = "24-03-08 10:15:42,BTCEUR,BUY,50000,0.05BTC,2500EUR,0.002BNB\n";
+
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(header + row0);
+
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2024-03-08T10:15:42Z"),
+                BTC,
+                EUR,
+                BUY,
+                new BigDecimal("0.05000000000000000"),
+                new BigDecimal("50000.00000000000000000")
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    FEE_UID_PART,
+                    Instant.parse("2024-03-08T10:15:42Z"),
+                    BNB,
+                    BNB,
+                    FEE,
+                    new BigDecimal("0.00200000000000000"),
+                    BNB
+                )
+            )
+        );
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
     void testCorrectParsingFee() {
-        final String row0 = "2021-06-02 16:45:27,BTCBUSD,BUY,\"37,850.0000000000\",0.0009100000BTC,34.44350000BUSD,0.0000000000BNB\n";
-        final String row1 = "2021-06-02 16:07:12,BTCBUSD,SELL,\"37,900.0000000000\",0.0009090000BTC,34.45110000BUSD,1.0000000000BNB\n";
+        final String row0 = "2023-07-14 09:30:00,BTCBUSD,BUY,\"30,000.0000000000\",0.0010000000BTC,30.00000000BUSD,0.0000000000BNB\n";
+        final String row1 = "2023-07-14 09:31:45,BTCBUSD,SELL,\"40,000.0000000000\",0.0020000000BTC,80.00000000BUSD,0.5000000000BNB\n";
         final String join = row0.concat(row1);
 
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + join);
@@ -121,33 +155,33 @@ class BinanceBeanV3Test {
         final TransactionCluster expected = new TransactionCluster(
             new ImportedTransactionBean(
                 null,
-                Instant.parse("2021-06-02T16:45:27Z"),
+                Instant.parse("2023-07-14T09:30:00Z"),
                 BTC,
                 BUSD,
                 BUY,
-                new BigDecimal("0.00091000000000000"),
-                new BigDecimal("37850.00000000000000000")
+                new BigDecimal("0.00100000000000000"),
+                new BigDecimal("30000.00000000000000000")
             ),
             List.of()
         );
         final TransactionCluster expected1 = new TransactionCluster(
             new ImportedTransactionBean(
                 null,
-                Instant.parse("2021-06-02T16:07:12Z"),
+                Instant.parse("2023-07-14T09:31:45Z"),
                 BTC,
                 BUSD,
                 SELL,
-                new BigDecimal("0.00090900000000000"),
-                new BigDecimal("37900.00000000000000000")
+                new BigDecimal("0.00200000000000000"),
+                new BigDecimal("40000.00000000000000000")
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
                     FEE_UID_PART,
-                    Instant.parse("2021-06-02T16:07:12Z"),
+                    Instant.parse("2023-07-14T09:31:45Z"),
                     BNB,
                     BNB,
                     FEE,
-                    new BigDecimal("1.00000000000000000"),
+                    new BigDecimal("0.50000000000000000"),
                     BNB
                 )
             )
