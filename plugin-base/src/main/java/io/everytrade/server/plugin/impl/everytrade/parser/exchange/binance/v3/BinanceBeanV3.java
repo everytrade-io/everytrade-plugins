@@ -39,7 +39,7 @@ public class BinanceBeanV3 extends ExchangeBean {
         Currency feeCurrency,
         CurrencyPair currencyPair
     ) {
-        this.date = ParserUtils.parse("yyyy-MM-dd HH:mm:ss", date);
+        this.date = parseDate(date);
         this.pairBase = currencyPair.getBase();
         this.pairQuote = currencyPair.getQuote();
         this.type = detectTransactionType(type);
@@ -52,6 +52,16 @@ public class BinanceBeanV3 extends ExchangeBean {
             this.fee = feeAbsValue;
         } else {
             this.fee = BigDecimal.ZERO;
+        }
+    }
+
+    // Binance varies the year width by export locale/version: 4-digit (2020-05-29) or 2-digit (25-11-17).
+    // Java maps the 2-digit "yy" to 2000-2099, which matches Binance's data range.
+    private static Instant parseDate(String date) {
+        try {
+            return ParserUtils.parse("yyyy-MM-dd HH:mm:ss", date);
+        } catch (java.time.DateTimeException e) {
+            return ParserUtils.parse("yy-MM-dd HH:mm:ss", date);
         }
     }
 
