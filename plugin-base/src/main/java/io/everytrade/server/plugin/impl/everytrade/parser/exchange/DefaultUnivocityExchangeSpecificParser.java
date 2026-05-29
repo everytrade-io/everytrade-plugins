@@ -58,6 +58,7 @@ public class DefaultUnivocityExchangeSpecificParser implements IExchangeSpecific
     @Override
     public List<? extends ExchangeBean> parse(File inputFile) {
         parsingProblems = new ArrayList<>();
+        correctFile(inputFile);
 
         if (lineSeparator != null) {
             return parse(inputFile, createParserSettings(parsingProblems, lineSeparator), exchangeBean);
@@ -85,7 +86,6 @@ public class DefaultUnivocityExchangeSpecificParser implements IExchangeSpecific
     }
 
     private <T extends ExchangeBean> List<T> parse(File file, CsvParserSettings parserSettings, Class<T> exchangeBean) {
-        correctFile(file);
         try (Reader reader = new FileReader(file, StandardCharsets.UTF_8)) {
             BeanListProcessor<T> rowProcessor = new BeanListProcessor<>(exchangeBean) {
                 @Override

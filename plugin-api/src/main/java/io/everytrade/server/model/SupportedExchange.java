@@ -40,6 +40,7 @@ public enum SupportedExchange {
     BLOCKCHAINBTC("Blockchain BTC", "blockchainbtc"),
     BLOCKCHAINETH("Blockchain ETH", "blockchaineth"),
     BLOCKCHAINLTC("Blockchain LTC", "blockchainltc"),
+    BLOCKCHAINSOL("Blockchain SOL", "blockchainsol"),
     DVCHAIN("DV Chain", "dvchain"),
     AQUANOW("Aquanow", "aquanow"),
     SIMPLECOIN("Simplecoin", "simplecoin"),
