@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -165,6 +166,33 @@ class BlockchainEthDownloaderTest {
         var withdrawalCluster = findOneCluster(result, WITHDRAWAL);
         assertDepositWithdrawal(withdrawalCluster, WITHDRAWAL, ONE);
         assertFees(withdrawalCluster);
+    }
+
+    @Test
+    void fullPageTriggersSupplementaryLastBlockFetchTest() throws Exception {
+        // A full page must trigger the supplementary last-block fetch, else txs past the 1000-record cap are dropped.
+        final int pageSize = 1000;
+        List<EtherScanTransactionDto> fullPage = new ArrayList<>();
+        for (int i = 0; i < pageSize; i++) {
+            fullPage.add(depositOnAddress(ADDRESS, ONE_ETH));
+        }
+        var alreadyInPage = fullPage.get(pageSize - 1);
+        var spilledOverTx = depositOnAddress(ADDRESS, ONE_ETH);
+        List<EtherScanTransactionDto> lastBlockTxs = List.of(alreadyInPage, spilledOverTx);
+
+        var mock = mock(EtherScanClient.class);
+        when(mock.getBlockNumberByTimestamp(anyString(), anyString(), anyString())).thenReturn(successResponse(1_000_000L));
+        when(mock.getNormalTxsByAddress(anyString(), anyLong(), anyLong(), anyInt(), anyInt(), anyString(), anyString()))
+            .thenReturn(successResponse(fullPage))
+            .thenReturn(successResponse(lastBlockTxs));
+
+        var downloader = new BlockchainEthDownloader(
+            ADDRESS, "apiKey", FIAT, false, false, false, false, true, false, mock);
+
+        DownloadResult result = downloader.download(null);
+
+        // full page + the spilled-over tx; the duplicate returned by the supplementary fetch must be deduped away
+        assertEquals(pageSize + 1, result.getParseResult().getTransactionClusters().size());
     }
 
     private void assertDepositWithdrawal(TransactionCluster cluster, TransactionType type, BigDecimal volume) {
