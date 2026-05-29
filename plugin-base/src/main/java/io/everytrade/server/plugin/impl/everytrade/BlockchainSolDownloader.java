@@ -28,7 +28,7 @@ import static lombok.AccessLevel.PRIVATE;
 public class BlockchainSolDownloader {
     private static final Logger LOG = LoggerFactory.getLogger(BlockchainSolDownloader.class);
 
-    private static final Duration MIN_TIME_BETWEEN_REQUESTS = Duration.ofMillis(200);
+    private static final Duration MIN_TIME_BETWEEN_REQUESTS = Duration.ofMillis(500);
     private static final int TRANSACTIONS_PER_PAGE = 100;
 
     String address;
