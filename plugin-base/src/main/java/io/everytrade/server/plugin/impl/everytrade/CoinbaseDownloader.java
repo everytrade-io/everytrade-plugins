@@ -58,6 +58,7 @@ public class CoinbaseDownloader {
     private static final String PIPE_SYMBOL = "|";
     private static final String ADVANCED_TRADE_SYMBOL_SEPARATOR = "&";
     private static final int TRANSACTIONS_PER_REQUEST_LIMIT = 100; // please do not change, it could affect last download state logic
+    private static final int MAX_ADVANCED_TRADE_PAGES = 10_000; // safety cap against a runaway cursor loop
     private static final int REAL_WALLET_ID_LENGTH = 36;
     private String lastDownloadWalletState;
     private long partialLastAdvanceTradeStartDatetime;
@@ -184,7 +185,9 @@ public class CoinbaseDownloader {
             completedLastAdvanceTradeEndDatetime = now.toEpochMilli();
         }
         List<CoinbaseAdvancedTradeFills> advancedTrades = new ArrayList<>();
+        int page = 0;
         while (true) {
+            page++;
             var params = setParamsBeforeStart(tradeService, now);
 
             List<CoinbaseAdvancedTradeFills> advancedTradesBlock;
@@ -207,30 +210,27 @@ public class CoinbaseDownloader {
                     throw new IllegalStateException("Unable to download advanced trades. ", e);
                 }
             }
-            int size = advancedTradesBlock.size();
-            if (size == 0) {
+            if (advancedTradesBlock != null && !advancedTradesBlock.isEmpty()) {
+                advancedTrades.addAll(advancedTradesBlock);
+            }
+
+            boolean hasMorePages = cursorAdvanceTrade != null
+                && !cursorAdvanceTrade.isEmpty()
+                && !cursorAdvanceTrade.equalsIgnoreCase("null");
+            boolean emptyBlock = advancedTradesBlock == null || advancedTradesBlock.isEmpty();
+            if (emptyBlock || !hasMorePages) {
+                // drain finished - set the watermark so the next host invocation resumes from here
                 partialLastAdvanceTradeStartDatetime = completedLastAdvanceTradeEndDatetime;
                 partialLastAdvanceTradeEndDatetime = 0;
                 completedLastAdvanceTradeEndDatetime = 0;
+                cursorAdvanceTrade = null;
                 break;
-            } else if (size == TRANSACTIONS_PER_REQUEST_LIMIT) {
-                Date minTradeDate;
-                try {
-                    String tradeTime = advancedTradesBlock.get(advancedTradesBlock.size() - 1).getTradeTime();
-                    minTradeDate = createDateFromText(tradeTime);
-                } catch (ParseException e) {
-                    throw new RuntimeException("Unable to parse date of trade ", e);
-                }
-                partialLastAdvanceTradeEndDatetime = minTradeDate.getTime();
-                advancedTrades.addAll(advancedTradesBlock);
-            } else if (size < TRANSACTIONS_PER_REQUEST_LIMIT) {
-                advancedTrades.addAll(advancedTradesBlock);
-                partialLastAdvanceTradeStartDatetime = completedLastAdvanceTradeEndDatetime;
-                partialLastAdvanceTradeEndDatetime = 0;
-                completedLastAdvanceTradeEndDatetime = 0;
+            }
+            if (page >= MAX_ADVANCED_TRADE_PAGES) {
+                LOG.warn("Advanced trades paging hit the safety cap of {} pages; "
+                    + "stopping the drain - some older fills may not be downloaded in this run.",
+                    MAX_ADVANCED_TRADE_PAGES);
                 break;
-            } else {
-                throw new IllegalStateException("Unknown state of downloaded data. ");
             }
         }
         List<UserTrade> userTrades = createUserTradesFromAdvancedTrades(advancedTrades, parsingProblems);
@@ -249,12 +249,12 @@ public class CoinbaseDownloader {
                     CurrencyPair pair = new CurrencyPair(base, quote);
                     Date date = createDateFromText(fill.getTradeTime());
                     Order.OrderType type = fill.getSide().equalsIgnoreCase("BUY") ? Order.OrderType.BID : Order.OrderType.ASK;
-                    BigDecimal baseAmount = fill.getSizeInQuote().equals("true")
-                        ? AmountUtil.evaluateBaseAmount(fill.getSize(), fill.getPrice()) : fill.getSize();
+                    BigDecimal baseAmount = fill.getSize();
+                    String fillId = isEmpty(fill.getEntryId()) ? fill.getTradeId() : fill.getEntryId();
 
                     UserTrade trade = new UserTrade(
                         type, baseAmount, pair,
-                        fill.getPrice(), date, fill.getTradeId(),
+                        fill.getPrice(), date, fillId,
                         fill.getOrderId(), fill.getCommission(), pair.getCounter(), fill.getUserId());
 
                     trades.add(trade);
