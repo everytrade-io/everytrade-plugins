@@ -4,6 +4,7 @@ import io.everytrade.server.model.Currency;
 import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.ParsingProblemType;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.plugin.impl.everytrade.etherscan.EtherScanClient;
 import io.everytrade.server.plugin.impl.everytrade.etherscan.EtherScanDto;
@@ -195,6 +196,36 @@ class BlockchainEthDownloaderTest {
         assertEquals(pageSize + 1, result.getParseResult().getTransactionClusters().size());
     }
 
+    @Test
+    void erc20UnknownTokenSymbolIsIgnoredNotFailed() throws Exception {
+        // ERC20 token with a homoglyph symbol mapping to no known Currency must be ignored, not failed.
+        var homoglyphUsdc = "ÚЅDС";
+        var erc20Txs = List.of(erc20DepositOnAddress(ADDRESS, homoglyphUsdc, ONE_ETH));
+
+        var downloader = new BlockchainEthDownloader(
+            ADDRESS,
+            "apiKey",
+            FIAT,
+            false,
+            false,
+            false,
+            false,
+            false,
+            true,
+            mockClient(emptyList(), erc20Txs)
+        );
+
+        DownloadResult result = downloader.download(null);
+
+        var parseResult = result.getParseResult();
+        assertEquals(0, parseResult.getTransactionClusters().size());
+        assertEquals(1, parseResult.getParsingProblems().size());
+        assertEquals(
+            ParsingProblemType.PARSED_ROW_IGNORED,
+            parseResult.getParsingProblems().get(0).getParsingProblemType()
+        );
+    }
+
     private void assertDepositWithdrawal(TransactionCluster cluster, TransactionType type, BigDecimal volume) {
         assertEquals(0, cluster.getIgnoredFeeTransactionCount());
         assertNull(cluster.getIgnoredFeeReason());
@@ -267,6 +298,31 @@ class BlockchainEthDownloaderTest {
 
     private EtherScanTransactionDto withdrawFromAddress(String address, BigDecimal value) {
         return tx(address, UUID.randomUUID().toString(), value);
+    }
+
+    private EtherScanErc20TransactionDto erc20DepositOnAddress(String toAddress, String tokenSymbol, BigDecimal value) {
+        return EtherScanErc20TransactionDto.builder()
+            .blockNumber(100_000)
+            .timeStamp(Instant.now().getEpochSecond())
+            .hash(UUID.randomUUID().toString())
+            .nonce(0)
+            .blockHash(UUID.randomUUID().toString())
+            .transactionIndex(0)
+            .from(UUID.randomUUID().toString())
+            .to(toAddress)
+            .value(value)
+            .gas(new BigDecimal("1000000"))
+            .gasUsed(new BigDecimal("1000000"))
+            .gasPrice(ONE)
+            .txreceipt_status("")
+            .input("")
+            .contractAddress(null)
+            .confirmations(100)
+            .isError(0)
+            .tokenName("Fake USD Coin")
+            .tokenSymbol(tokenSymbol)
+            .tokenDecimal(6)
+            .build();
     }
 
     private EtherScanTransactionDto tx(String fromA, String toA, BigDecimal value) {

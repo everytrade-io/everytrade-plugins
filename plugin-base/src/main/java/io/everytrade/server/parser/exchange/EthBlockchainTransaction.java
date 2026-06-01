@@ -78,7 +78,13 @@ public class EthBlockchainTransaction {
 
         var currencyDecimalDigits = ETH_DECIMAL_DIGIT;
         if (txDto instanceof EtherScanErc20TransactionDto) {
-            this.base = Currency.fromCode(((EtherScanErc20TransactionDto) txDto).getTokenSymbol());
+            var tokenSymbol = ((EtherScanErc20TransactionDto) txDto).getTokenSymbol();
+            try {
+                this.base = Currency.fromCode(tokenSymbol);
+            } catch (IllegalArgumentException e) {
+                throw new DataIgnoredException(
+                    String.format("Ignored ERC20 transaction id - %s : unsupported token symbol '%s'.", id, tokenSymbol));
+            }
             currencyDecimalDigits = ((EtherScanErc20TransactionDto) txDto).getTokenDecimal();
         } else if (txDto instanceof EtherScanTransactionDto) {
             this.base = ETH;
