@@ -32,9 +32,13 @@ import static java.time.Instant.now;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -48,6 +52,54 @@ class BlockchainDownloaderTest {
     private static final String ADDRESS = "addr1";
     private static final String SOURCE = "MUMbouREUxpVs1DZMCVknq9HziM95zTAyZ";
     private static final String LTC = "LTC";
+
+    // "14aX..." is a Bitcoin "1..." address (version byte 0x00), not Litecoin.
+    @Test
+    void ltcConnectorRejectsBitcoinAddressWithClearMessage() {
+        var connector = new BlockchainLtcConnector(
+            "14aX6pGSTrZ5azkQLVgthSdifFKQiQTR4z",
+            "CZK",
+            "false",
+            "false",
+            "false",
+            "true"
+        );
+
+        var ex = assertThrows(IllegalArgumentException.class, () -> connector.getTransactions(null));
+
+        assertTrue(ex.getMessage().contains("BTC"), "should name the detected chain: " + ex.getMessage());
+        assertTrue(ex.getMessage().contains("LTC"), "should name the expected chain: " + ex.getMessage());
+        assertFalse(ex.getMessage().contains("No source info found"), "misleading message: " + ex.getMessage());
+    }
+
+    @Test
+    void rejectsAddressClassifiedAsAnotherChain() {
+        var ex = assertThrows(IllegalArgumentException.class,
+            () -> BlockchainDownloader.assertAddressMatchesCrypto("14aX6pGSTrZ5azkQLVgthSdifFKQiQTR4z", LTC));
+        assertTrue(ex.getMessage().contains("not a valid LTC address"), ex.getMessage());
+    }
+
+    @Test
+    void acceptsAddressesMatchingTheRequestedChain() {
+        assertDoesNotThrow(() -> BlockchainDownloader.assertAddressMatchesCrypto("LdP8Qox1VAhCzLJNqrr74YovaWYyNBUWvL", LTC));
+        assertDoesNotThrow(() -> BlockchainDownloader.assertAddressMatchesCrypto("MHzjjwag7pBaDgbcVKZnGHsU9bcU8dcwTz", LTC));
+        assertDoesNotThrow(() -> BlockchainDownloader.assertAddressMatchesCrypto("1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa", BTC));
+    }
+
+    @Test
+    void doesNotRejectAddressFormsTheClassifierCannotIdentify() {
+        // bech32 is unrecognised by classify() (no crypto) → must fall through, never be rejected.
+        assertDoesNotThrow(
+            () -> BlockchainDownloader.assertAddressMatchesCrypto("ltc1q46m2f9sxghgp5xpuyfgpjwpvt923udmuj7s4m2", LTC));
+        assertDoesNotThrow(
+            () -> BlockchainDownloader.assertAddressMatchesCrypto("bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4", BTC));
+    }
+
+    @Test
+    void doesNotRejectSharedP2shPrefixAddressesOnLtc() {
+        // "3..." P2SH is shared by BTC and legacy LTC; classify() calls it BTC, so it must not be rejected on LTC.
+        assertDoesNotThrow(() -> BlockchainDownloader.assertAddressMatchesCrypto("3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy", LTC));
+    }
 
     @Test
     void blockChainBtcXpubTest() {

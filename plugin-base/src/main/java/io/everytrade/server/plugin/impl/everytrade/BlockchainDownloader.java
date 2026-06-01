@@ -3,7 +3,9 @@ package io.everytrade.server.plugin.impl.everytrade;
 import com.generalbytes.bitrafael.client.Client;
 import com.generalbytes.bitrafael.server.api.dto.AddressInfo;
 import com.generalbytes.bitrafael.server.api.dto.TxInfo;
+import com.generalbytes.bitrafael.tools.api.wallet.Classification;
 import com.generalbytes.bitrafael.tools.transaction.Transaction;
+import com.generalbytes.bitrafael.tools.wallet.WalletTools;
 import io.everytrade.server.model.Currency;
 import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.parser.ParseResult;
@@ -28,6 +30,8 @@ public class BlockchainDownloader {
 
     private static final int TRUNCATE_LIMIT = 10;
     private static final Set<String> XPUB_PREFIXES = Set.of("xpub", "ypub", "zpub", "Ltub", "Mtub");
+    // "3..." P2SH (version byte 0x05) is valid on both BTC and legacy LTC; classify() always calls it BTC, so skip it.
+    private static final Set<String> CHAIN_AMBIGUOUS_PREFIXES = Set.of("3");
     private static final String COLON_SYMBOL = ":";
     private static final String PIPE_SYMBOL = "|";
     private static final String COIN_SERVER_URL = "https://coin.cz";
@@ -106,6 +110,7 @@ public class BlockchainDownloader {
     }
 
     public DownloadResult download(String source) {
+        assertAddressMatchesCrypto(source, cryptoCurrency);
         List<Transaction> transactions = new ArrayList<>();
         int request = 0;
         int page = 0;
@@ -239,5 +244,28 @@ public class BlockchainDownloader {
 
     private boolean isXpub(String address) {
         return XPUB_PREFIXES.stream().anyMatch(address::startsWith);
+    }
+
+    // Rejects only when the address is positively classified as a different crypto (e.g. a BTC address entered
+    // into the LTC connector). Unrecognised forms (bech32, "3...") return no crypto and are left for the backend.
+    static void assertAddressMatchesCrypto(String source, String cryptoCurrency) {
+        if (source == null || CHAIN_AMBIGUOUS_PREFIXES.stream().anyMatch(source::startsWith)) {
+            return;
+        }
+        final String detectedCrypto;
+        try {
+            final Classification classification = new WalletTools().classify(source);
+            detectedCrypto = classification == null ? null : classification.getCryptoCurrency();
+        } catch (Exception e) {
+            return;
+        }
+        if (detectedCrypto != null && !detectedCrypto.equalsIgnoreCase(cryptoCurrency)) {
+            throw new IllegalArgumentException(String.format(
+                "Address '%s' is a %s address, not a valid %s address.",
+                ConnectorUtils.truncate(source, TRUNCATE_LIMIT),
+                detectedCrypto,
+                cryptoCurrency
+            ));
+        }
     }
 }
