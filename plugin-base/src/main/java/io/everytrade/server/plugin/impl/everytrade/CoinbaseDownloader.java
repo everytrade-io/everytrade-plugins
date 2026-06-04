@@ -184,7 +184,10 @@ public class CoinbaseDownloader {
             completedLastAdvanceTradeEndDatetime = now.toEpochMilli();
         }
         List<CoinbaseAdvancedTradeFills> advancedTrades = new ArrayList<>();
+        int requests = 0;
         while (true) {
+            // cursor we are about to send; used below to detect a non-advancing (stuck) cursor
+            final String requestCursor = cursorAdvanceTrade;
             var params = setParamsBeforeStart(tradeService, now);
 
             List<CoinbaseAdvancedTradeFills> advancedTradesBlock;
@@ -207,30 +210,40 @@ public class CoinbaseDownloader {
                     throw new IllegalStateException("Unable to download advanced trades. ", e);
                 }
             }
-            int size = advancedTradesBlock.size();
-            if (size == 0) {
+            advancedTrades.addAll(advancedTradesBlock);
+
+            // Paginate purely by cursor within a fixed [startDate, now] window.
+            // Previously the loop narrowed endDate to the oldest fill's time on every full page while
+            // reusing the cursor from the previous (wider) window; Coinbase then returned a short page,
+            // the loop hit the "size < limit" branch and declared the whole history complete, silently
+            // skipping the rest of the fills (under-fetch -> missing trades, ETS-4965). Driving the loop
+            // by the cursor and keeping endDate fixed makes it drain the full window. The state format is
+            // unchanged, so a connector that keeps its last state simply continues forward from there.
+            // The /orders/historical/fills endpoint returns an empty cursor when there are no more pages
+            // (it has no has_next flag); the extra guards stop the loop on an empty page or a cursor that
+            // does not advance, so a malformed response can never spin this loop forever.
+            boolean hasMore = !advancedTradesBlock.isEmpty()
+                && cursorAdvanceTrade != null
+                && !cursorAdvanceTrade.isBlank()
+                && !cursorAdvanceTrade.equalsIgnoreCase("null")
+                && !cursorAdvanceTrade.equals(requestCursor);
+            if (!hasMore) {
+                // window fully drained -> mark complete and set up the next (forward) download
                 partialLastAdvanceTradeStartDatetime = completedLastAdvanceTradeEndDatetime;
                 partialLastAdvanceTradeEndDatetime = 0;
                 completedLastAdvanceTradeEndDatetime = 0;
+                cursorAdvanceTrade = null;
                 break;
-            } else if (size == TRANSACTIONS_PER_REQUEST_LIMIT) {
-                Date minTradeDate;
+            }
+
+            // Stay well under Coinbase's 30 req/s private-REST limit on large histories.
+            if (++requests % 10 == 0) {
                 try {
-                    String tradeTime = advancedTradesBlock.get(advancedTradesBlock.size() - 1).getTradeTime();
-                    minTradeDate = createDateFromText(tradeTime);
-                } catch (ParseException e) {
-                    throw new RuntimeException("Unable to parse date of trade ", e);
+                    Thread.sleep(350);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    break;
                 }
-                partialLastAdvanceTradeEndDatetime = minTradeDate.getTime();
-                advancedTrades.addAll(advancedTradesBlock);
-            } else if (size < TRANSACTIONS_PER_REQUEST_LIMIT) {
-                advancedTrades.addAll(advancedTradesBlock);
-                partialLastAdvanceTradeStartDatetime = completedLastAdvanceTradeEndDatetime;
-                partialLastAdvanceTradeEndDatetime = 0;
-                completedLastAdvanceTradeEndDatetime = 0;
-                break;
-            } else {
-                throw new IllegalStateException("Unknown state of downloaded data. ");
             }
         }
         List<UserTrade> userTrades = createUserTradesFromAdvancedTrades(advancedTrades, parsingProblems);
