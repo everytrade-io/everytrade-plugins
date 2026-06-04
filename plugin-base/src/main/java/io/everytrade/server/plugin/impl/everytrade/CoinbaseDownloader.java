@@ -188,6 +188,8 @@ public class CoinbaseDownloader {
         int page = 0;
         while (true) {
             page++;
+            // cursor we are about to send; used below to detect a non-advancing (stuck) cursor
+            final String requestCursor = cursorAdvanceTrade;
             var params = setParamsBeforeStart(tradeService, now);
 
             List<CoinbaseAdvancedTradeFills> advancedTradesBlock;
@@ -214,11 +216,17 @@ public class CoinbaseDownloader {
                 advancedTrades.addAll(advancedTradesBlock);
             }
 
-            boolean hasMorePages = cursorAdvanceTrade != null
-                && !cursorAdvanceTrade.isEmpty()
-                && !cursorAdvanceTrade.equalsIgnoreCase("null");
+            // Paginate purely by the response cursor over a fixed [startDate, now] window. The
+            // /orders/historical/fills endpoint returns an empty cursor when there are no more pages
+            // (it has no has_next flag); the guards below stop the loop on an empty page or a cursor
+            // that does not advance, so a malformed response can never spin this loop forever.
             boolean emptyBlock = advancedTradesBlock == null || advancedTradesBlock.isEmpty();
-            if (emptyBlock || !hasMorePages) {
+            boolean hasMore = !emptyBlock
+                && cursorAdvanceTrade != null
+                && !cursorAdvanceTrade.isEmpty()
+                && !cursorAdvanceTrade.equalsIgnoreCase("null")
+                && !cursorAdvanceTrade.equals(requestCursor);
+            if (!hasMore) {
                 // drain finished - set the watermark so the next host invocation resumes from here
                 partialLastAdvanceTradeStartDatetime = completedLastAdvanceTradeEndDatetime;
                 partialLastAdvanceTradeEndDatetime = 0;
@@ -231,6 +239,15 @@ public class CoinbaseDownloader {
                     + "stopping the drain - some older fills may not be downloaded in this run.",
                     MAX_ADVANCED_TRADE_PAGES);
                 break;
+            }
+            // Stay well under Coinbase's 30 req/s private-REST limit on large histories.
+            if (page % 10 == 0) {
+                try {
+                    Thread.sleep(350);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
             }
         }
         List<UserTrade> userTrades = createUserTradesFromAdvancedTrades(advancedTrades, parsingProblems);

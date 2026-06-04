@@ -177,7 +177,12 @@ class CoinbaseAdvancedTradeDownloaderTest {
     }
     @Test
     void reproduceIssueTransaction() throws Exception {
-        // UserTrade[type=ASK, originalAmount=0.08685, instrument=CBETH/USDC, price=3100, timestamp=Wed Jun 11 00:07:01 CEST 2025, id=91c87bda7e571da1055784eeb659fbc0f626747a5f99bfc4064c8c792cfecde3, orderId='31360a37-0274-4996-9b6a-2e749f10ae91', feeAmount=1.61541, feeCurrency='USDC', orderUserReference='e6de4bbc-0208-5293-98c7-1c2c846cd14f'
+        // Reproduces a real fill (anonymized shape):
+        // UserTrade[type=ASK, originalAmount=0.08685, instrument=CBETH/USDC, price=3100,
+        //   timestamp=Wed Jun 11 00:07:01 CEST 2025,
+        //   id=91c87bda7e571da1055784eeb659fbc0f626747a5f99bfc4064c8c792cfecde3,
+        //   orderId='31360a37-0274-4996-9b6a-2e749f10ae91', feeAmount=1.61541, feeCurrency='USDC',
+        //   orderUserReference='e6de4bbc-0208-5293-98c7-1c2c846cd14f'
 
         // Product ID should be CBETH-USDC based on the instrument in description
         String productId = "CBETH-USDC";
