@@ -701,4 +701,167 @@ class CoinbaseBeanV1Test {
         );
         ParserTestUtils.checkEqual(expected, actual);
     }
+
+    // ---- CZK-denominated report (display currency != traded pair currency) -------------------------------------
+    // The "Price Currency" column is CZK, but the trades settled in EUR/USDC. The real pair, unit price and fee come
+    // from the Notes, not from the report-currency columns. These reproduce the output of the live Coinbase connector.
+
+    @Test
+    void testAdvancedTradeBuyCzkReportEurPair() {
+        var row = "id3,2024-05-22 13:00:49 UTC,Advanced Trade Buy,SHIB,1,CZK,0.000573644028873333334106,0.00057," +
+            "0.00058,0.000004589152230986666672848,Bought 1 SHIB for 0.00002336544 EUR on SHIB-EUR at 0.00002318 EUR/SHIB\n";
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_WITHOUT_SPOT + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2024-05-22T13:00:49Z"),
+                Currency.SHIB,
+                EUR,
+                BUY,
+                new BigDecimal("1.00000000000000000"),
+                new BigDecimal("0.00002318000000000"),
+                "Advanced Trade Buy",
+                null
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    FEE_UID_PART,
+                    Instant.parse("2024-05-22T13:00:49Z"),
+                    EUR,
+                    EUR,
+                    FEE,
+                    new BigDecimal("0.00000018544000000"),
+                    EUR
+                )
+            )
+        );
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
+    void testAdvancedTradeSellCzkReportEurPair() {
+        var row = "id4,2024-05-22 12:59:10 UTC,Advanced Trade Sell,DOGE,-1,CZK,3.69973176516666667165,3.69973,3.67013," +
+            "0.0295978541213333333732,Sold 1 DOGE for 0.148304 EUR on DOGE-EUR at 0.1495 EUR/DOGE\n";
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_WITHOUT_SPOT + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2024-05-22T12:59:10Z"),
+                Currency.DOGE,
+                EUR,
+                SELL,
+                new BigDecimal("1.00000000000000000"),
+                new BigDecimal("0.14950000000000000"),
+                "Advanced Trade Sell",
+                null
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    FEE_UID_PART,
+                    Instant.parse("2024-05-22T12:59:10Z"),
+                    EUR,
+                    EUR,
+                    FEE,
+                    new BigDecimal("0.00119600000000000"),
+                    EUR
+                )
+            )
+        );
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
+    void testAdvancedTradeBuyCzkReportUsdcPair() {
+        var row = "id5,2024-05-22 12:48:50 UTC,Advanced Trade Buy,SHIB,1,CZK,0.00057748112373,0.00058,0.00058," +
+            "0.00000461984898984,Bought 1 SHIB for 0.00002546208 USDC on SHIB-USDC at 0.00002526 USDC/SHIB\n";
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_WITHOUT_SPOT + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2024-05-22T12:48:50Z"),
+                Currency.SHIB,
+                USDC,
+                BUY,
+                new BigDecimal("1.00000000000000000"),
+                new BigDecimal("0.00002526000000000"),
+                "Advanced Trade Buy",
+                null
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    FEE_UID_PART,
+                    Instant.parse("2024-05-22T12:48:50Z"),
+                    USDC,
+                    USDC,
+                    FEE,
+                    new BigDecimal("0.00000020208000000"),
+                    USDC
+                )
+            )
+        );
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
+    void testAdvancedTradeSellCzkReportUsdcPair() {
+        var row = "id6,2024-05-21 07:51:41 UTC,Advanced Trade Sell,DOGE,-3.8,CZK,3.71961437622,14.13453,14.02146," +
+            "0.113076277037088,Sold 3.8 DOGE for 0.616631168 USDC on DOGE-USDC at 0.16358 USDC/DOGE\n";
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_WITHOUT_SPOT + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2024-05-21T07:51:41Z"),
+                Currency.DOGE,
+                USDC,
+                SELL,
+                new BigDecimal("3.80000000000000000"),
+                new BigDecimal("0.16358000000000000"),
+                "Advanced Trade Sell",
+                null
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    FEE_UID_PART,
+                    Instant.parse("2024-05-21T07:51:41Z"),
+                    USDC,
+                    USDC,
+                    FEE,
+                    new BigDecimal("0.00497283200000000"),
+                    USDC
+                )
+            )
+        );
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
+    void testConvertTwoRowFormatKeepsSingleSourceLeg() {
+        // Newer export: destination leg (ADA, positive qty) is redundant and must be ignored; the source leg
+        // (USDC, negative qty) carries both currencies and becomes one BUY ADA/USDC.
+        var destinationLeg = "id1,2026-05-20 12:31:44 UTC,Convert,ADA,1.897383314639237,CZK,5.221159406936307,9.90654," +
+            "10.20667,0.300127415489,Converted 0.48657 USDC to 1.897383 ADA\n";
+        var sourceLeg = "id2,2026-05-20 12:31:43 UTC,Convert,USDC,-0.48657,CZK,20.968511674443,10.20265,10.20265,0.00," +
+            "Converted 0.48657 USDC to 1.897383 ADA\n";
+        final ParseResult result = ParserTestUtils.getParseResult(HEADER_WITHOUT_SPOT + destinationLeg + sourceLeg);
+
+        assertTrue(result.getTransactionClusters().size() == 1, "Expected exactly one cluster from a two-row Convert");
+        assertTrue(result.getParsingProblems().stream()
+                .anyMatch(p -> p.getMessage().contains("Convert destination leg ignored")),
+            "Expected the redundant destination leg to be ignored");
+
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2026-05-20T12:31:43Z"),
+                Currency.ADA,
+                USDC,
+                BUY,
+                new BigDecimal("1.89738300000000000"),
+                new BigDecimal("0.48657").divide(new BigDecimal("1.897383"), 17, 3),
+                "Convert",
+                null
+            ),
+            emptyList());
+        ParserTestUtils.checkEqual(expected, result.getTransactionClusters().get(0));
+    }
 }
