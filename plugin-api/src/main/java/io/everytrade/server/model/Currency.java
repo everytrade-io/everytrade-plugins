@@ -1029,7 +1029,8 @@ public enum Currency {
     ALEO(false, Instant.parse("2025-01-23T00:00:00Z"), "ALEO"),
     MIN(false, Instant.parse("2026-01-30T00:00:00Z"), "Minswap"),
     CLOUD(false, Instant.parse("2024-10-24T00:00:00Z"), "Cloud"),
-    ORDER(false, Instant.parse("2024-09-05T00:00:00Z"), "Orderly Network");
+    ORDER(false, Instant.parse("2024-09-05T00:00:00Z"), "Orderly Network"),
+    BMX(false, Instant.parse("2018-07-14T00:00:00Z"), "BitMart Token");
 
     String code;
     int decimalDigits;

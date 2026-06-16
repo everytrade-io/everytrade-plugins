@@ -21,6 +21,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
@@ -78,7 +80,8 @@ public class CoinbaseBeanV1 extends ExchangeBean {
     @Parsed(field = "Transaction Type")
     public void setTransactionType(String value) {
         type = value;
-        if (List.of(ADVANCE_TRADE_BUY, ADVANCE_TRADE_SELL, TRANSACTION_TYPE_ADVANCED_TRADE).contains(value)) {
+        if (value.contains(TRANSACTION_TYPE_ADVANCED_TRADE)
+            || List.of(ADVANCE_TRADE_BUY, ADVANCE_TRADE_SELL).contains(value)) {
             advancedTrade = true;
         }
         if (value.contains(TRANSACTION_TYPE_ADVANCED_TRADE)) {
@@ -171,9 +174,20 @@ public class CoinbaseBeanV1 extends ExchangeBean {
     @Override
     public TransactionCluster toTransactionCluster() {
         validateRetailUnstakingTransfer();
+        validateConvert();
 
-        Currency feeCurrency = resolveFeeCurrency();
-        List<ImportedTransactionBean> related = buildFeeTransactions(feeCurrency);
+        AdvancedTradeNote advancedTradeNote = advancedTrade ? parseAdvancedTradeNote() : null;
+
+        List<ImportedTransactionBean> related;
+        if (advancedTradeNote != null) {
+            // For an Advanced Trade the report columns (Subtotal/Fees) are denominated in the report's display
+            // currency, while the real trading pair and fee currency live in the Notes. Derive the fee from the Notes
+            // so the fee currency matches the actual quote currency (e.g. EUR/USDC), not the report currency (CZK).
+            related = buildAdvancedTradeFee(advancedTradeNote);
+        } else {
+            Currency feeCurrency = resolveFeeCurrency();
+            related = buildFeeTransactions(feeCurrency);
+        }
         ImportedTransactionBean main = buildMainTransaction();
 
         var cluster = new TransactionCluster(main, related);
@@ -187,6 +201,26 @@ public class CoinbaseBeanV1 extends ExchangeBean {
         if (transactionType == UNSTAKE && RETAIL_UNSTAKING_TRANSFER.equalsIgnoreCase(type)) {
             if (quantityTransacted.compareTo(BigDecimal.ZERO) < 0) {
                 throw new DataIgnoredException("Retail Unstaking Transfer with negative quantity is ignored.");
+            }
+        }
+    }
+
+    /**
+     * The newer Coinbase export emits a Convert as two rows: the spent (source) leg with a negative quantity and a
+     * redundant destination leg with a positive quantity whose Asset equals the converted-to currency. The destination
+     * leg would map to a base==quote pair, so we ignore it and keep only the source leg (which carries both currencies).
+     */
+    private void validateConvert() {
+        if (converted && quantityTransacted != null && quantityTransacted.compareTo(BigDecimal.ZERO) > 0) {
+            try {
+                Currency destination = detectBaseCurrency(notes);
+                if (asset != null && asset.equals(destination)) {
+                    throw new DataIgnoredException("Convert destination leg ignored (duplicate of the source leg).");
+                }
+            } catch (DataIgnoredException e) {
+                throw e;
+            } catch (Exception ignore) {
+                // Note not parseable as a convert; leave it to the normal flow.
             }
         }
     }
@@ -261,20 +295,97 @@ public class CoinbaseBeanV1 extends ExchangeBean {
                 null
             );
         }
-        if (List.of(ADVANCE_TRADE_BUY, ADVANCE_TRADE_SELL).contains(type)) {
-            return new ImportedTransactionBean(
-                null,
-                timeStamp,
-                asset,
-                detectQuoteCurrency(spotPriceCurrency),
-                transactionType,
-                scaledVolume(quantityTransacted),
-                null,
-                resolveNote(),
-                null
-            );
+        if (advancedTrade) {
+            return buildAdvancedTradeTransaction();
         }
         return buildStandardTradeTransaction();
+    }
+
+    // e.g. "Bought 1 SHIB for 0.00002336544 EUR on SHIB-EUR at 0.00002318 EUR/SHIB"
+    //      "Sold 3.8 DOGE for 0.616631168 USDC on DOGE-USDC at 0.16358 USDC/DOGE"
+    private static final Pattern ADVANCED_TRADE_NOTE_PATTERN = Pattern.compile(
+        "(?:Bought|Sold)\\s+[\\d.,]+\\s+\\w+\\s+for\\s+([\\d.,]+)\\s+\\w+\\s+on\\s+\\w+-(\\w+)\\s+at\\s+([\\d.,]+)\\s+"
+    );
+
+    /**
+     * For an Advanced Trade the report's Price Currency column may differ from the real settlement currency when the
+     * account display currency differs from the traded pair (e.g. a CZK report for a SHIB-EUR trade). The actual
+     * quote currency and unit price are always present in the Notes, so we read them from there.
+     */
+    private ImportedTransactionBean buildAdvancedTradeTransaction() {
+        AdvancedTradeNote note = parseAdvancedTradeNote();
+        if (note == null) {
+            // Notes not in the expected form (older exports); fall back to the report-currency based logic.
+            return buildStandardTradeTransaction();
+        }
+        validateCurrencyPair(asset, note.quote, transactionType);
+        return new ImportedTransactionBean(
+            null,
+            timeStamp,
+            asset,
+            note.quote,
+            transactionType,
+            scaledVolume(quantityTransacted),
+            note.unitPrice.setScale(ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE),
+            resolveNote(),
+            null
+        );
+    }
+
+    private List<ImportedTransactionBean> buildAdvancedTradeFee(AdvancedTradeNote note) {
+        BigDecimal volume = quantityTransacted.abs();
+        BigDecimal gross = note.unitPrice.multiply(volume);
+        BigDecimal feeAmount = gross.subtract(note.counterAmount).abs();
+        if (ParserUtils.nullOrZero(feeAmount)) {
+            return emptyList();
+        }
+        try {
+            return List.of(
+                new FeeRebateImportedTransactionBean(
+                    FEE_UID_PART,
+                    timeStamp,
+                    note.quote,
+                    note.quote,
+                    FEE,
+                    feeAmount.setScale(ParserUtils.DECIMAL_DIGITS, RoundingMode.HALF_UP),
+                    note.quote
+                )
+            );
+        } catch (Exception e) {
+            isFailedFee = true;
+            failedFeeMessage = e.getMessage();
+            return emptyList();
+        }
+    }
+
+    private AdvancedTradeNote parseAdvancedTradeNote() {
+        if (notes == null) {
+            return null;
+        }
+        Matcher matcher = ADVANCED_TRADE_NOTE_PATTERN.matcher(notes);
+        if (!matcher.find()) {
+            return null;
+        }
+        try {
+            Currency quote = Currency.fromCode(matcher.group(2));
+            BigDecimal counterAmount = new BigDecimal(matcher.group(1).replace(",", ""));
+            BigDecimal unitPrice = new BigDecimal(matcher.group(3).replace(",", ""));
+            return new AdvancedTradeNote(quote, unitPrice, counterAmount);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private static final class AdvancedTradeNote {
+        private final Currency quote;
+        private final BigDecimal unitPrice;
+        private final BigDecimal counterAmount;
+
+        private AdvancedTradeNote(Currency quote, BigDecimal unitPrice, BigDecimal counterAmount) {
+            this.quote = quote;
+            this.unitPrice = unitPrice;
+            this.counterAmount = counterAmount;
+        }
     }
 
     private ImportedTransactionBean buildStandardTradeTransaction() {
@@ -300,7 +411,7 @@ public class CoinbaseBeanV1 extends ExchangeBean {
     private BigDecimal resolveUnitPrice(BigDecimal volume) {
         try {
             BigDecimal unitPrice = converted
-                ? evalConvertUnitPrice(volume, quantityTransacted)
+                ? evalConvertUnitPrice(volume, quantityTransacted.abs())
                 : evalUnitPrice(subtotal, volume);
             return unitPrice != null ? unitPrice : spotPriceAtTransaction;
         } catch (Exception e) {
