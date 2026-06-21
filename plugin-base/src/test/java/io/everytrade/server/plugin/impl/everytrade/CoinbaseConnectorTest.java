@@ -21,6 +21,7 @@ import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.REWARD;
 import static io.everytrade.server.model.TransactionType.SELL;
+import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.test.TestUtils.findOneCluster;
 import static io.everytrade.server.test.TestUtils.fundingRecord;
@@ -208,6 +209,61 @@ class CoinbaseConnectorTest {
         assertNewTx(findOneCluster(result, REWARD), new BigDecimal("0.001"), io.everytrade.server.model.Currency.fromCode("USDC"));
         assertNewTx(findOneCluster(result, EARNING), new BigDecimal("10"), io.everytrade.server.model.Currency.fromCode("GRT"));
         assertNewTx(findOneCluster(result, DEPOSIT), new BigDecimal("1000"), io.everytrade.server.model.Currency.fromCode("EUR"));
+    }
+
+    @Test
+    void testStakingIncomeImported_stakingTransfersIgnored() {
+        // ETS-4965 / ETD-2134: staking & inflation rewards are income → STAKING_REWARD and MUST be imported.
+        // Staking/unstaking TRANSFERS (internal spot<->staked moves of an already-owned asset) are intentionally
+        // NOT imported: the engine pairs STAKE(-)/UNSTAKE(+), so importing a single leg would inflate the position
+        // and reset the time test (OrderedUnstakeProcessor re-stocks leftover at the unstake date). Leaving them out
+        // keeps the original BUY lot (cost basis + acquisition date) intact.
+        XChangeConnectorParser parser = new XChangeConnectorParser();
+        List<CoinbaseShowTransactionV2> coinbaseTransactions = new ArrayList<>();
+
+        CoinbaseShowTransactionV2 stakingReward = mock(CoinbaseShowTransactionV2.class, Answers.RETURNS_DEEP_STUBS);
+        when(stakingReward.getType()).thenReturn("staking_reward");
+        when(stakingReward.getId()).thenReturn("sr1");
+        when(stakingReward.getAmount().getAmount()).thenReturn(new BigDecimal("0.5"));
+        when(stakingReward.getAmount().getCurrency()).thenReturn("ETH");
+        when(stakingReward.getCreatedAt()).thenReturn("2025-01-01T00:00:00.000Z");
+
+        CoinbaseShowTransactionV2 inflationReward = mock(CoinbaseShowTransactionV2.class, Answers.RETURNS_DEEP_STUBS);
+        when(inflationReward.getType()).thenReturn("inflation_reward");
+        when(inflationReward.getId()).thenReturn("ir1");
+        when(inflationReward.getAmount().getAmount()).thenReturn(new BigDecimal("12.5"));
+        when(inflationReward.getAmount().getCurrency()).thenReturn("ATOM");
+        when(inflationReward.getCreatedAt()).thenReturn("2025-01-02T00:00:00.000Z");
+
+        // staking_transfer + unstaking_transfer must be IGNORED (not imported).
+        CoinbaseShowTransactionV2 stake = mock(CoinbaseShowTransactionV2.class, Answers.RETURNS_DEEP_STUBS);
+        when(stake.getType()).thenReturn("staking_transfer");
+        when(stake.getId()).thenReturn("st1");
+        when(stake.getAmount().getAmount()).thenReturn(new BigDecimal("-3"));
+        when(stake.getAmount().getCurrency()).thenReturn("SOL");
+        when(stake.getCreatedAt()).thenReturn("2025-01-03T00:00:00.000Z");
+
+        CoinbaseShowTransactionV2 unstake = mock(CoinbaseShowTransactionV2.class, Answers.RETURNS_DEEP_STUBS);
+        when(unstake.getType()).thenReturn("unstaking_transfer");
+        when(unstake.getId()).thenReturn("us1");
+        when(unstake.getAmount().getAmount()).thenReturn(new BigDecimal("3"));
+        when(unstake.getAmount().getCurrency()).thenReturn("SOL");
+        when(unstake.getCreatedAt()).thenReturn("2025-01-04T00:00:00.000Z");
+
+        coinbaseTransactions.add(stakingReward);
+        coinbaseTransactions.add(inflationReward);
+        coinbaseTransactions.add(stake);
+        coinbaseTransactions.add(unstake);
+
+        ParseResult result = parser.getCoinbaseParseResult(new ArrayList<>(), coinbaseTransactions, new ArrayList<>(), new ArrayList<>());
+
+        assertNotNull(result);
+        assertEquals(0, result.getParsingProblems().size());
+        assertEquals(2, result.getTransactionClusters().size(),
+            "only the two staking rewards are imported; staking/unstaking transfers are ignored");
+        assertEquals(2, result.getTransactionClusters().stream()
+            .filter(c -> c.getMain().getAction() == STAKING_REWARD).count(),
+            "staking_reward + inflation_reward both map to STAKING_REWARD");
     }
 
     @Test

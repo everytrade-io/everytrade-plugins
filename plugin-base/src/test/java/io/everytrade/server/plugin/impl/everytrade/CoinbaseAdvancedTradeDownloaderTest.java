@@ -187,8 +187,7 @@ class CoinbaseAdvancedTradeDownloaderTest {
         // Product ID should be CBETH-USDC based on the instrument in description
         String productId = "CBETH-USDC";
 
-        // Simulating the case where sizeInQuote is "true" (as seen in some market orders)
-        // But Coinbase Advanced Trade API 'fills' endpoint 'size' is always base amount.
+        // A base-denominated SELL fill (size_in_quote=false): `size` IS the base amount (0.08685 CBETH).
         CoinbaseAdvancedTradeFills fill = new CoinbaseAdvancedTradeFills(
             "91c87bda7e571da1055784eeb659fbc0f626747a5f99bfc4064c8c792cfecde3", // entry_id (matches id in description)
             "trade-id",
@@ -201,7 +200,7 @@ class CoinbaseAdvancedTradeDownloaderTest {
             productId,
             "2025-06-11T00:07:01.000Z",
             "TAKER",
-            "true",
+            "false",
             "e6de4bbc-0208-5293-98c7-1c2c846cd14f", // user_id (using orderUserReference)
             "SELL" // ASK -> SELL
         );
@@ -213,9 +212,51 @@ class CoinbaseAdvancedTradeDownloaderTest {
         assertEquals(1, trades.size());
         UserTrade trade = trades.get(0);
 
-        // Even with sizeInQuote=true, the 'size' field in fills should be base amount.
+        // size_in_quote=false -> the 'size' field is the base amount, used directly.
         assertEquals(new BigDecimal("0.08685"), trade.getOriginalAmount(), "Amount should match the size from API directly");
         assertEquals(new BigDecimal("3100"), trade.getPrice());
+    }
+
+    @Test
+    void quoteDenominatedSizeIsConvertedToBaseAmount() throws Exception {
+        // ETS-4965 root cause: when size_in_quote=true Coinbase reports `size` in the QUOTE currency, not the base.
+        // Real case: a LINK market buy filled as 254.34 LINK for 4847.7204 EUR @ 19.06. The fills API reports
+        // size=4847.7204 (EUR) with size_in_quote=true. The base amount MUST be size/price = 254.34 LINK — NOT the
+        // raw 4847.7204 (which previously inflated holdings ~19x).
+        CoinbaseAdvancedTradeFills fill = new CoinbaseAdvancedTradeFills(
+            "entry-quote", "trade-quote", "order-quote", "2025-01-09T13:39:58.434Z", "FILL",
+            new BigDecimal("19.06"),        // price (EUR/LINK)
+            new BigDecimal("4847.7204"),    // size — denominated in QUOTE (EUR) because size_in_quote=true
+            new BigDecimal("19.3908816"),   // commission
+            "LINK-EUR", "2025-01-09T13:39:58.434Z", "TAKER",
+            "true",                          // size_in_quote
+            "user", "BUY");
+
+        List<ParsingProblem> problems = new ArrayList<>();
+        List<UserTrade> trades = invokeCreateUserTrades(List.of(fill), problems);
+
+        assertEquals(0, problems.size(), "No parsing problem expected");
+        assertEquals(1, trades.size());
+        assertEquals(0, new BigDecimal("254.34").compareTo(trades.get(0).getOriginalAmount()),
+            "size_in_quote=true must yield base = size/price (254.34 LINK), not the raw quote amount 4847.7204");
+        assertEquals(0, new BigDecimal("19.06").compareTo(trades.get(0).getPrice()));
+    }
+
+    @Test
+    void quoteDenominatedSizeWithZeroPriceIsReportedAsProblem() throws Exception {
+        // A quote-denominated size cannot be converted without a price; such a fill must be flagged, not silently wrong.
+        CoinbaseAdvancedTradeFills fill = new CoinbaseAdvancedTradeFills(
+            "entry-zero", "trade-zero", "order-zero", "2025-01-09T13:39:58.434Z", "FILL",
+            BigDecimal.ZERO,                 // price = 0
+            new BigDecimal("100"),           // size in quote
+            BigDecimal.ZERO, "LINK-EUR", "2025-01-09T13:39:58.434Z", "TAKER",
+            "true", "user", "BUY");
+
+        List<ParsingProblem> problems = new ArrayList<>();
+        List<UserTrade> trades = invokeCreateUserTrades(List.of(fill), problems);
+
+        assertEquals(0, trades.size(), "A zero-price quote-denominated fill must not produce a (wrong) trade");
+        assertEquals(1, problems.size(), "It must be reported as a parsing problem");
     }
 
     // ---------------------------------------------------------------------------------------------
