@@ -194,9 +194,17 @@ class CoinbaseBeanV1Test {
     }
 
     @Test
-    void testSubscriptionIgnored() {
-        // ETD-2134: Coinbase One subscription is a fiat-only fee (USD/EUR), not relevant to crypto accounting → ignored.
+    void testSubscriptionPositiveQuantityIgnored() {
+        // ETD-2134: Coinbase One subscription is a fiat-only fee (USD/EUR), not relevant to crypto accounting → ignored
+        // (regardless of quantity sign — it is rejected before any sign handling).
         var row = "2024-03-01 12:00:00 UTC,Subscription,USD,2.99,USD,1.00,2.99,2.99,0,\n";
+        final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT_SPOT + row);
+        assertTrue(parsingProblem.getMessage().contains("Subscription (fiat fee) is not imported"));
+    }
+
+    @Test
+    void testSubscriptionNegativeQuantityIgnored() {
+        var row = "2024-03-01 12:00:00 UTC,Subscription,EUR,-1.99,EUR,1.00,1.99,1.99,0,\n";
         final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT_SPOT + row);
         assertTrue(parsingProblem.getMessage().contains("Subscription (fiat fee) is not imported"));
     }

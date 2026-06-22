@@ -3,6 +3,7 @@ package io.everytrade.server.plugin.impl.everytrade;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.test.mock.CoinbaseAdvancedTradeExchangeMock;
 import io.everytrade.server.test.mock.CoinbaseAdvancedTradePagedExchangeMock;
+import io.everytrade.server.test.mock.CoinbaseAdvancedTradeWindowedPagesMock;
 import org.junit.jupiter.api.Test;
 import org.knowm.xchange.coinbase.v3.dto.transactions.CoinbaseAdvancedTradeFills;
 import org.knowm.xchange.dto.trade.UserTrade;
@@ -364,5 +365,68 @@ class CoinbaseAdvancedTradeDownloaderTest {
         assertEquals(0, second.getParseResult().getParsingProblems().size());
         assertEquals(3, second.getParseResult().getTransactionClusters().size(),
             "Resuming from the freshly produced state must still import the fills");
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    // DUPLICATE-GUARD TEST - the open ETS-4965 complaint (even a brand-new container re-downloads the
+    // same ETH/LINK/SOL buys). Two-pass download against a mock that honours BOTH the start and end of the
+    // requested window: pass 1 [epoch, now] imports every fill once + persists a watermark; pass 2
+    // [watermark, now] must NOT re-deliver the already-imported (older) fills. A downloader that ignored the
+    // watermark would re-deliver pass-1's fills and the disjoint-uid assertion would fail.
+    // ---------------------------------------------------------------------------------------------
+
+    /** Multi-fill BUY orders for ETH/LINK/SOL - the exact coins the customer reported as duplicated. */
+    private static List<CoinbaseAdvancedTradeFills> ethLinkSolMultiFillOrders() {
+        List<CoinbaseAdvancedTradeFills> fills = new ArrayList<>();
+        fills.add(fillProductAt("eth-1", "trade-eth", "ETH-EUR", "BUY", "0.40", "2500", "2025-01-09T13:39:58.111111Z"));
+        fills.add(fillProductAt("eth-2", "trade-eth", "ETH-EUR", "BUY", "0.35", "2501", "2025-01-09T13:39:58.222222Z"));
+        fills.add(fillProductAt("eth-3", "trade-eth", "ETH-EUR", "BUY", "0.25", "2502", "2025-01-09T13:39:58.333333Z"));
+        fills.add(fillProductAt("link-1", "trade-link", "LINK-EUR", "BUY", "4000", "12.5", "2025-02-15T08:10:00.500000Z"));
+        fills.add(fillProductAt("link-2", "trade-link", "LINK-EUR", "BUY", "847.72", "12.6", "2025-02-15T08:10:00.600000Z"));
+        fills.add(fillProductAt("sol-1", "trade-sol", "SOL-EUR", "BUY", "10.0", "140", "2025-03-20T19:00:00.700000Z"));
+        fills.add(fillProductAt("sol-2", "trade-sol", "SOL-EUR", "BUY", "5.5", "141", "2025-03-20T19:00:00.800000Z"));
+        return fills;
+    }
+
+    /** As {@link #fillAt} but with an explicit product id (so several base currencies can coexist). */
+    private static CoinbaseAdvancedTradeFills fillProductAt(String entryId, String tradeId, String productId,
+                                                            String side, String size, String price, String tradeTime) {
+        return new CoinbaseAdvancedTradeFills(
+            entryId, tradeId, "order-" + tradeId, tradeTime, "FILL",
+            new BigDecimal(price), new BigDecimal(size), new BigDecimal("0.01"),
+            productId, tradeTime, "MAKER", "false", "synthetic-user", side);
+    }
+
+    @Test
+    void secondPassFromPersistedStateReDownloadsNothing_noDuplicates() {
+        List<CoinbaseAdvancedTradeFills> fills = ethLinkSolMultiFillOrders();
+        // Same mock instance across both passes - it is the single "exchange" the connector talks to.
+        var mock = new CoinbaseAdvancedTradeWindowedPagesMock(fills);
+
+        // ---- PASS 1: brand-new container ----
+        var pass1 = new CoinbaseDownloader(mock).download(null);
+        Set<String> uids1 = pass1.getParseResult().getTransactionClusters().stream()
+            .map(c -> c.getMain().getUid())
+            .collect(Collectors.toSet());
+
+        assertEquals(0, pass1.getParseResult().getParsingProblems().size(), "Pass 1 must import every fill cleanly");
+        assertEquals(fills.size(), pass1.getParseResult().getTransactionClusters().size(),
+            "Pass 1 must import every fill exactly once (multi-fill orders must NOT be collapsed)");
+        assertEquals(fills.size(), uids1.size(), "Every imported fill must carry its own unique external_id (uid)");
+        assertNotNull(pass1.getDownloadStateData(), "Pass 1 must persist a resume state");
+
+        // ---- PASS 2: host resumes the same container from pass-1 state ----
+        var pass2 = new CoinbaseDownloader(mock).download(pass1.getDownloadStateData());
+        Set<String> uids2 = pass2.getParseResult().getTransactionClusters().stream()
+            .map(c -> c.getMain().getUid())
+            .collect(Collectors.toSet());
+
+        assertEquals(0, pass2.getParseResult().getParsingProblems().size(), "Pass 2 must not raise parsing problems");
+        assertEquals(0, pass2.getParseResult().getTransactionClusters().size(),
+            "ETS-4965: resuming the same container must NOT re-download already-imported fills");
+
+        Set<String> reDownloaded = uids2.stream().filter(uids1::contains).collect(Collectors.toSet());
+        assertTrue(reDownloaded.isEmpty(),
+            "No fill may appear in both passes (these would be the duplicate ETH/LINK/SOL buys): " + reDownloaded);
     }
 }
