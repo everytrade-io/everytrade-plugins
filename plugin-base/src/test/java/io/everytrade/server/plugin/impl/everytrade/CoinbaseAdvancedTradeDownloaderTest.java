@@ -3,6 +3,7 @@ package io.everytrade.server.plugin.impl.everytrade;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
 import io.everytrade.server.test.mock.CoinbaseAdvancedTradeExchangeMock;
 import io.everytrade.server.test.mock.CoinbaseAdvancedTradePagedExchangeMock;
+import io.everytrade.server.test.mock.CoinbaseAdvancedTradeWindowedPagesMock;
 import org.junit.jupiter.api.Test;
 import org.knowm.xchange.coinbase.v3.dto.transactions.CoinbaseAdvancedTradeFills;
 import org.knowm.xchange.dto.trade.UserTrade;
@@ -177,33 +178,25 @@ class CoinbaseAdvancedTradeDownloaderTest {
     }
     @Test
     void reproduceIssueTransaction() throws Exception {
-        // Reproduces a real fill (anonymized shape):
-        // UserTrade[type=ASK, originalAmount=0.08685, instrument=CBETH/USDC, price=3100,
-        //   timestamp=Wed Jun 11 00:07:01 CEST 2025,
-        //   id=91c87bda7e571da1055784eeb659fbc0f626747a5f99bfc4064c8c792cfecde3,
-        //   orderId='31360a37-0274-4996-9b6a-2e749f10ae91', feeAmount=1.61541, feeCurrency='USDC',
-        //   orderUserReference='e6de4bbc-0208-5293-98c7-1c2c846cd14f'
-
-        // Product ID should be CBETH-USDC based on the instrument in description
+        // Synthetic CBETH/USDC SELL fill modelled on the shape seen in ETS-4965 (all ids anonymized):
+        // a base-denominated SELL (size_in_quote=false), so `size` IS the base amount (0.08685 CBETH).
         String productId = "CBETH-USDC";
 
-        // Simulating the case where sizeInQuote is "true" (as seen in some market orders)
-        // But Coinbase Advanced Trade API 'fills' endpoint 'size' is always base amount.
         CoinbaseAdvancedTradeFills fill = new CoinbaseAdvancedTradeFills(
-            "91c87bda7e571da1055784eeb659fbc0f626747a5f99bfc4064c8c792cfecde3", // entry_id (matches id in description)
-            "trade-id",
-            "31360a37-0274-4996-9b6a-2e749f10ae91", // order_id
-            "2025-06-11T00:07:01.000Z", // trade_time
+            "cbeth-sell-entry-1",          // entry_id (synthetic)
+            "cbeth-sell-trade-1",          // trade_id (synthetic)
+            "cbeth-sell-order-1",          // order_id (synthetic)
+            "2025-06-11T00:07:01.000Z",    // trade_time
             "FILL",
-            new BigDecimal("3100"), // price
-            new BigDecimal("0.08685"), // size
-            new BigDecimal("1.61541"), // commission (feeAmount)
+            new BigDecimal("3100"),        // price
+            new BigDecimal("0.08685"),     // size (base amount, since size_in_quote=false)
+            new BigDecimal("1.61541"),     // commission
             productId,
             "2025-06-11T00:07:01.000Z",
             "TAKER",
-            "true",
-            "e6de4bbc-0208-5293-98c7-1c2c846cd14f", // user_id (using orderUserReference)
-            "SELL" // ASK -> SELL
+            "false",                        // size_in_quote
+            "synthetic-user",               // user_id (anonymized)
+            "SELL"
         );
 
         List<ParsingProblem> problems = new ArrayList<>();
@@ -213,9 +206,51 @@ class CoinbaseAdvancedTradeDownloaderTest {
         assertEquals(1, trades.size());
         UserTrade trade = trades.get(0);
 
-        // Even with sizeInQuote=true, the 'size' field in fills should be base amount.
+        // size_in_quote=false -> the 'size' field is the base amount, used directly.
         assertEquals(new BigDecimal("0.08685"), trade.getOriginalAmount(), "Amount should match the size from API directly");
         assertEquals(new BigDecimal("3100"), trade.getPrice());
+    }
+
+    @Test
+    void quoteDenominatedSizeIsConvertedToBaseAmount() throws Exception {
+        // ETS-4965 root cause: when size_in_quote=true Coinbase reports `size` in the QUOTE currency, not the base.
+        // Real case: a LINK market buy filled as 254.34 LINK for 4847.7204 EUR @ 19.06. The fills API reports
+        // size=4847.7204 (EUR) with size_in_quote=true. The base amount MUST be size/price = 254.34 LINK — NOT the
+        // raw 4847.7204 (which previously inflated holdings ~19x).
+        CoinbaseAdvancedTradeFills fill = new CoinbaseAdvancedTradeFills(
+            "entry-quote", "trade-quote", "order-quote", "2025-01-09T13:39:58.434Z", "FILL",
+            new BigDecimal("19.06"),        // price (EUR/LINK)
+            new BigDecimal("4847.7204"),    // size — denominated in QUOTE (EUR) because size_in_quote=true
+            new BigDecimal("19.3908816"),   // commission
+            "LINK-EUR", "2025-01-09T13:39:58.434Z", "TAKER",
+            "true",                          // size_in_quote
+            "user", "BUY");
+
+        List<ParsingProblem> problems = new ArrayList<>();
+        List<UserTrade> trades = invokeCreateUserTrades(List.of(fill), problems);
+
+        assertEquals(0, problems.size(), "No parsing problem expected");
+        assertEquals(1, trades.size());
+        assertEquals(0, new BigDecimal("254.34").compareTo(trades.get(0).getOriginalAmount()),
+            "size_in_quote=true must yield base = size/price (254.34 LINK), not the raw quote amount 4847.7204");
+        assertEquals(0, new BigDecimal("19.06").compareTo(trades.get(0).getPrice()));
+    }
+
+    @Test
+    void quoteDenominatedSizeWithZeroPriceIsReportedAsProblem() throws Exception {
+        // A quote-denominated size cannot be converted without a price; such a fill must be flagged, not silently wrong.
+        CoinbaseAdvancedTradeFills fill = new CoinbaseAdvancedTradeFills(
+            "entry-zero", "trade-zero", "order-zero", "2025-01-09T13:39:58.434Z", "FILL",
+            BigDecimal.ZERO,                 // price = 0
+            new BigDecimal("100"),           // size in quote
+            BigDecimal.ZERO, "LINK-EUR", "2025-01-09T13:39:58.434Z", "TAKER",
+            "true", "user", "BUY");
+
+        List<ParsingProblem> problems = new ArrayList<>();
+        List<UserTrade> trades = invokeCreateUserTrades(List.of(fill), problems);
+
+        assertEquals(0, trades.size(), "A zero-price quote-denominated fill must not produce a (wrong) trade");
+        assertEquals(1, problems.size(), "It must be reported as a parsing problem");
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -330,5 +365,68 @@ class CoinbaseAdvancedTradeDownloaderTest {
         assertEquals(0, second.getParseResult().getParsingProblems().size());
         assertEquals(3, second.getParseResult().getTransactionClusters().size(),
             "Resuming from the freshly produced state must still import the fills");
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    // DUPLICATE-GUARD TEST - the open ETS-4965 complaint (even a brand-new container re-downloads the
+    // same ETH/LINK/SOL buys). Two-pass download against a mock that honours BOTH the start and end of the
+    // requested window: pass 1 [epoch, now] imports every fill once + persists a watermark; pass 2
+    // [watermark, now] must NOT re-deliver the already-imported (older) fills. A downloader that ignored the
+    // watermark would re-deliver pass-1's fills and the disjoint-uid assertion would fail.
+    // ---------------------------------------------------------------------------------------------
+
+    /** Multi-fill BUY orders for ETH/LINK/SOL - the exact coins the customer reported as duplicated. */
+    private static List<CoinbaseAdvancedTradeFills> ethLinkSolMultiFillOrders() {
+        List<CoinbaseAdvancedTradeFills> fills = new ArrayList<>();
+        fills.add(fillProductAt("eth-1", "trade-eth", "ETH-EUR", "BUY", "0.40", "2500", "2025-01-09T13:39:58.111111Z"));
+        fills.add(fillProductAt("eth-2", "trade-eth", "ETH-EUR", "BUY", "0.35", "2501", "2025-01-09T13:39:58.222222Z"));
+        fills.add(fillProductAt("eth-3", "trade-eth", "ETH-EUR", "BUY", "0.25", "2502", "2025-01-09T13:39:58.333333Z"));
+        fills.add(fillProductAt("link-1", "trade-link", "LINK-EUR", "BUY", "4000", "12.5", "2025-02-15T08:10:00.500000Z"));
+        fills.add(fillProductAt("link-2", "trade-link", "LINK-EUR", "BUY", "847.72", "12.6", "2025-02-15T08:10:00.600000Z"));
+        fills.add(fillProductAt("sol-1", "trade-sol", "SOL-EUR", "BUY", "10.0", "140", "2025-03-20T19:00:00.700000Z"));
+        fills.add(fillProductAt("sol-2", "trade-sol", "SOL-EUR", "BUY", "5.5", "141", "2025-03-20T19:00:00.800000Z"));
+        return fills;
+    }
+
+    /** As {@link #fillAt} but with an explicit product id (so several base currencies can coexist). */
+    private static CoinbaseAdvancedTradeFills fillProductAt(String entryId, String tradeId, String productId,
+                                                            String side, String size, String price, String tradeTime) {
+        return new CoinbaseAdvancedTradeFills(
+            entryId, tradeId, "order-" + tradeId, tradeTime, "FILL",
+            new BigDecimal(price), new BigDecimal(size), new BigDecimal("0.01"),
+            productId, tradeTime, "MAKER", "false", "synthetic-user", side);
+    }
+
+    @Test
+    void secondPassFromPersistedStateReDownloadsNothing_noDuplicates() {
+        List<CoinbaseAdvancedTradeFills> fills = ethLinkSolMultiFillOrders();
+        // Same mock instance across both passes - it is the single "exchange" the connector talks to.
+        var mock = new CoinbaseAdvancedTradeWindowedPagesMock(fills);
+
+        // ---- PASS 1: brand-new container ----
+        var pass1 = new CoinbaseDownloader(mock).download(null);
+        Set<String> uids1 = pass1.getParseResult().getTransactionClusters().stream()
+            .map(c -> c.getMain().getUid())
+            .collect(Collectors.toSet());
+
+        assertEquals(0, pass1.getParseResult().getParsingProblems().size(), "Pass 1 must import every fill cleanly");
+        assertEquals(fills.size(), pass1.getParseResult().getTransactionClusters().size(),
+            "Pass 1 must import every fill exactly once (multi-fill orders must NOT be collapsed)");
+        assertEquals(fills.size(), uids1.size(), "Every imported fill must carry its own unique external_id (uid)");
+        assertNotNull(pass1.getDownloadStateData(), "Pass 1 must persist a resume state");
+
+        // ---- PASS 2: host resumes the same container from pass-1 state ----
+        var pass2 = new CoinbaseDownloader(mock).download(pass1.getDownloadStateData());
+        Set<String> uids2 = pass2.getParseResult().getTransactionClusters().stream()
+            .map(c -> c.getMain().getUid())
+            .collect(Collectors.toSet());
+
+        assertEquals(0, pass2.getParseResult().getParsingProblems().size(), "Pass 2 must not raise parsing problems");
+        assertEquals(0, pass2.getParseResult().getTransactionClusters().size(),
+            "ETS-4965: resuming the same container must NOT re-download already-imported fills");
+
+        Set<String> reDownloaded = uids2.stream().filter(uids1::contains).collect(Collectors.toSet());
+        assertTrue(reDownloaded.isEmpty(),
+            "No fill may appear in both passes (these would be the duplicate ETH/LINK/SOL buys): " + reDownloaded);
     }
 }

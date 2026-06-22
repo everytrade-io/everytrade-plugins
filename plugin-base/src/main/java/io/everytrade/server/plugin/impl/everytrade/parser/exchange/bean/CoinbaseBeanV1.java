@@ -31,7 +31,6 @@ import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.REWARD;
 import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
-import static io.everytrade.server.model.TransactionType.UNSTAKE;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.util.CoinBaseDataUtil.ADVANCE_TRADE_BUY;
 import static io.everytrade.server.util.CoinBaseDataUtil.ADVANCE_TRADE_SELL;
@@ -45,6 +44,7 @@ import static io.everytrade.server.util.CoinBaseDataUtil.TRANSACTION_TYPE_LEARNI
 import static io.everytrade.server.util.CoinBaseDataUtil.TRANSACTION_TYPE_RECEIVE;
 import static io.everytrade.server.util.CoinBaseDataUtil.TRANSACTION_TYPE_REWARDS_INCOME;
 import static io.everytrade.server.util.CoinBaseDataUtil.TRANSACTION_TYPE_SEND;
+import static io.everytrade.server.util.CoinBaseDataUtil.RETAIL_STAKING_TRANSFER;
 import static io.everytrade.server.util.CoinBaseDataUtil.RETAIL_UNSTAKING_TRANSFER;
 import static io.everytrade.server.util.CoinBaseDataUtil.SUBSCRIPTION;
 import static java.util.Collections.emptyList;
@@ -106,10 +106,11 @@ public class CoinbaseBeanV1 extends ExchangeBean {
             transactionType = REWARD;
         } else if (Objects.equals(STAKING_INCOME, value)) {
             transactionType = STAKING_REWARD;
-        } else if (RETAIL_UNSTAKING_TRANSFER.equalsIgnoreCase(value)) {
-            transactionType = UNSTAKE;
+        } else if (RETAIL_STAKING_TRANSFER.equalsIgnoreCase(value) || RETAIL_UNSTAKING_TRANSFER.equalsIgnoreCase(value)) {
+            throw new DataIgnoredException("Staking/unstaking transfer is not imported (internal spot<->staked move).");
         } else if (SUBSCRIPTION.equalsIgnoreCase(value)) {
-            transactionType = FEE;
+            // ETD-2134: Coinbase One subscription is a fiat-only fee (USD/EUR), not relevant to crypto accounting. Ignore.
+            throw new DataIgnoredException("Subscription (fiat fee) is not imported.");
         } else {
             transactionType = detectTransactionType(value);
         }
@@ -173,7 +174,6 @@ public class CoinbaseBeanV1 extends ExchangeBean {
 
     @Override
     public TransactionCluster toTransactionCluster() {
-        validateRetailUnstakingTransfer();
         validateConvert();
 
         AdvancedTradeNote advancedTradeNote = advancedTrade ? parseAdvancedTradeNote() : null;
@@ -195,14 +195,6 @@ public class CoinbaseBeanV1 extends ExchangeBean {
             cluster.setFailedFee(1, String.format("Fee cannot be added. Reason: %s ", failedFeeMessage));
         }
         return cluster;
-    }
-
-    private void validateRetailUnstakingTransfer() {
-        if (transactionType == UNSTAKE && RETAIL_UNSTAKING_TRANSFER.equalsIgnoreCase(type)) {
-            if (quantityTransacted.compareTo(BigDecimal.ZERO) < 0) {
-                throw new DataIgnoredException("Retail Unstaking Transfer with negative quantity is ignored.");
-            }
-        }
     }
 
     /**
@@ -269,20 +261,7 @@ public class CoinbaseBeanV1 extends ExchangeBean {
                 null
             );
         }
-        if (SUBSCRIPTION.equalsIgnoreCase(type)) {
-            return new FeeRebateImportedTransactionBean(
-                null,
-                timeStamp,
-                asset,
-                asset,
-                transactionType,
-                scaledVolume(quantityTransacted),
-                asset,
-                resolveNote()
-            );
-        }
-        if (List.of(TRANSACTION_TYPE_LEARNING_REWARD, STAKING_INCOME,
-            RETAIL_UNSTAKING_TRANSFER).contains(type)) {
+        if (List.of(TRANSACTION_TYPE_LEARNING_REWARD, STAKING_INCOME).contains(type)) {
             return new ImportedTransactionBean(
                 null,
                 timeStamp,

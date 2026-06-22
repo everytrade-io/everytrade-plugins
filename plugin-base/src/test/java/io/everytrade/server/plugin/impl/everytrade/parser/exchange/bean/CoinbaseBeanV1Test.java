@@ -29,7 +29,6 @@ import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
-import static io.everytrade.server.model.TransactionType.UNSTAKE;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
 import static java.util.Collections.emptyList;
@@ -177,69 +176,37 @@ class CoinbaseBeanV1Test {
     }
 
     @Test
-    void testCorrectParsingRetailUnstakingTransferPositive() {
+    void testRetailUnstakingTransferIgnored() {
+        // ETD-2134: previously imported as UNSTAKE. Now ignored — staking/unstaking transfers are internal
+        // spot<->staked moves of an already-owned asset; importing a single leg inflates the position and resets
+        // the time test. (Kept in parity with the API connector, which also no longer imports them.)
         var row = "2024-02-15 10:00:00 UTC,Retail Unstaking Transfer,ETH,1.5,USD,2500.00,3750.00,3750.00,0,\n";
-        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT_SPOT + row);
-        final TransactionCluster expected = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2024-02-15T10:00:00Z"),
-                Currency.ETH,
-                Currency.ETH,
-                UNSTAKE,
-                new BigDecimal("1.50000000000000000"),
-                null,
-                "Retail Unstaking Transfer",
-                null
-            ),
-            emptyList());
-        ParserTestUtils.checkEqual(expected, actual);
-    }
-
-    @Test
-    void testRetailUnstakingTransferNegativeIgnored() {
-        var row = "2024-02-15 10:00:00 UTC,Retail Unstaking Transfer,ETH,-1.5,USD,2500.00,3750.00,3750.00,0,\n";
         final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT_SPOT + row);
-        final String error = parsingProblem.getMessage();
-        assertTrue(error.contains("Retail Unstaking Transfer with negative quantity is ignored"));
+        assertTrue(parsingProblem.getMessage().contains("Staking/unstaking transfer is not imported"));
     }
 
     @Test
-    void testCorrectParsingSubscriptionPositiveQuantity() {
+    void testRetailStakingTransferIgnored() {
+        // ETD-2134: the staking-out leg is likewise an internal move and must not be imported.
+        var row = "2024-02-15 10:00:00 UTC,Retail Staking Transfer,ETH,-1.5,USD,2500.00,3750.00,3750.00,0,\n";
+        final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT_SPOT + row);
+        assertTrue(parsingProblem.getMessage().contains("Staking/unstaking transfer is not imported"));
+    }
+
+    @Test
+    void testSubscriptionPositiveQuantityIgnored() {
+        // ETD-2134: Coinbase One subscription is a fiat-only fee (USD/EUR), not relevant to crypto accounting → ignored
+        // (regardless of quantity sign — it is rejected before any sign handling).
         var row = "2024-03-01 12:00:00 UTC,Subscription,USD,2.99,USD,1.00,2.99,2.99,0,\n";
-        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT_SPOT + row);
-        final TransactionCluster expected = new TransactionCluster(
-            new FeeRebateImportedTransactionBean(
-                null,
-                Instant.parse("2024-03-01T12:00:00Z"),
-                USD,
-                USD,
-                FEE,
-                new BigDecimal("2.99000000000000000"),
-                USD,
-                "Subscription"
-            ),
-            emptyList());
-        ParserTestUtils.checkEqual(expected, actual);
+        final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT_SPOT + row);
+        assertTrue(parsingProblem.getMessage().contains("Subscription (fiat fee) is not imported"));
     }
 
     @Test
-    void testCorrectParsingSubscriptionNegativeQuantity() {
+    void testSubscriptionNegativeQuantityIgnored() {
         var row = "2024-03-01 12:00:00 UTC,Subscription,EUR,-1.99,EUR,1.00,1.99,1.99,0,\n";
-        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_CORRECT_SPOT + row);
-        final TransactionCluster expected = new TransactionCluster(
-            new FeeRebateImportedTransactionBean(
-                null,
-                Instant.parse("2024-03-01T12:00:00Z"),
-                EUR,
-                EUR,
-                FEE,
-                new BigDecimal("1.99000000000000000"),
-                EUR,
-                "Subscription"
-            ),
-            emptyList());
-        ParserTestUtils.checkEqual(expected, actual);
+        final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT_SPOT + row);
+        assertTrue(parsingProblem.getMessage().contains("Subscription (fiat fee) is not imported"));
     }
 
     @Test

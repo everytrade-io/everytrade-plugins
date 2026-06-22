@@ -187,7 +187,8 @@ public class XChangeConnectorParser {
             try {
                 switch (cb.getType().toLowerCase()) {
                     case "send", "tx", "earn_payout", "interest", "fiat_withdrawal",
-                        "fiat_deposit", "pro_withdrawal", "pro_deposit" -> {
+                        "fiat_deposit", "pro_withdrawal", "pro_deposit",
+                        "staking_reward", "inflation_reward" -> {
                         result.add(XChangeApiTransaction.depositWithdrawalCoinbase(cb).toTransactionCluster());
                     }
                     case "buy", "sell" -> {
