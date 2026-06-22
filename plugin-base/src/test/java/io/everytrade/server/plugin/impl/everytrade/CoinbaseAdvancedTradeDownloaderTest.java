@@ -177,32 +177,25 @@ class CoinbaseAdvancedTradeDownloaderTest {
     }
     @Test
     void reproduceIssueTransaction() throws Exception {
-        // Reproduces a real fill (anonymized shape):
-        // UserTrade[type=ASK, originalAmount=0.08685, instrument=CBETH/USDC, price=3100,
-        //   timestamp=Wed Jun 11 00:07:01 CEST 2025,
-        //   id=91c87bda7e571da1055784eeb659fbc0f626747a5f99bfc4064c8c792cfecde3,
-        //   orderId='31360a37-0274-4996-9b6a-2e749f10ae91', feeAmount=1.61541, feeCurrency='USDC',
-        //   orderUserReference='e6de4bbc-0208-5293-98c7-1c2c846cd14f'
-
-        // Product ID should be CBETH-USDC based on the instrument in description
+        // Synthetic CBETH/USDC SELL fill modelled on the shape seen in ETS-4965 (all ids anonymized):
+        // a base-denominated SELL (size_in_quote=false), so `size` IS the base amount (0.08685 CBETH).
         String productId = "CBETH-USDC";
 
-        // A base-denominated SELL fill (size_in_quote=false): `size` IS the base amount (0.08685 CBETH).
         CoinbaseAdvancedTradeFills fill = new CoinbaseAdvancedTradeFills(
-            "91c87bda7e571da1055784eeb659fbc0f626747a5f99bfc4064c8c792cfecde3", // entry_id (matches id in description)
-            "trade-id",
-            "31360a37-0274-4996-9b6a-2e749f10ae91", // order_id
-            "2025-06-11T00:07:01.000Z", // trade_time
+            "cbeth-sell-entry-1",          // entry_id (synthetic)
+            "cbeth-sell-trade-1",          // trade_id (synthetic)
+            "cbeth-sell-order-1",          // order_id (synthetic)
+            "2025-06-11T00:07:01.000Z",    // trade_time
             "FILL",
-            new BigDecimal("3100"), // price
-            new BigDecimal("0.08685"), // size
-            new BigDecimal("1.61541"), // commission (feeAmount)
+            new BigDecimal("3100"),        // price
+            new BigDecimal("0.08685"),     // size (base amount, since size_in_quote=false)
+            new BigDecimal("1.61541"),     // commission
             productId,
             "2025-06-11T00:07:01.000Z",
             "TAKER",
-            "false",
-            "e6de4bbc-0208-5293-98c7-1c2c846cd14f", // user_id (using orderUserReference)
-            "SELL" // ASK -> SELL
+            "false",                        // size_in_quote
+            "synthetic-user",               // user_id (anonymized)
+            "SELL"
         );
 
         List<ParsingProblem> problems = new ArrayList<>();
