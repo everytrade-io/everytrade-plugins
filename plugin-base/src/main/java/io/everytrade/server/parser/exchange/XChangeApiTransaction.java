@@ -32,6 +32,7 @@ import static io.everytrade.server.model.TransactionType.EARNING;
 import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.REWARD;
 import static io.everytrade.server.model.TransactionType.SELL;
+import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.ROUNDING_MODE;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
@@ -163,6 +164,13 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
             case "tx", "interest" -> type = REWARD;
             case "send" -> type = transaction.getAmount().getAmount().signum() > 0 ? DEPOSIT : WITHDRAWAL;
             case "earn_payout" -> type = EARNING;
+            // Staking/inflation rewards = free crypto income (taxed at FMV on receipt). ETS-4965 import completeness.
+            case "staking_reward", "inflation_reward" -> type = STAKING_REWARD;
+            // NOTE: staking_transfer / unstaking_transfer (internal spot<->staked moves of an already-owned asset)
+            // are intentionally NOT imported. The accounting engine pairs STAKE(-)/UNSTAKE(+); importing only one leg
+            // inflates the position AND (per OrderedUnstakeProcessor's leftOver branch) re-stocks the asset at the
+            // unstake date, resetting the time test. Leaving both unimported keeps the original BUY lot (cost + date)
+            // intact. Staking rewards are captured separately above. See ETD-2134.
             case "fiat_withdrawal", "pro_withdrawal" -> type = WITHDRAWAL;
             case "fiat_deposit", "pro_deposit" -> type = DEPOSIT;
         }

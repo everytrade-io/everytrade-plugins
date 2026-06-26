@@ -3,6 +3,7 @@ package io.everytrade.server.plugin.impl.everytrade;
 import com.univocity.parsers.common.DataValidationException;
 import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.parser.ParsingProblem;
+import io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils;
 import io.everytrade.server.util.AmountUtil;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -266,7 +267,17 @@ public class CoinbaseDownloader {
                     CurrencyPair pair = new CurrencyPair(base, quote);
                     Date date = createDateFromText(fill.getTradeTime());
                     Order.OrderType type = fill.getSide().equalsIgnoreCase("BUY") ? Order.OrderType.BID : Order.OrderType.ASK;
-                    BigDecimal baseAmount = fill.getSize();
+
+                    BigDecimal baseAmount;
+                    if ("true".equals(fill.getSizeInQuote())) {
+                        if (fill.getPrice() == null || fill.getPrice().signum() == 0) {
+                            throw new DataValidationException(
+                                "Cannot derive base amount from quote-denominated size: missing/zero price");
+                        }
+                        baseAmount = fill.getSize().divide(fill.getPrice(), ParserUtils.DECIMAL_DIGITS, ParserUtils.ROUNDING_MODE);
+                    } else {
+                        baseAmount = fill.getSize();
+                    }
                     String fillId = isEmpty(fill.getEntryId()) ? fill.getTradeId() : fill.getEntryId();
 
                     UserTrade trade = new UserTrade(
