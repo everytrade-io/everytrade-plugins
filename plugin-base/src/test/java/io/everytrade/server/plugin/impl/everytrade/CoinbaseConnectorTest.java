@@ -6,9 +6,12 @@ import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import io.everytrade.server.test.mock.CoinbaseExchangeMock;
 import org.junit.jupiter.api.Test;
 import org.knowm.xchange.coinbase.v2.dto.account.transactions.CoinbaseShowTransactionV2;
+import org.knowm.xchange.coinbase.v2.service.CoinbaseAccountService;
 import org.knowm.xchange.dto.account.FundingRecord;
 import org.knowm.xchange.dto.trade.UserTrade;
 import org.mockito.Answers;
+import si.mazi.rescu.HttpStatusIOException;
+import si.mazi.rescu.InvocationResult;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -29,8 +32,11 @@ import static io.everytrade.server.test.TestUtils.userTrade;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -423,6 +429,28 @@ class CoinbaseConnectorTest {
         // unless something changed during the download (which never happens in this transaction-less test).
         // But the & separator is always present.
         org.junit.jupiter.api.Assertions.assertTrue(result.getDownloadStateData().contains("&"));
+    }
+
+    @Test
+    void testUnauthorized401IsReportedAsActionableAuthError() {
+        // ETD-2150: when Coinbase returns 401 (revoked/expired/invalid API key) on the wallets endpoint, the
+        // download must fail with a user-actionable message - NOT the generic "Wallets download failed." that
+        // is indistinguishable from a transient outage and just repeats on every scheduled retry (Sentry spam).
+        var exchange = new CoinbaseExchangeMock(List.of(), List.of()) {
+            @Override
+            protected void mockWallets(CoinbaseAccountService mock) throws Exception {
+                var unauthorized = new HttpStatusIOException(
+                    "HTTP status code was not OK: 401", new InvocationResult("Unauthorized", 401));
+                when(mock.getAccountInfo()).thenThrow(unauthorized);
+            }
+        };
+        var connector = new CoinbaseConnector(exchange);
+
+        var ex = assertThrows(IllegalStateException.class, () -> connector.getTransactions(null));
+        assertTrue(ex.getMessage().contains("401"), "message must mention the HTTP status");
+        assertTrue(ex.getMessage().toLowerCase().contains("api key"), "message must point the user at their API key");
+        assertNotEquals("Wallets download failed.", ex.getMessage(), "must not fall back to the generic message");
+        assertTrue(ex.getCause() instanceof HttpStatusIOException, "the original HTTP error must be preserved as the cause");
     }
 
     private void assertTx(TransactionCluster cluster, BigDecimal volume) {
