@@ -28,6 +28,7 @@ import org.knowm.xchange.service.account.AccountService;
 import org.knowm.xchange.service.trade.TradeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import si.mazi.rescu.HttpStatusIOException;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -61,6 +62,7 @@ public class CoinbaseDownloader {
     private static final int TRANSACTIONS_PER_REQUEST_LIMIT = 100; // please do not change, it could affect last download state logic
     private static final int MAX_ADVANCED_TRADE_PAGES = 10_000; // safety cap against a runaway cursor loop
     private static final int REAL_WALLET_ID_LENGTH = 36;
+    private static final int HTTP_UNAUTHORIZED = 401;
     private String lastDownloadWalletState;
     private long partialLastAdvanceTradeStartDatetime;
     private long partialLastAdvanceTradeEndDatetime;
@@ -519,8 +521,31 @@ public class CoinbaseDownloader {
                 .filter(s -> s.length() == REAL_WALLET_ID_LENGTH)
                 .collect(Collectors.toSet());
         } catch (IOException e) {
+            // A 401 means the user's API key is invalid, expired, or revoked - the whole sync can never
+            // succeed until they re-authorize. Surface an actionable message (the host shows it as the
+            // connection's error description) instead of the generic "Wallets download failed.", which
+            // is indistinguishable from a transient outage and just repeats on every scheduled retry.
+            if (httpStatusOf(e) == HTTP_UNAUTHORIZED) {
+                throw new IllegalStateException(
+                    "Coinbase authorization failed (HTTP 401): the API key is invalid, expired, or has been "
+                        + "revoked. Please reconnect your Coinbase account with a valid API key.", e);
+            }
             throw new IllegalStateException("Wallets download failed.", e);
         }
+    }
+
+    /**
+     * Returns the HTTP status code that caused {@code t}, or -1 if it was not an HTTP error. Coinbase
+     * REST errors reach us through xchange as a rescu {@link HttpStatusIOException}; it can sit a few
+     * levels down the cause chain, so the whole chain is walked.
+     */
+    private static int httpStatusOf(Throwable t) {
+        for (Throwable c = t; c != null && c != c.getCause(); c = c.getCause()) {
+            if (c instanceof HttpStatusIOException httpEx) {
+                return httpEx.getHttpStatusCode();
+            }
+        }
+        return -1;
     }
 
     private String getOrNull(String[] arr, int index) {
