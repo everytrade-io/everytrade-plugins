@@ -127,6 +127,10 @@ public class BybitEuUtaBeanV1 extends BaseTransactionMapper {
         this.ignoredMessage = message;
     }
 
+    public void setNote(String note) {
+        this.note = note;
+    }
+
     @Override
     protected TransactionType findTransactionType() {
         return resolvedType;
