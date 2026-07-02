@@ -39,8 +39,9 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexB
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexBeanV3;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BtcPayServerBeanV1;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BybitEuBeanV1;
-import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BybitEuBeanV2;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BybitEuUtaExchangeSpecificParser;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BybitEuFundBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BybitEuUtaBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.ChangeInvestBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseProBeanV1;
@@ -432,25 +433,26 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 .supportedExchange(BTCPAY_SERVER)
                 .build());
 
-            /* BYBIT EU */
+            /* BYBIT EU - Asset Change Details export (Assets -> Account -> Data Export) */
+            // Funding account (one row = one balance change): fiat deposits, card crypto purchases, airdrops, transfers
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
                 .headers(List.of(
-                    CsvHeader.of("Spot Pairs", "Order Type", "Direction", "feeCoin", "ExecFeeV2", "Filled Value",
-                            "Filled Price", "Filled Quantity", "Fees", "Transaction ID", "Order No.", "Timestamp (UTC)")
+                    CsvHeader.of("Uid", "Date & Time(UTC)", "Coin", "QTY", "Type", "Account Balance", "Description")
                         .withSeparator(delimiter)
                 ))
-                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(BybitEuBeanV1.class, delimiter))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(BybitEuFundBeanV1.class, delimiter))
                 .supportedExchange(BYBIT_EU)
                 .build());
 
+            // Unified Trading Account (a spot trade spans two rows - crypto leg + fiat leg - that are grouped)
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
                 .headers(List.of(
-                    CsvHeader.of("Spot Pairs", "feeCoin", "ExecFeeV2", "feeInfo", "Order Type", "Direction",
-                            "Filled Value", "Avg. Filled Price", "Order Price", "Order Quantity", "Order Value",
-                            "Order Status", "Order No.", "Timestamp (UTC)")
+                    CsvHeader.of("Uid", "Currency", "Contract", "Type", "Direction", "Quantity", "Position",
+                            "Filled Price", "Funding", "Fee Paid", "Cash Flow", "Change", "Wallet Balance", "Action",
+                            "Time(UTC)")
                         .withSeparator(delimiter)
                 ))
-                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(BybitEuBeanV2.class, delimiter))
+                .parserFactory(() -> new BybitEuUtaExchangeSpecificParser(BybitEuUtaBeanV1.class, delimiter))
                 .supportedExchange(BYBIT_EU)
                 .build());
 
