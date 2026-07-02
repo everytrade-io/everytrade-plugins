@@ -12,6 +12,8 @@ import java.util.List;
 
 import static io.everytrade.server.model.Currency.BTC;
 import static io.everytrade.server.model.Currency.EUR;
+import static io.everytrade.server.model.Currency.GBP;
+import static io.everytrade.server.model.Currency.SOL;
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.FEE;
@@ -179,6 +181,168 @@ class BybitEuUtaBeanV1Test {
                     BTC
                 )
             )
+        );
+        ParserTestUtils.checkEqual(expected, clusters.get(0));
+    }
+
+    @Test
+    void testPairWithQuoteOutsideCandidateListResolvesFromLegs() {
+        // SOL/GBP - an arbitrary combination with no hard-coded quote list involved; the pair must resolve because
+        // both currencies are read directly from the two trade legs and only oriented by the "SOLGBP" contract.
+        final String rows = HEADER
+            + "567248024,SOL,SOLGBP,TRADE,BUY,2,0,100,0,-0.002,2,1.998,0,--,2026-06-05 09:00:00\n"
+            + "567248024,GBP,SOLGBP,TRADE,BUY,-200,0,100,0,0,-200,-200,0,--,2026-06-05 09:00:00\n";
+        final List<TransactionCluster> clusters = ParserTestUtils.getTransactionClusters(rows);
+        assertEquals(1, clusters.size());
+        assertEquals(0, ParserTestUtils.getParseResult(rows).getParsingProblems().size());
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2026-06-05T09:00:00Z"),
+                SOL,
+                GBP,
+                BUY,
+                new BigDecimal("2"),
+                new BigDecimal("100")
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    null,
+                    Instant.parse("2026-06-05T09:00:00Z"),
+                    SOL,
+                    SOL,
+                    FEE,
+                    new BigDecimal("0.002").setScale(DECIMAL_DIGITS, HALF_UP),
+                    SOL
+                )
+            )
+        );
+        ParserTestUtils.checkEqual(expected, clusters.get(0));
+    }
+
+    @Test
+    void testPairOrientedFromCashFlowWhenContractSymbolDiffers() {
+        // Contract "BTC-EUR" cannot be reconstructed from the enum codes (BTC+EUR = "BTCEUR"), so orientation falls
+        // back to cash-flow sign: on a SELL the base is the delivered (negative-quantity) leg -> BTC, quote -> EUR.
+        final String rows = HEADER
+            + "567248024,BTC,BTC-EUR,TRADE,SELL,-0.01,0,60000,0,0,-0.01,-0.01,0,--,2026-06-05 10:00:00\n"
+            + "567248024,EUR,BTC-EUR,TRADE,SELL,600,0,60000,0,-1.5,600,598.5,0,--,2026-06-05 10:00:00\n";
+        final List<TransactionCluster> clusters = ParserTestUtils.getTransactionClusters(rows);
+        assertEquals(1, clusters.size());
+        assertEquals(0, ParserTestUtils.getParseResult(rows).getParsingProblems().size());
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2026-06-05T10:00:00Z"),
+                BTC,
+                EUR,
+                SELL,
+                new BigDecimal("0.01"),
+                new BigDecimal("60000")
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    null,
+                    Instant.parse("2026-06-05T10:00:00Z"),
+                    EUR,
+                    EUR,
+                    FEE,
+                    new BigDecimal("1.5").setScale(DECIMAL_DIGITS, HALF_UP),
+                    EUR
+                )
+            )
+        );
+        ParserTestUtils.checkEqual(expected, clusters.get(0));
+    }
+
+    @Test
+    void testReconstructBuyFromBaseLegOnly() {
+        // only the BTC (received) leg of a BUY survived; the fee lives on this leg (Quantity - Change) and is kept
+        final String rows = HEADER
+            + "567248024,BTC,BTCEUR,TRADE,BUY,0.00007,0,53873.6,0,-0.000000175,0.00007,0.000069825,0,--,2026-06-05 08:22:20\n";
+        final List<TransactionCluster> clusters = ParserTestUtils.getTransactionClusters(rows);
+        assertEquals(1, clusters.size());
+        assertEquals(0, ParserTestUtils.getParseResult(rows).getParsingProblems().size());
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2026-06-05T08:22:20Z"),
+                BTC,
+                EUR,
+                BUY,
+                new BigDecimal("0.00007"),
+                new BigDecimal("53873.6")
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    null,
+                    Instant.parse("2026-06-05T08:22:20Z"),
+                    BTC,
+                    BTC,
+                    FEE,
+                    new BigDecimal("0.000000175").setScale(DECIMAL_DIGITS, HALF_UP),
+                    BTC
+                )
+            )
+        );
+        ParserTestUtils.checkEqual(expected, clusters.get(0));
+    }
+
+    @Test
+    void testReconstructSellFromQuoteLegOnly() {
+        // only the EUR (received) leg of a SELL survived; base volume is derived as grossQuote / filledPrice
+        final String rows = HEADER
+            + "567248024,EUR,BTCEUR,TRADE,SELL,1.615287,0,53842.9,0,-0.0040382175,1.615287,1.6112487825,0,--,2026-06-05 08:22:50\n";
+        final List<TransactionCluster> clusters = ParserTestUtils.getTransactionClusters(rows);
+        assertEquals(1, clusters.size());
+        assertEquals(0, ParserTestUtils.getParseResult(rows).getParsingProblems().size());
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2026-06-05T08:22:50Z"),
+                BTC,
+                EUR,
+                SELL,
+                new BigDecimal("1.615287").divide(new BigDecimal("53842.9"), DECIMAL_DIGITS, HALF_UP),
+                new BigDecimal("53842.9")
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    null,
+                    Instant.parse("2026-06-05T08:22:50Z"),
+                    EUR,
+                    EUR,
+                    FEE,
+                    new BigDecimal("0.0040382175").setScale(DECIMAL_DIGITS, HALF_UP),
+                    EUR
+                )
+            )
+        );
+        ParserTestUtils.checkEqual(expected, clusters.get(0));
+    }
+
+    @Test
+    void testReconstructSellFromBaseLegOnlyHasNoFeeButNote() {
+        // only the BTC (delivered) leg of a SELL survived; the fee lives on the missing EUR leg, so it is booked
+        // without a fee and a note flags that the fee is not in the export
+        final String rows = HEADER
+            + "567248024,BTC,BTCEUR,TRADE,SELL,-0.00003,0,53842.9,0,0,-0.00003,-0.00003,0,--,2026-06-05 08:22:50\n";
+        final List<TransactionCluster> clusters = ParserTestUtils.getTransactionClusters(rows);
+        assertEquals(1, clusters.size());
+        assertEquals(0, ParserTestUtils.getParseResult(rows).getParsingProblems().size());
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2026-06-05T08:22:50Z"),
+                BTC,
+                EUR,
+                SELL,
+                new BigDecimal("0.00003"),
+                new BigDecimal("53842.9"),
+                "ByBit EU: trade reconstructed from a single leg; the trading fee is not part of this export.",
+                null
+            ),
+            List.of()
         );
         ParserTestUtils.checkEqual(expected, clusters.get(0));
     }
