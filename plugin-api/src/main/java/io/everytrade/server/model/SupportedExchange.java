@@ -55,7 +55,8 @@ public enum SupportedExchange {
     BTCPAY_SERVER("BTCPay Server", "btcpayserver"),
     DASE("DASE", "dase"),
     INVITY_FINANCE("Invity Finance", "invityfinance"),
-    REVOLUT("Revolut", "revolut");
+    REVOLUT("Revolut", "revolut"),
+    BYBIT_EU("ByBit EU", "bybiteu");
 
     String displayName;
     String internalId;

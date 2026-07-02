@@ -39,6 +39,8 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexB
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexBeanV3;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BtcPayServerBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BybitEuBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BybitEuBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.ChangeInvestBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.CoinbaseProBeanV1;
@@ -137,6 +139,7 @@ import static io.everytrade.server.model.SupportedExchange.BITSTAMP;
 import static io.everytrade.server.model.SupportedExchange.BITTREX;
 import static io.everytrade.server.model.SupportedExchange.BLOCKFI;
 import static io.everytrade.server.model.SupportedExchange.BTCPAY_SERVER;
+import static io.everytrade.server.model.SupportedExchange.BYBIT_EU;
 import static io.everytrade.server.model.SupportedExchange.CHANGE_INVEST;
 import static io.everytrade.server.model.SupportedExchange.COINBANK;
 import static io.everytrade.server.model.SupportedExchange.COINBASE;
@@ -427,6 +430,28 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 ))
                 .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(BtcPayServerBeanV1.class, delimiter))
                 .supportedExchange(BTCPAY_SERVER)
+                .build());
+
+            /* BYBIT EU */
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader.of("Spot Pairs", "Order Type", "Direction", "feeCoin", "ExecFeeV2", "Filled Value",
+                            "Filled Price", "Filled Quantity", "Fees", "Transaction ID", "Order No.", "Timestamp (UTC)")
+                        .withSeparator(delimiter)
+                ))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(BybitEuBeanV1.class, delimiter))
+                .supportedExchange(BYBIT_EU)
+                .build());
+
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader.of("Spot Pairs", "feeCoin", "ExecFeeV2", "feeInfo", "Order Type", "Direction",
+                            "Filled Value", "Avg. Filled Price", "Order Price", "Order Quantity", "Order Value",
+                            "Order Status", "Order No.", "Timestamp (UTC)")
+                        .withSeparator(delimiter)
+                ))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(BybitEuBeanV2.class, delimiter))
+                .supportedExchange(BYBIT_EU)
                 .build());
 
             /* CHANGE_INVEST */
