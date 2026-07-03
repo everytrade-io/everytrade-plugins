@@ -99,8 +99,12 @@ public class BybitEuFundBeanV1 extends BaseTransactionMapper {
     protected BaseClusterData mapData() {
         final TransactionType txType = findTransactionType();
         final BigDecimal volume = qty == null ? null : qty.abs();
+        // The "ByBit EU One-Click Buy" prefix is a stable marker the host keys on to enrich this row with a
+        // market-rate cost basis - keep it in sync with CsvFileParserBean#ONE_CLICK_BUY_NOTE_PREFIX.
         final String note = DESC_BUY_WITH_CARD.equalsIgnoreCase(description)
-            ? "ByBit EU: Buy Crypto with Card (fiat price not in this export)"
+            ? "ByBit EU One-Click Buy (card) - type: purchase paid by card; the export carries no price, so the "
+              + "cost basis is only estimated from the market rate and MUST be adjusted manually to the exact "
+              + "amount from your ByBit One-Click Buy order details"
             : null;
         return BaseClusterData.builder()
             .transactionType(txType)
