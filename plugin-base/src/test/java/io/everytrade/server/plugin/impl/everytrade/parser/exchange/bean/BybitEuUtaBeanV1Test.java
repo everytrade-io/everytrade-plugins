@@ -28,6 +28,11 @@ class BybitEuUtaBeanV1Test {
     private static final String HEADER = "Uid,Currency,Contract,Type,Direction,Quantity,Position,Filled Price,Funding,"
         + "Fee Paid,Cash Flow,Change,Wallet Balance,Action,Time(UTC)\n";
 
+    private static final String NOTE_SPOT = "ByBit EU Spot";
+    private static final String NOTE_SINGLE_LEG = "ByBit EU Spot (reconstructed from a single leg)";
+    private static final String NOTE_SINGLE_LEG_NO_FEE =
+        "ByBit EU Spot (reconstructed from a single leg; trading fee not in this export)";
+
     // full real export (Unified Trading Account) minus the "UID:..." preamble line; the crypto+fiat legs of each
     // spot trade must be grouped into one BUY/SELL, and the TRANSFER_IN row must become a DEPOSIT
     private static final String FULL =
@@ -84,7 +89,9 @@ class BybitEuUtaBeanV1Test {
                 EUR,
                 BUY,
                 new BigDecimal("0.00007000000000000000"),
-                new BigDecimal("53873.60000000000000000000")
+                new BigDecimal("53873.60000000000000000000"),
+                NOTE_SPOT,
+                null
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -112,7 +119,9 @@ class BybitEuUtaBeanV1Test {
                 EUR,
                 SELL,
                 new BigDecimal("0.00003000000000000000"),
-                new BigDecimal("53842.90000000000000000000")
+                new BigDecimal("53842.90000000000000000000"),
+                NOTE_SPOT,
+                null
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -168,7 +177,9 @@ class BybitEuUtaBeanV1Test {
                 EUR,
                 BUY,
                 new BigDecimal("0.0003"),
-                new BigDecimal("50000")
+                new BigDecimal("50000"),
+                NOTE_SPOT,
+                null
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -203,7 +214,9 @@ class BybitEuUtaBeanV1Test {
                 GBP,
                 BUY,
                 new BigDecimal("2"),
-                new BigDecimal("100")
+                new BigDecimal("100"),
+                NOTE_SPOT,
+                null
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -238,7 +251,9 @@ class BybitEuUtaBeanV1Test {
                 EUR,
                 SELL,
                 new BigDecimal("0.01"),
-                new BigDecimal("60000")
+                new BigDecimal("60000"),
+                NOTE_SPOT,
+                null
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -271,7 +286,9 @@ class BybitEuUtaBeanV1Test {
                 EUR,
                 BUY,
                 new BigDecimal("0.00007"),
-                new BigDecimal("53873.6")
+                new BigDecimal("53873.6"),
+                NOTE_SINGLE_LEG,
+                null
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -304,7 +321,9 @@ class BybitEuUtaBeanV1Test {
                 EUR,
                 SELL,
                 new BigDecimal("1.615287").divide(new BigDecimal("53842.9"), DECIMAL_DIGITS, HALF_UP),
-                new BigDecimal("53842.9")
+                new BigDecimal("53842.9"),
+                NOTE_SINGLE_LEG,
+                null
             ),
             List.of(
                 new FeeRebateImportedTransactionBean(
@@ -339,7 +358,7 @@ class BybitEuUtaBeanV1Test {
                 SELL,
                 new BigDecimal("0.00003"),
                 new BigDecimal("53842.9"),
-                "ByBit EU: trade reconstructed from a single leg; the trading fee is not part of this export.",
+                NOTE_SINGLE_LEG_NO_FEE,
                 null
             ),
             List.of()

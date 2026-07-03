@@ -30,6 +30,8 @@ import static java.util.stream.Collectors.toList;
 public class BybitEuUtaExchangeSpecificParser extends DefaultUnivocityExchangeSpecificParser
     implements IMultiExchangeSpecificParser<BybitEuUtaBeanV1> {
 
+    private static final String NOTE_SPOT = "ByBit EU Spot";
+
     /**
      * Every currency seen for each contract symbol across the whole file (its "Currency" column values). Built once
      * per parse and used to split/orient a contract from the data itself instead of any hard-coded quote list, so it
@@ -156,6 +158,7 @@ public class BybitEuUtaExchangeSpecificParser extends DefaultUnivocityExchangeSp
             final BybitEuUtaBeanV1 primary = baseLegs.get(0);
             primary.resolveTrade(type, base, quote, volume, unitPrice,
                 anyFee ? feeCurrency : null, anyFee ? feeAmount : null);
+            primary.setNote(NOTE_SPOT);
             return List.of(primary);
         } catch (Exception e) {
             return ignoreAll(group, "Unsupported ByBit EU trade group: " + e.getMessage());
@@ -299,14 +302,14 @@ public class BybitEuUtaExchangeSpecificParser extends DefaultUnivocityExchangeSp
         final boolean survivingLegIsReceived = (type == BUY) == knownIsBase;
         Currency feeCurrency = null;
         BigDecimal feeAmount = null;
-        String note = null;
+        String note = NOTE_SPOT + " (reconstructed from a single leg)";
         if (survivingLegIsReceived) {
             if (legFee.signum() != 0) {
                 feeCurrency = known;
                 feeAmount = legFee;
             }
         } else {
-            note = "ByBit EU: trade reconstructed from a single leg; the trading fee is not part of this export.";
+            note = NOTE_SPOT + " (reconstructed from a single leg; trading fee not in this export)";
         }
 
         first.resolveTrade(type, base, quote, volume, price, feeCurrency, feeAmount);
