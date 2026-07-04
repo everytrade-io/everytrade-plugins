@@ -53,7 +53,9 @@ class BybitEuFundBeanV1Test {
                 DEPOSIT,
                 new BigDecimal("0.000293790000000000"),
                 null,
-                "ByBit EU: Buy Crypto with Card (fiat price not in this export)",
+                "ByBit EU One-Click Buy (card) - type: purchase paid by card; the export carries no price, so the "
+                    + "cost basis is only estimated from the market rate and MUST be adjusted manually to the exact "
+                    + "amount from your ByBit One-Click Buy order details",
                 null
             ),
             List.of()
