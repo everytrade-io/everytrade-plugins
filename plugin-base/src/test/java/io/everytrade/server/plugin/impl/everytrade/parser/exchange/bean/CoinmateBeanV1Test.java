@@ -277,6 +277,51 @@ class CoinmateBeanV1Test {
     }
 
     @Test
+    void testBalanceMoveCreditAsDeposit() {
+        // both legs of an internal balance move share one Coinmate id, so the uid gets a leg suffix
+        final String row = "12345678;2024-01-15 10:00:00;M;BALANCE_MOVE_CREDIT;0.005;BTC;;;;;0.005;BTC;" +
+            "Balance move from account: Account B;OK;0.005;BTC;;\n";
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_THREE + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                "12345678-BMC",
+                Instant.parse("2024-01-15T10:00:00Z"),
+                Currency.BTC,
+                null,
+                TransactionType.DEPOSIT,
+                new BigDecimal("0.005"),
+                null,
+                "BALANCE_MOVE_CREDIT",
+                null
+            ),
+            emptyList()
+        );
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
+    void testBalanceMoveDebitAsWithdrawal() {
+        final String row = "12345678;2024-01-15 10:00:00;#1;BALANCE_MOVE_DEBIT;-0.005;BTC;;;;;-0.005;BTC;" +
+            "Balance move to account: Main account;OK;0;BTC;;\n";
+        final TransactionCluster actual = ParserTestUtils.getTransactionCluster(HEADER_THREE + row);
+        final TransactionCluster expected = new TransactionCluster(
+            new ImportedTransactionBean(
+                "12345678-BMD",
+                Instant.parse("2024-01-15T10:00:00Z"),
+                Currency.BTC,
+                null,
+                TransactionType.WITHDRAWAL,
+                new BigDecimal("0.005"),
+                null,
+                "BALANCE_MOVE_DEBIT",
+                null
+            ),
+            emptyList()
+        );
+        ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
     void testIgnoredTransactionType() {
         var row = "4;2019-08-30 05:05:24;DEPOSITZ;0.0019;BTC;8630.7;EUR;0.03443649;EUR;16.43276649;EUR;;OK\n";
         var parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
