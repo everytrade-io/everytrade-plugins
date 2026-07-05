@@ -9,8 +9,6 @@ import io.everytrade.server.plugin.api.connector.DownloadResult;
 import io.everytrade.server.plugin.api.connector.IConnector;
 import io.everytrade.server.plugin.api.parser.ParseResult;
 import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
 import org.knowm.xchange.Exchange;
@@ -25,8 +23,11 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -46,6 +47,16 @@ public class CoinmateConnector implements IConnector {
 
     private static final long REQUEST_SLEEP_MS = 650;
     private static final long MIN_INTERVAL_MS = 750;
+    // Withdrawals show up in transactionHistory immediately, but with status NEW; they flip to COMPLETED
+    // only after settlement while keeping their creation timestamp (see ETS-5075). A forward-only
+    // watermark would skip them forever once anything newer is downloaded, so every sync re-scans this
+    // trailing window. The host has NO import-time deduplication, therefore the download state also
+    // carries the ids already handed to the host and the connector filters re-reads itself (this also
+    // drops within-batch duplicates from the archived/live passes and survives Coinmate's ms timestamp
+    // jitter between fetches).
+    private static final long RESCAN_WINDOW_MS = 30L * 24 * 60 * 60 * 1000;
+    private static final int MAX_TRACKED_IDS = 20_000;
+    private static final Set<String> FINAL_STATUSES = Set.of("OK", "COMPLETED", "CANCELLED");
     private long nextAllowedRequestAtMs = 0;
 
     private static final ConnectorParameterDescriptor PARAMETER_API_USERNAME =
@@ -118,10 +129,13 @@ public class CoinmateConnector implements IConnector {
     private List<CoinmateTransactionHistoryEntry> downloadTransactions(DownloadState state) {
         var tradeServiceRaw = new CoinmateTradeServiceRaw(exchange);
 
-        long from = Math.max(0L, state.nextFrom);
+        // the rescan window must not reach behind the point where id tracking started: rows imported
+        // by older plugin versions are not in importedIds and would be re-imported as duplicates
+        long from = Math.max(0L, Math.max(state.rescanFloor, state.nextFrom - RESCAN_WINDOW_MS));
         long initialTo = Instant.now().toEpochMilli();
 
         List<CoinmateTransactionHistoryEntry> all = new ArrayList<>();
+        Map<String, Long> seenThisRun = new HashMap<>();
 
         int iterations = 0;
 
@@ -158,9 +172,18 @@ public class CoinmateConnector implements IConnector {
                     if (ts < from) {
                         break;
                     }
-                    all.add(e);
                     if (ts > maxTsSeenInBlock) {
                         maxTsSeenInBlock = ts;
+                    }
+                    // A non-final entry (e.g. a withdrawal still in status NEW) must be neither emitted
+                    // nor remembered, so the rescan window keeps re-reading it until it settles.
+                    String status = e.getStatus();
+                    if (status == null || !FINAL_STATUSES.contains(status)) {
+                        continue;
+                    }
+                    String txId = String.valueOf(e.getTransactionId());
+                    if (seenThisRun.put(txId, ts) == null && !state.importedIds.containsKey(txId)) {
+                        all.add(e);
                     }
                 }
 
@@ -183,6 +206,8 @@ public class CoinmateConnector implements IConnector {
                 sleepQuietly(REQUEST_SLEEP_MS);
             }
         }
+
+        state.rememberImported(seenThisRun);
 
         return all;
     }
@@ -238,38 +263,91 @@ public class CoinmateConnector implements IConnector {
         }
     }
 
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @FieldDefaults(level = PRIVATE)
     private static class DownloadState {
-        private static final String SEPARATOR = "=";
+        private static final String V3_PREFIX = "v3=";
+        // a value below this (2000-01-01) cannot be a millisecond timestamp; the most ancient states
+        // stored a Coinmate transaction id instead, from which no resume point can be derived
+        private static final long MIN_PLAUSIBLE_TIMESTAMP_MS = 946_684_800_000L;
 
-        long nextFrom;
+        private long nextFrom;
+        // ids are tracked only from this timestamp on; the rescan window must not reach behind it
+        private long rescanFloor;
+        // txId -> timestamp of transactions already handed to the host, kept for the rescan window;
+        // the host has no import-time dedup, so re-scanned rows must be filtered out here
+        private final Map<String, Long> importedIds = new HashMap<>();
+
+        DownloadState(long nextFrom, long rescanFloor) {
+            this.nextFrom = nextFrom;
+            this.rescanFloor = rescanFloor;
+        }
 
         public static DownloadState deserialize(String state) {
             if (isEmpty(state)) {
-                return new DownloadState(0L);
+                return new DownloadState(0L, 0L);
             }
 
-            String[] parts = state.split(SEPARATOR);
-
-            if (parts.length == 1) {
-                try {
-                    return new DownloadState(Long.parseLong(parts[0]));
-                } catch (NumberFormatException ignored) {
+            if (state.startsWith(V3_PREFIX)) {
+                String[] parts = state.substring(V3_PREFIX.length()).split("=", 3);
+                DownloadState result = new DownloadState(
+                    parts.length > 1 ? parseLongSafe(parts[1]) : 0L,
+                    parseLongSafe(parts[0])
+                );
+                if (parts.length > 2 && !parts[2].isEmpty()) {
+                    for (String pair : parts[2].split(",")) {
+                        int colon = pair.indexOf(':');
+                        if (colon > 0) {
+                            result.importedIds.put(pair.substring(0, colon), parseLongSafe(pair.substring(colon + 1)));
+                        }
+                    }
                 }
+                return result;
             }
 
-            long legacyTxFrom = parts.length > 2 ? parseLongSafe(parts[2]) : 0L;
-            long legacyHighest = parts.length > 5 ? parseLongSafe(parts[5]) : 0L;
-
-            long nextFrom = Math.max(legacyTxFrom, legacyHighest);
-            return new DownloadState(nextFrom);
+            // States written by older connector versions. Ids were not tracked yet, so the rescan floor
+            // must equal the watermark - the host has no dedup and a re-read would import duplicates.
+            // Observed legacy shapes: "<timestamp>", "<txId>=<timestamp>", "=0=<ts>=..." and
+            // "<txId>=<ts>=<ts2>=..." where the third and sixth field hold the resume timestamp.
+            String[] parts = state.split("=");
+            long nextFrom;
+            if (parts.length == 1) {
+                nextFrom = parseLongSafe(parts[0]);
+            } else if (parts.length == 2) {
+                nextFrom = parseLongSafe(parts[1]);
+            } else {
+                nextFrom = Math.max(
+                    parseLongSafe(parts[2]),
+                    parts.length > 5 ? parseLongSafe(parts[5]) : 0L
+                );
+            }
+            if (nextFrom > 0 && nextFrom < MIN_PLAUSIBLE_TIMESTAMP_MS) {
+                LOG.warn("Legacy Coinmate download state '{}' holds no usable timestamp, downloading the full history.", state);
+                nextFrom = 0L;
+            }
+            return new DownloadState(nextFrom, nextFrom);
         }
 
+        /* The field order (floor BEFORE nextFrom) is deliberate: the previous plugin version reads the
+           third '='-separated field as its resume timestamp, so after a plugin rollback it resumes
+           exactly where v3 left off instead of re-downloading (and duplicating) the whole history. */
         public String serialize() {
-            return Long.toString(nextFrom);
+            return V3_PREFIX + rescanFloor + "=" + nextFrom + "="
+                + importedIds.entrySet().stream()
+                    .map(e -> e.getKey() + ":" + e.getValue())
+                    .collect(Collectors.joining(","));
+        }
+
+        /* keep ids seen in this run that still fall into the rescan window; older ones can never be
+           re-downloaded again (from = nextFrom - window), so they are dropped to bound the state size */
+        void rememberImported(Map<String, Long> seenThisRun) {
+            importedIds.putAll(seenThisRun);
+            long threshold = nextFrom - RESCAN_WINDOW_MS;
+            importedIds.values().removeIf(ts -> ts < threshold);
+            if (importedIds.size() > MAX_TRACKED_IDS) {
+                List<Long> byAge = new ArrayList<>(importedIds.values());
+                byAge.sort(null);
+                long cutoff = byAge.get(importedIds.size() - MAX_TRACKED_IDS);
+                importedIds.values().removeIf(ts -> ts < cutoff);
+            }
         }
 
         private static long parseLongSafe(String s) {

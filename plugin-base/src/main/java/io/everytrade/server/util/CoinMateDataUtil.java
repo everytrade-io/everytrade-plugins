@@ -50,8 +50,8 @@ public class CoinMateDataUtil {
 
     public static TransactionType mapCoinMateType(String type) {
         return switch (type) {
-            case BUY_OPERATION, QUICK_BUY_OPERATION, (INSTANT_BUY_OPERATION) -> BUY;
-            case (SELL_OPERATION), (QUICK_SELL_OPERATION), (INSTANT_SELL_OPERATION) -> SELL;
+            case BUY_OPERATION, QUICK_BUY_OPERATION, (INSTANT_BUY_OPERATION), (MARKET_BUY_OPERATION) -> BUY;
+            case (SELL_OPERATION), (QUICK_SELL_OPERATION), (INSTANT_SELL_OPERATION), (MARKET_SELL_OPERATION) -> SELL;
             case ("NEW_USER_REWARD"), ("AFFILIATE"), ("REFERRAL") -> REWARD;
             case (DEPOSIT_OPERATION), (BALANCE_MOVE_CREDIT) -> DEPOSIT;
             case (WITHDRAWAL_OPERATION), (BALANCE_MOVE_DEBIT) -> WITHDRAWAL;
