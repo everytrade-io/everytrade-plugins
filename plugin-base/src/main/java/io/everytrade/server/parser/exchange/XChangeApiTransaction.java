@@ -54,6 +54,9 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
     BigDecimal price;
     BigDecimal feeAmount;
     String address;
+    // the exchange's original transaction type when it differs from the mapped TransactionType
+    // (e.g. QUICK_BUY -> BUY, BALANCE_MOVE_CREDIT -> DEPOSIT); persisted into the transaction note
+    String note;
     @Builder.Default
     boolean logIgnoredFees = true;
 
@@ -207,6 +210,7 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
         }
 
         var type = CoinMateDataUtil.mapCoinMateType(transaction.getTransactionType());
+        String originalType = transaction.getTransactionType();
 
         var amount = transaction.getAmount();
         if (amount != null) {
@@ -228,6 +232,7 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
             .originalAmount(amount)
             .feeAmount(feeAmount)
             .feeCurrency(feeCurrency)
+            .note(type.name().equalsIgnoreCase(originalType) ? null : originalType)
             .build();
     }
 
@@ -373,7 +378,9 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
                 quote,
                 type,
                 originalAmount,
-                address
+                address,
+                note,
+                null
             ),
             related
         );
@@ -388,7 +395,9 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
                 quote,
                 type,
                 originalAmount,
-                price
+                price,
+                note,
+                address
             ),
             related
         );

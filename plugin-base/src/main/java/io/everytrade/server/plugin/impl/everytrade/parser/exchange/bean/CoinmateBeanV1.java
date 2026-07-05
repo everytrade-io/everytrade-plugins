@@ -23,9 +23,10 @@ import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.REWARD;
 import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
-import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.equalsToZero;
 import static io.everytrade.server.plugin.impl.everytrade.parser.ParserUtils.nullOrZero;
 import static io.everytrade.server.util.CoinMateDataUtil.AFFILIATE_OPERATION;
+import static io.everytrade.server.util.CoinMateDataUtil.BALANCE_MOVE_CREDIT;
+import static io.everytrade.server.util.CoinMateDataUtil.BALANCE_MOVE_DEBIT;
 import static io.everytrade.server.util.CoinMateDataUtil.BUY_OPERATION;
 import static io.everytrade.server.util.CoinMateDataUtil.REFERRAL_OPERATION;
 import static io.everytrade.server.util.CoinMateDataUtil.SELL_OPERATION;
@@ -74,9 +75,9 @@ public class CoinmateBeanV1 extends ExchangeBean {
             this.type = BUY;
         } else if (SELL_OPERATION.equals(type) || QUICK_SELL_OPERATION.equals(type) || MARKET_SELL_OPERATION.equals(type)) {
             this.type = SELL;
-        } else if (DEPOSIT_OPERATION.equals(type)) {
+        } else if (DEPOSIT_OPERATION.equals(type) || BALANCE_MOVE_CREDIT.equals(type)) {
             this.type = DEPOSIT;
-        } else if (WITHDRAWAL_OPERATION.equals(type)) {
+        } else if (WITHDRAWAL_OPERATION.equals(type) || BALANCE_MOVE_DEBIT.equals(type)) {
             this.type = WITHDRAWAL;
         } else if (type == null && address.contains("User:") && address.contains("(ID:") && address.contains("Account ID:")
             || AFFILIATE_OPERATION.equalsIgnoreCase(type) || REFERRAL_OPERATION.equalsIgnoreCase(type)){
@@ -227,14 +228,23 @@ public class CoinmateBeanV1 extends ExchangeBean {
     }
 
     private TransactionCluster createDepositOrWithdrawalTxCluster() {
+        // balance moves are internal transfers between Coinmate sub-accounts; their description is a
+        // human-readable label ("Balance move from account: ..."), not a crypto address. Both legs of
+        // one move share a single Coinmate transaction id, so the uid gets a leg suffix to keep the
+        // credit and debit rows from deduplicating each other when both accounts are in one export.
+        boolean isBalanceMove = BALANCE_MOVE_CREDIT.equals(originalType) || BALANCE_MOVE_DEBIT.equals(originalType);
+        String uid = id;
+        if (isBalanceMove) {
+            uid = id + (BALANCE_MOVE_CREDIT.equals(originalType) ? "-BMC" : "-BMD");
+        }
         var tx = ImportedTransactionBean.createDepositWithdrawal(
-            id,
+            uid,
             date,
             amountCurrency, //base
             priceCurrency,  //quote
             type,
             amount,
-            amountCurrency.isFiat() ? null : address,
+            amountCurrency.isFiat() || isBalanceMove ? null : address,
             type.name().equalsIgnoreCase(originalType) ? null : originalType,
             null
         );
@@ -243,7 +253,7 @@ public class CoinmateBeanV1 extends ExchangeBean {
 
     private List<ImportedTransactionBean> getRelatedFeeTransaction() {
         List<ImportedTransactionBean> related;
-        if (equalsToZero(fee)) {
+        if (nullOrZero(fee)) {
             related = emptyList();
         } else {
             try {
