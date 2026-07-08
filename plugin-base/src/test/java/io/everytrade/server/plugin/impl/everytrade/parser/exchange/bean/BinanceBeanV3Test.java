@@ -18,6 +18,9 @@ import static io.everytrade.server.model.Currency.BNB;
 import static io.everytrade.server.model.Currency.BTC;
 import static io.everytrade.server.model.Currency.BUSD;
 import static io.everytrade.server.model.Currency.EUR;
+import static io.everytrade.server.model.Currency.SOL;
+import static io.everytrade.server.model.Currency.USDT;
+import static io.everytrade.server.model.Currency._1INCH;
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.model.TransactionType.SELL;
@@ -141,6 +144,67 @@ class BinanceBeanV3Test {
             )
         );
         ParserTestUtils.checkEqual(expected, actual);
+    }
+
+    @Test
+    void testDigitLeadingTickerFromClientCsv() {
+        // ETS-5077: Binance glues amount+ticker with no separator ("5.11INCH" = 5.1 of 1INCH). A digit-leading ticker
+        // (1INCH) used to split as amount 5.11 + unknown currency "INCH" and the whole row failed (ROW_PARSING_FAILED).
+        // The pair is now resolved from the "Pair" column (1INCHUSDT) and the ticker stripped as a literal suffix.
+        // Both rows are the customer's original data; SOLUSDT is the control that always worked.
+        final String rowSol = "2022-01-20 23:17:49,SOLUSDT,BUY,129.95,0.48SOL,62.376USDT,0.00010548BNB\n";
+        final String row1Inch = "2022-01-10 14:36:20,1INCHUSDT,BUY,1.969,5.11INCH,10.0419USDT,0.00001853BNB\n";
+
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + rowSol + row1Inch);
+        final ParseResult result = ParserTestUtils.getParseResult(HEADER_CORRECT + rowSol + row1Inch);
+        assertEquals(0, result.getParsingProblems().size(), "no row must fail to parse");
+
+        final TransactionCluster expectedSol = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-01-20T23:17:49Z"),
+                SOL,
+                USDT,
+                BUY,
+                new BigDecimal("0.48000000000000000"),
+                new BigDecimal("129.95000000000000000")
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    FEE_UID_PART,
+                    Instant.parse("2022-01-20T23:17:49Z"),
+                    BNB,
+                    BNB,
+                    FEE,
+                    new BigDecimal("0.00010548000000000"),
+                    BNB
+                )
+            )
+        );
+        final TransactionCluster expected1Inch = new TransactionCluster(
+            new ImportedTransactionBean(
+                null,
+                Instant.parse("2022-01-10T14:36:20Z"),
+                _1INCH,
+                USDT,
+                BUY,
+                new BigDecimal("5.10000000000000000"),
+                new BigDecimal("1.96900000000000000")
+            ),
+            List.of(
+                new FeeRebateImportedTransactionBean(
+                    FEE_UID_PART,
+                    Instant.parse("2022-01-10T14:36:20Z"),
+                    BNB,
+                    BNB,
+                    FEE,
+                    new BigDecimal("0.00001853000000000"),
+                    BNB
+                )
+            )
+        );
+        ParserTestUtils.checkEqual(expectedSol, actual.get(0));
+        ParserTestUtils.checkEqual(expected1Inch, actual.get(1));
     }
 
     @Test

@@ -43,9 +43,12 @@ public class BinanceBeanV3 extends ExchangeBean {
         this.pairBase = currencyPair.getBase();
         this.pairQuote = currencyPair.getQuote();
         this.type = detectTransactionType(type);
-        this.filled = new BigDecimal(filled.replaceAll("[^\\d.\\-]", ""));
-        this.total = new BigDecimal(total.replaceAll("[^\\d.\\-]", ""));
-        String feeValue = fee.replaceAll("[^\\d.\\-]", "");
+        // Strip the trailing currency code as a literal suffix (base for filled, quote for total) instead of removing
+        // every letter: for a digit-leading ticker "5.11INCH" (5.1 of 1INCH) the blind letter-strip would leave 5.11,
+        // whereas removing exactly the known code "1INCH" yields the correct 5.1.
+        this.filled = new BigDecimal(stripCurrencyCode(filled, currencyPair.getBase()));
+        this.total = new BigDecimal(stripCurrencyCode(total, currencyPair.getQuote()));
+        String feeValue = stripCurrencyCode(fee, feeCurrency);
         BigDecimal feeAbsValue = new BigDecimal(feeValue).abs(); // abs value of fee
         if (feeCurrency != null && feeAbsValue.compareTo((BigDecimal.ZERO)) > 0)  {
             this.feeCurrency = feeCurrency;
@@ -53,6 +56,24 @@ public class BinanceBeanV3 extends ExchangeBean {
         } else {
             this.fee = BigDecimal.ZERO;
         }
+    }
+
+    /**
+     * Removes the trailing {@link Currency#code()} from a glued "amount+ticker" value (e.g. "5.11INCH" with base 1INCH
+     * -&gt; "5.1"), then drops grouping/space characters. When the code is not a suffix (already-clean numbers, or an
+     * unknown fee coin passed as {@code null}) it falls back to keeping only digits, dot and minus — matching the
+     * previous behaviour for every non-digit-leading ticker.
+     */
+    private static String stripCurrencyCode(String raw, Currency currency) {
+        String value = raw.trim();
+        if (currency != null) {
+            String code = currency.code();
+            int start = value.length() - code.length();
+            if (start > 0 && value.regionMatches(true, start, code, 0, code.length())) {
+                value = value.substring(0, start);
+            }
+        }
+        return value.replaceAll("[^\\d.\\-]", "");
     }
 
     // Binance varies the year width by export locale/version: 4-digit (2020-05-29) or 2-digit (25-11-17).

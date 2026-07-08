@@ -17,8 +17,10 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -29,7 +31,13 @@ import static io.everytrade.server.plugin.api.parser.ParsingProblemType.ROW_PARS
 public class BinanceExchangeSpecificParserV3 implements IExchangeSpecificParser {
     private final String delimiter;
     private List<ParsingProblem> parsingProblems = List.of();
+    // Currency CODES (Currency.code(), e.g. "1INCH"), NOT enum names (Currency.name(), e.g. "_1INCH"): tickers that
+    // start with a digit are not legal Java identifiers, so their enum name is prefixed with '_' and would never
+    // match an exchange ticker. Resolution therefore always goes through code()/Currency.fromCode().
     private static final Set<String> CURRENCY_CODES = new HashSet<>();
+    // "1INCHUSDT" -> (1INCH, USDT). Concatenated base+quote codes cannot be split by a trailing-letters regex when the
+    // base starts with a digit, so the "Pair" column is resolved against this map first (see extractCurrencyFromEnd).
+    private static final Map<String, CurrencyPair> CURRENCY_PAIRS_BY_CONCAT = new HashMap<>();
 
     public BinanceExchangeSpecificParserV3(String delimiter) {
         this.delimiter = delimiter;
@@ -37,7 +45,10 @@ public class BinanceExchangeSpecificParserV3 implements IExchangeSpecificParser 
 
     static {
         for (Currency currency : Currency.values()) {
-            CURRENCY_CODES.add(currency.name());
+            CURRENCY_CODES.add(currency.code());
+        }
+        for (CurrencyPair pair : CurrencyPair.getTradeablePairs()) {
+            CURRENCY_PAIRS_BY_CONCAT.put(pair.getBase().code() + pair.getQuote().code(), pair);
         }
     }
 
@@ -115,13 +126,22 @@ public class BinanceExchangeSpecificParserV3 implements IExchangeSpecificParser 
     private BinanceBeanV3 parseExchangeBean(String[] vals) {
         String row = String.join(",", vals);
         try {
-            Currency baseCurrency = extractCurrencyFromEnd(vals[4]);
-            Currency quoteCurrency = extractCurrencyFromEnd(vals[5]);
-            Currency feeCurrency = extractCurrencyFromEnd(vals[6]);
-            if (baseCurrency == null || quoteCurrency == null) {
-                throw new DataValidationException("Could not extract base or quote currency from values");
+            // Resolve the trading pair from the "Pair" column (vals[1], e.g. "1INCHUSDT") first. This is the only
+            // reliable split for tickers that start with a digit (1INCH, 1000SATS, ...): the amount columns glue the
+            // number and the ticker together with no separator ("5.11INCH"), which a trailing-letters regex parses as
+            // 5.11 + "INCH" instead of 5.1 + "1INCH".
+            CurrencyPair currencyPair = CURRENCY_PAIRS_BY_CONCAT.get(vals[1]);
+            if (currencyPair == null) {
+                // Unknown pair string: fall back to deriving base/quote from the trailing currency code of the amounts.
+                Currency baseCurrency = extractCurrencyFromEnd(vals[4]);
+                Currency quoteCurrency = extractCurrencyFromEnd(vals[5]);
+                if (baseCurrency == null || quoteCurrency == null) {
+                    throw new DataValidationException("Could not extract base or quote currency from values");
+                }
+                currencyPair = new CurrencyPair(baseCurrency, quoteCurrency);
             }
-            CurrencyPair currencyPair = new CurrencyPair(baseCurrency, quoteCurrency);
+            // The fee can be paid in a third asset (typically BNB), so it is not part of the pair.
+            Currency feeCurrency = extractCurrencyFromEndOrNull(vals[6]);
 
             return new BinanceBeanV3(
                 vals[0], // date
@@ -151,7 +171,7 @@ public class BinanceExchangeSpecificParserV3 implements IExchangeSpecificParser 
         if (matcher.find()) {
             String currencyCode = matcher.group(1);
             if (CURRENCY_CODES.contains(currencyCode)) {
-                return Currency.valueOf(currencyCode);
+                return Currency.fromCode(currencyCode);
             } else {
                 throw new DataValidationException("Unsupported currency code: " + currencyCode);
             }
@@ -159,5 +179,24 @@ public class BinanceExchangeSpecificParserV3 implements IExchangeSpecificParser 
             throw new DataValidationException("Currency code not found in value: " + value);
         }
     }
-}
 
+    /**
+     * Resolves the currency a value like "0.00010548BNB" ends with by the longest matching {@link Currency#code()}
+     * suffix (longest wins so overlapping codes disambiguate). Returns {@code null} when nothing matches, which the
+     * bean treats as an unknown fee coin rather than failing the whole row.
+     */
+    private static Currency extractCurrencyFromEndOrNull(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        String upper = value.toUpperCase();
+        Currency best = null;
+        for (Currency currency : Currency.values()) {
+            String code = currency.code();
+            if (upper.endsWith(code) && (best == null || code.length() > best.code().length())) {
+                best = currency;
+            }
+        }
+        return best;
+    }
+}

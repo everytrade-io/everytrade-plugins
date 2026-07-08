@@ -294,6 +294,9 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
             throw new DataValidationException("Quantity can not be zero.");
         }
 
+        // when VOLUME_QUOTE is supplied, the unit price is derived from it (rounded to a fixed scale) and the
+        // original value is passed through unchanged so the host can persist it exactly (ETS-5080)
+        var hasVolumeQuote = volumeQuote.compareTo(ZERO) > 0;
         var tx = new ImportedTransactionBean(
             uid,
             date,
@@ -301,12 +304,13 @@ public class EveryTradeBeanV3_2 extends ExchangeBean {
             symbolQuote,
             action,
             quantity,
-            (volumeQuote.compareTo(ZERO) > 0) ? evalUnitPrice(volumeQuote, quantity) : price,
+            hasVolumeQuote ? evalUnitPrice(volumeQuote, quantity) : price,
             note,
             getAddress(),
             labels,
             partner,
-            reference
+            reference,
+            hasVolumeQuote ? volumeQuote : null
         );
 
         TransactionCluster transactionCluster = new TransactionCluster(tx, getRelatedTxs());
