@@ -1032,7 +1032,8 @@ public enum Currency {
     ORDER(false, Instant.parse("2024-09-05T00:00:00Z"), "Orderly Network"),
     BMX(false, Instant.parse("2018-07-14T00:00:00Z"), "BitMart Token"),
     KLY(false, Instant.parse("2023-01-01T00:00:00Z"), "Klayr"),
-    A(false, Instant.parse("2021-12-01T00:00:00Z"), "Vaulta");
+    A(false, Instant.parse("2021-12-01T00:00:00Z"), "Vaulta"),
+    GRAM(false, Instant.parse("2021-09-17T00:00:00Z"), "Gram");
 
     String code;
     int decimalDigits;
