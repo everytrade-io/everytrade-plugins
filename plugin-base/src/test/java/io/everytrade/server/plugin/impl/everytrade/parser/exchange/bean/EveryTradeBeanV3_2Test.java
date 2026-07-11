@@ -31,6 +31,8 @@ import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.STAKE;
 import static io.everytrade.server.model.TransactionType.STAKING_REWARD;
 import static io.everytrade.server.model.TransactionType.UNSTAKE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -74,6 +76,25 @@ class EveryTradeBeanV3_2Test {
             List.of()
         );
         ParserTestUtils.checkEqual(expected, actual.get(0));
+    }
+
+    @Test
+    void testVolumeQuoteIsPreservedExactly() {
+        // ETS-5080: VOLUME_QUOTE=11 with empty UNIT_PRICE (the customer's row). The derived unit price
+        // 11/11.004401 is a rounded non-terminating decimal, so the original 11 must travel alongside it.
+        final String row = "54241123;29.06.2026 07:06:31;USDC/USD;BUY;11,004401;;11;;;;;;;;\n";
+        final var actual = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + row);
+        final ImportedTransactionBean tx = actual.get(0).getMain();
+
+        assertEquals(0, new BigDecimal("0.99960006909962659").compareTo(tx.getUnitPrice()),
+            "unit price is derived from VOLUME_QUOTE / QUANTITY at scale 17");
+        assertEquals(0, new BigDecimal("11").compareTo(tx.getQuoteVolume()),
+            "the supplied VOLUME_QUOTE must be preserved exactly");
+
+        // without VOLUME_QUOTE the field stays null — the price is authoritative
+        final String rowPrice = "54241124;29.06.2026 07:06:31;USDC/USD;BUY;11,004401;0,9996;;;;;;;;;\n";
+        final var actualPrice = ParserTestUtils.getTransactionClusters(HEADER_CORRECT + rowPrice);
+        assertNull(actualPrice.get(0).getMain().getQuoteVolume());
     }
 
     @Test
