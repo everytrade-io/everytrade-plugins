@@ -101,4 +101,30 @@ class CoinbaseAdvancedTradeDownloadTest {
             assertTrue(clusters.size() <= 2, "loop must terminate after the cursor stops advancing");
         });
     }
+
+    @Test
+    void unknownCurrencyFillIsReportedWithConcreteReason() {
+        // ETD-2167: a fill in a currency the Currency enum doesn't know must land in the download
+        // log (parsingProblems) WITH the concrete reason, not vanish behind a generic
+        // "Row parsing failed." A deliberately fake ticker keeps this valid as real symbols get added.
+        var unknown = new CoinbaseAdvancedTradeFills(
+            "u1", "trade-u1", "order-9", "2024-01-01T10:00:00.000Z", "FILL",
+            new BigDecimal("100"), new BigDecimal("1"), ZERO,
+            "NOSUCHCOIN-USD",            // product with an unmapped base currency
+            "2024-01-01T10:00:00.000Z", "MAKER", "false", "synthetic-user", "BUY");
+
+        var connector = new CoinbaseConnector(
+            new CoinbaseAdvancedTradeCursorPagesMock(List.of(page("", unknown))));
+        var result = connector.getTransactions(null);
+
+        assertEquals(0, result.getParseResult().getTransactionClusters().size(),
+            "the unparseable fill must not be silently imported");
+        var problems = result.getParseResult().getParsingProblems();
+        assertEquals(1, problems.size(), "the dropped fill must be recorded as a parsing problem");
+        var msg = problems.get(0).getMessage();
+        assertTrue(msg.contains("Unknown currency code"),
+            "download log must state the concrete reason, got: " + msg);
+        assertTrue(msg.contains("NOSUCHCOIN"),
+            "download log must name the offending currency, got: " + msg);
+    }
 }

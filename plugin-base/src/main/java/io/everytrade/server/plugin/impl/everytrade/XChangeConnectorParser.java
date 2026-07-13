@@ -272,7 +272,11 @@ public class XChangeConnectorParser {
                                    List<ParsingProblem> parsingProblems,
                                    String row) {
 
-        LOG.error("Error converting to ImportedTransactionBean: {}", e.getMessage());
+        // A failed row is a per-import DATA problem (e.g. an unknown currency), not a code defect —
+        // it is reported in the import result (parsingProblems) below, visible in the download log.
+        // Log at INFO, not ERROR, so it does NOT flood Sentry (which captures ERROR); the full stack
+        // stays at DEBUG. See ETD-2167.
+        LOG.info("Row skipped while converting to ImportedTransactionBean: {}", e.getMessage());
         LOG.debug("Exception by converting to ImportedTransactionBean.", e);
 
         ParsingProblemType type;
@@ -290,7 +294,12 @@ public class XChangeConnectorParser {
             message = "Validation failed: " + safeMessage(e.getMessage());
         } else {
             type = ParsingProblemType.ROW_PARSING_FAILED;
-            message = "Row parsing failed.";
+            // Surface the concrete reason (e.g. "Unknown currency code: RONIN") in the user-visible
+            // import log instead of a generic message. safeMessage() still strips internal class names.
+            String reason = safeMessage(e.getMessage());
+            message = reason.isBlank()
+                ? "Row parsing failed."
+                : "Row parsing failed: " + reason;
         }
 
         parsingProblems.add(new ParsingProblem(row, message, type));
