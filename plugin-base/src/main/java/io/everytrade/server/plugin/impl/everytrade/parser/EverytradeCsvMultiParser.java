@@ -35,6 +35,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.Bitflyer
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BitflyerBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BitmexBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BitstampBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BitstampBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexBeanV2;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BittrexBeanV3;
@@ -372,6 +373,18 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                     ).withSeparator(delimiter)
                 ))
                 .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(BitstampBeanV1.class, delimiter))
+                .supportedExchange(BITSTAMP)
+                .build());
+
+            /* BITSTAMP - new (2025) export layout with separate currency columns */
+            EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
+                .headers(List.of(
+                    CsvHeader.of(
+                        "ID", "Account", "Type", "Subtype", "Datetime", "Amount", "Amount currency", "Value",
+                        "Value currency", "Rate", "Rate currency", "Fee", "Fee currency", "Order ID"
+                    ).withSeparator(delimiter)
+                ))
+                .parserFactory(() -> new DefaultUnivocityExchangeSpecificParser(BitstampBeanV2.class, delimiter))
                 .supportedExchange(BITSTAMP)
                 .build());
 
