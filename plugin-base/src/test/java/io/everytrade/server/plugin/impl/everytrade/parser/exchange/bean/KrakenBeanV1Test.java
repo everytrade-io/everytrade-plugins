@@ -17,6 +17,7 @@ import java.util.List;
 import static io.everytrade.server.model.Currency.USD;
 import static io.everytrade.server.model.TransactionType.FEE;
 import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.FEE_UID_PART;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -182,5 +183,32 @@ class KrakenBeanV1Test {
         final ParsingProblem parsingProblem = ParserTestUtils.getParsingProblem(HEADER_CORRECT + row);
         final String error = parsingProblem.getMessage();
         assertTrue(error.contains(ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE.concat("sold")));
+    }
+
+    /**
+     * Regression for ETD-2179: the pair "USDC/EUR" already carries the delimiter and must be split on it,
+     * yielding base USDC (crypto) and quote EUR - never the greedy USD + CEUR (Celo Euro).
+     * Values are synthetic.
+     */
+    @Test
+    void testUsdcEurPairWithSlashDelimiter() {
+        final String row = "KTST1,OI,USDC/EUR,2020-01-01 00:00:00,buy,market,1.0,100.0,0.25,100.0,0,,\"LX,JX\"\n";
+        final ImportedTransactionBean main = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row).getMain();
+        assertEquals(Currency.USDC, main.getBase());
+        assertEquals(Currency.EUR, main.getQuote());
+        assertEquals(TransactionType.BUY, main.getAction());
+    }
+
+    /**
+     * Regression for ETD-2179: even a delimiter-less "USDCEUR" must resolve to USDC + EUR via the longest-base
+     * fallback, not the old greedy first match USD + CEUR. Values are synthetic.
+     */
+    @Test
+    void testUsdcEurPairWithoutSlashDelimiter() {
+        final String row = "KTST2,OI,USDCEUR,2020-01-01 00:00:00,buy,market,1.0,100.0,0.25,100.0,0,,\"LX,JX\"\n";
+        final ImportedTransactionBean main = ParserTestUtils.getTransactionCluster(HEADER_CORRECT + row).getMain();
+        assertEquals(Currency.USDC, main.getBase());
+        assertEquals(Currency.EUR, main.getQuote());
+        assertEquals(TransactionType.BUY, main.getAction());
     }
 }

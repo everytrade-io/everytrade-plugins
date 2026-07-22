@@ -22,7 +22,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 @Headers(sequence = {"txid", "ordertxid", "pair", "time", "type", "ordertype", "price"
     , "cost", "fee", "vol", "margin", "misc", "ledgers"}, extract = true)
@@ -53,14 +52,9 @@ public class KrakenBeanV3 extends ExchangeBean {
 
     @Parsed(field = "pair")
     public void setPair(String pair) {
-        try {
-            var pairs = pair.replace("\"","");
-            CurrencyPair currPair = findKrakenCurrencyPair(pairs);
-            this.pairBase = currPair.getBase();
-            this.pairQuote = currPair.getQuote();
-        } catch (Exception ignored) {
-            findStandardPair(pair);
-        }
+        CurrencyPair currPair = KrakenCurrencyUtil.parseKrakenPair(pair);
+        this.pairBase = currPair.getBase();
+        this.pairQuote = currPair.getQuote();
     }
 
     @Parsed(field = "time")
@@ -149,54 +143,5 @@ public class KrakenBeanV3 extends ExchangeBean {
             ),
             related
         );
-    }
-
-    private CurrencyPair findKrakenCurrencyPair(String pairCode) {
-
-        Map<String, Currency> currencyShortCodes = KrakenCurrencyUtil.CURRENCY_SHORT_CODES;
-        Map<String, Currency> currencyLongCodes = KrakenCurrencyUtil.CURRENCY_LONG_CODES;
-
-        List<String> matchedShortCodes = currencyShortCodes
-            .keySet()
-            .stream()
-            .filter(prefix -> (pairCode.startsWith(prefix) && (currencyShortCodes.containsKey(pairCode.replaceFirst(prefix, "")) ||
-                currencyLongCodes.containsKey(pairCode.replaceFirst(prefix, "")))))
-            .toList();
-        List<String> matchedLongCodes = currencyLongCodes
-            .keySet()
-            .stream()
-            .filter(prefix -> (pairCode.startsWith(prefix) && (currencyShortCodes.containsKey(pairCode.replaceFirst(prefix, "")) ||
-                currencyLongCodes.containsKey(pairCode.replaceFirst(prefix, "")))))
-            .toList();
-
-        if (matchedLongCodes.size() == 1 && matchedShortCodes.isEmpty()) {
-            return new CurrencyPair(matchedLongCodes.get(0), pairCode.replaceFirst(matchedLongCodes.get(0), ""));
-        } else if (matchedShortCodes.size() == 1 && matchedLongCodes.isEmpty()) {
-            return new CurrencyPair(matchedShortCodes.get(0), pairCode.replaceFirst(matchedShortCodes.get(0), ""));
-        } else {
-            throw new DataValidationException(String.format(
-                "Unknown currency code in pair code %s.",
-                pairCode
-            ));
-        }
-    }
-
-    private void findStandardPair(String pair) {
-        for (int i = 1; i < pair.length(); i++) {
-            String baseCode = pair.substring(0, i);
-            String quoteCode = pair.substring(i);
-
-            try {
-                Currency base = Currency.fromCode(baseCode);
-                Currency quote = Currency.fromCode(quoteCode);
-
-                this.pairBase = base;
-                this.pairQuote = quote;
-                return; // Parsing successful, return immediately.
-            } catch (IllegalArgumentException e) {
-                // Ignore exception and continue to next iteration
-            }
-        }
-        throw new DataValidationException(String.format("Can not parse pair %s.", pair));
     }
 }

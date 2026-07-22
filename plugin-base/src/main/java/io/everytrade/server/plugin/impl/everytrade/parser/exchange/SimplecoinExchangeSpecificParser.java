@@ -41,10 +41,22 @@ public class SimplecoinExchangeSpecificParser extends DefaultUnivocityExchangeSp
     private List<SimplecoinBeanV2> prepareBeansForTransactions(List<SimplecoinBeanV2> rows) {
         List<SimplecoinBeanV2> result = new LinkedList<>();
         for (SimplecoinBeanV2 row : rows) {
-            if (row.getCurrencyFrom().isFiat()) {
+            // Decide buy/sell from BOTH sides of the order (which side is fiat vs. crypto), not just "Currency From".
+            final boolean fromFiat = row.getCurrencyFrom().isFiat();
+            final boolean toFiat = row.getCurrencyTo().isFiat();
+            if (fromFiat && !toFiat) {
+                // fiat -> crypto: buying the received ("to") crypto
                 result.addAll(SimplecoinSortedGroup.createBuyTx(row));
-            } else {
+            } else if (!fromFiat && toFiat) {
+                // crypto -> fiat: selling the given ("from") crypto
                 result.addAll(SimplecoinSortedGroup.createSellTx(row));
+            } else if (!fromFiat && !toFiat) {
+                // crypto -> crypto: model as a disposal of the given ("from") asset for the received one
+                result.addAll(SimplecoinSortedGroup.createSellTx(row));
+            } else {
+                // fiat -> fiat: not a crypto trade, cannot be represented as a buy/sell
+                row.setUnsupportedRow(true);
+                unSupportedRows.add(row);
             }
         }
         return result;

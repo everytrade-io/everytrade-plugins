@@ -104,20 +104,74 @@ public class KrakenCurrencyUtil {
         return value;
     }
 
-    public static CurrencyPair findStandardPair(String pair) {
-        for (int i = 1; i < pair.length(); i++) {
-            String baseCode = pair.substring(0, i);
-            String quoteCode = pair.substring(i);
-
+    /**
+     * Resolves any Kraken pair string to a {@link CurrencyPair} without guessing when the answer is already given:
+     * <ol>
+     *     <li>if the pair carries the {@code /} delimiter that modern Kraken exports provide (e.g. {@code USDC/EUR}),
+     *     split on it - that is the authoritative answer;</li>
+     *     <li>otherwise split a delimiter-less code (e.g. {@code USDCEUR}, {@code XXBTZUSD}) preferring the
+     *     <b>longest</b> valid base, resolving each side through {@link #resolvePairCode(String)} which also
+     *     knows Kraken's own codes ({@code XBT -> BTC}, {@code XDG -> DOGE}, {@code ZEUR -> EUR}, ...).</li>
+     * </ol>
+     * Both paths avoid the old greedy first-match that mis-parsed {@code USDCEUR} as {@code USD + CEUR}.
+     */
+    public static CurrencyPair parseKrakenPair(String rawPair) {
+        if (rawPair == null) {
+            throw new DataValidationException("Pair code is null.");
+        }
+        final String pair = rawPair.trim().replace("\"", "");
+        if (pair.isEmpty()) {
+            throw new DataValidationException("Pair code is empty.");
+        }
+        if (pair.contains("/")) {
+            final String[] parts = pair.split("/", 2);
+            if (parts[0].isEmpty() || parts[1].isEmpty()) {
+                throw new DataValidationException(String.format("Can not parse pair %s.", pair));
+            }
             try {
-                Currency base = Currency.fromCode(baseCode);
-                Currency quote = Currency.fromCode(quoteCode);
+                return new CurrencyPair(resolvePairCode(parts[0].trim()), resolvePairCode(parts[1].trim()));
+            } catch (IllegalArgumentException e) {
+                throw new DataValidationException(String.format("Can not parse pair %s.", pair));
+            }
+        }
+        return findStandardPair(pair);
+    }
 
+    /**
+     * Splits a delimiter-less pair code preferring the split that yields the <b>longest</b> valid base, so
+     * {@code USDCEUR} resolves to {@code USDC + EUR} and never to the greedy first match {@code USD + CEUR}.
+     * Each side is resolved via {@link #resolvePairCode(String)}, so Kraken's own codes (e.g. {@code XXBTZUSD},
+     * {@code AAVEXBT}) are handled too.
+     */
+    public static CurrencyPair findStandardPair(String pair) {
+        for (int i = pair.length() - 1; i >= 1; i--) {
+            try {
+                final Currency base = resolvePairCode(pair.substring(0, i));
+                final Currency quote = resolvePairCode(pair.substring(i));
                 return new CurrencyPair(base, quote);
             } catch (IllegalArgumentException e) {
-                // Ignore exception and continue to next iteration
+                // Not a valid split at this position - try a shorter base.
             }
         }
         throw new DataValidationException(String.format("Can not parse pair %s.", pair));
+    }
+
+    /**
+     * Resolves a single pair-side code to a {@link Currency} using Kraken's own code maps first
+     * (e.g. {@code XBT -> BTC}, {@code XDG -> DOGE}, {@code ZEUR -> EUR}) and then a plain
+     * {@link Currency#fromCode(String)}. Unlike {@link #findCurrencyByCode(String)} it applies no staking-suffix
+     * or trailing-digit stripping, so it never mis-maps a pair side (e.g. it keeps {@code ETHW} as {@code ETHW}).
+     * Throws {@link IllegalArgumentException} when the code is unknown.
+     */
+    private static Currency resolvePairCode(String code) {
+        final Currency longCode = CURRENCY_LONG_CODES.get(code);
+        if (longCode != null) {
+            return longCode;
+        }
+        final Currency shortCode = CURRENCY_SHORT_CODES.get(code);
+        if (shortCode != null) {
+            return shortCode;
+        }
+        return Currency.fromCode(code);
     }
 }

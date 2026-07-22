@@ -18,8 +18,6 @@ import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
 
 @Headers(sequence = {"txid", "pair", "time", "type", "cost", "fee", "vol"}, extract = true)
 public class KrakenBeanV4 extends ExchangeBean {
@@ -39,18 +37,9 @@ public class KrakenBeanV4 extends ExchangeBean {
 
     @Parsed(field = "pair")
     public void setPair(String pair) {
-        if (pair.contains("/")) {
-            pair = pair.replace("/", "");
-        }
-        try {
-            CurrencyPair currPair = findKrakenCurrencyPair(pair);
-            this.pairBase = currPair.getBase();
-            this.pairQuote = currPair.getQuote();
-        } catch (Exception ignored) {
-            CurrencyPair currPair = KrakenCurrencyUtil.findStandardPair(pair);
-            this.pairBase = currPair.getBase();
-            this.pairQuote = currPair.getQuote();
-        }
+        CurrencyPair currPair = KrakenCurrencyUtil.parseKrakenPair(pair);
+        this.pairBase = currPair.getBase();
+        this.pairQuote = currPair.getQuote();
     }
 
     @Parsed(field = "time")
@@ -117,41 +106,5 @@ public class KrakenBeanV4 extends ExchangeBean {
             ),
             related
         );
-    }
-
-    private CurrencyPair findKrakenCurrencyPair(String pairCode) {
-        Map<String, Currency> currencyShortCodes = KrakenCurrencyUtil.CURRENCY_SHORT_CODES;
-        Map<String, Currency> currencyLongCodes = KrakenCurrencyUtil.CURRENCY_LONG_CODES;
-
-        Function<String, Map.Entry<Currency, Integer>> findCurrencyValueAndLength = code -> {
-            for (Map.Entry<String, Currency> entry : currencyShortCodes.entrySet()) {
-                if (code.startsWith(entry.getKey())) {
-                    return Map.entry(entry.getValue(), entry.getKey().length());
-                    }
-            }
-            for (Map.Entry<String, Currency> entry : currencyLongCodes.entrySet()) {
-                if (code.startsWith(entry.getKey())) {
-                    return Map.entry(entry.getValue(), entry.getKey().length());
-                }
-            }
-            return null;
-        };
-
-        Map.Entry<Currency, Integer> firstCurrencyEntry = findCurrencyValueAndLength.apply(pairCode);
-        if (firstCurrencyEntry == null) {
-            throw new IllegalArgumentException("No matching currency found in pairCode: " + pairCode);
-        }
-        Currency firstCurrency = firstCurrencyEntry.getKey();
-        int firstCurrencyLength = firstCurrencyEntry.getValue();
-
-        String remainingCode = pairCode.substring(firstCurrencyLength);
-
-        Map.Entry<Currency, Integer> secondCurrencyEntry = findCurrencyValueAndLength.apply(remainingCode);
-        if (secondCurrencyEntry == null) {
-            throw new IllegalArgumentException("Only one currency found in pairCode: " + pairCode);
-        }
-        Currency secondCurrency = secondCurrencyEntry.getKey();
-
-        return new CurrencyPair(firstCurrency, secondCurrency);
     }
 }

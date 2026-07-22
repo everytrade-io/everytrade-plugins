@@ -10,11 +10,14 @@ import java.util.List;
 
 import static io.everytrade.server.model.Currency.BTC;
 import static io.everytrade.server.model.Currency.CZK;
+import static io.everytrade.server.model.Currency.DOGE;
 import static io.everytrade.server.model.Currency.ETH;
+import static io.everytrade.server.model.Currency.USDC;
 import static io.everytrade.server.model.TransactionType.BUY;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.SELL;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SimplecoinBeanV2Test {
 
@@ -135,5 +138,28 @@ public class SimplecoinBeanV2Test {
         ParserTestUtils.checkEqual(expected, actual.get(0));
         ParserTestUtils.checkEqual(expected1, actual.get(1));
         ParserTestUtils.checkEqual(expected2, actual.get(2));
+    }
+
+    /**
+     * ETD-2179: buy/sell direction is decided from BOTH sides. For a crypto->crypto order (neither side fiat)
+     * the trade is modeled as a SELL of the given ("from") asset - here USDC disposed for DOGE.
+     * Values are synthetic.
+     */
+    @Test
+    void testCryptoToCryptoDirection() {
+        final String row = "2020-01-01 00:00:00,100001,fakemail@email.com,USDC,DOGE,100.00000000,200.00000000,150.00," +
+            "delivered,2020-01-02 00:00:00,2020-01-02 00:00:00,,0xFROMADDRESS,0xFROMHASH,1,2020-01-02 00:00:00,," +
+            "0xTOADDRESS,0xTOHASH,2\n";
+
+        final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER + row);
+
+        final ImportedTransactionBean trade = actual.stream()
+            .map(TransactionCluster::getMain)
+            .filter(t -> t.getAction() == SELL || t.getAction() == BUY)
+            .findFirst()
+            .orElseThrow(() -> new AssertionError("No buy/sell trade produced"));
+        assertEquals(USDC, trade.getBase());
+        assertEquals(DOGE, trade.getQuote());
+        assertEquals(SELL, trade.getAction());
     }
 }
