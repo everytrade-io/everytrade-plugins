@@ -18,7 +18,7 @@ import java.util.Date;
 @EqualsAndHashCode(callSuper = true)
 @ToString
 @Data
-public class SimplecoinBeanV2 extends BaseTransactionMapper implements Cloneable {
+public class SimplecoinBeanV2 extends BaseTransactionMapper {
 
     private static final String DELIVERED = "delivered";
 
@@ -86,10 +86,6 @@ public class SimplecoinBeanV2 extends BaseTransactionMapper implements Cloneable
     @Parsed(field = "From Tx Address")
     public void setFromTxAddress(String fromTxAddress) {
         this.fromTxAddress = fromTxAddress;
-    }
-
-    public Object clone() throws CloneNotSupportedException {
-        return super.clone();
     }
 
     @Override

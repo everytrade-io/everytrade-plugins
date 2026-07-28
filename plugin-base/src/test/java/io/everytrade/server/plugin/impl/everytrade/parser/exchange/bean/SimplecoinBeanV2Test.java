@@ -1,6 +1,7 @@
 package io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean;
 
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
+import io.everytrade.server.plugin.api.parser.ParseResult;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
 import org.junit.jupiter.api.Test;
 
@@ -14,152 +15,105 @@ import static io.everytrade.server.model.Currency.DOGE;
 import static io.everytrade.server.model.Currency.ETH;
 import static io.everytrade.server.model.Currency.USDC;
 import static io.everytrade.server.model.TransactionType.BUY;
-import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.SELL;
-import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * Each SimpleCoin order must import as exactly ONE trade decided by the fiat/crypto combination of the
+ * order sides: fiat->crypto = BUY, crypto->fiat = SELL, crypto->crypto = SELL of the "from" asset,
+ * fiat->fiat = not imported. No DEPOSIT/WITHDRAWAL legs may be fabricated around the trade.
+ * All rows are synthetic - ids, addresses, hashes and amounts are anonymized.
+ */
 public class SimplecoinBeanV2Test {
 
     private static final String HEADER = "Date Created,Order Id,Client Email,Currency From,Currency To,Amount From,Amount To," +
         "Amount From in EUR,Final Status,Date Done,From Tx Date,From Bank Account Number,From Tx Address,From Tx Hash,From Tx Block Id," +
         "To Tx Date,To Tx Bank Account,To Tx Address,To Tx Hash,To Tx Block Id\n";
 
-
     @Test
-    void testBuyDepositWithdrawal() {
-        final String row = "2024-04-19 21:03:34,190897,fakemail@email.com,CZK,BTC,10000.00000000,0.00626310,394.13,delivered," +
-            "2024-04-23 12:31:09,,1980538010/3030,,,,2024-04-23 10:17:56,,bc1qk6zgk73295rfyw55qs3dw2r796xmv0dqzxh9m8," +
-            "4eb28bceaaef3c76a1fc96ddc7822f43756bb2805e78dbb3cd101edf1ac029b5,840497\n";
+    void testFiatToCryptoIsSingleBuy() {
+        final String row = "2026-01-01 09:00:00,100001,fakemail@email.com,CZK,BTC,10000.00000000,0.00500000,400.00,delivered," +
+            "2026-01-02 10:00:00,,1111111111/1111,,,,2026-01-02 10:05:00,,bc1qsyntheticaddressaaaaaaaaaaaaaaaaaaaaa," +
+            "aaaa000000000000000000000000000000000000000000000000000000000001,1\n";
 
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER + row);
 
+        assertEquals(1, actual.size());
         final TransactionCluster expected = new TransactionCluster(
             new ImportedTransactionBean(
                 null,
-                Instant.parse("2024-04-23T12:31:08Z"),
-                CZK,
-                CZK,
-                DEPOSIT,
-                new BigDecimal("10000.00000000"),
-                null,
-                null,
-                null
-            ),
-            List.of()
-        );
-
-        final TransactionCluster expected1 = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2024-04-23T12:31:10Z"),
-                BTC,
-                BTC,
-                WITHDRAWAL,
-                new BigDecimal("0.00626310"),
-                null,
-                null,
-                "1980538010/3030"
-            ),
-            List.of()
-        );
-
-        final TransactionCluster expected2 = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2024-04-23T12:31:09Z"),
+                Instant.parse("2026-01-02T10:00:00Z"),
                 BTC,
                 CZK,
                 BUY,
-                new BigDecimal("0.00626310"),
-                new BigDecimal("1596653.41444332678705433"),
+                new BigDecimal("0.00500000"),
+                new BigDecimal("2000000.00000000000000000"),
                 null,
-                "1980538010/3030"
+                "1111111111/1111"
             ),
             List.of()
         );
         ParserTestUtils.checkEqual(expected, actual.get(0));
-        ParserTestUtils.checkEqual(expected1, actual.get(1));
-        ParserTestUtils.checkEqual(expected2, actual.get(2));
     }
 
     @Test
-    void testSellDepositWithdrawal() {
-        final String row = "2021-12-22 21:08:46,136485,fakemail@email.com,ETH,CZK,0.11990000,10475.50000000,423.66,delivered,2021-12-22 " +
-            "21:38:02,2021-12-22 20:17:25,,0x1A9D82eED6666bAc205FdF296349e1C1Ffc49B0D," +
-            "0xa58ef61ad9437d10afb675ad2c0e3a948b51f03a4403f8f49fecd679cd60c92c,13857092,,1980538010/3030,,,\n";
+    void testCryptoToFiatIsSingleSell() {
+        final String row = "2026-01-03 09:00:00,100002,fakemail@email.com,ETH,CZK,0.50000000,25000.00000000,1000.00,delivered," +
+            "2026-01-04 11:00:00,2026-01-04 10:55:00,,0xsyntheticfromaddress00000000000000000001," +
+            "0xsynthetichash0000000000000000000000000000000000000000000000001,1,,2222222222/2222,,,\n";
 
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER + row);
 
+        assertEquals(1, actual.size());
         final TransactionCluster expected = new TransactionCluster(
             new ImportedTransactionBean(
                 null,
-                Instant.parse("2021-12-22T21:38:01Z"),
-                ETH,
-                ETH,
-                DEPOSIT,
-                new BigDecimal("0.11990000"),
-                null,
-                null,
-                "0x1A9D82eED6666bAc205FdF296349e1C1Ffc49B0D"
-            ),
-            List.of()
-        );
-
-        final TransactionCluster expected1 = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2021-12-22T21:38:03Z"),
-                CZK,
-                CZK,
-                WITHDRAWAL,
-                new BigDecimal("10475.50000000"),
-                null,
-                null,
-                null
-            ),
-            List.of()
-        );
-
-        final TransactionCluster expected2 = new TransactionCluster(
-            new ImportedTransactionBean(
-                null,
-                Instant.parse("2021-12-22T21:38:02Z"),
+                Instant.parse("2026-01-04T11:00:00Z"),
                 ETH,
                 CZK,
                 SELL,
-                new BigDecimal("0.11990000"),
-                new BigDecimal("87368.64053377814845705"),
+                new BigDecimal("0.50000000"),
+                new BigDecimal("50000.00000000000000000"),
                 null,
-                "0x1A9D82eED6666bAc205FdF296349e1C1Ffc49B0D"
+                "0xsyntheticfromaddress00000000000000000001"
             ),
             List.of()
         );
         ParserTestUtils.checkEqual(expected, actual.get(0));
-        ParserTestUtils.checkEqual(expected1, actual.get(1));
-        ParserTestUtils.checkEqual(expected2, actual.get(2));
     }
 
     /**
      * ETD-2179: buy/sell direction is decided from BOTH sides. For a crypto->crypto order (neither side fiat)
      * the trade is modeled as a SELL of the given ("from") asset - here USDC disposed for DOGE.
-     * Values are synthetic.
      */
     @Test
     void testCryptoToCryptoDirection() {
-        final String row = "2020-01-01 00:00:00,100001,fakemail@email.com,USDC,DOGE,100.00000000,200.00000000,150.00," +
+        final String row = "2020-01-01 00:00:00,100003,fakemail@email.com,USDC,DOGE,100.00000000,200.00000000,150.00," +
             "delivered,2020-01-02 00:00:00,2020-01-02 00:00:00,,0xFROMADDRESS,0xFROMHASH,1,2020-01-02 00:00:00,," +
             "0xTOADDRESS,0xTOHASH,2\n";
 
         final List<TransactionCluster> actual = ParserTestUtils.getTransactionClusters(HEADER + row);
 
-        final ImportedTransactionBean trade = actual.stream()
-            .map(TransactionCluster::getMain)
-            .filter(t -> t.getAction() == SELL || t.getAction() == BUY)
-            .findFirst()
-            .orElseThrow(() -> new AssertionError("No buy/sell trade produced"));
+        assertEquals(1, actual.size());
+        final ImportedTransactionBean trade = actual.get(0).getMain();
         assertEquals(USDC, trade.getBase());
         assertEquals(DOGE, trade.getQuote());
         assertEquals(SELL, trade.getAction());
+    }
+
+    /**
+     * A fiat->fiat order is not a crypto trade and cannot be represented as BUY or SELL - it must not
+     * produce any transaction.
+     */
+    @Test
+    void testFiatToFiatIsNotImported() {
+        final String row = "2026-01-05 09:00:00,100004,fakemail@email.com,CZK,EUR,25000.00000000,1000.00000000,1000.00,delivered," +
+            "2026-01-06 12:00:00,,3333333333/3333,,,,2026-01-06 12:05:00,,4444444444/4444,,\n";
+
+        final ParseResult result = ParserTestUtils.getParseResult(HEADER + row);
+
+        assertTrue(result.getTransactionClusters().isEmpty());
+        assertEquals(1, result.getParsingProblems().size());
     }
 }
