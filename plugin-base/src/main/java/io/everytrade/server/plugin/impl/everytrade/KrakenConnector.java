@@ -26,7 +26,6 @@ import org.knowm.xchange.dto.Order;
 import org.knowm.xchange.dto.account.FundingRecord;
 import org.knowm.xchange.dto.trade.UserTrade;
 import org.knowm.xchange.exceptions.RateLimitExceededException;
-import org.knowm.xchange.kraken.KrakenAdapters;
 import org.knowm.xchange.kraken.KrakenExchange;
 import org.knowm.xchange.kraken.dto.account.DepostitStatus;
 import org.knowm.xchange.kraken.dto.account.KrakenLedger;
@@ -141,6 +140,13 @@ public class KrakenConnector implements IConnector {
         ExchangeSpecification exSpec = new KrakenExchange().getDefaultExchangeSpecification();
         exSpec.setApiKey(apiKey);
         exSpec.setSecretKey(apiSecret);
+        // ETD-2203: do not load remote exchange metadata. KrakenExchange.remoteInit() parses Kraken's
+        // public AssetPairs response, where KrakenAdapters.adaptPair reads fees[0] unguarded. Kraken now
+        // returns an empty "fees" array for every pair, so that parse throws IndexOutOfBoundsException
+        // and no connector can be constructed at all. We never read the resulting ExchangeMetaData -
+        // only getAccountService() is used - so skipping the remote call also removes a needless HTTP
+        // round trip on every synchronization.
+        exSpec.setShouldLoadRemoteMetaData(false);
         this.exchange = ExchangeFactory.INSTANCE.createExchange(exSpec);
     }
 
@@ -551,7 +557,11 @@ public class KrakenConnector implements IConnector {
         TransactionType type;
         KrakenLedger base;
         KrakenLedger quote;
-        if (io.everytrade.server.model.Currency.fromCode(currencySwitcher(receive.getAsset())).isFiat()) {
+        // ETD-2203: resolve offline. The former currencySwitcher() went through KrakenAdapters, which
+        // reads the static KrakenUtils maps that only remoteInit() populates; with remote metadata
+        // disabled those maps stay empty and legacy codes (XXBT, ZEUR) would fall through to the raw
+        // code and fail Currency.fromCode(), silently dropping every SPEND/RECEIVE row.
+        if (switchKrakenAssetToCurrency(receive.getAsset()).isFiat()) {
             quote = receive;
             base = spend;
             type = TransactionType.SELL;
@@ -703,14 +713,6 @@ public class KrakenConnector implements IConnector {
     private List<FundingRecord> removeOldStakes(List<FundingRecord> block, KrakenDownloadState state) {
         var lastDate = state.getStakeLastTimestamp() == null ? 0 : state.getStakeLastTimestamp();
         return block.stream().filter(r -> r.getDate().getTime() > lastDate).collect(Collectors.toList());
-    }
-
-    private String currencySwitcher(String currency) {
-        try {
-            return KrakenAdapters.adaptCurrency(currency).getCurrencyCode();
-        } catch (Exception ignore) {
-            return currency;
-        }
     }
 
     private Currency translateKrakenCurrency(String currency) {
