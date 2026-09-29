@@ -53,7 +53,10 @@ public enum Currency {
     ZAR(true, Instant.parse("1961-01-01T00:00:00Z"), "South African rand"),
     BRL(true, Instant.parse("1994-07-01T00:00:00Z"), "Brazilian real"),
     ARS(true, Instant.parse("1993-01-01T00:00:00Z"), "Argentine peso"),
-    VEF(true, Instant.parse("1993-01-01T00:00:00Z"), "Venezuelan bolívar"),
+    // Bolívar fuerte, replaced by the bolívar soberano (VES) on 2018-08-20; the last day with a real price is the
+    // day before. No rate source quotes it (coin.cz answers 500), so without an end date every nightly rate fetch
+    // asked for it and failed (Sentry EVERYTRADE-PROD-2 / STAGE-D).
+    VEF(true, Instant.parse("1993-01-01T00:00:00Z"), Instant.parse("2018-08-19T00:00:00Z"), "Venezuelan bolívar"),
     PEN(true, Instant.parse("1993-01-01T00:00:00Z"), "Sol"),
     CLP(true, Instant.parse("1993-01-01T00:00:00Z"), "Chilean peso"),
     MXN(true, Instant.parse("1993-01-01T00:00:00Z"), "Mexican peso"),
@@ -100,7 +103,7 @@ public enum Currency {
     KMD(false, Instant.parse("2016-09-14T00:00:00Z"), "Komodo"),
     DGB(false, Instant.parse("2014-01-10T00:00:00Z"), "DigiByte"),
     NEO(false, Instant.parse("2016-09-09T00:00:00Z"), "NEO"),
-    DAT(false, Instant.parse("2017-08-11T00:00:00Z"), Instant.parse("2025-04-21T00:00:00Z"), "Datum"),
+    DAT(false, Instant.parse("2017-08-11T00:00:00Z"), Instant.parse("2021-11-30T00:00:00Z"), "Datum"),
     FUN(false, Instant.parse("2017-02-01T00:00:00Z"), "FunFair"), // token
     BAT(false, Instant.parse("2017-06-01T00:00:00Z"), "Basic Attention Token"), // token
     SPK(false, Instant.parse("2018-01-22T00:00:00Z"), Instant.parse("2024-01-17T00:00:00Z"), "SparksPay"), // can't find exact date
@@ -312,7 +315,7 @@ public enum Currency {
     VOXEL(false, Instant.parse("2021-12-15T00:00:00Z"), "Voxies"),
     VRM(false, Instant.parse("2014-05-10T00:00:00Z"), "VeriumReserve"),
     VTHO(false, Instant.parse("2018-07-26T00:00:00Z"), "VeThor Token"),
-    WABI(false, Instant.parse("2017-07-21T00:00:00Z"), Instant.parse("2026-08-21T00:00:00Z"), "Wabi"),
+    WABI(false, Instant.parse("2017-07-21T00:00:00Z"), Instant.parse("2026-06-05T00:00:00Z"), "Wabi"),
     WAN(false, Instant.parse("2018-03-29T00:00:00Z"), "Wanchain"),
     WIN(false, Instant.parse("2019-08-08T00:00:00Z"), "WINkLink"),
     WING(false, Instant.parse("2021-09-03T00:00:00Z"), "Wing Finance"),
@@ -327,7 +330,7 @@ public enum Currency {
     ANC(false, Instant.parse("2013-07-08T00:00:00Z"), Instant.parse("2025-03-12T00:00:00Z"), "Anoncoin"),
     ATM(false, Instant.parse("2022-02-05T00:00:00Z"), Instant.parse("2024-10-03T00:00:00Z"), "Atm"),
     BEL(false, Instant.parse("2021-05-27T00:00:00Z"), "Belt"),
-    BRD(false, Instant.parse("2017-12-01T00:00:00Z"), Instant.parse("2026-09-06T00:00:00Z"), "Bread"),
+    BRD(false, Instant.parse("2017-12-01T00:00:00Z"), Instant.parse("2026-07-21T00:00:00Z"), "Bread"),
     BTS(false, Instant.parse("2014-07-19T00:00:00Z"), "BitShares"),
     BZRX(false, Instant.parse("2020-08-27T00:00:00Z"), "bZx Protocol"),
     CDT(false, Instant.parse("2017-03-28T00:00:00Z"), "Blox"),
