@@ -1041,7 +1041,27 @@ public enum Currency {
     KLY(false, Instant.parse("2023-01-01T00:00:00Z"), Instant.parse("2025-12-04T00:00:00Z"), "Klayr"),
     A(false, Instant.parse("2021-12-01T00:00:00Z"), "Vaulta"),
     GRAM(false, Instant.parse("2021-09-17T00:00:00Z"), "Gram"),
-    MORPHO(false, Instant.parse("2024-11-26T00:00:00Z"), "Morpho");
+    MORPHO(false, Instant.parse("2024-11-26T00:00:00Z"), "Morpho"),
+    // The four below were added on 2026-10-09 for OKX and KuCoin imports that failed with
+    // "Unknown currency code". Every introduction Instant is CoinPaprika's measured first_data_at for
+    // the mapped coin id, read from /v1/coins/<id> and /v1/tickers/<id> on 2026-10-09 and identical in
+    // both: it must not be EARLIER, because CoinPaprikaRateProvider returns null below the coin's
+    // data_from and the provider would be asked for a series that does not exist; and it must not be
+    // LATER than a customer's oldest row, because RateService answers Rate.ZERO outside the pair's
+    // availability window.
+    HYPE(false, Instant.parse("2024-12-09T00:00:00Z"), "Hyperliquid"),
+    // USDG and USD1 are USD-pegged stablecoins, so they need the four-argument constructor. The
+    // stableCoin flag is not cosmetic - it drives the CZ value-test exemption in
+    // ComputationParameters and TaxTestYears, so declaring either as plain crypto silently changes
+    // the tax treatment of every row that uses it.
+    USDG(false, true, Instant.parse("2025-04-08T00:00:00Z"), "Global Dollar"),
+    USD1(false, true, Instant.parse("2025-05-07T00:00:00Z"), "World Liberty Financial USD"),
+    // BANANA is Banana Gun, the Telegram trading bot token, ERC-20
+    // 0x38E68A37E401F7271568CecaAc63c6B1e19130B4 - which is the contract KuCoin lists under this
+    // ticker. At least two unrelated projects also use the symbol BANANA (ApeSwap Finance and Banana
+    // For Scale), so the mapped CoinPaprika id must stay banana-banana-gun-v2; picking a look-alike
+    // does not fail the build, it prices the customer's rows off the wrong asset.
+    BANANA(false, Instant.parse("2023-09-15T00:00:00Z"), "Banana Gun");
 
     String code;
     int decimalDigits;
