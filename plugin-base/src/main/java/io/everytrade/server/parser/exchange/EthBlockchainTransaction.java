@@ -7,6 +7,7 @@ import io.everytrade.server.model.TransactionType;
 import io.everytrade.server.plugin.api.parser.FeeRebateImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.ImportedTransactionBean;
 import io.everytrade.server.plugin.api.parser.TransactionCluster;
+import io.everytrade.server.plugin.impl.everytrade.etherscan.Erc20TokenIdentity;
 import io.everytrade.server.plugin.impl.everytrade.etherscan.EtherScanErc20TransactionDto;
 import io.everytrade.server.plugin.impl.everytrade.etherscan.EtherScanTransactionDto;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
@@ -79,12 +80,25 @@ public class EthBlockchainTransaction {
         var currencyDecimalDigits = ETH_DECIMAL_DIGIT;
         if (txDto instanceof EtherScanErc20TransactionDto) {
             var tokenSymbol = ((EtherScanErc20TransactionDto) txDto).getTokenSymbol();
+            final Currency claimed;
             try {
-                this.base = Currency.fromCode(tokenSymbol);
+                claimed = Currency.fromCode(tokenSymbol);
             } catch (IllegalArgumentException e) {
                 throw new DataIgnoredException(
                     String.format("Ignored ERC20 transaction id - %s : unsupported token symbol '%s'.", id, tokenSymbol));
             }
+            // The symbol alone must never decide the currency: it is free text chosen by whoever deployed the
+            // contract, and emitting a Transfer event that names this address costs the attacker nothing and
+            // needs no consent from its owner. Measured on 2026-10-12: three unrelated contracts all calling
+            // themselves ETH produced 36.178196180868758 ETH of withdrawals that never happened on one customer
+            // address. See Erc20TokenIdentity for the two rules and the evidence.
+            final String rejection = Erc20TokenIdentity.rejectionReason(claimed, txDto.getContractAddress());
+            if (rejection != null) {
+                throw new DataIgnoredException(String.format(
+                    "Ignored ERC20 transaction id - %s : token claiming symbol '%s' from contract '%s' is not %s - %s.",
+                    id, tokenSymbol, txDto.getContractAddress(), claimed, rejection));
+            }
+            this.base = claimed;
             currencyDecimalDigits = ((EtherScanErc20TransactionDto) txDto).getTokenDecimal();
         } else if (txDto instanceof EtherScanTransactionDto) {
             this.base = ETH;

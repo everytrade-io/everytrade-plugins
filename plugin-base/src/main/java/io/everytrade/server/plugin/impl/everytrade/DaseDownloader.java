@@ -5,8 +5,10 @@ import org.knowm.xchange.Exchange;
 import org.knowm.xchange.dase.dto.account.ApiAccountTxn;
 import org.knowm.xchange.dase.dto.account.ApiGetAccountTxnsOutput;
 import org.knowm.xchange.dase.service.DaseAccountService;
+import si.mazi.rescu.HttpStatusIOException;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -167,9 +169,19 @@ public class DaseDownloader {
 
         while (true) {
             try {
+                sleepBetweenRequests();
                 return accountService.getAccountTransactions(limit, before);
             } catch (IOException e) {
                 attempt++;
+
+                final long retryAfterMs = retryAfterMillis(e);
+                if (retryAfterMs > 0) {
+                    // The server told us how long to wait, so waiting less is just a second rejection. This does
+                    // not consume the attempt budget: it is a scheduled wait, not a failed guess.
+                    attempt--;
+                    sleepQuietly(Math.min(retryAfterMs, MAX_RETRY_AFTER.toMillis()));
+                    continue;
+                }
 
                 if (attempt >= maxAttempts) {
                     throw new RuntimeException(
@@ -189,6 +201,77 @@ public class DaseDownloader {
                     throw new RuntimeException(ie);
                 }
             }
+        }
+    }
+
+    /**
+     * DASE rate-limits by request rate, and the paging loop below used to fire its pages back to back with no
+     * pause at all - up to 200 of them. MEASURED 2026-10-12 with a live key: the first page returns 100 records,
+     * a burst then earns HTTP 429, and the retry budget (6 attempts, about 25 s in total) expires before the
+     * limit window does, so the whole synchronization dies. Because the pacing is ours and not the customer's,
+     * it failed for every connection at once - which is exactly what Sentry reported on 2026-10-09
+     * ("fails for 2 of 2 connections ... a connector-wide failure, not one user's", issues 152500372 /
+     * 152510896). After a 20 s pause a single request succeeded again, so neither the credentials nor the API
+     * were ever at fault.
+     * <p>
+     * The sibling BlockchainEthDownloader has had this throttle since it was written; DASE simply never got one.
+     */
+    private static final Duration MIN_TIME_BETWEEN_REQUESTS = Duration.ofMillis(350);
+
+    /** Cap on an honoured {@code Retry-After}, so a hostile or mistaken header cannot park a sync for hours. */
+    private static final Duration MAX_RETRY_AFTER = Duration.ofSeconds(60);
+
+    private long lastRequestAtMs;
+
+    private void sleepBetweenRequests() {
+        final long waitMs = lastRequestAtMs + MIN_TIME_BETWEEN_REQUESTS.toMillis() - System.currentTimeMillis();
+        if (waitMs > 0) {
+            sleepQuietly(waitMs);
+        }
+        lastRequestAtMs = System.currentTimeMillis();
+    }
+
+    /**
+     * @return the server's requested wait in milliseconds, or 0 when this is not a 429 or carries no usable
+     *         {@code Retry-After}. Only the delta-seconds form is read; the HTTP-date form is rare in practice
+     *         and guessing at a malformed one would be worse than falling back to the normal backoff.
+     */
+    private static long retryAfterMillis(IOException e) {
+        if (!(e instanceof HttpStatusIOException)) {
+            return 0;
+        }
+        final HttpStatusIOException httpError = (HttpStatusIOException) e;
+        if (httpError.getHttpStatusCode() != 429) {
+            return 0;
+        }
+        final var headers = httpError.getResponseHeaders();
+        if (headers == null) {
+            return 0;
+        }
+        for (var entry : headers.entrySet()) {
+            if (entry.getKey() == null || !"retry-after".equalsIgnoreCase(entry.getKey())) {
+                continue;
+            }
+            final var values = entry.getValue();
+            if (values == null || values.isEmpty()) {
+                continue;
+            }
+            try {
+                final long seconds = Long.parseLong(values.get(0).trim());
+                return seconds > 0 ? seconds * 1000L : 0;
+            } catch (NumberFormatException ignored) {
+                return 0;
+            }
+        }
+        return 0;
+    }
+
+    private static void sleepQuietly(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(ie);
         }
     }
 

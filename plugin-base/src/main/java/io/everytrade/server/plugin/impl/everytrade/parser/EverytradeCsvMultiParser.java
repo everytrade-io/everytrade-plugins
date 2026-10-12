@@ -11,6 +11,7 @@ import io.everytrade.server.plugin.impl.everytrade.WhaleBooksPlugin;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.DataIgnoredException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exception.UnknownHeaderException;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.AnycoinExchangeSpecificParserV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.DaseExchangeSpecificParserV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BinanceExchangeSpecificParserV4;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BitfinexExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.BitflyerMultiRowParser;
@@ -26,6 +27,7 @@ import io.everytrade.server.plugin.impl.everytrade.parser.exchange.KrakenDoubleQ
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.KrakenExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.SimplecoinExchangeSpecificParser;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.anycoin.AnycoinBeanV1;
+import io.everytrade.server.plugin.impl.everytrade.parser.exchange.dase.DaseBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.AquanowBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BinanceBeanV1;
 import io.everytrade.server.plugin.impl.everytrade.parser.exchange.bean.BinanceBeanV5;
@@ -230,6 +232,13 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                 .build());
 
             /* DASE */
+            // Its own parser, not Anycoin's. DASE was Anycoin once and the registration kept pointing at that
+            // parser, but the export has since split one trade into two rows (trade_fill_credit_base +
+            // trade_fill_debit_quote, joined by Trade ID) and renamed every operation. MEASURED on a customer
+            // export of 2026-10-12: 2 094 of 2 199 rows were trade legs the Anycoin table cannot name.
+            // Header selection already picks DASE over ANYCOIN here without any help - findCsvDetailByHeader
+            // takes the LONGEST matching template, and this six-column one beats Anycoin's five - so this one
+            // line is the whole routing fix.
             EXCHANGE_PARSE_DETAILS.add(ExchangeParseDetail.builder()
                 .headers(List.of(
                     CsvHeader
@@ -237,7 +246,7 @@ public class EverytradeCsvMultiParser implements ICsvParser {
                         .withSeparator(delimiter)
 
                 ))
-                .parserFactory(() -> new AnycoinExchangeSpecificParserV1(AnycoinBeanV1.class, delimiter))
+                .parserFactory(() -> new DaseExchangeSpecificParserV1(DaseBeanV1.class, delimiter))
                 .supportedExchange(DASE)
                 .build());
 

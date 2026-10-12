@@ -289,7 +289,18 @@ public class XChangeApiTransaction implements IXChangeApiTransaction {
     }
 
     public static TransactionCluster fundingOrSingleTxnToCluster(List<ApiAccountTxn> group) {
-        ApiAccountTxn t = group.stream().filter(Objects::nonNull).findFirst().orElse(null);
+        // Pick the row that MOVED something, not whatever happens to come first. A DASE withdrawal arrives as a
+        // three-row lifecycle sharing one Funding ID - withdrawal_block (-X), withdrawal_unblock (+X) and
+        // withdrawal_commit (-X) - of which only the commit is a real movement; the block/unblock pair nets to
+        // zero. Those three land in ONE group here, so taking the first row meant that whenever the iteration
+        // order put a block or an unblock in front, the whole group was ignored and the customer's withdrawal
+        // silently disappeared. MEASURED on a 2 199-row export of 2026-10-12: 8 of 16 withdrawals were lost
+        // that way, and because it depends on row order it was never reproducible on demand.
+        ApiAccountTxn t = group.stream()
+            .filter(Objects::nonNull)
+            .filter(x -> "deposit".equals(x.getTxnType()) || "withdrawal_commit".equals(x.getTxnType()))
+            .findFirst()
+            .orElseGet(() -> group.stream().filter(Objects::nonNull).findFirst().orElse(null));
         if (t == null) {
             return null;
         }

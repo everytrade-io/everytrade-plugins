@@ -62,7 +62,7 @@ public class BlockchainEthDownloader {
             boolean importNormalTxs,
             boolean importErc20Txs
     ) {
-        this.address = address.toLowerCase();
+        this.address = normalizeAddress(address);
         this.apiKeyToken = apiKeyToken;
         this.fiatCurrency = fiatCurrency;
         this.importDepositsAsBuys = Boolean.parseBoolean(importDepositsAsBuys);
@@ -170,6 +170,28 @@ public class BlockchainEthDownloader {
         } catch (Exception e) {
             throw new IllegalStateException(String.format("Transaction history download failed, address=%s", address), e);
         }
+    }
+
+    /**
+     * Strips every character that cannot belong to an address but survives a copy-paste, then lower-cases.
+     * <p>
+     * Etherscan answers {@code {"status":"0","message":"NOTOK","result":"Error! Invalid address format"}} to an
+     * address carrying ANY such character, and because {@link EtherScanDto} types {@code result} as the payload
+     * that String lands where a List is expected and Jackson throws - which the customer sees as a red error
+     * with no text and an empty container. MEASURED 2026-10-12: a single trailing {@code %20} on an otherwise
+     * valid address reproduces that body exactly, and Sentry issue 152285123 (connection 18503, 7 occurrences
+     * up to 2026-10-08) shows a stored address ending in a space.
+     * <p>
+     * {@code trim()} and {@code strip()} are both too weak here, MEASURED the same day: neither removes
+     * U+00A0 (no-break space), U+200B (zero-width space) or U+202F (narrow no-break space), because
+     * {@code Character.isWhitespace} says those are not whitespace - yet they are exactly what copying an
+     * address out of a web page, a PDF or Word produces. U+FEFF is the byte-order mark a text editor can
+     * prepend.
+     * <p>
+     * The sibling connectors (Solana, BTC, LTC) take their address parameter raw and have the same gap.
+     */
+    private static String normalizeAddress(String address) {
+        return address.replaceAll("[\\s\\u00A0\\u200B-\\u200D\\u202F\\uFEFF]", "").toLowerCase();
     }
 
     private ParseResult parseTransactions(Collection<EtherScanTransactionDto> txs) {
