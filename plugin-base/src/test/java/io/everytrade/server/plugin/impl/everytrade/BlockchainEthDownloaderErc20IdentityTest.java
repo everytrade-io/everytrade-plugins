@@ -76,6 +76,7 @@ class BlockchainEthDownloaderErc20IdentityTest {
         assertTrue(problem.getMessage().toLowerCase().contains(FAKE_ETH_CONTRACT),
             "the reason must name the contract, otherwise the customer sees a row vanish with no "
                 + "explanation: " + problem.getMessage());
+
     }
 
     /**
