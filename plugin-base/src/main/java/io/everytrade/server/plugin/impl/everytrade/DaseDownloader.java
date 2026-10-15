@@ -1,6 +1,5 @@
 package io.everytrade.server.plugin.impl.everytrade;
 
-import io.everytrade.server.util.serialization.DownloadState;
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.dase.dto.account.ApiAccountTxn;
 import org.knowm.xchange.dase.dto.account.ApiGetAccountTxnsOutput;
@@ -8,76 +7,148 @@ import org.knowm.xchange.dase.service.DaseAccountService;
 import si.mazi.rescu.HttpStatusIOException;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.LongSupplier;
 
+/**
+ * Downloads the DASE account ledger ({@code GET /v1/accounts/transactions}) incrementally, one sync run at a time.
+ * <p>
+ * DASE pages that ledger NEWEST FIRST and offers only a backward cursor: {@code before} returns the rows strictly
+ * older than the given transaction id (DOCUMENTED at https://api.dase.com/docs: "Cursor for pagination to get
+ * transactions before a specific transaction ID"; there is no {@code after}). So every run starts at the top
+ * ({@code before = null}) and walks down until it meets the newest id the previous run delivered - the forward
+ * watermark kept in {@link DaseDownloadState} - and then remembers the newest id it saw itself. Up to 5.2.306 the
+ * downloader did the opposite: it resumed from the OLDEST id fetched, so after the first run it only ever asked for
+ * rows older than everything already imported and never imported a transaction created after the first sync.
+ * <p>
+ * A run is capped ({@code maxPages} requests, at most {@code maxLimitTransactions} rows). When the cap cuts a walk,
+ * the stretch below the last delivered row is remembered as a gap ({@link DaseDownloadState.Gap}) and resumed by the
+ * next runs after their top walk, until it reaches the row it must stop at (or the end of the history for the first
+ * backfill). So a history longer than one run completes over several runs and new rows still arrive meanwhile.
+ * <p>
+ * A trade (two {@code trade_fill_*} legs sharing a Trade ID) must reach the mapping whole - one leg alone is not
+ * imported. Within a walk the legs straddling a page edge are simply both collected. Where a walk is cut by the
+ * cap, the rows of a trade that is not complete in the walk are left out at the cut and the gap starts right above
+ * them, so the next run fetches them together with the missing leg; if nothing else would be left, the walk
+ * delivers nothing and its gap stays as it was (a run budget smaller than one trade - production's is 200 pages of
+ * 100 rows - would then make no progress, which is safe but must not be configured). The top of the ledger is
+ * guarded too: DASE does not document that both legs of a fill are written at once, so a trade of which the top walk
+ * sees one leg written less than {@link #INCOMPLETE_TRADE_GRACE} ago is left for the next run - together with every
+ * row above it, because the watermark can only sit below them all. After the grace the leg is delivered alone and
+ * the mapping reports it as a trade with a missing leg, so a genuinely one-legged row cannot hold the sync back.
+ * <p>
+ * No row is ever delivered twice by the downloader: walks stop at an exact id, the cursor is exclusive and a row
+ * met twice within one run (overlapping pages) is delivered once. Should the row a walk must stop at ever vanish
+ * from the ledger, the walk goes on to the end of the history - rows are then delivered again, which the host's
+ * duplicate check shows, rather than skipped without a trace. A page that cannot be paged past (no row on it has an
+ * id) fails the run instead of being taken for the end of the history.
+ * <p>
+ * A state written by the downloader up to 5.2.306 that records imported rows fails every run with a request to
+ * re-synchronize the connection: see {@link DaseDownloadState}.
+ */
 public class DaseDownloader {
+    /** Rows per request: the documented default of the endpoint (it accepts 1..5000). */
+    private static final int PAGE_SIZE = 100;
+
+    /** Requests per sync run. */
+    private static final int MAX_PAGES = 200;
+
+    /**
+     * How long a trade seen with one leg at the top of the ledger waits for its other leg. NOT MEASURED: the two legs
+     * of a fill carry the same {@code created_at} in every export seen, so they are most likely written together and
+     * this only covers a non-atomic write; ten minutes is far longer than one and shorter than the hourly sync.
+     */
+    static final Duration INCOMPLETE_TRADE_GRACE = Duration.ofMinutes(10);
+
+    static final String LEGACY_STATE_MESSAGE = "This DASE connection was last synchronized by an earlier version "
+        + "of the connector, which did not record the newest transaction it imported. New transactions cannot be "
+        + "added without importing the earlier ones a second time, so please re-synchronize the connection "
+        + "(Manual re-synchronization in the connection detail). It reloads all DASE transactions of this connection.";
+
     private final DaseAccountService accountService;
-    private final DownloadState state;
+    private final DaseDownloadState state;
+    private final int pageSize;
+    private final int maxPages;
+    private final Duration minTimeBetweenRequests;
+    private final LongSupplier nowMillis;
 
     public DaseDownloader(String downloadState, Exchange exchange) {
-        this.accountService = (DaseAccountService) exchange.getAccountService();
-        this.state = DownloadState.from(downloadState);
+        this(downloadState, (DaseAccountService) exchange.getAccountService(), PAGE_SIZE, MAX_PAGES,
+            MIN_TIME_BETWEEN_REQUESTS, System::currentTimeMillis);
+    }
+
+    /** For tests: a fake ledger, small pages, no pacing and a fixed clock. */
+    DaseDownloader(String downloadState, DaseAccountService accountService, int pageSize, int maxPages,
+                   Duration minTimeBetweenRequests, LongSupplier nowMillis) {
+        this.accountService = accountService;
+        this.state = DaseDownloadState.from(downloadState);
+        this.pageSize = pageSize;
+        this.maxPages = maxPages;
+        this.minTimeBetweenRequests = minTimeBetweenRequests;
+        this.nowMillis = nowMillis;
     }
 
     public String serializeState() {
         return state.serialize();
     }
 
+    /**
+     * The ledger rows not delivered by an earlier run - first the rows created since the last run, then (only while
+     * an earlier run was cut by its cap) the rows of the oldest unfetched stretches - each row once, newest first.
+     */
     public List<ApiAccountTxn> downloadAllTransactions(int maxLimitTransactions) {
-        final List<ApiAccountTxn> result = new ArrayList<>(Math.min(1_000, Math.max(0, maxLimitTransactions)));
+        if (state.isLegacyWithImportedRows()) {
+            throw new IllegalStateException(LEGACY_STATE_MESSAGE);
+        }
+        final List<ApiAccountTxn> result = new ArrayList<>();
         if (maxLimitTransactions <= 0) {
             return result;
         }
+        final Budget budget = new Budget(maxPages, maxLimitTransactions);
+        final Set<String> seen = new HashSet<>();
+        final List<DaseDownloadState.Gap> gaps = new ArrayList<>();
 
-        final String lastCursor = firstNonBlank(state.getLastDepositTs(), state.getLastWithdrawalTs());
-
-        final int limit = 100;
-        String before = lastCursor;
-
-        int pages = 0;
-        final int maxPages = 200;
-
-        String pagingCursor = lastCursor;
-
-        while (pages++ < maxPages && result.size() < maxLimitTransactions) {
-            final ApiGetAccountTxnsOutput resp;
-            resp = getAccountTransactionsWithRetry(limit, before);
-
-            final List<ApiAccountTxn> txns = (resp == null) ? null : resp.getTransactions();
-            if (txns == null || txns.isEmpty()) {
-                break;
+        final String previousNewest = state.getNewestId();
+        String newest = previousNewest;
+        final Walk top = walk(null, previousNewest, budget, seen);
+        List<ApiAccountTxn> topRows = top.rows();
+        if (!top.complete()) {
+            topRows = dropTrailingIncompleteTrades(topRows);
+        }
+        topRows = dropRecentIncompleteTrades(topRows, nowMillis.getAsLong() - INCOMPLETE_TRADE_GRACE.toMillis());
+        if (!topRows.isEmpty()) {
+            // The first row has an id (dropRecentIncompleteTrades), so has the last one of a cut walk
+            // (dropTrailingIncompleteTrades).
+            newest = topRows.get(0).getId();
+            if (!top.complete()) {
+                gaps.add(new DaseDownloadState.Gap(topRows.get(topRows.size() - 1).getId(), previousNewest));
             }
+        }
+        result.addAll(topRows);
 
-            for (ApiAccountTxn t : txns) {
-                if (result.size() >= maxLimitTransactions) {
-                    break;
-                }
-                if (t == null) {
-                    continue;
-                }
-                result.add(t);
+        for (DaseDownloadState.Gap gap : state.getGaps()) {
+            if (budget.exhausted()) {
+                gaps.add(gap);
+                continue;
             }
-
-            final String oldestIdOnPage = txns.get(txns.size() - 1).getId();
-            if (oldestIdOnPage == null || oldestIdOnPage.isBlank() || oldestIdOnPage.equals(before)) {
-                break;
+            final Walk w = walk(gap.before(), gap.stopId(), budget, seen);
+            if (w.complete()) {
+                result.addAll(w.rows());
+                continue;
             }
-
-            before = oldestIdOnPage;
-            pagingCursor = oldestIdOnPage;
+            final List<ApiAccountTxn> kept = dropTrailingIncompleteTrades(w.rows());
+            gaps.add(kept.isEmpty() ? gap : new DaseDownloadState.Gap(kept.get(kept.size() - 1).getId(), gap.stopId()));
+            result.addAll(kept);
         }
 
-        String safeCursor = computeSafeCursorNotCuttingTrades(result, pagingCursor);
-
-        if (safeCursor != null && !safeCursor.isBlank()) {
-            state.setNewDepositTs(safeCursor);
-            state.setNewWithdrawalTs(safeCursor);
-        }
+        state.setNewestId(newest);
+        state.setGaps(gaps);
 
         result.sort(
             Comparator.comparing(ApiAccountTxn::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
@@ -87,79 +158,156 @@ public class DaseDownloader {
         return result;
     }
 
-    private static String computeSafeCursorNotCuttingTrades(List<ApiAccountTxn> batch, String defaultCursor) {
-        if (batch == null || batch.isEmpty()) {
-            return defaultCursor;
+    /** Rows of one walk, newest first, and whether it ended at its stop row or the end of the history. */
+    private record Walk(List<ApiAccountTxn> rows, boolean complete) {
+    }
+
+    /** What is left of the run's cap. */
+    private static final class Budget {
+        private int pages;
+        private int rows;
+
+        Budget(int pages, int rows) {
+            this.pages = pages;
+            this.rows = rows;
         }
 
-        final int tailN = Math.min(25, batch.size());
-        final List<ApiAccountTxn> tail = batch.subList(batch.size() - tailN, batch.size());
+        boolean exhausted() {
+            return pages <= 0 || rows <= 0;
+        }
+    }
 
-        final Set<String> tailTradeIds = new HashSet<>();
-        for (ApiAccountTxn t : tail) {
-            if (t != null && t.getTradeId() != null && !t.getTradeId().isBlank()) {
-                tailTradeIds.add(t.getTradeId());
+    /**
+     * Walks the ledger down from {@code before} (null = the top) and collects every row until the row whose id is
+     * {@code stopId} (exclusive; null = to the end of the history) or until the run's budget is spent. A row already
+     * collected in this run is skipped. The next page starts below the last row of the page that has an id; a page on
+     * which no row has one cannot be paged past and fails the run.
+     */
+    private Walk walk(String before, String stopId, Budget budget, Set<String> seen) {
+        final List<ApiAccountTxn> rows = new ArrayList<>();
+        String cursor = before;
+        while (true) {
+            if (budget.exhausted()) {
+                return new Walk(rows, false);
             }
-        }
-        if (tailTradeIds.isEmpty()) {
-            return defaultCursor;
-        }
-
-        Set<String> incomplete = new HashSet<>();
-        for (String tradeId : tailTradeIds) {
-            boolean hasBase = false;
-            boolean hasQuote = false;
-
-            for (ApiAccountTxn t : batch) {
+            final ApiGetAccountTxnsOutput resp = getAccountTransactionsWithRetry(pageSize, cursor);
+            budget.pages--;
+            final List<ApiAccountTxn> txns = (resp == null) ? null : resp.getTransactions();
+            if (txns == null || txns.isEmpty()) {
+                return new Walk(rows, true);
+            }
+            for (ApiAccountTxn t : txns) {
                 if (t == null) {
                     continue;
                 }
-                if (!tradeId.equals(t.getTradeId())) {
+                if (stopId != null && stopId.equals(t.getId())) {
+                    return new Walk(rows, true);
+                }
+                if (budget.rows <= 0) {
+                    return new Walk(rows, false);
+                }
+                if (!seen.add(seenKey(t))) {
                     continue;
                 }
-
-                String tt = t.getTxnType();
-                if ("trade_fill_credit_base".equals(tt) || "trade_fill_debit_base".equals(tt)) {
-                    hasBase = true;
-                }
-                if ("trade_fill_credit_quote".equals(tt) || "trade_fill_debit_quote".equals(tt)) {
-                    hasQuote = true;
-                }
-
-                if (hasBase && hasQuote) {
-                    break;
-                }
+                rows.add(t);
+                budget.rows--;
             }
+            String next = null;
+            for (int i = txns.size() - 1; i >= 0 && next == null; i--) {
+                final ApiAccountTxn t = txns.get(i);
+                next = t == null || isBlank(t.getId()) ? null : t.getId();
+            }
+            if (next == null) {
+                throw new IllegalStateException("DASE returned a page of account transactions without a transaction "
+                    + "id" + (cursor == null ? "" : " below transaction " + cursor) + ", so the older transactions "
+                    + "cannot be fetched");
+            }
+            if (next.equals(cursor)) {
+                // The page holds nothing below the cursor: the end of the history.
+                return new Walk(rows, true);
+            }
+            cursor = next;
+        }
+    }
 
-            if (!(hasBase && hasQuote)) {
-                incomplete.add(tradeId);
+    /**
+     * The id of a row, or - for a row without one, which the walk can meet again on the next page because paging
+     * resumes from the last row WITH an id - everything the row says.
+     */
+    private static String seenKey(ApiAccountTxn t) {
+        if (!isBlank(t.getId())) {
+            return t.getId();
+        }
+        final BigDecimal amount = t.getAmount();
+        return String.join("\u0000", "", t.getTxnType(), t.getCurrency(),
+            amount == null ? null : amount.stripTrailingZeros().toPlainString(), String.valueOf(t.getCreatedAt()),
+            t.getTradeId(), t.getFundingId());
+    }
+
+    /**
+     * Drops every row from the top down to the oldest row of a trade that lacks its base or quote leg among
+     * {@code rows} and has a leg written at or after {@code recentSince} (the other leg may not be written yet), and
+     * then any rows without an id still at the top (the watermark must be an id). The rows above such a trade go
+     * with it: the next run fetches everything above the watermark again.
+     */
+    private static List<ApiAccountTxn> dropRecentIncompleteTrades(List<ApiAccountTxn> rows, long recentSince) {
+        final Set<String> incomplete = incompleteTrades(rows);
+        final Set<String> recent = new HashSet<>();
+        for (ApiAccountTxn t : rows) {
+            if (incomplete.contains(t.getTradeId()) && t.getCreatedAt() >= recentSince) {
+                recent.add(t.getTradeId());
             }
         }
-
-        if (incomplete.isEmpty()) {
-            return defaultCursor;
+        int from = 0;
+        for (int i = 0; i < rows.size(); i++) {
+            if (recent.contains(rows.get(i).getTradeId())) {
+                from = i + 1;
+            }
         }
+        while (from < rows.size() && isBlank(rows.get(from).getId())) {
+            from++;
+        }
+        return rows.subList(from, rows.size());
+    }
 
-        int oldestIncompleteIndex = -1;
-        for (int i = batch.size() - 1; i >= 0; i--) {
-            ApiAccountTxn t = batch.get(i);
-            if (t == null) {
+    /**
+     * Drops the rows at the bottom (where a cap cut the walk) that belong to a trade whose base or quote leg is not
+     * among {@code rows}, or that have no id to resume from. Drops everything if nothing else would be left: the cut
+     * stretch is then fetched again, whole, by a later run.
+     */
+    private static List<ApiAccountTxn> dropTrailingIncompleteTrades(List<ApiAccountTxn> rows) {
+        final Set<String> incomplete = incompleteTrades(rows);
+        int to = rows.size();
+        while (to > 0 && (incomplete.contains(rows.get(to - 1).getTradeId()) || isBlank(rows.get(to - 1).getId()))) {
+            to--;
+        }
+        return rows.subList(0, to);
+    }
+
+    /** Trade ids among {@code rows} that lack a base or a quote leg there. */
+    private static Set<String> incompleteTrades(List<ApiAccountTxn> rows) {
+        final Set<String> withBase = new HashSet<>();
+        final Set<String> withQuote = new HashSet<>();
+        final Set<String> all = new HashSet<>();
+        for (ApiAccountTxn t : rows) {
+            if (isBlank(t.getTradeId())) {
                 continue;
             }
-            String tradeId = t.getTradeId();
-            if (tradeId != null && incomplete.contains(tradeId)) {
-                oldestIncompleteIndex = i;
+            all.add(t.getTradeId());
+            final String type = t.getTxnType();
+            if ("trade_fill_credit_base".equals(type) || "trade_fill_debit_base".equals(type)) {
+                withBase.add(t.getTradeId());
+            }
+            if ("trade_fill_credit_quote".equals(type) || "trade_fill_debit_quote".equals(type)) {
+                withQuote.add(t.getTradeId());
             }
         }
+        all.removeIf(id -> withBase.contains(id) && withQuote.contains(id));
+        return all;
+    }
 
-        if (oldestIncompleteIndex < 0) {
-            return defaultCursor;
-        }
-
-        ApiAccountTxn oldestIncomplete = batch.get(oldestIncompleteIndex);
-        String cursor = oldestIncomplete.getId();
-
-        return (cursor == null || cursor.isBlank()) ? defaultCursor : cursor;
+    private static boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 
     private ApiGetAccountTxnsOutput getAccountTransactionsWithRetry(int limit, String before) {
@@ -224,7 +372,7 @@ public class DaseDownloader {
     private long lastRequestAtMs;
 
     private void sleepBetweenRequests() {
-        final long waitMs = lastRequestAtMs + MIN_TIME_BETWEEN_REQUESTS.toMillis() - System.currentTimeMillis();
+        final long waitMs = lastRequestAtMs + minTimeBetweenRequests.toMillis() - System.currentTimeMillis();
         if (waitMs > 0) {
             sleepQuietly(waitMs);
         }
@@ -278,17 +426,5 @@ public class DaseDownloader {
     private long computeBackoff(long baseMs, int attempt) {
         long delay = baseMs * (1L << Math.min(attempt, 5)); // 0.5s → 1s → 2s → 4s → 8s → cap
         return Math.min(delay, 10_000);
-    }
-
-    private static String firstNonBlank(String... values) {
-        if (values == null) {
-            return null;
-        }
-        for (String v : values) {
-            if (v != null && !v.isBlank()) {
-                return v;
-            }
-        }
-        return null;
     }
 }

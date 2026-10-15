@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -29,6 +30,7 @@ import java.util.Objects;
 import static io.everytrade.server.model.SupportedExchange.KRAKEN;
 import static io.everytrade.server.model.TransactionType.DEPOSIT;
 import static io.everytrade.server.model.TransactionType.WITHDRAWAL;
+import static io.everytrade.server.plugin.impl.everytrade.parser.exchange.ExchangeBean.UNSUPPORTED_TRANSACTION_TYPE;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 
@@ -142,43 +144,215 @@ public class XChangeConnectorParser {
             .collect(toList());
     }
 
-    protected List<TransactionCluster> daseTransactionCluster(List<ApiAccountTxn> txns, List<ParsingProblem> problems) {
-        Map<String, List<ApiAccountTxn>> grouped = txns.stream()
-            .filter(Objects::nonNull)
-            .collect(java.util.stream.Collectors.groupingBy(t -> {
-                if (t.getTradeId() != null && !t.getTradeId().isBlank()) {
-                    return "TRADE:" + t.getTradeId();
-                }
-                if (t.getFundingId() != null && !t.getFundingId().isBlank()) {
-                    return "FUNDING:" + t.getFundingId();
-                }
-                return "TXN:" + t.getId();
-            }));
+    /**
+     * Receives what {@link #mapDaseTransactions} makes of each DASE row group, together with the rows it came from.
+     * The CSV import needs the rows to name their records in the error log; the API path does not.
+     */
+    public interface DaseMappingSink {
+        void cluster(TransactionCluster cluster, List<ApiAccountTxn> rows);
 
-        List<TransactionCluster> result = new ArrayList<>();
+        void problem(ParsingProblem problem, List<ApiAccountTxn> rows);
 
-        for (Map.Entry<String, List<ApiAccountTxn>> e : grouped.entrySet()) {
-            String key = e.getKey();
+        /**
+         * True when the rows are a COMPLETE account history - a DASE CSV export - and false (the default) for the
+         * API connector. Four rules depend on it:
+         * <ul>
+         *     <li>a trade group that is not exactly one base and one quote leg (plus any number of fee legs) is a
+         *     ROW_PARSING_FAILED problem naming its rows: in a whole file a missing or extra leg is a real defect.
+         *     On the API path a group with a missing leg is a PARSED_ROW_IGNORED problem with the same message
+         *     ({@code DaseDownloader} delivers both legs of a trade in one run, so it is a real gap there too, but
+         *     the row of an API problem is only its group key), and an extra leg is ignored as it always was;</li>
+         *     <li>a funding-group row that is neither the imported row nor part of the withdrawal lifecycle
+         *     ({@link XChangeApiTransaction#daseUnexpectedFundingRows}) is a ROW_PARSING_FAILED problem. The API
+         *     path keeps importing the chosen row and absorbing another row of a KNOWN type silently, as it always
+         *     did; a row of an unknown type is reported as ignored on the API path (see {@link #mapDaseTransactions}).
+         *     The host does not de-duplicate imported rows, so absorbing is the only thing that keeps a repeated
+         *     row of the group from being booked twice;</li>
+         *     <li>the sign of a deposit / completing withdrawal / transfer amount must match its type (measured on
+         *     2 599 real CSV rows). The API path keeps taking the absolute value and the direction from the type
+         *     name: the sign of the API {@code amount} has never been measured;</li>
+         *     <li>a row of a type DASE does not document is reported on the API path as ignored with its name, each
+         *     row on its own, and the rest of its group is mapped without it. The CSV path does not split it off:
+         *     the shape and unexpected-row rules above already fail it, naming its type.</li>
+         * </ul>
+         * Every trade fee leg ({@code trade_fill_fee_base / _quote}) is reported as ignored
+         * ({@link XChangeApiTransaction#DASE_TRADE_FEE_NOT_IMPORTED}) on BOTH paths; the trade itself imports without
+         * the fee, as it always did.
+         */
+        default boolean isCompleteFile() {
+            return false;
+        }
+    }
+
+    /**
+     * The single interpretation of DASE account transactions, shared by the API connector and the CSV import
+     * ({@code DaseExchangeSpecificParserV1}).
+     * <p>
+     * Grouping ({@link #daseGroups}): trade legs by Trade ID ({@code trade_fill_*}, Trading portfolio), the
+     * withdrawal lifecycle and deposits by Funding ID, else by dase TX ID. Transfers between the customer's own
+     * portfolios, adjustments, rows without a type and rows without any id are mapped ONE ROW AT A TIME: a
+     * transfer or an adjustment is a complete movement on its own and both legs of one transfer share a Funding ID,
+     * so grouping them would collapse two movements into one; a row without a type or id must not be merged into
+     * (and hidden behind) another row's group. The Basic portfolio's {@code trade payment / fill / refund} rows are
+     * joined by Order ID, which {@link ApiAccountTxn} does not carry; the CSV parser groups those itself and never
+     * sends them here. Groups keep input order.
+     * <p>
+     * Per group (the DASE library and the CSV reader both turn a missing date into 0, which would otherwise be
+     * imported as 1970-01-01):
+     * <ul>
+     *     <li>API path only: every row of an undocumented type ({@link XChangeApiTransaction#isDaseUnknownType}) is
+     *     reported as ignored ({@code Unsupported transaction type <type>}) and removed from its group first;</li>
+     *     <li>trade group: a row without a date is an error for the whole group; on the CSV path
+     *     ({@link DaseMappingSink#isCompleteFile}) so is a group that is not exactly one base and one quote leg
+     *     plus any number of fee legs, on the API path a group without its base or quote leg is ignored with the
+     *     same message; once the trade is mapped each fee leg is reported as ignored, each as its own problem (the
+     *     fee is not booked on either path);</li>
+     *     <li>funding group: every {@code withdrawal_refund} row is reported as ignored
+     *     ({@link XChangeApiTransaction#DASE_WITHDRAWAL_REFUND_NOT_IMPORTED}) on both paths, and on the CSV path
+     *     every row {@link XChangeApiTransaction#daseUnexpectedFundingRows} returns as an error, each as its own
+     *     problem; only then is the date of the row the group is imported as checked, so one dateless extra row
+     *     cannot fail a valid dated row next to it. The rest of the group is still mapped. On the API path the
+     *     unexpected rows stay in the group and {@link XChangeApiTransaction#fundingOrSingleTxnToCluster} imports
+     *     only the chosen row, as before (see {@link DaseMappingSink#isCompleteFile} for why).</li>
+     * </ul>
+     */
+    public void mapDaseTransactions(List<ApiAccountTxn> txns, DaseMappingSink sink) {
+        for (Map.Entry<String, List<ApiAccountTxn>> e : daseGroups(txns).entrySet()) {
+            final String key = e.getKey();
             List<ApiAccountTxn> group = e.getValue();
-
+            if (!sink.isCompleteFile()) {
+                for (ApiAccountTxn unknown : group.stream().filter(XChangeApiTransaction::isDaseUnknownType).toList()) {
+                    reportDaseProblem(new DataIgnoredException(UNSUPPORTED_TRANSACTION_TYPE + unknown.getTxnType()),
+                        key, List.of(unknown), sink);
+                }
+                group = group.stream().filter(t -> !XChangeApiTransaction.isDaseUnknownType(t)).toList();
+                if (group.isEmpty()) {
+                    continue;
+                }
+            }
+            List<ApiAccountTxn> ignoredFees = List.of();
             try {
+                final TransactionCluster cluster;
                 if (key.startsWith("TRADE:")) {
-                    var trade = XChangeApiTransaction.tradeFillGroupToCluster(group);
-                    if (trade != null) {
-                        result.add(trade);
+                    if (group.stream().anyMatch(t -> t.getCreatedAt() == 0L)) {
+                        throw new IllegalStateException("DASE row has no date");
                     }
+                    final String shapeProblem = XChangeApiTransaction.daseTradeGroupShapeProblem(group);
+                    if (shapeProblem != null && sink.isCompleteFile()) {
+                        throw new IllegalStateException(shapeProblem);
+                    }
+                    // tradeFillGroupToCluster ignores the fee legs itself (as it always did). They are reported only
+                    // once the trade mapped, so a trade that fails stays ONE problem naming all its rows.
+                    cluster = XChangeApiTransaction.tradeFillGroupToCluster(group);
+                    if (cluster == null) {
+                        // API path: the base or the quote leg is missing (the CSV path failed on the shape above).
+                        throw new DataIgnoredException(shapeProblem);
+                    }
+                    ignoredFees = group.stream().filter(XChangeApiTransaction::isDaseTradeFee).toList();
+                    group = group.stream().filter(t -> !XChangeApiTransaction.isDaseTradeFee(t)).toList();
                 } else {
-                    var funding = XChangeApiTransaction.fundingOrSingleTxnToCluster(group);
-                    if (funding != null) {
-                        result.add(funding);
+                    final List<ApiAccountTxn> whole = group;
+                    final List<ApiAccountTxn> refunds = whole.stream()
+                        .filter(XChangeApiTransaction::isDaseWithdrawalRefund)
+                        .toList();
+                    for (ApiAccountTxn row : refunds) {
+                        reportDaseProblem(new DataIgnoredException(
+                            XChangeApiTransaction.DASE_WITHDRAWAL_REFUND_NOT_IMPORTED), key, List.of(row), sink);
                     }
+                    // CSV only: the API path keeps absorbing another known row of the group, as it always did.
+                    final List<ApiAccountTxn> unexpected = sink.isCompleteFile()
+                        ? XChangeApiTransaction.daseUnexpectedFundingRows(whole)
+                        : List.of();
+                    for (ApiAccountTxn row : unexpected) {
+                        reportDaseProblem(new IllegalStateException(
+                            XChangeApiTransaction.daseUnexpectedFundingRowMessage(whole, row)), key, List.of(row), sink);
+                    }
+                    group = whole.stream()
+                        .filter(t -> refunds.stream().noneMatch(r -> r == t) && unexpected.stream().noneMatch(u -> u == t))
+                        .toList();
+                    if (group.isEmpty()) {
+                        continue;
+                    }
+                    final ApiAccountTxn chosen = XChangeApiTransaction.daseChosenFundingRow(group);
+                    if (chosen != null && chosen.getCreatedAt() == 0L) {
+                        throw new IllegalStateException("DASE row has no date");
+                    }
+                    cluster = XChangeApiTransaction.fundingOrSingleTxnToCluster(group, sink.isCompleteFile());
+                }
+                if (cluster != null) {
+                    sink.cluster(cluster, group);
                 }
             } catch (Exception ex) {
-                logParsingError(ex, problems, "Group " + key);
+                // A failed trade names ALL its rows, fee legs included (they are reported as ignored only below).
+                reportDaseProblem(ex, key, key.startsWith("TRADE:") ? e.getValue() : group, sink);
+                continue;
+            }
+            for (ApiAccountTxn fee : ignoredFees) {
+                reportDaseProblem(new DataIgnoredException(XChangeApiTransaction.DASE_TRADE_FEE_NOT_IMPORTED), key,
+                    List.of(fee), sink);
             }
         }
+    }
 
+    /** API path: clusters and problems only; a problem names its group ({@code Group <key>}). */
+    protected List<TransactionCluster> daseTransactionCluster(List<ApiAccountTxn> txns, List<ParsingProblem> problems) {
+        final List<TransactionCluster> result = new ArrayList<>();
+        mapDaseTransactions(txns, new DaseMappingSink() {
+            @Override
+            public void cluster(TransactionCluster cluster, List<ApiAccountTxn> rows) {
+                result.add(cluster);
+            }
+
+            @Override
+            public void problem(ParsingProblem problem, List<ApiAccountTxn> rows) {
+                problems.add(problem);
+            }
+        });
         return result;
+    }
+
+    private void reportDaseProblem(Exception ex, String key, List<ApiAccountTxn> rows, DaseMappingSink sink) {
+        final List<ParsingProblem> one = new ArrayList<>(1);
+        logParsingError(ex, one, "Group " + key);
+        sink.problem(one.get(0), rows);
+    }
+
+    /**
+     * Groups DASE rows (input order kept): {@code TRADE:<Trade ID>}; {@code ROW:<n>} - one group per row - for
+     * transfers, adjustments, rows without a type and rows with neither Funding ID nor dase TX ID;
+     * {@code FUNDING:<Funding ID>}; else {@code TXN:<dase TX ID>}. Null rows are skipped.
+     */
+    static Map<String, List<ApiAccountTxn>> daseGroups(List<ApiAccountTxn> txns) {
+        final Map<String, List<ApiAccountTxn>> grouped = new LinkedHashMap<>();
+        int rowIndex = 0;
+        for (ApiAccountTxn t : txns) {
+            if (t == null) {
+                continue;
+            }
+            rowIndex++;
+            final String type = t.getTxnType();
+            final String key;
+            if (type == null || type.isBlank()) {
+                key = "ROW:" + rowIndex;
+            } else if (!isBlank(t.getTradeId())) {
+                key = "TRADE:" + t.getTradeId();
+            } else if (XChangeApiTransaction.DASE_TRANSFER_TYPES.contains(type)
+                || XChangeApiTransaction.DASE_ADJUSTMENT.equals(type)) {
+                key = "ROW:" + rowIndex;
+            } else if (!isBlank(t.getFundingId())) {
+                key = "FUNDING:" + t.getFundingId();
+            } else if (!isBlank(t.getId())) {
+                key = "TXN:" + t.getId();
+            } else {
+                key = "ROW:" + rowIndex;
+            }
+            grouped.computeIfAbsent(key, k -> new ArrayList<>()).add(t);
+        }
+        return grouped;
+    }
+
+    private static boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 
     protected List<TransactionCluster> coinbaseTransactionCluster(List<CoinbaseShowTransactionV2> tx, List<ParsingProblem> problems) {

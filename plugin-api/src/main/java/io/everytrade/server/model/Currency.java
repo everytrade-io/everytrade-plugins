@@ -6,6 +6,7 @@ import lombok.experimental.FieldDefaults;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -1061,7 +1062,31 @@ public enum Currency {
     // ticker. At least two unrelated projects also use the symbol BANANA (ApeSwap Finance and Banana
     // For Scale), so the mapped CoinPaprika id must stay banana-banana-gun-v2; picking a look-alike
     // does not fail the build, it prices the customer's rows off the wrong asset.
-    BANANA(false, Instant.parse("2023-09-15T00:00:00Z"), "Banana Gun");
+    BANANA(false, Instant.parse("2023-09-15T00:00:00Z"), "Banana Gun"),
+    // The seven below were added on 2026-10-13 for DASE Basic-portfolio CSV imports that failed with
+    // "Unknown currency code". As with the 2026-10-09 batch, every introduction Instant is CoinPaprika's
+    // first_data_at for the mapped coin id, read from /v1/coins/<id> on 2026-10-13 (shx-stronghold-token,
+    // h-humanity, vvv-venice-token, aero-aerodrome-finance, zro-layerzero, spx-spx6900).
+    SHX(false, Instant.parse("2019-01-03T00:00:00Z"), "Stronghold Token"),
+    // H and HUMANITY are the same project (Humanity Protocol) and both map to the single CoinPaprika id
+    // h-humanity. H is the original token, retired after the 2026-06-08 hack, so it carries an endDate
+    // like the 2026-09-23 delisting batch; HUMANITY is the ticker DASE uses for the replacement contract
+    // token and stays open-ended.
+    H(false, Instant.parse("2025-06-25T00:00:00Z"), Instant.parse("2026-06-08T00:00:00Z"), "Humanity"),
+    HUMANITY(false, Instant.parse("2025-06-25T00:00:00Z"), "Humanity"),
+    VVV(false, Instant.parse("2025-01-29T00:00:00Z"), "Venice Token"),
+    AERO(false, Instant.parse("2023-10-22T00:00:00Z"), "Aerodrome Finance"),
+    ZRO(false, Instant.parse("2024-06-20T00:00:00Z"), "LayerZero"),
+    // SPX is the SPX6900 meme token (CoinPaprika spx-spx6900), not an equity index; it must never be
+    // priced from or described as an index quote.
+    SPX(false, Instant.parse("2023-08-17T00:00:00Z"), "SPX6900"),
+    // The two below were added on 2026-10-13 (ETD-2167) for Coinbase imports that failed with "Unknown currency
+    // code". Each introduction Instant is CoinPaprika's first_data_at for the mapped coin id, read from
+    // /v1/coins/<id> on 2026-10-13 (cbeth-coinbase-wrapped-staked-eth, ron-ronin-token).
+    CBETH(false, Instant.parse("2022-09-14T00:00:00Z"), "Coinbase Wrapped Staked ETH"),
+    // RONIN is the Ronin token (CoinPaprika ron-ronin-token). Its market ticker is RON, but the code RON is the
+    // Romanian leu (fiat) above and must stay so; Coinbase reports the token as RONIN, which is the code used here.
+    RONIN(false, Instant.parse("2022-02-25T00:00:00Z"), "Ronin");
 
     String code;
     int decimalDigits;
@@ -1080,6 +1105,14 @@ public enum Currency {
                     throw new IllegalStateException("Duplicate currency code after normalization: " + a.code());
                 }
             ));
+
+    // Alternative codes under which a source reports an existing currency. fromCode resolves an alias to its
+    // constant, while code(), name() and values() keep only the canonical code, so nothing is stored or priced
+    // under the alias. Use an alias only when the asset is the same one; a different asset needs its own constant.
+    // - ZETACHAIN: Coinbase reports ZetaChain as ZETACHAIN, whereas the canonical code is ZETA (ETD-2167).
+    private static final Map<String, Currency> ALIASES = buildAliasIndex(Map.of(
+        "ZETACHAIN", ZETA
+    ));
 
     Currency(boolean fiat, Instant introduction, String description) {
         this(null, fiat ? 2 : DECIMAL_DIGITS, fiat, false, introduction, null, description);
@@ -1146,11 +1179,39 @@ public enum Currency {
 
     public static Currency fromCode(String code) {
         Objects.requireNonNull(code, "code is null");
-        Currency c = BY_CODE.get(code.trim().toUpperCase(Locale.ROOT));
+        String normalized = norm(code);
+        Currency c = BY_CODE.get(normalized);
+        if (c == null) {
+            c = ALIASES.get(normalized);
+        }
         if (c == null) {
             throw new IllegalArgumentException("Unknown currency code: " + code);
         }
         return c;
+    }
+
+    /** The alias table, keyed by normalised alias code; exposed for tests. */
+    static Map<String, Currency> aliases() {
+        return ALIASES;
+    }
+
+    /**
+     * Normalises the alias codes and refuses any alias that equals a currency code (it would make that code
+     * ambiguous) or that normalises to the same code as another alias. Must run after BY_CODE is initialised.
+     */
+    static Map<String, Currency> buildAliasIndex(Map<String, Currency> aliases) {
+        Map<String, Currency> index = new HashMap<>();
+        aliases.forEach((alias, currency) -> {
+            String normalized = norm(Objects.requireNonNull(alias, "alias is null"));
+            Objects.requireNonNull(currency, "alias target is null: " + alias);
+            if (BY_CODE.containsKey(normalized)) {
+                throw new IllegalStateException("Currency alias collides with a currency code: " + normalized);
+            }
+            if (index.putIfAbsent(normalized, currency) != null) {
+                throw new IllegalStateException("Duplicate currency alias after normalization: " + normalized);
+            }
+        });
+        return Map.copyOf(index);
     }
 
     private static String norm(String code) {

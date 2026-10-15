@@ -35,6 +35,13 @@ public class AnycoinBeanV1Test {
     public static final String HEADER_CORRECT = "Date,Type,Amount,Currency,Order ID\n";
     public static final String HEADER_DASE = "Date,Type,Amount,Currency,Order ID,dase TX ID\n";
 
+    /**
+     * A header carrying "dase TX ID" is routed to the DASE parser (DaseExchangeSpecificParserV1), not to Anycoin's,
+     * so this pins the DASE result for the Basic (instant-buy) vocabulary under the short six-column header. The
+     * unit price is 1000 / 0.00075667 at the plugin's price scale of 17 (ParserUtils.DECIMAL_DIGITS, HALF_UP) -
+     * the value the Anycoin parser produced here too (the DASE mapping divided at scale 18 until 5.2.306). The full
+     * DASE coverage lives in {@code dase.DaseExchangeSpecificParserV1Test}.
+     */
     @Test
     void testDaseBuy() {
         final String row0 = "2021-04-10T18:16:50.367Z,trade payment,-1000,CZK,113180,\n";
@@ -56,6 +63,9 @@ public class AnycoinBeanV1Test {
             List.of()
         );
 
+        assertEquals(1, actual.size());
+        // TestUtils.testTxs compares the expected uid with itself, so the uid is asserted here explicitly.
+        assertEquals(expected.getMain().getUid(), actual.get(0).getMain().getUid());
         TestUtils.testTxs(expected.getMain(), actual.get(0).getMain());
     }
 
