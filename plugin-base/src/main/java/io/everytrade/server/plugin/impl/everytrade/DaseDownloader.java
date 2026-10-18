@@ -77,6 +77,13 @@ public class DaseDownloader {
     private final int maxPages;
     private final Duration minTimeBetweenRequests;
     private final LongSupplier nowMillis;
+    private final Sleeper sleeper;
+    private final Duration maxTotalWait;
+
+    /** Waits; injectable so tests do not sleep. */
+    interface Sleeper {
+        void sleep(long millis) throws InterruptedException;
+    }
 
     public DaseDownloader(String downloadState, Exchange exchange) {
         this(downloadState, (DaseAccountService) exchange.getAccountService(), PAGE_SIZE, MAX_PAGES,
@@ -86,12 +93,28 @@ public class DaseDownloader {
     /** For tests: a fake ledger, small pages, no pacing and a fixed clock. */
     DaseDownloader(String downloadState, DaseAccountService accountService, int pageSize, int maxPages,
                    Duration minTimeBetweenRequests, LongSupplier nowMillis) {
+        this(downloadState, accountService, pageSize, maxPages, minTimeBetweenRequests, nowMillis, Thread::sleep);
+    }
+
+    /** For tests: as above, with a sleeper that does not sleep. */
+    DaseDownloader(String downloadState, DaseAccountService accountService, int pageSize, int maxPages,
+                   Duration minTimeBetweenRequests, LongSupplier nowMillis, Sleeper sleeper) {
+        this(downloadState, accountService, pageSize, maxPages, minTimeBetweenRequests, nowMillis, sleeper,
+            MAX_TOTAL_WAIT);
+    }
+
+    /** For tests: as above, with a smaller cap on all waits for one page. */
+    DaseDownloader(String downloadState, DaseAccountService accountService, int pageSize, int maxPages,
+                   Duration minTimeBetweenRequests, LongSupplier nowMillis, Sleeper sleeper,
+                   Duration maxTotalWait) {
         this.accountService = accountService;
         this.state = DaseDownloadState.from(downloadState);
         this.pageSize = pageSize;
         this.maxPages = maxPages;
         this.minTimeBetweenRequests = minTimeBetweenRequests;
         this.nowMillis = nowMillis;
+        this.sleeper = sleeper;
+        this.maxTotalWait = maxTotalWait;
     }
 
     public String serializeState() {
@@ -310,10 +333,16 @@ public class DaseDownloader {
         return value == null || value.isBlank();
     }
 
+    /**
+     * One page, retried on {@link IOException}: at most {@link #MAX_ATTEMPTS} requests in total. A 429 with a
+     * {@code Retry-After} waits as the server asks and counts as an attempt like any other failure; a
+     * {@code Retry-After} above {@link #MAX_RETRY_AFTER} ends the run instead of waiting, and so does a wait that
+     * would take the waits of this page beyond {@link #MAX_TOTAL_WAIT}.
+     */
     private ApiGetAccountTxnsOutput getAccountTransactionsWithRetry(int limit, String before) {
         int attempt = 0;
-        int maxAttempts = 6;
         long baseDelayMs = 500;
+        long waitedMs = 0;
 
         while (true) {
             try {
@@ -321,33 +350,33 @@ public class DaseDownloader {
                 return accountService.getAccountTransactions(limit, before);
             } catch (IOException e) {
                 attempt++;
-
-                final long retryAfterMs = retryAfterMillis(e);
-                if (retryAfterMs > 0) {
-                    // The server told us how long to wait, so waiting less is just a second rejection. This does
-                    // not consume the attempt budget: it is a scheduled wait, not a failed guess.
-                    attempt--;
-                    sleepQuietly(Math.min(retryAfterMs, MAX_RETRY_AFTER.toMillis()));
-                    continue;
-                }
-
-                if (attempt >= maxAttempts) {
+                if (attempt >= MAX_ATTEMPTS) {
                     throw new RuntimeException(
                         "Failed to fetch account transactions after " + attempt + " attempts (before=" + before + ")",
                         e
                     );
                 }
 
-                long delay = computeBackoff(baseDelayMs, attempt);
-
-                delay += (long) (Math.random() * 250);
-
-                try {
-                    Thread.sleep(delay);
-                } catch (InterruptedException ie) {
-                    Thread.currentThread().interrupt();
-                    throw new RuntimeException(ie);
+                final long retryAfterMs = retryAfterMillis(e);
+                final long delay;
+                if (retryAfterMs > 0) {
+                    // The server told us how long to wait, so waiting less is just a second rejection.
+                    if (retryAfterMs > MAX_RETRY_AFTER.toMillis()) {
+                        throw new RuntimeException("DASE asks to wait " + retryAfterMs / 1000 + " s before the next "
+                            + "request, more than the cap of " + MAX_RETRY_AFTER.toSeconds() + " s (before=" + before
+                            + ")", e);
+                    }
+                    delay = retryAfterMs;
+                } else {
+                    delay = computeBackoff(baseDelayMs, attempt) + (long) (Math.random() * 250);
                 }
+                if (waitedMs + delay > maxTotalWait.toMillis()) {
+                    throw new RuntimeException("Failed to fetch account transactions after " + attempt + " attempts: "
+                        + "waiting " + delay + " ms more would exceed " + maxTotalWait.toSeconds() + " s in total "
+                        + "(before=" + before + ")", e);
+                }
+                waitedMs += delay;
+                sleepQuietly(delay);
             }
         }
     }
@@ -366,8 +395,18 @@ public class DaseDownloader {
      */
     private static final Duration MIN_TIME_BETWEEN_REQUESTS = Duration.ofMillis(350);
 
-    /** Cap on an honoured {@code Retry-After}, so a hostile or mistaken header cannot park a sync for hours. */
+    /** Requests per page, the first one included. */
+    private static final int MAX_ATTEMPTS = 6;
+
+    /** Largest honoured {@code Retry-After}; a longer one ends the run, so a header cannot park a sync for hours. */
     private static final Duration MAX_RETRY_AFTER = Duration.ofSeconds(60);
+
+    /**
+     * Cap on all waits between the attempts for one page. With {@link #MAX_ATTEMPTS} and {@link #MAX_RETRY_AFTER}
+     * as they are, the waits add up to at most 5 x 60 s, which equals this cap; it is a defensive bound that only
+     * acts if one of those limits is raised.
+     */
+    private static final Duration MAX_TOTAL_WAIT = Duration.ofMinutes(5);
 
     private long lastRequestAtMs;
 
@@ -414,9 +453,9 @@ public class DaseDownloader {
         return 0;
     }
 
-    private static void sleepQuietly(long millis) {
+    private void sleepQuietly(long millis) {
         try {
-            Thread.sleep(millis);
+            sleeper.sleep(millis);
         } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
             throw new RuntimeException(ie);

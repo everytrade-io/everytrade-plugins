@@ -30,7 +30,7 @@ public class KuCoinWithdrawalDepositTest {
         final TransactionCluster expected = new TransactionCluster(
             new ImportedTransactionBean(
                 "****4228",
-                Instant.parse("2023-12-04T06:21:52Z"),
+                Instant.parse("2023-12-04T04:21:52Z"),
                 USDT,
                 USDT,
                 DEPOSIT,
@@ -53,7 +53,7 @@ public class KuCoinWithdrawalDepositTest {
         final TransactionCluster expected = new TransactionCluster(
             new ImportedTransactionBean(
                 "****4228",
-                Instant.parse("2023-12-04T06:21:52Z"),
+                Instant.parse("2023-12-04T04:21:52Z"),
                 USDT,
                 USDT,
                 WITHDRAWAL,
@@ -76,7 +76,7 @@ public class KuCoinWithdrawalDepositTest {
         final TransactionCluster expected = new TransactionCluster(
             new ImportedTransactionBean(
                 "*****3866",
-                Instant.parse("2025-01-23T21:24:57Z"),
+                Instant.parse("2025-01-23T13:24:57Z"),
                 XMR,
                 XMR,
                 DEPOSIT,
@@ -99,7 +99,7 @@ public class KuCoinWithdrawalDepositTest {
         final TransactionCluster expected = new TransactionCluster(
             new ImportedTransactionBean(
                 "*****3866",
-                Instant.parse("2025-01-24T05:04:14Z"),
+                Instant.parse("2025-01-23T21:04:14Z"),
                 BTC,
                 BTC,
                 WITHDRAWAL,
@@ -123,7 +123,7 @@ public class KuCoinWithdrawalDepositTest {
         final TransactionCluster expected = new TransactionCluster(
             new ImportedTransactionBean(
                 "*****3866",
-                Instant.parse("2025-01-23T20:36:07Z"),
+                Instant.parse("2025-01-23T12:36:07Z"),
                 XMR,
                 XMR,
                 WITHDRAWAL,
@@ -146,7 +146,7 @@ public class KuCoinWithdrawalDepositTest {
         final TransactionCluster expected = new TransactionCluster(
             new ImportedTransactionBean(
                 "226751814",
-                Instant.parse("2025-01-01T01:02:11Z"),
+                Instant.parse("2024-12-31T23:02:11Z"),
                 Currency.fromCode("LDO"),
                 Currency.fromCode("LDO"),
                 DEPOSIT,
@@ -169,7 +169,7 @@ public class KuCoinWithdrawalDepositTest {
         final TransactionCluster expected = new TransactionCluster(
             new ImportedTransactionBean(
                 "226751814",
-                Instant.parse("2025-01-01T01:02:11Z"),
+                Instant.parse("2024-12-31T23:02:11Z"),
                 USDT,
                 USDT,
                 WITHDRAWAL,

@@ -65,7 +65,7 @@ public class KuCoinBuySellTest {
         final TransactionCluster expected = new TransactionCluster(
             new ImportedTransactionBean(
                 null,
-                Instant.parse("2023-12-04T06:25:42Z"),
+                Instant.parse("2023-12-04T04:25:42Z"),
                 KAS,
                 USDT,
                 BUY,
@@ -89,7 +89,7 @@ public class KuCoinBuySellTest {
         final TransactionCluster expected = new TransactionCluster(
             new ImportedTransactionBean(
                 null,
-                Instant.parse("2023-12-07T01:16:13Z"),
+                Instant.parse("2023-12-06T23:16:13Z"),
                 DOGE,
                 USDT,
                 SELL,
@@ -113,7 +113,7 @@ public class KuCoinBuySellTest {
         final TransactionCluster expected = new TransactionCluster(
             new ImportedTransactionBean(
                 null,
-                Instant.parse("2023-12-04T08:28:21Z"),
+                Instant.parse("2023-12-04T06:28:21Z"),
                 DOGE,
                 KAS,
                 BUY,
@@ -137,7 +137,7 @@ public class KuCoinBuySellTest {
         final TransactionCluster expected = new TransactionCluster(
             new ImportedTransactionBean(
                 null,
-                Instant.parse("2024-01-18T11:47:17Z"),
+                Instant.parse("2024-01-18T09:47:17Z"),
                 DOGE,
                 USDT,
                 SELL,
@@ -161,7 +161,7 @@ public class KuCoinBuySellTest {
         final TransactionCluster expected = new TransactionCluster(
             ImportedTransactionBean.createDepositWithdrawal(
                 "68194228",
-                Instant.parse("2024-03-07T20:21:41Z"),
+                Instant.parse("2024-03-07T18:21:41Z"),
                 USDT,
                 USDT,
                 DEPOSIT,
@@ -183,7 +183,7 @@ public class KuCoinBuySellTest {
         final TransactionCluster expected = new TransactionCluster(
             ImportedTransactionBean.createDepositWithdrawal(
                 "68194228",
-                Instant.parse("2024-03-13T02:02:54Z"),
+                Instant.parse("2024-03-13T00:02:54Z"),
                 USDT,
                 USDT,
                 WITHDRAWAL,

@@ -31,9 +31,16 @@ public class KuCoinDepWdrlBeanV2 extends BaseTransactionMapper {
         this.orderId = orderId;
     }
 
-    @Parsed(field = {"Time(UTC+02:00)", "Time(UTC+08:00)"})
-    @Format(formats = {"dd.MM.yyyy HH:mm:ss", "yyyy-MM-dd HH:mm:ss"}, options = {"locale=US", "timezone=UTC"})
-    public void setTimeOfUpdate(Date date) {
+    // The export header names a fixed offset; the wall time in the column is local time at exactly that offset.
+    @Parsed(field = "Time(UTC+02:00)")
+    @Format(formats = {"dd.MM.yyyy HH:mm:ss", "yyyy-MM-dd HH:mm:ss"}, options = {"locale=US", "timezone=GMT+02:00"})
+    public void setTimeUtcPlus2(Date date) {
+        timeOfUpdate = date.toInstant();
+    }
+
+    @Parsed(field = "Time(UTC+08:00)")
+    @Format(formats = {"dd.MM.yyyy HH:mm:ss", "yyyy-MM-dd HH:mm:ss"}, options = {"locale=US", "timezone=GMT+08:00"})
+    public void setTimeUtcPlus8(Date date) {
         timeOfUpdate = date.toInstant();
     }
 
@@ -108,6 +115,10 @@ public class KuCoinDepWdrlBeanV2 extends BaseTransactionMapper {
 
     @Override
     protected BaseClusterData mapData() {
+        if (timeOfUpdate == null) {
+            // e.g. a "Time(UTC+hh:mm)" column with an offset that has no setter above
+            throw new DataValidationException("Missing transaction time or unsupported time column offset.");
+        }
         return BaseClusterData.builder()
             .transactionType(findTransactionType())
             .uid(orderId)

@@ -26,7 +26,9 @@ public class KuCoinDownloader {
     private static final Logger LOG = LoggerFactory.getLogger(KuCoinConnector.class);
 
     private DownloadState state;
-    private long now = Instant.now().toEpochMilli();
+    private final long now;
+    private final int maxRequests;
+    private final Sleeper sleeper;
     Exchange exchange;
     private static final Date EXCHANGE_START_DATE =
         new GregorianCalendar(2019, 02, 18, 0, 0).getTime();
@@ -38,8 +40,24 @@ public class KuCoinDownloader {
     private static final long WEEK = 7 * 24 * 60 * 60 * 1000L;
 
     public KuCoinDownloader(Exchange exchange, String downloadState) {
+        this(exchange, downloadState, Instant.now().toEpochMilli(), MAX_TRADE_REQUEST_COUNT, Thread::sleep);
+    }
+
+    // Test seam: clock, request cap and pause between requests are injectable; production uses the constructor above.
+    KuCoinDownloader(Exchange exchange, String downloadState, long now, int maxRequests, Sleeper sleeper) {
         this.exchange = exchange;
         this.state = DownloadState.deserialize(downloadState);
+        this.now = now;
+        this.maxRequests = maxRequests;
+        this.sleeper = sleeper;
+    }
+
+    interface Sleeper {
+        void sleep(long millis) throws InterruptedException;
+    }
+
+    String serializeState() {
+        return state.serialize();
     }
 
     public DownloadResult download() {
@@ -79,9 +97,12 @@ public class KuCoinDownloader {
             && state.oldLastTradeEndDate == EXCHANGE_START_DATE.getTime()) {
             long newStartDate;
             long newEndDate;
+            // upper end of the current forward pass, kept in newLastTradeEndDate while the pass runs
+            long passTop;
             // case very first download
             if (state.newLastTradeEndDate == 0 && state.newLastTradeStartDate == 0) {
                 newEndDate = now;
+                passTop = now;
                 newStartDate = newEndDate - WEEK;
                 if (newStartDate < state.oldFirstTradeDate) {
                     newStartDate = state.oldFirstTradeDate;
@@ -90,6 +111,7 @@ public class KuCoinDownloader {
             } else if (state.newLastTradeStartDate == state.newLastTradeEndDate) {
                 state.oldFirstTradeDate = state.newLastTradeStartDate;
                 newEndDate = now;
+                passTop = now;
                 newStartDate = newEndDate - WEEK;
                 if (newStartDate < state.oldFirstTradeDate) {
                     newStartDate = state.oldFirstTradeDate;
@@ -97,7 +119,16 @@ public class KuCoinDownloader {
                 // case not finished download
             } else if (state.newLastTradeStartDate > 0 && state.newLastTradeEndDate > 0
                 && state.newLastTradeStartDate != state.newLastTradeEndDate) {
-                newEndDate = state.newLastTradeStartDate;
+                if (state.newLastTradeStartDate <= state.oldFirstTradeDate) {
+                    // 5.2.306 ended every pass with (oldFirst, clock) and then only asked for [oldFirst, oldFirst]; the
+                    // state does not say where its one real pass ended, so read everything after oldFirst again. This
+                    // re-delivers that pass's rows (the host has no import dedup): deploy only after the production census.
+                    newEndDate = now;
+                    passTop = now;
+                } else {
+                    newEndDate = state.newLastTradeStartDate;
+                    passTop = state.newLastTradeEndDate;
+                }
                 newStartDate = newEndDate - WEEK;
                 if (newStartDate < state.oldFirstTradeDate) {
                     newStartDate = state.oldFirstTradeDate;
@@ -105,11 +136,14 @@ public class KuCoinDownloader {
             } else {
                 throw new IllegalStateException("User trade history download failed. ");
             }
+            if (newEndDate <= state.oldFirstTradeDate) {
+                return userTrades; // clock is not after the watermark, nothing to read
+            }
 
-            while (sentRequests < MAX_TRADE_REQUEST_COUNT) {
+            while (sentRequests < maxRequests) {
                 ++sentRequests;
                 // This API is restricted for each account, the request rate limit is 9 times/3s.
-                Thread.sleep(SLEEP_BETWEEN_REQUESTS);
+                sleeper.sleep(SLEEP_BETWEEN_REQUESTS);
                 final List<UserTrade> userTradesBlock;
                 try {
                     params.setEndTime(new Date(newEndDate));
@@ -121,7 +155,7 @@ public class KuCoinDownloader {
                 }
                 // case too much txs
                 if (userTradesBlock.size() == PAGE_LIMIT) {
-                    state.newLastTradeEndDate = newEndDate;
+                    state.newLastTradeEndDate = passTop;
                     state.newLastTradeStartDate = newStartDate;
                     newEndDate = userTradesBlock.get(0).getTimestamp().getTime();
                     userTrades.addAll(userTradesBlock);
@@ -134,7 +168,7 @@ public class KuCoinDownloader {
                 }
                 // case standard empty response
                 if (userTradesBlock.isEmpty() && newStartDate != state.oldFirstTradeDate) {
-                    state.newLastTradeEndDate = newEndDate;
+                    state.newLastTradeEndDate = passTop;
                     state.newLastTradeStartDate = newStartDate;
                     newEndDate = newStartDate;
                     newStartDate = newEndDate - WEEK;
@@ -145,8 +179,9 @@ public class KuCoinDownloader {
                 }
 
                 // case standard response
-                if (userTradesBlock.size() > 0 && userTradesBlock.size() < PAGE_LIMIT) {
-                    state.newLastTradeEndDate = newEndDate;
+                if (userTradesBlock.size() > 0 && userTradesBlock.size() < PAGE_LIMIT
+                    && newStartDate != state.oldFirstTradeDate) {
+                    state.newLastTradeEndDate = passTop;
                     state.newLastTradeStartDate = newStartDate;
                     newEndDate = newStartDate;
                     newStartDate = newEndDate - WEEK;
@@ -158,9 +193,10 @@ public class KuCoinDownloader {
                 }
 
                 // case last response in EXCHANGE_START_DATE
-                if (newStartDate == state.oldFirstTradeDate && state.newLastTradeEndDate < now) {
-                    state.newLastTradeStartDate = state.oldFirstTradeDate;
-                    state.newLastTradeEndDate = now;
+                if (newStartDate == state.oldFirstTradeDate) {
+                    // the bottom window closes the pass: everything up to passTop is delivered
+                    state.newLastTradeStartDate = passTop;
+                    state.newLastTradeEndDate = passTop;
                     userTrades.addAll(userTradesBlock);
                     break;
                 }
@@ -189,10 +225,10 @@ public class KuCoinDownloader {
                 throw new IllegalStateException("User trade history download failed. ");
             }
 
-            while (sentRequests < MAX_TRADE_REQUEST_COUNT) {
+            while (sentRequests < maxRequests) {
                 ++sentRequests;
                 // This API is restricted for each account, the request rate limit is 9 times/3s.
-                Thread.sleep(SLEEP_BETWEEN_REQUESTS);
+                sleeper.sleep(SLEEP_BETWEEN_REQUESTS);
                 final List<UserTrade> userTradesBlock;
                 try {
                     params.setEndTime(new Date(oldEndDate));
@@ -285,9 +321,12 @@ public class KuCoinDownloader {
         if (oldLastFundingStartDate == EXCHANGE_START_DATE.getTime() && oldLastFundingEndDate == EXCHANGE_START_DATE.getTime()) {
             long newStartDate;
             long newEndDate;
+            // upper end of the current forward pass, kept in newLastFundingEndDate while the pass runs
+            long passTop;
             // case very first download
             if (newLastFundingEndDate == 0 && newLastFundingStartDate == 0) {
                 newEndDate = now;
+                passTop = now;
                 newStartDate = newEndDate - WEEK;
                 if (newStartDate < oldFirstFundingDate) {
                     newStartDate = oldFirstFundingDate;
@@ -296,6 +335,7 @@ public class KuCoinDownloader {
             } else if (newLastFundingStartDate == newLastFundingEndDate) {
                 oldFirstFundingDate = newLastFundingStartDate;
                 newEndDate = now;
+                passTop = now;
                 newStartDate = newEndDate - WEEK;
                 if (newStartDate < oldFirstFundingDate) {
                     newStartDate = oldFirstFundingDate;
@@ -303,7 +343,16 @@ public class KuCoinDownloader {
                 // case not finished download
             } else if (newLastFundingStartDate > 0 && newLastFundingEndDate > 0
                 && newLastFundingStartDate != newLastFundingEndDate) {
-                newEndDate = newLastFundingStartDate;
+                if (newLastFundingStartDate <= oldFirstFundingDate) {
+                    // 5.2.306 ended every pass with (oldFirst, clock) and then only asked for [oldFirst, oldFirst]; the
+                    // state does not say where its one real pass ended, so read everything after oldFirst again. This
+                    // re-delivers that pass's rows (the host has no import dedup): deploy only after the production census.
+                    newEndDate = now;
+                    passTop = now;
+                } else {
+                    newEndDate = newLastFundingStartDate;
+                    passTop = newLastFundingEndDate;
+                }
                 newStartDate = newEndDate - WEEK;
                 if (newStartDate < oldFirstFundingDate) {
                     newStartDate = oldFirstFundingDate;
@@ -311,11 +360,14 @@ public class KuCoinDownloader {
             } else {
                 throw new IllegalStateException("Funding history download failed. ");
             }
+            if (newEndDate <= oldFirstFundingDate) {
+                return userDeposits; // clock is not after the watermark, nothing to read; state stays as it was
+            }
 
-            while (sentRequests < MAX_TRADE_REQUEST_COUNT) {
+            while (sentRequests < maxRequests) {
                 ++sentRequests;
                 // This API is restricted for each account, the request rate limit is 9 times/3s.
-                Thread.sleep(SLEEP_BETWEEN_REQUESTS);
+                sleeper.sleep(SLEEP_BETWEEN_REQUESTS);
                 final List<FundingRecord> userDepositsBlock;
                 try {
                     params.setEndTime(new Date(newEndDate));
@@ -328,7 +380,7 @@ public class KuCoinDownloader {
                 }
                 // case too much txs
                 if (userDepositsBlock.size() == PAGE_LIMIT) {
-                    newLastFundingEndDate = newEndDate;
+                    newLastFundingEndDate = passTop;
                     newLastFundingStartDate = newStartDate;
                     newEndDate = userDepositsBlock.get(0).getDate().getTime();
                     userDeposits.addAll(userDepositsBlock);
@@ -341,7 +393,7 @@ public class KuCoinDownloader {
                 }
                 // case standard empty response
                 if (userDepositsBlock.isEmpty() && newStartDate != oldFirstFundingDate) {
-                    newLastFundingEndDate = newEndDate;
+                    newLastFundingEndDate = passTop;
                     newLastFundingStartDate = newStartDate;
                     newEndDate = newStartDate;
                     newStartDate = newEndDate - WEEK;
@@ -352,8 +404,9 @@ public class KuCoinDownloader {
                 }
 
                 // case standard response
-                if (userDepositsBlock.size() > 0 && userDepositsBlock.size() < PAGE_LIMIT) {
-                    newLastFundingEndDate = newEndDate;
+                if (userDepositsBlock.size() > 0 && userDepositsBlock.size() < PAGE_LIMIT
+                    && newStartDate != oldFirstFundingDate) {
+                    newLastFundingEndDate = passTop;
                     newLastFundingStartDate = newStartDate;
                     newEndDate = newStartDate;
                     newStartDate = newEndDate - WEEK;
@@ -365,9 +418,10 @@ public class KuCoinDownloader {
                 }
 
                 // case last response in EXCHANGE_START_DATE
-                if (newStartDate == oldFirstFundingDate && newLastFundingEndDate < now) {
-                    newLastFundingStartDate = oldFirstFundingDate;
-                    newLastFundingEndDate = now;
+                if (newStartDate == oldFirstFundingDate) {
+                    // the bottom window closes the pass: everything up to passTop is delivered
+                    newLastFundingStartDate = passTop;
+                    newLastFundingEndDate = passTop;
                     userDeposits.addAll(userDepositsBlock);
                     break;
                 }
@@ -395,10 +449,10 @@ public class KuCoinDownloader {
                 throw new IllegalStateException("User trade history download failed. ");
             }
 
-            while (sentRequests < MAX_TRADE_REQUEST_COUNT) {
+            while (sentRequests < maxRequests) {
                 ++sentRequests;
                 // This API is restricted for each account, the request rate limit is 9 times/3s.
-                Thread.sleep(SLEEP_BETWEEN_REQUESTS);
+                sleeper.sleep(SLEEP_BETWEEN_REQUESTS);
                 final List<FundingRecord> userDepositsBlock;
                 try {
                     params.setEndTime(new Date(oldEndDate));

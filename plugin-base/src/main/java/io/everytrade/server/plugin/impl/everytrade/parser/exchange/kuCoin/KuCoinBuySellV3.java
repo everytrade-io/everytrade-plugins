@@ -35,7 +35,7 @@ public class KuCoinBuySellV3 extends BaseTransactionMapper {
     }
 
     @Parsed(field = "Time of Update(UTC+02:00)")
-    @Format(formats = {"dd.MM.yyyy HH:mm:ss", "yyyy-MM-dd HH:mm:ss"}, options = {"locale=US", "timezone=UTC"})
+    @Format(formats = {"dd.MM.yyyy HH:mm:ss", "yyyy-MM-dd HH:mm:ss"}, options = {"locale=US", "timezone=GMT+02:00"})
     public void setTimeOfUpdate(Date date) {
         timeOfUpdate = date.toInstant();
     }

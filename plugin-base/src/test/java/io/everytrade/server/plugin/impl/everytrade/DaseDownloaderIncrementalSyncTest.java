@@ -43,6 +43,18 @@ class DaseDownloaderIncrementalSyncTest {
 
     private static final int MAX_RECORDS = 90_000;
 
+    /**
+     * The host recognises this failure by its opening sentence (ApiTxDownloader.DASE_LEGACY_STATE_MESSAGE_PREFIX in
+     * the everytrade host) and reports it as a user action instead of a software error. Rewording it here without
+     * changing the host would turn every such sync back into a Sentry ERROR, so the sentence is pinned.
+     */
+    @Test
+    void legacyStateMessageKeepsTheSentenceTheHostMatchesOn() {
+        assertTrue(DaseDownloader.LEGACY_STATE_MESSAGE.startsWith(
+            "This DASE connection was last synchronized by an earlier version of the connector"),
+            "host ApiTxDownloader.DASE_LEGACY_STATE_MESSAGE_PREFIX matches on this sentence");
+    }
+
     @Test
     void secondRunReturnsExactlyTheRowsCreatedAfterTheFirstAndThirdRunReturnsNothing() {
         final FakeDase dase = new FakeDase();

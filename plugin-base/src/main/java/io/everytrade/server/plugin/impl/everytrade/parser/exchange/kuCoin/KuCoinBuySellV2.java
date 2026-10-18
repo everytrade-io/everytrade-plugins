@@ -30,7 +30,7 @@ public class KuCoinBuySellV2 extends BaseTransactionMapper {
 
 
     @Parsed(field = "Filled Time(UTC+02:00)")
-    @Format(formats = {"dd.MM.yyyy HH:mm:ss", "yyyy-MM-dd HH:mm:ss"}, options = {"locale=US", "timezone=UTC"})
+    @Format(formats = {"dd.MM.yyyy HH:mm:ss", "yyyy-MM-dd HH:mm:ss"}, options = {"locale=US", "timezone=GMT+02:00"})
     public void setFilledTime(Date date) {
         filledTime = date.toInstant();
     }
