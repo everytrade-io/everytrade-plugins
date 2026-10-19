@@ -1086,7 +1086,9 @@ public enum Currency {
     CBETH(false, Instant.parse("2022-09-14T00:00:00Z"), "Coinbase Wrapped Staked ETH"),
     // RONIN is the Ronin token (CoinPaprika ron-ronin-token). Its market ticker is RON, but the code RON is the
     // Romanian leu (fiat) above and must stay so; Coinbase reports the token as RONIN, which is the code used here.
-    RONIN(false, Instant.parse("2022-02-25T00:00:00Z"), "Ronin");
+    RONIN(false, Instant.parse("2022-02-25T00:00:00Z"), "Ronin"),
+    // BDCA introduction is CoinPaprika's first_data_at for bdca-bitdca.
+    BDCA(false, Instant.parse("2025-05-23T00:00:00Z"), "BitDCA");
 
     String code;
     int decimalDigits;
