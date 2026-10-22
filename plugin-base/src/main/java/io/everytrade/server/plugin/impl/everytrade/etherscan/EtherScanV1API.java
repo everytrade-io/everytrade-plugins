@@ -42,6 +42,20 @@ public interface EtherScanV1API {
     ) throws IOException;
 
     @GET
+    EtherScanDto<List<EtherScanInternalTransactionDto>> getInternalTxsByAddress(
+        @QueryParam("chainid") String chainId,
+        @QueryParam("module") String module,
+        @QueryParam("action") String action,
+        @QueryParam("address") String address,
+        @QueryParam("startblock") long startBlock,
+        @QueryParam("endblock") long endBlock,
+        @QueryParam("page") int page,
+        @QueryParam("offset") int offset,
+        @QueryParam("sort") String sort,
+        @QueryParam("apikey") String apiKeyToken
+    ) throws IOException;
+
+    @GET
     EtherScanDto<Long> getBlockNumberByTimestamp(
         @QueryParam("chainid") String chainId,
         @QueryParam("module") String module,

@@ -44,129 +44,53 @@ class BlockchainEthDownloaderTest {
     private static final String ADDRESS = "address0";
     private static final String FIAT = USD.code();
     private static final BigDecimal ONE_ETH = new BigDecimal(1000000000000000000L);
+    /** {importFeesFromDeposits, importFeesFromWithdrawals}: every combination a saved connection can carry. */
+    private static final boolean[][] FEE_TOGGLES = {{false, false}, {false, true}, {true, false}, {true, true}};
 
+    /**
+     * Owner decision 2026-10-20 (final): the outgoing leg the wallet sent carries its gas with importFeesFromWithdrawals
+     * on, the incoming one carries the sender's gas only with importFeesFromDeposits on - for every combination.
+     */
     @Test
-    void ethBuySellWithoutFeesTest() throws Exception {
-        var txs = List.of(
-            depositOnAddress(ADDRESS, ONE_ETH.multiply(TEN)),
-            withdrawFromAddress(ADDRESS, ONE_ETH)
-        );
+    void ethBuySellCarryTheGasTheFeeOptionsAskForTest() throws Exception {
+        for (boolean[] toggles : FEE_TOGGLES) {
+            var txs = List.of(
+                depositOnAddress(ADDRESS, ONE_ETH.multiply(TEN)),
+                withdrawFromAddress(ADDRESS, ONE_ETH)
+            );
+            var downloader = downloader(true, true, toggles[0], toggles[1], mockClient(txs, emptyList()));
 
-        var downloader = new BlockchainEthDownloader(
-            ADDRESS,
-            "apiKey",
-            FIAT,
-            true,
-            true,
-            false,
-            false,
-            true,
-            true,
-            mockClient(txs, emptyList())
-        );
+            DownloadResult result = downloader.download(null);
 
-        DownloadResult result = downloader.download(null);
+            var buyCluster = findOneCluster(result, BUY);
+            assertBuySell(buyCluster, BUY, TEN);
+            assertFeesIf(toggles[0], buyCluster);
 
-        var buyCluster = findOneCluster(result, BUY);
-        assertEquals(0, buyCluster.getRelated().size());
-        assertBuySell(buyCluster, BUY, TEN);
-
-        var sellCluster = findOneCluster(result, SELL);
-        assertEquals(0, sellCluster.getRelated().size());
-        assertBuySell(sellCluster, SELL, ONE);
+            var sellCluster = findOneCluster(result, SELL);
+            assertBuySell(sellCluster, SELL, ONE);
+            assertFeesIf(toggles[1], sellCluster);
+        }
     }
 
     @Test
-    void ethBuySellWithFeesTest() throws Exception {
-        var txs = List.of(
-            depositOnAddress(ADDRESS, ONE_ETH.multiply(TEN)),
-            withdrawFromAddress(ADDRESS, ONE_ETH)
-        );
+    void ethDepositWithdrawalCarryTheGasTheFeeOptionsAskForTest() throws Exception {
+        for (boolean[] toggles : FEE_TOGGLES) {
+            var txs = List.of(
+                depositOnAddress(ADDRESS, ONE_ETH.multiply(TEN)),
+                withdrawFromAddress(ADDRESS, ONE_ETH)
+            );
+            var downloader = downloader(false, false, toggles[0], toggles[1], mockClient(txs, emptyList()));
 
-        var downloader = new BlockchainEthDownloader(
-            ADDRESS,
-            "apiKey",
-            FIAT,
-            true,
-            true,
-            true,
-            true,
-            true,
-            true,
-            mockClient(txs, emptyList())
-        );
+            DownloadResult result = downloader.download(null);
 
-        DownloadResult result = downloader.download(null);
+            var depositCluster = findOneCluster(result, DEPOSIT);
+            assertDepositWithdrawal(depositCluster, DEPOSIT, TEN);
+            assertFeesIf(toggles[0], depositCluster);
 
-        var buyCluster = findOneCluster(result, BUY);
-        assertBuySell(buyCluster, BUY, TEN);
-        assertFees(buyCluster);
-
-        var sellCluster = findOneCluster(result, SELL);
-        assertBuySell(sellCluster, SELL, ONE);
-        assertFees(sellCluster);
-    }
-
-    @Test
-    void ethDepositWithdrawalWithoutFeesTest() throws Exception {
-        var txs = List.of(
-            depositOnAddress(ADDRESS, ONE_ETH.multiply(TEN)),
-            withdrawFromAddress(ADDRESS, ONE_ETH)
-        );
-
-        var downloader = new BlockchainEthDownloader(
-            ADDRESS,
-            "apiKey",
-            FIAT,
-            false,
-            false,
-            false,
-            false,
-            true,
-            true,
-            mockClient(txs, emptyList())
-        );
-
-        DownloadResult result = downloader.download(null);
-
-        var depositCluster = findOneCluster(result, DEPOSIT);
-        assertEquals(0, depositCluster.getRelated().size());
-        assertDepositWithdrawal(depositCluster, DEPOSIT, TEN);
-
-        var withdrawalCluster = findOneCluster(result, WITHDRAWAL);
-        assertEquals(0, withdrawalCluster.getRelated().size());
-        assertDepositWithdrawal(withdrawalCluster, WITHDRAWAL, ONE);
-    }
-
-    @Test
-    void ethDepositWithdrawalWithFeesTest() throws Exception {
-        var txs = List.of(
-            depositOnAddress(ADDRESS, ONE_ETH.multiply(TEN)),
-            withdrawFromAddress(ADDRESS, ONE_ETH)
-        );
-
-        var downloader = new BlockchainEthDownloader(
-            ADDRESS,
-            "apiKey",
-            FIAT,
-            false,
-            false,
-            true,
-            true,
-            true,
-            true,
-            mockClient(txs, emptyList())
-        );
-
-        DownloadResult result = downloader.download(null);
-
-        var depositCluster = findOneCluster(result, DEPOSIT);
-        assertDepositWithdrawal(depositCluster, DEPOSIT, TEN);
-        assertFees(depositCluster);
-
-        var withdrawalCluster = findOneCluster(result, WITHDRAWAL);
-        assertDepositWithdrawal(withdrawalCluster, WITHDRAWAL, ONE);
-        assertFees(withdrawalCluster);
+            var withdrawalCluster = findOneCluster(result, WITHDRAWAL);
+            assertDepositWithdrawal(withdrawalCluster, WITHDRAWAL, ONE);
+            assertFeesIf(toggles[1], withdrawalCluster);
+        }
     }
 
     @Test
@@ -177,9 +101,10 @@ class BlockchainEthDownloaderTest {
         for (int i = 0; i < pageSize; i++) {
             fullPage.add(depositOnAddress(ADDRESS, ONE_ETH));
         }
-        var alreadyInPage = fullPage.get(pageSize - 1);
+        // the whole page sits in one block; the re-read of that block answers every row of it, the spilled-over one too
         var spilledOverTx = depositOnAddress(ADDRESS, ONE_ETH);
-        List<EtherScanTransactionDto> lastBlockTxs = List.of(alreadyInPage, spilledOverTx);
+        List<EtherScanTransactionDto> lastBlockTxs = new ArrayList<>(fullPage);
+        lastBlockTxs.add(spilledOverTx);
 
         var mock = mock(EtherScanClient.class);
         when(mock.getBlockNumberByTimestamp(anyString(), anyString(), anyString())).thenReturn(successResponse(1_000_000L));
@@ -188,11 +113,11 @@ class BlockchainEthDownloaderTest {
             .thenReturn(successResponse(lastBlockTxs));
 
         var downloader = new BlockchainEthDownloader(
-            ADDRESS, "apiKey", FIAT, false, false, false, false, true, false, mock);
+            ADDRESS, "apiKey", FIAT, false, false, true, false, mock);
 
         DownloadResult result = downloader.download(null);
 
-        // full page + the spilled-over tx; the duplicate returned by the supplementary fetch must be deduped away
+        // full page + the spilled-over tx: the rows of the last block are REPLACED by the re-read, never doubled
         assertEquals(pageSize + 1, result.getParseResult().getTransactionClusters().size());
     }
 
@@ -209,8 +134,6 @@ class BlockchainEthDownloaderTest {
             false,
             false,
             false,
-            false,
-            false,
             true,
             mockClient(emptyList(), erc20Txs)
         );
@@ -224,6 +147,12 @@ class BlockchainEthDownloaderTest {
             ParsingProblemType.PARSED_ROW_IGNORED,
             parseResult.getParsingProblems().get(0).getParsingProblemType()
         );
+    }
+
+    private BlockchainEthDownloader downloader(boolean depositsAsBuys, boolean withdrawalsAsSells,
+                                               boolean feesFromDeposits, boolean feesFromWithdrawals, EtherScanClient client) {
+        return new BlockchainEthDownloader(ADDRESS, "apiKey", FIAT, depositsAsBuys, withdrawalsAsSells, feesFromDeposits,
+            feesFromWithdrawals, true, true, client);
     }
 
     private void assertDepositWithdrawal(TransactionCluster cluster, TransactionType type, BigDecimal volume) {
@@ -251,6 +180,14 @@ class BlockchainEthDownloaderTest {
         assertEquals(USD, tx.getQuote());
         assertEquals(type, tx.getAction());
         assertNotNull(tx.getImported());
+    }
+
+    private void assertFeesIf(boolean expected, TransactionCluster cluster) {
+        if (expected) {
+            assertFees(cluster);
+        } else {
+            assertEquals(0, cluster.getRelated().size(), "" + cluster.getRelated());
+        }
     }
 
     private void assertFees(TransactionCluster cluster) {
