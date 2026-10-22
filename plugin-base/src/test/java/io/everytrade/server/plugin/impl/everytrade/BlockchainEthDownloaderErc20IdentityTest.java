@@ -128,13 +128,13 @@ class BlockchainEthDownloaderErc20IdentityTest {
 
     private DownloadResult download(List<EtherScanErc20TransactionDto> erc20Txs) throws Exception {
         return new BlockchainEthDownloader(
-            ADDRESS, "apiKey", FIAT, false, false, false, false, false, true, mockClient(emptyList(), erc20Txs)
+            ADDRESS, "apiKey", FIAT, false, false, false, true, mockClient(emptyList(), erc20Txs)
         ).download(null);
     }
 
     private DownloadResult downloadNormal(List<EtherScanTransactionDto> txs) throws Exception {
         return new BlockchainEthDownloader(
-            ADDRESS, "apiKey", FIAT, false, false, false, false, true, false, mockClient(txs, emptyList())
+            ADDRESS, "apiKey", FIAT, false, false, true, false, mockClient(txs, emptyList())
         ).download(null);
     }
 

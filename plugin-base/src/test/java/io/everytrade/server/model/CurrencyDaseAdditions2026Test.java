@@ -19,9 +19,13 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  */
 class CurrencyDaseAdditions2026Test {
 
+    /**
+     * ETD-2217 item 4b: SHX starts on its first priced day on the rate server, 2019-01-04 (2019-01-03 answers 404);
+     * see CurrencyIntroductionEtd2217Test.
+     */
     @Test
     void shx() {
-        assertCrypto(Currency.SHX, "SHX", "Stronghold Token", "2019-01-03T00:00:00Z", null);
+        assertCrypto(Currency.SHX, "SHX", "Stronghold Token", "2019-01-04T00:00:00Z", null);
     }
 
     /** H is the original Humanity token, retired after the 2026-06-08 hack; it must carry that end date. */

@@ -17,6 +17,11 @@ import java.util.Map;
 @Value
 @AllArgsConstructor
 public class BlockchainSolConnector implements IConnector {
+    /**
+     * One SOL sync at a time per JVM. The JSON-RPC calls are paced JVM-wide by {@code HeliusRpcPacer}, but the Wallet
+     * API history pacing (500 ms sleep per page in {@link BlockchainSolDownloader}, FREE limit 2/s) is per caller and
+     * is JVM-wide ONLY because of this lock; removing the lock needs a JVM-wide Wallet API limiter first.
+     */
     private static final Object LOCK = new Object();
     private static final String ID = WhaleBooksPlugin.ID + IPlugin.PLUGIN_PATH_SEPARATOR + "blockchainSolApiConnector";
 
@@ -65,33 +70,6 @@ public class BlockchainSolConnector implements IConnector {
             false
         );
 
-    private static final ConnectorParameterDescriptor FEES_LABEL =
-        new ConnectorParameterDescriptor(
-            "feesLabel",
-            ConnectorParameterType.LABEL,
-            UiKey.FEES_LABEL,
-            "",
-            false
-        );
-
-    private static final ConnectorParameterDescriptor PARAMETER_IMPORT_FEES_FROM_DEPOSITS =
-        new ConnectorParameterDescriptor(
-            "importFeesFromDeposits",
-            ConnectorParameterType.BOOLEAN,
-            UiKey.CONNECTION_DEPOSIT_MINING_FEE_AS_BUY_OPT,
-            "",
-            false
-        );
-
-    private static final ConnectorParameterDescriptor PARAMETER_IMPORT_FEES_FROM_WITHDRAWALS =
-        new ConnectorParameterDescriptor(
-            "importFeesFromWithdrawals",
-            ConnectorParameterType.BOOLEAN,
-            UiKey.CONNECTION_WITHDRAWAL_MINING_FEE_AS_SELL_OPT,
-            "",
-            true
-        );
-
     public static final ConnectorDescriptor DESCRIPTOR = new ConnectorDescriptor(
         ID,
         "Blockchain SOL Connector",
@@ -103,9 +81,9 @@ public class BlockchainSolConnector implements IConnector {
             INTERPRETATION_LABEL,
             PARAMETER_IMPORT_DEPOSITS_AS_BUYS,
             PARAMETER_IMPORT_WITHDRAWALS_AS_SELLS,
-            FEES_LABEL,
-            PARAMETER_IMPORT_FEES_FROM_DEPOSITS,
-            PARAMETER_IMPORT_FEES_FROM_WITHDRAWALS
+            ChainFeeOptions.FEES_LABEL,
+            ChainFeeOptions.PARAMETER_FEES_PAID_BY_WALLET,
+            ChainFeeOptions.PARAMETER_SENDER_FEE_ON_DEPOSITS
         )
     );
 
@@ -116,9 +94,15 @@ public class BlockchainSolConnector implements IConnector {
     String fiatCurrency;
     String importDepositsAsBuys;
     String importWithdrawalsAsSells;
-    String importFeesFromDeposits;
-    String importFeesFromWithdrawals;
+    /** {@code importFeesFromWithdrawals}, see {@link ChainFeeOptions}. */
+    boolean feesPaidByWallet;
+    /** {@code importFeesFromDeposits}, see {@link ChainFeeOptions}. */
+    boolean senderFeeOnDeposits;
 
+    /**
+     * {@code importFeesFromDeposits} / {@code importFeesFromWithdrawals} are read with the meaning of 2026-10-20 (see
+     * {@link ChainFeeOptions}): a saved value is kept, a missing one is the default.
+     */
     public BlockchainSolConnector(Map<String, String> parameters) {
         this(
             parameters.get(PARAMETER_ADDRESS.getId()),
@@ -126,9 +110,17 @@ public class BlockchainSolConnector implements IConnector {
             parameters.get(PARAMETER_FIAT_CURRENCY.getId()),
             parameters.get(PARAMETER_IMPORT_DEPOSITS_AS_BUYS.getId()),
             parameters.get(PARAMETER_IMPORT_WITHDRAWALS_AS_SELLS.getId()),
-            parameters.get(PARAMETER_IMPORT_FEES_FROM_DEPOSITS.getId()),
-            parameters.get(PARAMETER_IMPORT_FEES_FROM_WITHDRAWALS.getId())
+            ChainFeeOptions.feesPaidByWallet(parameters),
+            ChainFeeOptions.senderFeeOnDeposits(parameters)
         );
+    }
+
+    boolean feesPaidByWallet() {
+        return feesPaidByWallet;
+    }
+
+    boolean senderFeeOnDeposits() {
+        return senderFeeOnDeposits;
     }
 
     @Override
@@ -145,8 +137,8 @@ public class BlockchainSolConnector implements IConnector {
                 fiatCurrency,
                 importDepositsAsBuys,
                 importWithdrawalsAsSells,
-                importFeesFromDeposits,
-                importFeesFromWithdrawals
+                senderFeeOnDeposits,
+                feesPaidByWallet
             );
             return downloader.download(downloadState);
         }
